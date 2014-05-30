@@ -1,24 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>600</width>
+    <height>450</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QSplitter" name="vSplitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="DataPlot" name="plotArea" native="true"/>
+      <widget class="QSplitter" name="hSplitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="DataView" name="leftView" native="true"/>
+       <widget class="DataView" name="topView" native="true"/>
+       <widget class="DataView" name="frontView" native="true"/>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>600</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionImport"/>
+    <addaction name="actionImportGates"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuLeft">
+    <property name="title">
+     <string>&amp;Left</string>
+    </property>
+    <addaction name="actionLeftElevation"/>
+    <addaction name="actionLeftVerticalSpeed"/>
+    <addaction name="actionLeftHorizontalSpeed"/>
+    <addaction name="actionLeftTotalSpeed"/>
+    <addaction name="actionLeftDiveAngle"/>
+    <addaction name="actionLeftCurvature"/>
+    <addaction name="actionLeftGlideRatio"/>
+   </widget>
+   <widget class="QMenu" name="menuRight">
+    <property name="title">
+     <string>&amp;Right</string>
+    </property>
+    <addaction name="actionRightElevation"/>
+    <addaction name="actionRightVerticalSpeed"/>
+    <addaction name="actionRightHorizontalSpeed"/>
+    <addaction name="actionRightTotalSpeed"/>
+    <addaction name="actionRightDiveAngle"/>
+    <addaction name="actionRightCurvature"/>
+    <addaction name="actionRightGlideRatio"/>
+   </widget>
+   <widget class="QMenu" name="menuDomain">
+    <property name="title">
+     <string>&amp;Bottom</string>
+    </property>
+    <addaction name="actionTime"/>
+    <addaction name="actionDistance2D"/>
+    <addaction name="actionDistance3D"/>
+   </widget>
+   <widget class="QMenu" name="menuUnits">
+    <property name="title">
+     <string>&amp;Units</string>
+    </property>
+    <addaction name="actionMetric"/>
+    <addaction name="actionImperial"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menuLeft"/>
+   <addaction name="menuRight"/>
+   <addaction name="menuDomain"/>
+   <addaction name="menuUnits"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import &amp;Track...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionLeftElevation">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Elevation</string>
+   </property>
+  </action>
+  <action name="actionLeftVerticalSpeed">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Vertical Speed</string>
+   </property>
+  </action>
+  <action name="actionLeftHorizontalSpeed">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Horizontal Speed</string>
+   </property>
+  </action>
+  <action name="actionRightElevation">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Elevation</string>
+   </property>
+  </action>
+  <action name="actionRightVerticalSpeed">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Vertical Speed</string>
+   </property>
+  </action>
+  <action name="actionRightHorizontalSpeed">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Horizontal Speed</string>
+   </property>
+  </action>
+  <action name="actionMetric">
+   <property name="text">
+    <string>&amp;Metric</string>
+   </property>
+  </action>
+  <action name="actionImperial">
+   <property name="text">
+    <string>&amp;Imperial</string>
+   </property>
+  </action>
+  <action name="actionTime">
+   <property name="text">
+    <string>&amp;Time</string>
+   </property>
+  </action>
+  <action name="actionDistance2D">
+   <property name="text">
+    <string>Horizontal Distance</string>
+   </property>
+  </action>
+  <action name="actionLeftTotalSpeed">
+   <property name="text">
+    <string>Total Speed</string>
+   </property>
+  </action>
+  <action name="actionLeftDiveAngle">
+   <property name="text">
+    <string>Dive Angle</string>
+   </property>
+  </action>
+  <action name="actionRightTotalSpeed">
+   <property name="text">
+    <string>Total Speed</string>
+   </property>
+  </action>
+  <action name="actionRightDiveAngle">
+   <property name="text">
+    <string>Dive Angle</string>
+   </property>
+  </action>
+  <action name="actionDistance3D">
+   <property name="text">
+    <string>Total Distance</string>
+   </property>
+  </action>
+  <action name="actionImportGates">
+   <property name="text">
+    <string>Import &amp;Gates...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionLeftGlideRatio">
+   <property name="text">
+    <string>Glide Ratio</string>
+   </property>
+  </action>
+  <action name="actionRightGlideRatio">
+   <property name="text">
+    <string>Glide Ratio</string>
+   </property>
+  </action>
+  <action name="actionLeftCurvature">
+   <property name="text">
+    <string>Curvature</string>
+   </property>
+  </action>
+  <action name="actionRightCurvature">
+   <property name="text">
+    <string>Curvature</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>DataPlot</class>
+   <extends>QWidget</extends>
+   <header>dataplot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DataView</class>
+   <extends>QWidget</extends>
+   <header>dataview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

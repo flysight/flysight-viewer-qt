@@ -1,20 +1,29 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-05-30T13:36:20
+# Project created by QtCreator 2013-02-02T15:04:16
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = FlySightViewer
+TARGET = FlySightViewer3
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    qcustomplot.cpp \
+    dataplot.cpp \
+    dataview.cpp \
+    waypoint.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    qcustomplot.h \
+    datapoint.h \
+    dataplot.h \
+    dataview.h \
+    waypoint.h
 
 FORMS    += mainwindow.ui
