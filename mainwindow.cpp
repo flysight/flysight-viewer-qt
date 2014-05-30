@@ -37,7 +37,7 @@ MainWindow::MainWindow(
     m_yAxisTitlesMetric.append(tr("Horizontal Speed (km/h)"));
     m_yAxisTitlesMetric.append(tr("Total Speed (km/h)"));
     m_yAxisTitlesMetric.append(tr("Dive Angle (deg)"));
-    m_yAxisTitlesMetric.append(tr("Curvatyre (deg/s)"));
+    m_yAxisTitlesMetric.append(tr("Curvature (deg/s)"));
     m_yAxisTitlesMetric.append(tr("Glide Ratio"));
 
     m_yAxisTitlesImperial.append(tr("Elevation (ft)"));
@@ -45,7 +45,7 @@ MainWindow::MainWindow(
     m_yAxisTitlesImperial.append(tr("Horizontal Speed (mph)"));
     m_yAxisTitlesImperial.append(tr("Total Speed (mph)"));
     m_yAxisTitlesImperial.append(tr("Dive Angle (deg)"));
-    m_yAxisTitlesImperial.append(tr("Curvatyre (deg/s)"));
+    m_yAxisTitlesImperial.append(tr("Curvature (deg/s)"));
     m_yAxisTitlesImperial.append(tr("Glide Ratio"));
 
     m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
