@@ -562,7 +562,7 @@ void MainWindow::updatePlotData()
         m_ui->plotArea->graph(2)->setData(xMark, yMark);
         m_ui->plotArea->graph(2)->setPen(QPen(Qt::black));
         m_ui->plotArea->graph(2)->setLineStyle(QCPGraph::lsNone);
-        m_ui->plotArea->graph(2)->setScatterStyle(QCP::ssDisc);
+        m_ui->plotArea->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
 
         yMark.clear();
         yMark.append(m_y2Plot);
@@ -571,7 +571,7 @@ void MainWindow::updatePlotData()
         m_ui->plotArea->graph(3)->setData(xMark, yMark);
         m_ui->plotArea->graph(3)->setPen(QPen(Qt::black));
         m_ui->plotArea->graph(3)->setLineStyle(QCPGraph::lsNone);
-        m_ui->plotArea->graph(3)->setScatterStyle(QCP::ssDisc);
+        m_ui->plotArea->graph(3)->setScatterStyle(QCPScatterStyle::ssDisc);
     }
 
     updateYRanges();
@@ -663,15 +663,13 @@ void MainWindow::updateViewData()
     m_ui->topView->graph(0)->addData(m_ui->topView->xAxis->range().upper, (yMin + yMax) / 2);
     m_ui->topView->graph(0)->setPen(QPen(Qt::red));
     m_ui->topView->graph(0)->setLineStyle(QCPGraph::lsNone);
-    m_ui->topView->graph(0)->setScatterStyle(QCP::ssDisc);
-    m_ui->topView->graph(0)->setScatterSize(12);
+    m_ui->topView->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
 
     m_ui->topView->addGraph();
     m_ui->topView->graph(1)->addData((xMin + xMax) / 2, m_ui->topView->yAxis->range().lower);
     m_ui->topView->graph(1)->setPen(QPen(Qt::blue));
     m_ui->topView->graph(1)->setLineStyle(QCPGraph::lsNone);
-    m_ui->topView->graph(1)->setScatterStyle(QCP::ssDisc);
-    m_ui->topView->graph(1)->setScatterSize(12);
+    m_ui->topView->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
 
     if (m_markActive)
     {
@@ -694,19 +692,19 @@ void MainWindow::updateViewData()
         m_ui->leftView->graph(0)->setData(xMark, zMark);
         m_ui->leftView->graph(0)->setPen(QPen(Qt::black));
         m_ui->leftView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        m_ui->leftView->graph(0)->setScatterStyle(QCP::ssDisc);
+        m_ui->leftView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
 
         m_ui->frontView->addGraph();
         m_ui->frontView->graph(0)->setData(yMark, zMark);
         m_ui->frontView->graph(0)->setPen(QPen(Qt::black));
         m_ui->frontView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        m_ui->frontView->graph(0)->setScatterStyle(QCP::ssDisc);
+        m_ui->frontView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
 
         m_ui->topView->addGraph();
         m_ui->topView->graph(2)->setData(xMark, yMark);
         m_ui->topView->graph(2)->setPen(QPen(Qt::black));
         m_ui->topView->graph(2)->setLineStyle(QCPGraph::lsNone);
-        m_ui->topView->graph(2)->setScatterStyle(QCP::ssDisc);
+        m_ui->topView->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
     }
 
     if (!m_data.empty())
@@ -742,19 +740,19 @@ void MainWindow::updateViewData()
         cur->setData(xMark, zMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCP::ssPlus);
+        cur->setScatterStyle(QCPScatterStyle::ssPlus);
 
         cur = m_ui->frontView->addGraph();
         cur->setData(yMark, zMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCP::ssPlus);
+        cur->setScatterStyle(QCPScatterStyle::ssPlus);
 
         cur = m_ui->topView->addGraph();
         cur->setData(xMark, yMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCP::ssPlus);
+        cur->setScatterStyle(QCPScatterStyle::ssPlus);
     }
 
     addNorthArrow(m_ui->topView);
@@ -770,7 +768,7 @@ void MainWindow::addNorthArrow(
     QPainter painter(plot);
 
     double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
-    double valPerPix = plot->xAxis->range().size() / plot->axisRect().width();
+    double valPerPix = plot->xAxis->range().size() / plot->axisRect()->width();
     double valPerMM = valPerPix / mmPerPix;
 
     // rotated arrow
@@ -811,7 +809,7 @@ void MainWindow::setViewRange(
     double xMMperPix = (double) painter.device()->widthMM() / painter.device()->width();
     double yMMperPix = (double) painter.device()->heightMM() / painter.device()->height();
 
-    QRect rect = plot->axisRect();
+    QRect rect = plot->axisRect()->rect();
 
     double xSpan = (xMax - xMin) * 1.2;
     double ySpan = (yMax - yMin) * 1.2;
@@ -1004,9 +1002,9 @@ void MainWindow::on_actionRightGlideRatio_triggered()
 void MainWindow::onTopView_mousePress(
         QMouseEvent *event)
 {
-    if (m_ui->topView->axisRect().contains(event->pos()))
+    if (m_ui->topView->axisRect()->rect().contains(event->pos()))
     {
-        m_topViewBeginPos = event->pos() - m_ui->topView->axisRect().center();
+        m_topViewBeginPos = event->pos() - m_ui->topView->axisRect()->center();
         m_topViewPan = true;
     }
 }
@@ -1024,7 +1022,7 @@ void MainWindow::onTopView_mouseMove(
     {
         const double pi = 3.14159265359;
 
-        QRect axisRect = m_ui->topView->axisRect();
+        QRect axisRect = m_ui->topView->axisRect()->rect();
         QPoint endPos = event->pos() - axisRect.center();
 /*
         double a1 = atan2((double) m_topViewBeginPos.x(), m_topViewBeginPos.y());
@@ -1216,7 +1214,7 @@ void MainWindow::onPlotArea_expand(
         QPoint angleDelta)
 {
     QRect windowRect = m_ui->plotArea->rect();
-    QRect axisRect = m_ui->plotArea->axisRect();
+    QRect axisRect = m_ui->plotArea->axisRect()->rect();
 
     qDebug() << windowRect;
     qDebug() << axisRect;

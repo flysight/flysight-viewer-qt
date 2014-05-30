@@ -10,7 +10,7 @@ DataPlot::DataPlot(QWidget *parent) :
 void DataPlot::mousePressEvent(
         QMouseEvent *event)
 {
-    if (mAxisRect.contains(event->pos()))
+    if (axisRect()->rect().contains(event->pos()))
     {
         m_beginPos = event->pos();
 
@@ -68,7 +68,7 @@ void DataPlot::mouseMoveEvent(
         m_beginPos = endPos;
     }
 
-    if (mAxisRect.contains(event->pos()))
+    if (axisRect()->rect().contains(event->pos()))
     {
         emit mark(xAxis->pixelToCoord(m_cursorPos.x()));
     }
@@ -87,7 +87,7 @@ void DataPlot::wheelEvent(
 {
     if (!(event->modifiers() & Qt::ControlModifier))
     {
-        if (mAxisRect.contains(event->pos()))
+        if (axisRect()->rect().contains(event->pos()))
         {
             double multiplier = exp((double) -event->angleDelta().y() / 500);
 
@@ -124,29 +124,29 @@ void DataPlot::paintEvent(
         QPainter painter(this);
 
         painter.setPen(QPen(Qt::black));
-        painter.drawLine(m_beginPos.x(), mAxisRect.top(), m_beginPos.x(), mAxisRect.bottom());
-        if (mAxisRect.left() <= m_cursorPos.x() && m_cursorPos.x() <= mAxisRect.right())
+        painter.drawLine(m_beginPos.x(), axisRect()->rect().top(), m_beginPos.x(), axisRect()->rect().bottom());
+        if (axisRect()->rect().left() <= m_cursorPos.x() && m_cursorPos.x() <= axisRect()->rect().right())
         {
-            painter.drawLine(m_cursorPos.x(), mAxisRect.top(), m_cursorPos.x(), mAxisRect.bottom());
+            painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
         }
 
         QRect shading(
                     qMin(m_beginPos.x(), m_cursorPos.x()),
-                    mAxisRect.top(),
+                    axisRect()->rect().top(),
                     qAbs(m_beginPos.x() - m_cursorPos.x()),
-                    mAxisRect.height());
+                    axisRect()->rect().height());
 
-        painter.fillRect(shading & mAxisRect, QColor(181, 217, 42, 64));
+        painter.fillRect(shading & axisRect()->rect(), QColor(181, 217, 42, 64));
     }
     else
     {
-        if (mAxisRect.contains(m_cursorPos))
+        if (axisRect()->rect().contains(m_cursorPos))
         {
             QPainter painter(this);
 
             painter.setPen(QPen(Qt::black));
-            painter.drawLine(m_cursorPos.x(), mAxisRect.top(), m_cursorPos.x(), mAxisRect.bottom());
-            painter.drawLine(mAxisRect.left(), m_cursorPos.y(), mAxisRect.right(), m_cursorPos.y());
+            painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
+            painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
         }
     }
 }
