@@ -27,21 +27,13 @@ private slots:
     void on_actionImport_triggered();
     void on_actionExit_triggered();
 
-    void on_actionLeftElevation_triggered();
-    void on_actionLeftVerticalSpeed_triggered();
-    void on_actionLeftHorizontalSpeed_triggered();
-    void on_actionLeftTotalSpeed_triggered();
-    void on_actionLeftDiveAngle_triggered();
-    void on_actionLeftCurvature_triggered();
-    void on_actionLeftGlideRatio_triggered();
-
-    void on_actionRightElevation_triggered();
-    void on_actionRightVerticalSpeed_triggered();
-    void on_actionRightHorizontalSpeed_triggered();
-    void on_actionRightTotalSpeed_triggered();
-    void on_actionRightDiveAngle_triggered();
-    void on_actionRightCurvature_triggered();
-    void on_actionRightGlideRatio_triggered();
+    void on_actionElevation_triggered();
+    void on_actionVerticalSpeed_triggered();
+    void on_actionHorizontalSpeed_triggered();
+    void on_actionTotalSpeed_triggered();
+    void on_actionDiveAngle_triggered();
+    void on_actionCurvature_triggered();
+    void on_actionGlideRatio_triggered();
 
     void on_actionMetric_triggered();
     void on_actionImperial_triggered();
@@ -75,13 +67,14 @@ private:
     } XAxisType;
 
     typedef enum {
-        Elevation,
+        Elevation = 0,
         VerticalSpeed,
         HorizontalSpeed,
         TotalSpeed,
         DiveAngle,
         Curvature,
-        GlideRatio
+        GlideRatio,
+        yaLast
     } YAxisType;
 
     typedef enum
@@ -94,12 +87,13 @@ private:
     QVector< DataPoint >  m_data;
 
     XAxisType             m_xAxis;
-    YAxisType             m_yAxis1, m_yAxis2;
+    bool                  m_yAxis[yaLast];
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
     QVector< QString >    m_yAxisTitlesMetric, m_yAxisTitlesImperial;
+    QVector< QColor >     m_yAxisColors;
 
-    double                m_xPlot, m_y1Plot, m_y2Plot;
+    double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;
     bool                  m_markActive;
 

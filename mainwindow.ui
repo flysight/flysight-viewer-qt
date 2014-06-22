@@ -51,29 +51,17 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuLeft">
+   <widget class="QMenu" name="menuPlots">
     <property name="title">
-     <string>&amp;Left</string>
+     <string>&amp;Plots</string>
     </property>
-    <addaction name="actionLeftElevation"/>
-    <addaction name="actionLeftVerticalSpeed"/>
-    <addaction name="actionLeftHorizontalSpeed"/>
-    <addaction name="actionLeftTotalSpeed"/>
-    <addaction name="actionLeftDiveAngle"/>
-    <addaction name="actionLeftCurvature"/>
-    <addaction name="actionLeftGlideRatio"/>
-   </widget>
-   <widget class="QMenu" name="menuRight">
-    <property name="title">
-     <string>&amp;Right</string>
-    </property>
-    <addaction name="actionRightElevation"/>
-    <addaction name="actionRightVerticalSpeed"/>
-    <addaction name="actionRightHorizontalSpeed"/>
-    <addaction name="actionRightTotalSpeed"/>
-    <addaction name="actionRightDiveAngle"/>
-    <addaction name="actionRightCurvature"/>
-    <addaction name="actionRightGlideRatio"/>
+    <addaction name="actionElevation"/>
+    <addaction name="actionVerticalSpeed"/>
+    <addaction name="actionHorizontalSpeed"/>
+    <addaction name="actionTotalSpeed"/>
+    <addaction name="actionDiveAngle"/>
+    <addaction name="actionCurvature"/>
+    <addaction name="actionGlideRatio"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -91,8 +79,7 @@
     <addaction name="actionImperial"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuLeft"/>
-   <addaction name="menuRight"/>
+   <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
    <addaction name="menuUnits"/>
   </widget>
@@ -121,52 +108,37 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionLeftElevation">
+  <action name="actionElevation">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Elevation</string>
    </property>
+   <property name="shortcut">
+    <string>E</string>
+   </property>
   </action>
-  <action name="actionLeftVerticalSpeed">
+  <action name="actionVerticalSpeed">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Vertical Speed</string>
    </property>
+   <property name="shortcut">
+    <string>V</string>
+   </property>
   </action>
-  <action name="actionLeftHorizontalSpeed">
+  <action name="actionHorizontalSpeed">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Horizontal Speed</string>
    </property>
-  </action>
-  <action name="actionRightElevation">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Elevation</string>
-   </property>
-  </action>
-  <action name="actionRightVerticalSpeed">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Vertical Speed</string>
-   </property>
-  </action>
-  <action name="actionRightHorizontalSpeed">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Horizontal Speed</string>
+   <property name="shortcut">
+    <string>H</string>
    </property>
   </action>
   <action name="actionMetric">
@@ -189,24 +161,26 @@
     <string>Horizontal Distance</string>
    </property>
   </action>
-  <action name="actionLeftTotalSpeed">
+  <action name="actionTotalSpeed">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Total Speed</string>
+    <string>Total &amp;Speed</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
    </property>
   </action>
-  <action name="actionLeftDiveAngle">
-   <property name="text">
-    <string>Dive Angle</string>
+  <action name="actionDiveAngle">
+   <property name="checkable">
+    <bool>true</bool>
    </property>
-  </action>
-  <action name="actionRightTotalSpeed">
    <property name="text">
-    <string>Total Speed</string>
+    <string>&amp;Dive Angle</string>
    </property>
-  </action>
-  <action name="actionRightDiveAngle">
-   <property name="text">
-    <string>Dive Angle</string>
+   <property name="shortcut">
+    <string>D</string>
    </property>
   </action>
   <action name="actionDistance3D">
@@ -222,24 +196,26 @@
     <string>Ctrl+G</string>
    </property>
   </action>
-  <action name="actionLeftGlideRatio">
+  <action name="actionGlideRatio">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Glide Ratio</string>
+    <string>&amp;Glide Ratio</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
    </property>
   </action>
-  <action name="actionRightGlideRatio">
-   <property name="text">
-    <string>Glide Ratio</string>
+  <action name="actionCurvature">
+   <property name="checkable">
+    <bool>true</bool>
    </property>
-  </action>
-  <action name="actionLeftCurvature">
    <property name="text">
-    <string>Curvature</string>
+    <string>&amp;Curvature</string>
    </property>
-  </action>
-  <action name="actionRightCurvature">
-   <property name="text">
-    <string>Curvature</string>
+   <property name="shortcut">
+    <string>C</string>
    </property>
   </action>
  </widget>

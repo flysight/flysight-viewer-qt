@@ -15,14 +15,22 @@ MainWindow::MainWindow(
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     m_xAxis(Time),
-    m_yAxis1(Elevation),
-    m_yAxis2(VerticalSpeed),
     m_markActive(false),
     m_topViewPan(false),
     m_viewDataRotation(0),
     m_units(Imperial)
 {
     m_ui->setupUi(this);
+
+    for (int i = 0; i < yaLast; ++i)
+    {
+        m_yAxis[i] = false;
+    }
+    m_yAxis[Elevation] = true;
+    m_yAxis[VerticalSpeed] = true;
+
+    m_ui->actionElevation->setChecked(true);
+    m_ui->actionVerticalSpeed->setChecked(true);
 
     m_xAxisTitlesMetric.append(tr("Time (s)"));
     m_xAxisTitlesMetric.append(tr("Horizontal Distance (m)"));
@@ -47,6 +55,14 @@ MainWindow::MainWindow(
     m_yAxisTitlesImperial.append(tr("Dive Angle (deg)"));
     m_yAxisTitlesImperial.append(tr("Curvature (deg/s)"));
     m_yAxisTitlesImperial.append(tr("Glide Ratio"));
+
+    m_yAxisColors.append(Qt::black);
+    m_yAxisColors.append(Qt::red);
+    m_yAxisColors.append(Qt::green);
+    m_yAxisColors.append(Qt::blue);
+    m_yAxisColors.append(Qt::cyan);
+    m_yAxisColors.append(Qt::magenta);
+    m_yAxisColors.append(Qt::yellow);
 
     m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
 
@@ -128,10 +144,16 @@ void MainWindow::onDataPlot_mark(
         double x2 = getXValue(dp2, m_xAxis);
 
         m_xPlot = xMark;
-        m_y1Plot = getYValue(dp1, m_yAxis1) + (xMark - x1) / (x2 - x1) *
-                (getYValue(dp2, m_yAxis1) - getYValue(dp1, m_yAxis1));
-        m_y2Plot = getYValue(dp1, m_yAxis2) + (xMark - x1) / (x2 - x1) *
-                (getYValue(dp2, m_yAxis2) - getYValue(dp1, m_yAxis2));
+        for (int i = 0; i < yaLast; ++i)
+        {
+            const YAxisType ya = (YAxisType) i;
+
+            if (m_yAxis[i])
+            {
+                m_yPlot[i] = getYValue(dp1, ya) + (xMark - x1) / (x2 - x1) *
+                        (getYValue(dp2, ya) - getYValue(dp1, ya));
+            }
+        }
 
         m_xView = dp1.x + (xMark - x1) / (x2 - x1) * (dp2.x - dp1.x);
         m_yView = dp1.y + (xMark - x1) / (x2 - x1) * (dp2.y - dp1.y);
@@ -142,26 +164,44 @@ void MainWindow::onDataPlot_mark(
         updatePlotData();
         updateViewData();
 
+        QString status;
+
         if (m_units == Metric)
         {
-            m_statusLabel->setText(QString("%1: %2    %3: %4    %5: %6")
-                                   .arg(m_xAxisTitlesMetric[m_xAxis])
-                                   .arg(m_xPlot)
-                                   .arg(m_yAxisTitlesMetric[m_yAxis1])
-                                   .arg(m_y1Plot)
-                                   .arg(m_yAxisTitlesMetric[m_yAxis2])
-                                   .arg(m_y2Plot));
+            status = QString("%1: %2")
+                    .arg(m_xAxisTitlesMetric[m_xAxis])
+                    .arg(m_xPlot);
+
+            for (int i = 0; i < yaLast; ++i)
+            {
+                if (m_yAxis[i])
+                {
+                    status += QString("    %1: %2")
+                            .arg(m_yAxisTitlesMetric[(YAxisType) i])
+                            .arg(m_yPlot[i]);
+
+                }
+            }
         }
         else
         {
-            m_statusLabel->setText(QString("%1: %2    %3: %4    %5: %6")
-                                   .arg(m_xAxisTitlesImperial[m_xAxis])
-                                   .arg(m_xPlot)
-                                   .arg(m_yAxisTitlesImperial[m_yAxis1])
-                                   .arg(m_y1Plot)
-                                   .arg(m_yAxisTitlesImperial[m_yAxis2])
-                                   .arg(m_y2Plot));
+            status = QString("%1: %2")
+                    .arg(m_xAxisTitlesImperial[m_xAxis])
+                    .arg(m_xPlot);
+
+            for (int i = 0; i < yaLast; ++i)
+            {
+                if (m_yAxis[i])
+                {
+                    status += QString("    %1: %2")
+                            .arg(m_yAxisTitlesImperial[(YAxisType) i])
+                            .arg(m_yPlot[i]);
+
+                }
+            }
         }
+
+        m_statusLabel->setText(status);
     }
     else
     {
@@ -238,46 +278,42 @@ void MainWindow::updateYRanges()
 {
     const QCPRange &range = m_ui->plotArea->xAxis->range();
 
-    double y1Min, y1Max;
-    double y2Min, y2Max;
-
-    int iMin, iMax;
-
-    bool first = true;
-
-    for (int i = 0; i < m_data.size(); ++i)
+    int k = 0;
+    for (int j = 0; j < yaLast; ++j)
     {
-        DataPoint &dp = m_data[i];
+        if (!m_yAxis[j]) continue;
 
-        if (range.contains(getXValue(dp, m_xAxis)))
+        double yMin, yMax;
+        int iMin, iMax;
+
+        bool first = true;
+
+        for (int i = 0; i < m_data.size(); ++i)
         {
-            double y1 = getYValue(dp, m_yAxis1);
-            double y2 = getYValue(dp, m_yAxis2);
+            DataPoint &dp = m_data[i];
 
-            if (first)
+            if (range.contains(getXValue(dp, m_xAxis)))
             {
-                y1Min = y1Max = y1;
-                y2Min = y2Max = y2;
+                double y = getYValue(dp, (YAxisType) j);
 
-                iMin = iMax = i;
-
-                first = false;
-            }
-            else
-            {
-                if (y1 < y1Min) y1Min = y1;
-                if (y1 > y1Max) y1Max = y1;
-
-                if (y2 < y2Min) y2Min = y2;
-                if (y2 > y2Max) y2Max = y2;
-
-                iMax = i;
+                if (first)
+                {
+                    yMin = yMax = y;
+                    iMin = iMax = i;
+                    first = false;
+                }
+                else
+                {
+                    if (y < yMin) yMin = y;
+                    if (y > yMax) yMax = y;
+                    iMax = i;
+                }
             }
         }
-    }
 
-    m_ui->plotArea->yAxis->setRange(y1Min, y1Max);
-    m_ui->plotArea->yAxis2->setRange(y2Min, y2Max);
+        if (!first)
+            m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
+    }
 
     m_ui->plotArea->replot();
 }
@@ -509,46 +545,62 @@ void MainWindow::initPlotData()
         m_ui->plotArea->xAxis->setLabel(m_xAxisTitlesImperial[m_xAxis]);
     }
 
-    m_ui->plotArea->yAxis->setLabelColor(Qt::blue);
-
-    m_ui->plotArea->yAxis2->setVisible(true);
-    m_ui->plotArea->yAxis2->setLabelColor(Qt::red);
-
     updatePlotData();
 }
 
 void MainWindow::updatePlotData()
 {
-    QVector< double > x, y1, y2;
+    QVector< double > x;
 
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
 
         x.append(getXValue(dp, m_xAxis));
-        y1.append(getYValue(dp, m_yAxis1));
-        y2.append(getYValue(dp, m_yAxis2));
     }
 
     m_ui->plotArea->clearPlottables();
-
-    m_ui->plotArea->addGraph();
-    m_ui->plotArea->graph(0)->setData(x, y1);
-    m_ui->plotArea->graph(0)->setPen(QPen(Qt::blue));
-
-    m_ui->plotArea->addGraph(m_ui->plotArea->xAxis, m_ui->plotArea->yAxis2);
-    m_ui->plotArea->graph(1)->setData(x, y2);
-    m_ui->plotArea->graph(1)->setPen(QPen(Qt::red));
-
-    if (m_units == Metric)
+    while (m_ui->plotArea->axisRect()->axisCount(QCPAxis::atLeft) > 0)
     {
-        m_ui->plotArea->yAxis->setLabel(m_yAxisTitlesMetric[m_yAxis1]);
-        m_ui->plotArea->yAxis2->setLabel(m_yAxisTitlesMetric[m_yAxis2]);
+        m_ui->plotArea->axisRect()->removeAxis(
+                    m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, 0));
     }
-    else
+
+    for (int j = 0; j < yaLast; ++j)
     {
-        m_ui->plotArea->yAxis->setLabel(m_yAxisTitlesImperial[m_yAxis1]);
-        m_ui->plotArea->yAxis2->setLabel(m_yAxisTitlesImperial[m_yAxis2]);
+        if (!m_yAxis[j]) continue;
+
+        QVector< double > y;
+
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            DataPoint &dp = m_data[i];
+
+            y.append(getYValue(dp, (YAxisType) j));
+        }
+
+        // Add a new axis
+        QCPAxis *axis = m_ui->plotArea->axisRect()->addAxis(QCPAxis::atLeft);
+        axis->setLabelColor(m_yAxisColors[j]);
+        axis->setTickLabelColor(m_yAxisColors[j]);
+        axis->setBasePen(QPen(m_yAxisColors[j]));
+        axis->setTickPen(QPen(m_yAxisColors[j]));
+        axis->setSubTickPen(QPen(m_yAxisColors[j]));
+
+        QCPGraph *graph = m_ui->plotArea->addGraph(
+                    m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
+                    axis);
+        graph->setData(x, y);
+        graph->setPen(QPen(m_yAxisColors[j]));
+
+        if (m_units == Metric)
+        {
+            axis->setLabel(m_yAxisTitlesMetric[j]);
+        }
+        else
+        {
+            axis->setLabel(m_yAxisTitlesImperial[j]);
+        }
     }
 
     if (m_markActive)
@@ -556,22 +608,25 @@ void MainWindow::updatePlotData()
         QVector< double > xMark, yMark;
 
         xMark.append(m_xPlot);
-        yMark.append(m_y1Plot);
 
-        m_ui->plotArea->addGraph();
-        m_ui->plotArea->graph(2)->setData(xMark, yMark);
-        m_ui->plotArea->graph(2)->setPen(QPen(Qt::black));
-        m_ui->plotArea->graph(2)->setLineStyle(QCPGraph::lsNone);
-        m_ui->plotArea->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
+        int k = 0;
+        for (int i = 0; i < yaLast; ++i)
+        {
+            if (m_yAxis[i])
+            {
+                yMark.clear();
+                yMark.append(m_yPlot[i]);
 
-        yMark.clear();
-        yMark.append(m_y2Plot);
+                QCPGraph *graph = m_ui->plotArea->addGraph(
+                            m_ui->plotArea->xAxis,
+                            m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, k++));
 
-        m_ui->plotArea->addGraph(m_ui->plotArea->xAxis, m_ui->plotArea->yAxis2);
-        m_ui->plotArea->graph(3)->setData(xMark, yMark);
-        m_ui->plotArea->graph(3)->setPen(QPen(Qt::black));
-        m_ui->plotArea->graph(3)->setLineStyle(QCPGraph::lsNone);
-        m_ui->plotArea->graph(3)->setScatterStyle(QCPScatterStyle::ssDisc);
+                graph->setData(xMark, yMark);
+                graph->setPen(QPen(Qt::black));
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPScatterStyle::ssDisc);
+            }
+        }
     }
 
     updateYRanges();
@@ -883,39 +938,21 @@ double MainWindow::getYValue(
     }
 }
 
-void MainWindow::on_actionLeftElevation_triggered()
+void MainWindow::on_actionElevation_triggered()
 {
-    m_yAxis1 = Elevation;
+    m_yAxis[Elevation] = !m_yAxis[Elevation];
     updatePlotData();
 }
 
-void MainWindow::on_actionLeftVerticalSpeed_triggered()
+void MainWindow::on_actionVerticalSpeed_triggered()
 {
-    m_yAxis1 = VerticalSpeed;
+    m_yAxis[VerticalSpeed] = !m_yAxis[VerticalSpeed];
     updatePlotData();
 }
 
-void MainWindow::on_actionLeftHorizontalSpeed_triggered()
+void MainWindow::on_actionHorizontalSpeed_triggered()
 {
-    m_yAxis1 = HorizontalSpeed;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightElevation_triggered()
-{
-    m_yAxis2 = Elevation;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightVerticalSpeed_triggered()
-{
-    m_yAxis2 = VerticalSpeed;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightHorizontalSpeed_triggered()
-{
-    m_yAxis2 = HorizontalSpeed;
+    m_yAxis[HorizontalSpeed] = !m_yAxis[HorizontalSpeed];
     updatePlotData();
 }
 
@@ -951,51 +988,27 @@ void MainWindow::on_actionDistance3D_triggered()
     initPlotData();
 }
 
-void MainWindow::on_actionLeftTotalSpeed_triggered()
+void MainWindow::on_actionTotalSpeed_triggered()
 {
-    m_yAxis1 = TotalSpeed;
+    m_yAxis[TotalSpeed] = !m_yAxis[TotalSpeed];
     updatePlotData();
 }
 
-void MainWindow::on_actionLeftDiveAngle_triggered()
+void MainWindow::on_actionDiveAngle_triggered()
 {
-    m_yAxis1 = DiveAngle;
+    m_yAxis[DiveAngle] = !m_yAxis[DiveAngle];
     updatePlotData();
 }
 
-void MainWindow::on_actionLeftCurvature_triggered()
+void MainWindow::on_actionCurvature_triggered()
 {
-    m_yAxis1 = Curvature;
+    m_yAxis[Curvature] = !m_yAxis[Curvature];
     updatePlotData();
 }
 
-void MainWindow::on_actionLeftGlideRatio_triggered()
+void MainWindow::on_actionGlideRatio_triggered()
 {
-    m_yAxis1 = GlideRatio;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightTotalSpeed_triggered()
-{
-    m_yAxis2 = TotalSpeed;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightDiveAngle_triggered()
-{
-    m_yAxis2 = DiveAngle;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightCurvature_triggered()
-{
-    m_yAxis2 = Curvature;
-    updatePlotData();
-}
-
-void MainWindow::on_actionRightGlideRatio_triggered()
-{
-    m_yAxis2 = GlideRatio;
+    m_yAxis[GlideRatio] = !m_yAxis[GlideRatio];
     updatePlotData();
 }
 
