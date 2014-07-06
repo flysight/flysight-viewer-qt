@@ -92,7 +92,6 @@ private:
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
     QVector< PlotValue >  m_plotValues;
-    QVector< QColor >     m_yAxisColors;
 
     double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;

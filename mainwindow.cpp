@@ -40,21 +40,34 @@ MainWindow::MainWindow(
     m_xAxisTitlesImperial.append(tr("Horizontal Distance (ft)"));
     m_xAxisTitlesImperial.append(tr("Total Distance (ft)"));
 
-    m_plotValues.append(PlotValue(tr("Elevation (m)"), tr("Elevation (ft)")));
-    m_plotValues.append(PlotValue(tr("Vertical Speed (km/h)"), tr("Vertical Speed (mph)")));
-    m_plotValues.append(PlotValue(tr("Horizontal Speed (km/h)"), tr("Horizontal Speed (mph)")));
-    m_plotValues.append(PlotValue(tr("Total Speed (km/h)"), tr("Total Speed (mph)")));
-    m_plotValues.append(PlotValue(tr("Dive Angle (deg)"), tr("Dive Angle (deg)")));
-    m_plotValues.append(PlotValue(tr("Curvature (deg/s)"), tr("Curvature (deg/s)")));
-    m_plotValues.append(PlotValue(tr("Glide Ratio"), tr("Glide Ratio")));
-
-    m_yAxisColors.append(Qt::black);
-    m_yAxisColors.append(Qt::red);
-    m_yAxisColors.append(Qt::green);
-    m_yAxisColors.append(Qt::blue);
-    m_yAxisColors.append(Qt::cyan);
-    m_yAxisColors.append(Qt::magenta);
-    m_yAxisColors.append(Qt::yellow);
+    m_plotValues.append(PlotValue(
+                            tr("Elevation (m)"),
+                            tr("Elevation (ft)"),
+                            Qt::black));
+    m_plotValues.append(PlotValue(
+                            tr("Vertical Speed (km/h)"),
+                            tr("Vertical Speed (mph)"),
+                            Qt::red));
+    m_plotValues.append(PlotValue(
+                            tr("Horizontal Speed (km/h)"),
+                            tr("Horizontal Speed (mph)"),
+                            Qt::green));
+    m_plotValues.append(PlotValue(
+                            tr("Total Speed (km/h)"),
+                            tr("Total Speed (mph)"),
+                            Qt::blue));
+    m_plotValues.append(PlotValue(
+                            tr("Dive Angle (deg)"),
+                            tr("Dive Angle (deg)"),
+                            Qt::cyan));
+    m_plotValues.append(PlotValue(
+                            tr("Curvature (deg/s)"),
+                            tr("Curvature (deg/s)"),
+                            Qt::magenta));
+    m_plotValues.append(PlotValue(
+                            tr("Glide Ratio"),
+                            tr("Glide Ratio"),
+                            Qt::yellow));
 
     m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
 
@@ -573,17 +586,17 @@ void MainWindow::updatePlotData()
 
         // Add a new axis
         QCPAxis *axis = m_ui->plotArea->axisRect()->addAxis(QCPAxis::atLeft);
-        axis->setLabelColor(m_yAxisColors[j]);
-        axis->setTickLabelColor(m_yAxisColors[j]);
-        axis->setBasePen(QPen(m_yAxisColors[j]));
-        axis->setTickPen(QPen(m_yAxisColors[j]));
-        axis->setSubTickPen(QPen(m_yAxisColors[j]));
+        axis->setLabelColor(m_plotValues[j].color());
+        axis->setTickLabelColor(m_plotValues[j].color());
+        axis->setBasePen(QPen(m_plotValues[j].color()));
+        axis->setTickPen(QPen(m_plotValues[j].color()));
+        axis->setSubTickPen(QPen(m_plotValues[j].color()));
 
         QCPGraph *graph = m_ui->plotArea->addGraph(
                     m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
                     axis);
         graph->setData(x, y);
-        graph->setPen(QPen(m_yAxisColors[j]));
+        graph->setPen(QPen(m_plotValues[j].color()));
 
         if (m_units == Metric)
         {

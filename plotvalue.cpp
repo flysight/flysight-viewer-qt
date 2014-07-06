@@ -2,9 +2,11 @@
 
 PlotValue::PlotValue(
         const QString &titleMetric,
-        const QString &titleImperial):
+        const QString &titleImperial,
+        const QColor  &color):
     mTitleMetric(titleMetric),
-    mTitleImperial(titleImperial)
+    mTitleImperial(titleImperial),
+    mColor(color)
 {
 
 }
