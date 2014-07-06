@@ -527,11 +527,9 @@ void MainWindow::initPlotData()
 void MainWindow::updatePlotData()
 {
     QVector< double > x;
-
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
-
         x.append(getXValue(dp, m_xAxis));
     }
 
@@ -547,29 +545,17 @@ void MainWindow::updatePlotData()
         if (!m_yAxis[j]) continue;
 
         QVector< double > y;
-
         for (int i = 0; i < m_data.size(); ++i)
         {
             DataPoint &dp = m_data[i];
-
             y.append(m_plotValues[j]->value(dp, m_units));
         }
 
-        // Add a new axis
-        QCPAxis *axis = m_ui->plotArea->axisRect()->addAxis(QCPAxis::atLeft);
-        axis->setLabelColor(m_plotValues[j]->color());
-        axis->setTickLabelColor(m_plotValues[j]->color());
-        axis->setBasePen(QPen(m_plotValues[j]->color()));
-        axis->setTickPen(QPen(m_plotValues[j]->color()));
-        axis->setSubTickPen(QPen(m_plotValues[j]->color()));
-
         QCPGraph *graph = m_ui->plotArea->addGraph(
                     m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
-                    axis);
+                    m_plotValues[j]->addAxis(m_ui->plotArea, m_units));
         graph->setData(x, y);
         graph->setPen(QPen(m_plotValues[j]->color()));
-
-        axis->setLabel(m_plotValues[j]->title(m_units));
     }
 
     if (m_markActive)

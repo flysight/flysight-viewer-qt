@@ -7,6 +7,7 @@
 #include <QString>
 
 #include "datapoint.h"
+#include "qcustomplot.h"
 
 #define METERS_TO_FEET 3.28084
 #define MPS_TO_MPH     2.23694
@@ -26,6 +27,18 @@ public:
     virtual const QString title(Units units) = 0;
     virtual const QColor color() = 0;
     virtual double value(const DataPoint &dp, Units units) = 0;
+
+    QCPAxis *addAxis(QCustomPlot *plot, Units units)
+    {
+        QCPAxis *axis = plot->axisRect()->addAxis(QCPAxis::atLeft);
+        axis->setLabelColor(color());
+        axis->setTickLabelColor(color());
+        axis->setBasePen(QPen(color()));
+        axis->setTickPen(QPen(color()));
+        axis->setSubTickPen(QPen(color()));
+        axis->setLabel(title(units));
+        return axis;
+    }
 };
 
 class PlotElevation: public PlotValue
