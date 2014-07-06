@@ -78,12 +78,6 @@ private:
         yaLast
     } YAxisType;
 
-    typedef enum
-    {
-        Metric,
-        Imperial
-    } Units;
-
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
 
@@ -101,7 +95,7 @@ private:
     bool                  m_topViewPan;
     double                m_viewDataRotation;
 
-    Units                 m_units;
+    PlotValue::Units      m_units;
 
     QLabel                *m_statusLabel;
 

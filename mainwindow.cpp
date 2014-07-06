@@ -18,7 +18,7 @@ MainWindow::MainWindow(
     m_markActive(false),
     m_topViewPan(false),
     m_viewDataRotation(0),
-    m_units(Imperial)
+    m_units(PlotValue::Imperial)
 {
     m_ui->setupUi(this);
 
@@ -155,38 +155,26 @@ void MainWindow::onDataPlot_mark(
 
         QString status;
 
-        if (m_units == Metric)
+        if (m_units == PlotValue::Metric)
         {
             status = QString("%1: %2")
                     .arg(m_xAxisTitlesMetric[m_xAxis])
                     .arg(m_xPlot);
-
-            for (int i = 0; i < yaLast; ++i)
-            {
-                if (m_yAxis[i])
-                {
-                    status += QString("    %1: %2")
-                            .arg(m_plotValues[(YAxisType) i]->titleMetric())
-                            .arg(m_yPlot[i]);
-
-                }
-            }
         }
         else
         {
             status = QString("%1: %2")
                     .arg(m_xAxisTitlesImperial[m_xAxis])
                     .arg(m_xPlot);
+        }
 
-            for (int i = 0; i < yaLast; ++i)
+        for (int i = 0; i < yaLast; ++i)
+        {
+            if (m_yAxis[i])
             {
-                if (m_yAxis[i])
-                {
-                    status += QString("    %1: %2")
-                            .arg(m_plotValues[(YAxisType) i]->titleImperial())
-                            .arg(m_yPlot[i]);
-
-                }
+                status += QString("    %1: %2")
+                        .arg(m_plotValues[(YAxisType) i]->title(m_units))
+                        .arg(m_yPlot[i]);
             }
         }
 
@@ -525,7 +513,7 @@ void MainWindow::initPlotData()
 
     m_ui->plotArea->xAxis->setRange(xMin, xMax);
 
-    if (m_units == Metric)
+    if (m_units == PlotValue::Metric)
     {
         m_ui->plotArea->xAxis->setLabel(m_xAxisTitlesMetric[m_xAxis]);
     }
@@ -582,14 +570,7 @@ void MainWindow::updatePlotData()
         graph->setData(x, y);
         graph->setPen(QPen(m_plotValues[j]->color()));
 
-        if (m_units == Metric)
-        {
-            axis->setLabel(m_plotValues[j]->titleMetric());
-        }
-        else
-        {
-            axis->setLabel(m_plotValues[j]->titleImperial());
-        }
+        axis->setLabel(m_plotValues[j]->title(m_units));
     }
 
     if (m_markActive)
@@ -641,7 +622,7 @@ void MainWindow::updateViewData()
         {
             t.append(dp.t);
 
-            if (m_units == Metric)
+            if (m_units == PlotValue::Metric)
             {
                 x.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
                 y.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
@@ -719,7 +700,7 @@ void MainWindow::updateViewData()
     {
         QVector< double > xMark, yMark, zMark;
 
-        if (m_units == Metric)
+        if (m_units == PlotValue::Metric)
         {
             xMark.append(m_xView *  cos(m_viewDataRotation) + m_yView * sin(m_viewDataRotation));
             yMark.append(m_xView * -sin(m_viewDataRotation) + m_yView * cos(m_viewDataRotation));
@@ -766,7 +747,7 @@ void MainWindow::updateViewData()
             dp.x = distance * sin(bearing);
             dp.y = distance * cos(bearing);
 
-            if (m_units == Metric)
+            if (m_units == PlotValue::Metric)
             {
                 xMark.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
                 yMark.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
@@ -885,10 +866,10 @@ double MainWindow::getXValue(
     case Time:
         return dp.t;
     case Distance2D:
-        if (m_units == Metric) return dp.dist2D;
+        if (m_units == PlotValue::Metric) return dp.dist2D;
         else                   return dp.dist2D * METERS_TO_FEET;
     case Distance3D:
-        if (m_units == Metric) return dp.dist3D;
+        if (m_units == PlotValue::Metric) return dp.dist3D;
         else                   return dp.dist3D * METERS_TO_FEET;
     default:
         return 0;
@@ -904,16 +885,16 @@ double MainWindow::getYValue(
     switch (axis)
     {
     case Elevation:
-        if (m_units == Metric) return dp.hMSL - m_data.back().hMSL;
+        if (m_units == PlotValue::Metric) return dp.hMSL - m_data.back().hMSL;
         else                   return (dp.hMSL - m_data.back().hMSL) * METERS_TO_FEET;
     case VerticalSpeed:
-        if (m_units == Metric) return dp.velD * MPS_TO_KMH;
+        if (m_units == PlotValue::Metric) return dp.velD * MPS_TO_KMH;
         else                   return dp.velD * MPS_TO_MPH;
     case HorizontalSpeed:
-        if (m_units == Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_KMH;
+        if (m_units == PlotValue::Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_KMH;
         else                   return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_MPH;
     case TotalSpeed:
-        if (m_units == Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_KMH;
+        if (m_units == PlotValue::Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_KMH;
         else                   return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_MPH;
     case DiveAngle:
         return atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
@@ -947,14 +928,14 @@ void MainWindow::on_actionHorizontalSpeed_triggered()
 
 void MainWindow::on_actionMetric_triggered()
 {
-    m_units = Metric;
+    m_units = PlotValue::Metric;
     initPlotData();
     updateViewData();
 }
 
 void MainWindow::on_actionImperial_triggered()
 {
-    m_units = Imperial;
+    m_units = PlotValue::Imperial;
     initPlotData();
     updateViewData();
 }
