@@ -5,10 +5,6 @@
 #include <QFileInfo>
 #include <QSettings>
 
-#define METERS_TO_FEET 3.28084
-#define MPS_TO_MPH     2.23694
-#define MPS_TO_KMH     3.6
-
 MainWindow::MainWindow(
         QWidget *parent):
 
@@ -139,8 +135,10 @@ void MainWindow::onDataPlot_mark(
 
             if (m_yAxis[i])
             {
-                m_yPlot[i] = getYValue(dp1, ya) + (xMark - x1) / (x2 - x1) *
-                        (getYValue(dp2, ya) - getYValue(dp1, ya));
+                m_yPlot[i] = m_plotValues[i]->value(dp1, m_units) +
+                        (xMark - x1) / (x2 - x1) *
+                        (m_plotValues[i]->value(dp2, m_units) -
+                         m_plotValues[i]->value(dp1, m_units));
             }
         }
 
@@ -271,7 +269,7 @@ void MainWindow::updateYRanges()
 
             if (range.contains(getXValue(dp, m_xAxis)))
             {
-                double y = getYValue(dp, (YAxisType) j);
+                double y = m_plotValues[j]->value(dp, m_units);
 
                 if (first)
                 {
@@ -357,6 +355,7 @@ void MainWindow::on_actionImport_triggered()
 
         dp.x = distance * sin(bearing);
         dp.y = distance * cos(bearing);
+        dp.z = dp.hMSL - dp0.hMSL;
 
         if (i > 0)
         {
@@ -553,7 +552,7 @@ void MainWindow::updatePlotData()
         {
             DataPoint &dp = m_data[i];
 
-            y.append(getYValue(dp, (YAxisType) j));
+            y.append(m_plotValues[j]->value(dp, m_units));
         }
 
         // Add a new axis
@@ -871,38 +870,6 @@ double MainWindow::getXValue(
     case Distance3D:
         if (m_units == PlotValue::Metric) return dp.dist3D;
         else                   return dp.dist3D * METERS_TO_FEET;
-    default:
-        return 0;
-    }
-}
-
-double MainWindow::getYValue(
-        const DataPoint &dp,
-        YAxisType axis)
-{
-    const double pi = 3.14159265359;
-
-    switch (axis)
-    {
-    case Elevation:
-        if (m_units == PlotValue::Metric) return dp.hMSL - m_data.back().hMSL;
-        else                   return (dp.hMSL - m_data.back().hMSL) * METERS_TO_FEET;
-    case VerticalSpeed:
-        if (m_units == PlotValue::Metric) return dp.velD * MPS_TO_KMH;
-        else                   return dp.velD * MPS_TO_MPH;
-    case HorizontalSpeed:
-        if (m_units == PlotValue::Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_KMH;
-        else                   return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_MPH;
-    case TotalSpeed:
-        if (m_units == PlotValue::Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_KMH;
-        else                   return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_MPH;
-    case DiveAngle:
-        return atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
-    case Curvature:
-        return dp.curv;
-    case GlideRatio:
-        if (dp.velD != 0)      return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) / dp.velD;
-        else                   return 0;
     default:
         return 0;
     }

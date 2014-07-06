@@ -117,7 +117,6 @@ private:
     void addNorthArrow(QCustomPlot *plot);
 
     double getXValue(const DataPoint &dp, XAxisType axis);
-    double getYValue(const DataPoint &dp, YAxisType axis);
 
     int findIndexBelowX(double x);
     int findIndexAboveX(double x);

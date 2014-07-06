@@ -19,6 +19,7 @@ public:
     double      t;
     double      x;
     double      y;
+    double      z;
 
     double      dist2D;
     double      dist3D;
