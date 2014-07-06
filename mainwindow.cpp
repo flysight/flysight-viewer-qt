@@ -40,21 +40,13 @@ MainWindow::MainWindow(
     m_xAxisTitlesImperial.append(tr("Horizontal Distance (ft)"));
     m_xAxisTitlesImperial.append(tr("Total Distance (ft)"));
 
-    m_yAxisTitlesMetric.append(tr("Elevation (m)"));
-    m_yAxisTitlesMetric.append(tr("Vertical Speed (km/h)"));
-    m_yAxisTitlesMetric.append(tr("Horizontal Speed (km/h)"));
-    m_yAxisTitlesMetric.append(tr("Total Speed (km/h)"));
-    m_yAxisTitlesMetric.append(tr("Dive Angle (deg)"));
-    m_yAxisTitlesMetric.append(tr("Curvature (deg/s)"));
-    m_yAxisTitlesMetric.append(tr("Glide Ratio"));
-
-    m_yAxisTitlesImperial.append(tr("Elevation (ft)"));
-    m_yAxisTitlesImperial.append(tr("Vertical Speed (mph)"));
-    m_yAxisTitlesImperial.append(tr("Horizontal Speed (mph)"));
-    m_yAxisTitlesImperial.append(tr("Total Speed (mph)"));
-    m_yAxisTitlesImperial.append(tr("Dive Angle (deg)"));
-    m_yAxisTitlesImperial.append(tr("Curvature (deg/s)"));
-    m_yAxisTitlesImperial.append(tr("Glide Ratio"));
+    m_plotValues.append(PlotValue(tr("Elevation (m)"), tr("Elevation (ft)")));
+    m_plotValues.append(PlotValue(tr("Vertical Speed (km/h)"), tr("Vertical Speed (mph)")));
+    m_plotValues.append(PlotValue(tr("Horizontal Speed (km/h)"), tr("Horizontal Speed (mph)")));
+    m_plotValues.append(PlotValue(tr("Total Speed (km/h)"), tr("Total Speed (mph)")));
+    m_plotValues.append(PlotValue(tr("Dive Angle (deg)"), tr("Dive Angle (deg)")));
+    m_plotValues.append(PlotValue(tr("Curvature (deg/s)"), tr("Curvature (deg/s)")));
+    m_plotValues.append(PlotValue(tr("Glide Ratio"), tr("Glide Ratio")));
 
     m_yAxisColors.append(Qt::black);
     m_yAxisColors.append(Qt::red);
@@ -177,7 +169,7 @@ void MainWindow::onDataPlot_mark(
                 if (m_yAxis[i])
                 {
                     status += QString("    %1: %2")
-                            .arg(m_yAxisTitlesMetric[(YAxisType) i])
+                            .arg(m_plotValues[(YAxisType) i].titleMetric())
                             .arg(m_yPlot[i]);
 
                 }
@@ -194,7 +186,7 @@ void MainWindow::onDataPlot_mark(
                 if (m_yAxis[i])
                 {
                     status += QString("    %1: %2")
-                            .arg(m_yAxisTitlesImperial[(YAxisType) i])
+                            .arg(m_plotValues[(YAxisType) i].titleImperial())
                             .arg(m_yPlot[i]);
 
                 }
@@ -595,11 +587,11 @@ void MainWindow::updatePlotData()
 
         if (m_units == Metric)
         {
-            axis->setLabel(m_yAxisTitlesMetric[j]);
+            axis->setLabel(m_plotValues[j].titleMetric());
         }
         else
         {
-            axis->setLabel(m_yAxisTitlesImperial[j]);
+            axis->setLabel(m_plotValues[j].titleImperial());
         }
     }
 

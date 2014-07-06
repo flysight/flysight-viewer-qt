@@ -17,13 +17,15 @@ SOURCES += main.cpp\
     qcustomplot.cpp \
     dataplot.cpp \
     dataview.cpp \
-    waypoint.cpp
+    waypoint.cpp \
+    plotvalue.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
-    waypoint.h
+    waypoint.h \
+    plotvalue.h
 
 FORMS    += mainwindow.ui

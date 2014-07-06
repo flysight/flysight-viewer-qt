@@ -6,6 +6,7 @@
 #include <QVector>
 
 #include "datapoint.h"
+#include "plotvalue.h"
 
 class DataView;
 class QCPRange;
@@ -90,7 +91,7 @@ private:
     bool                  m_yAxis[yaLast];
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
-    QVector< QString >    m_yAxisTitlesMetric, m_yAxisTitlesImperial;
+    QVector< PlotValue >  m_plotValues;
     QVector< QColor >     m_yAxisColors;
 
     double                m_xPlot, m_yPlot[yaLast];
