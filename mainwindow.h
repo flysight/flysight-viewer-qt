@@ -91,7 +91,7 @@ private:
     bool                  m_yAxis[yaLast];
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
-    QVector< PlotValue >  m_plotValues;
+    QVector< PlotValue* > m_plotValues;
 
     double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;

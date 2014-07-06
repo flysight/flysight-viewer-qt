@@ -17,8 +17,7 @@ SOURCES += main.cpp\
     qcustomplot.cpp \
     dataplot.cpp \
     dataview.cpp \
-    waypoint.cpp \
-    plotvalue.cpp
+    waypoint.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \

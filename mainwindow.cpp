@@ -40,34 +40,13 @@ MainWindow::MainWindow(
     m_xAxisTitlesImperial.append(tr("Horizontal Distance (ft)"));
     m_xAxisTitlesImperial.append(tr("Total Distance (ft)"));
 
-    m_plotValues.append(PlotValue(
-                            tr("Elevation (m)"),
-                            tr("Elevation (ft)"),
-                            Qt::black));
-    m_plotValues.append(PlotValue(
-                            tr("Vertical Speed (km/h)"),
-                            tr("Vertical Speed (mph)"),
-                            Qt::red));
-    m_plotValues.append(PlotValue(
-                            tr("Horizontal Speed (km/h)"),
-                            tr("Horizontal Speed (mph)"),
-                            Qt::green));
-    m_plotValues.append(PlotValue(
-                            tr("Total Speed (km/h)"),
-                            tr("Total Speed (mph)"),
-                            Qt::blue));
-    m_plotValues.append(PlotValue(
-                            tr("Dive Angle (deg)"),
-                            tr("Dive Angle (deg)"),
-                            Qt::cyan));
-    m_plotValues.append(PlotValue(
-                            tr("Curvature (deg/s)"),
-                            tr("Curvature (deg/s)"),
-                            Qt::magenta));
-    m_plotValues.append(PlotValue(
-                            tr("Glide Ratio"),
-                            tr("Glide Ratio"),
-                            Qt::yellow));
+    m_plotValues.append(new PlotElevation);
+    m_plotValues.append(new PlotVerticalSpeed);
+    m_plotValues.append(new PlotHorizontalSpeed);
+    m_plotValues.append(new PlotTotalSpeed);
+    m_plotValues.append(new PlotDiveAngle);
+    m_plotValues.append(new PlotCurvature);
+    m_plotValues.append(new PlotGlideRatio);
 
     m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
 
@@ -108,6 +87,11 @@ MainWindow::MainWindow(
 
 MainWindow::~MainWindow()
 {
+    while (!m_plotValues.isEmpty())
+    {
+        delete m_plotValues.takeLast();
+    }
+
     delete m_ui;
 }
 
@@ -182,7 +166,7 @@ void MainWindow::onDataPlot_mark(
                 if (m_yAxis[i])
                 {
                     status += QString("    %1: %2")
-                            .arg(m_plotValues[(YAxisType) i].titleMetric())
+                            .arg(m_plotValues[(YAxisType) i]->titleMetric())
                             .arg(m_yPlot[i]);
 
                 }
@@ -199,7 +183,7 @@ void MainWindow::onDataPlot_mark(
                 if (m_yAxis[i])
                 {
                     status += QString("    %1: %2")
-                            .arg(m_plotValues[(YAxisType) i].titleImperial())
+                            .arg(m_plotValues[(YAxisType) i]->titleImperial())
                             .arg(m_yPlot[i]);
 
                 }
@@ -586,25 +570,25 @@ void MainWindow::updatePlotData()
 
         // Add a new axis
         QCPAxis *axis = m_ui->plotArea->axisRect()->addAxis(QCPAxis::atLeft);
-        axis->setLabelColor(m_plotValues[j].color());
-        axis->setTickLabelColor(m_plotValues[j].color());
-        axis->setBasePen(QPen(m_plotValues[j].color()));
-        axis->setTickPen(QPen(m_plotValues[j].color()));
-        axis->setSubTickPen(QPen(m_plotValues[j].color()));
+        axis->setLabelColor(m_plotValues[j]->color());
+        axis->setTickLabelColor(m_plotValues[j]->color());
+        axis->setBasePen(QPen(m_plotValues[j]->color()));
+        axis->setTickPen(QPen(m_plotValues[j]->color()));
+        axis->setSubTickPen(QPen(m_plotValues[j]->color()));
 
         QCPGraph *graph = m_ui->plotArea->addGraph(
                     m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
                     axis);
         graph->setData(x, y);
-        graph->setPen(QPen(m_plotValues[j].color()));
+        graph->setPen(QPen(m_plotValues[j]->color()));
 
         if (m_units == Metric)
         {
-            axis->setLabel(m_plotValues[j].titleMetric());
+            axis->setLabel(m_plotValues[j]->titleMetric());
         }
         else
         {
-            axis->setLabel(m_plotValues[j].titleImperial());
+            axis->setLabel(m_plotValues[j]->titleImperial());
         }
     }
 
