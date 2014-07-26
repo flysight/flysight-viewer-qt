@@ -51,9 +51,6 @@ MainWindow::MainWindow(
     m_ui->leftView->setMouseTracking(true);
     m_ui->frontView->setMouseTracking(true);
 
-    m_statusLabel = new QLabel;
-    m_ui->statusBar->addWidget(m_statusLabel);
-
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
     connect(m_ui->plotArea, SIGNAL(pan(double, double)),

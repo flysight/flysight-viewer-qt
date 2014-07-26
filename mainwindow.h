@@ -102,8 +102,6 @@ private:
 
     PlotValue::Units      m_units;
 
-    QLabel                *m_statusLabel;
-
     QVector< DataPoint >  m_waypoints;
 
     double                m_timeStep;

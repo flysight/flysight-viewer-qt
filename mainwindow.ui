@@ -92,7 +92,6 @@
    <addaction name="menuUnits"/>
    <addaction name="menu_Tools"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionImport">
    <property name="text">
     <string>Import &amp;Track...</string>
