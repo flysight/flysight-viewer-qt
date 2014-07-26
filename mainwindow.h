@@ -36,6 +36,10 @@ private slots:
     void on_actionCurvature_triggered();
     void on_actionGlideRatio_triggered();
 
+    void on_actionPan_triggered();
+    void on_actionZoom_triggered();
+    void on_actionMeasure_triggered();
+
     void on_actionMetric_triggered();
     void on_actionImperial_triggered();
 
@@ -128,6 +132,8 @@ private:
 
     static double distSqrToLine(const QPointF &start, const QPointF &end,
                                 const QPointF &point, double &mu);
+
+    void updateTool();
 };
 
 #endif // MAINWINDOW_H

@@ -78,10 +78,19 @@
     <addaction name="actionMetric"/>
     <addaction name="actionImperial"/>
    </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="actionPan"/>
+    <addaction name="actionZoom"/>
+    <addaction name="actionMeasure"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
    <addaction name="menuUnits"/>
+   <addaction name="menu_Tools"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionImport">
@@ -208,6 +217,39 @@
    </property>
    <property name="shortcut">
     <string>C</string>
+   </property>
+  </action>
+  <action name="actionPan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Pan</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionZoom">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Zoom</string>
+   </property>
+   <property name="shortcut">
+    <string>Z</string>
+   </property>
+  </action>
+  <action name="actionMeasure">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Measure</string>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
    </property>
   </action>
  </widget>

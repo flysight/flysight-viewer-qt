@@ -79,6 +79,9 @@ MainWindow::MainWindow(
 
     connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
             this, SLOT(onPlotArea_expand(QPoint, QPoint)));
+
+    m_ui->plotArea->setTool(DataPlot::Pan);
+    updateTool();
 }
 
 MainWindow::~MainWindow()
@@ -933,6 +936,31 @@ void MainWindow::on_actionGlideRatio_triggered()
 {
     m_yAxis[GlideRatio] = !m_yAxis[GlideRatio];
     updatePlotData();
+}
+
+void MainWindow::on_actionPan_triggered()
+{
+    m_ui->plotArea->setTool(DataPlot::Pan);
+    updateTool();
+}
+
+void MainWindow::on_actionZoom_triggered()
+{
+    m_ui->plotArea->setTool(DataPlot::Zoom);
+    updateTool();
+}
+
+void MainWindow::on_actionMeasure_triggered()
+{
+    m_ui->plotArea->setTool(DataPlot::Measure);
+    updateTool();
+}
+
+void MainWindow::updateTool()
+{
+    m_ui->actionPan->setChecked(m_ui->plotArea->tool() == DataPlot::Pan);
+    m_ui->actionZoom->setChecked(m_ui->plotArea->tool() == DataPlot::Zoom);
+    m_ui->actionMeasure->setChecked(m_ui->plotArea->tool() == DataPlot::Measure);
 }
 
 void MainWindow::onTopView_mousePress(

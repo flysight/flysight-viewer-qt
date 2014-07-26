@@ -8,7 +8,14 @@ class DataPlot : public QCustomPlot
     Q_OBJECT
 
 public:
+    typedef enum {
+        Pan, Zoom, Measure
+    } Tool;
+
     explicit DataPlot(QWidget *parent = 0);
+
+    Tool tool() const { return m_tool; }
+    void setTool(Tool tool) { m_tool = tool; }
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -25,7 +32,10 @@ private:
     QPoint m_cursorPos;
     QPoint m_beginPos;
 
-    enum { None, Pan, Zoom } m_dragging;
+    bool m_dragging;
+    Tool m_draggingTool;
+
+    Tool m_tool;
 
 signals:
     void zoom(const QCPRange &range);

@@ -2,7 +2,8 @@
 
 DataPlot::DataPlot(QWidget *parent) :
     QCustomPlot(parent),
-    m_dragging(None)
+    m_dragging(false),
+    m_tool(Pan)
 {
     setMouseTracking(true);
 }
@@ -16,11 +17,13 @@ void DataPlot::mousePressEvent(
 
         if (event->modifiers() & Qt::ControlModifier)
         {
-            m_dragging = Zoom;
+            m_dragging = true;
+            m_draggingTool = Zoom;
         }
         else
         {
-            m_dragging = Pan;
+            m_dragging = true;
+            m_draggingTool = Pan;
         }
 
         update();
@@ -39,14 +42,14 @@ void DataPlot::mouseReleaseEvent(
                    qMax(xAxis->pixelToCoord(m_beginPos.x()),
                         xAxis->pixelToCoord(endPos.x())));
 
-    if (m_dragging == Zoom)
+    if (m_dragging && m_draggingTool == Zoom)
     {
         emit zoom(range);
     }
 
-    if (m_dragging != None)
+    if (m_dragging)
     {
-        m_dragging = None;
+        m_dragging = false;
         replot();
     }
 
@@ -58,7 +61,7 @@ void DataPlot::mouseMoveEvent(
 {
     m_cursorPos = event->pos();
 
-    if (m_dragging == Pan)
+    if (m_dragging && m_draggingTool == Pan)
     {
         QPoint endPos = m_cursorPos;
 
@@ -119,7 +122,7 @@ void DataPlot::paintEvent(
 {
     QCustomPlot::paintEvent(event);
 
-    if (m_dragging == Zoom)
+    if (m_dragging && m_draggingTool == Zoom)
     {
         QPainter painter(this);
 
