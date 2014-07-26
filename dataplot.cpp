@@ -52,12 +52,10 @@ void DataPlot::mouseMoveEvent(
 
     if (m_dragging && m_tool == Pan)
     {
-        QPoint endPos = m_cursorPos;
-
         emit pan(xAxis->pixelToCoord(m_beginPos.x()),
-                 xAxis->pixelToCoord(endPos.x()));
+                 xAxis->pixelToCoord(m_cursorPos.x()));
 
-        m_beginPos = endPos;
+        m_beginPos = m_cursorPos;
     }
 
     if (axisRect()->rect().contains(event->pos()))
