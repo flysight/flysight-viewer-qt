@@ -14,18 +14,7 @@ void DataPlot::mousePressEvent(
     if (axisRect()->rect().contains(event->pos()))
     {
         m_beginPos = event->pos();
-
-        if (event->modifiers() & Qt::ControlModifier)
-        {
-            m_dragging = true;
-            m_draggingTool = Zoom;
-        }
-        else
-        {
-            m_dragging = true;
-            m_draggingTool = Pan;
-        }
-
+        m_dragging = true;
         update();
     }
 
@@ -42,7 +31,7 @@ void DataPlot::mouseReleaseEvent(
                    qMax(xAxis->pixelToCoord(m_beginPos.x()),
                         xAxis->pixelToCoord(endPos.x())));
 
-    if (m_dragging && m_draggingTool == Zoom)
+    if (m_dragging && m_tool == Zoom)
     {
         emit zoom(range);
     }
@@ -61,7 +50,7 @@ void DataPlot::mouseMoveEvent(
 {
     m_cursorPos = event->pos();
 
-    if (m_dragging && m_draggingTool == Pan)
+    if (m_dragging && m_tool == Pan)
     {
         QPoint endPos = m_cursorPos;
 
@@ -122,7 +111,7 @@ void DataPlot::paintEvent(
 {
     QCustomPlot::paintEvent(event);
 
-    if (m_dragging && m_draggingTool == Zoom)
+    if (m_dragging && m_tool == Zoom)
     {
         QPainter painter(this);
 

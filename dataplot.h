@@ -33,8 +33,6 @@ private:
     QPoint m_beginPos;
 
     bool m_dragging;
-    Tool m_draggingTool;
-
     Tool m_tool;
 
 signals:
