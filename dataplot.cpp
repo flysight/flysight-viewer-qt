@@ -60,7 +60,15 @@ void DataPlot::mouseMoveEvent(
 
     if (axisRect()->rect().contains(event->pos()))
     {
-        emit mark(xAxis->pixelToCoord(m_cursorPos.x()));
+        if (m_dragging && m_tool == Measure)
+        {
+            emit measure(xAxis->pixelToCoord(m_beginPos.x()),
+                         xAxis->pixelToCoord(m_cursorPos.x()));
+        }
+        else
+        {
+            emit mark(xAxis->pixelToCoord(m_cursorPos.x()));
+        }
     }
     else
     {
@@ -109,7 +117,7 @@ void DataPlot::paintEvent(
 {
     QCustomPlot::paintEvent(event);
 
-    if (m_dragging && m_tool == Zoom)
+    if (m_dragging && (m_tool == Zoom || m_tool == Measure))
     {
         QPainter painter(this);
 

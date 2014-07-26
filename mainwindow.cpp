@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
+#include <QToolTip>
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -55,9 +56,10 @@ MainWindow::MainWindow(
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
-
     connect(m_ui->plotArea, SIGNAL(pan(double, double)),
             this, SLOT(onDataPlot_pan(double, double)));
+    connect(m_ui->plotArea, SIGNAL(measure(double, double)),
+            this, SLOT(onDataPlot_measure(double, double)));
 
     connect(m_ui->plotArea, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
@@ -117,6 +119,13 @@ void MainWindow::onDataPlot_pan(
     updateViewData();
 }
 
+void MainWindow::onDataPlot_measure(
+        double xStart,
+        double xEnd)
+{
+
+}
+
 void MainWindow::onDataPlot_mark(
         double xMark)
 {
@@ -173,24 +182,25 @@ void MainWindow::onDataPlot_mark(
         {
             if (m_yAxis[i])
             {
-                status += QString("    %1: %2")
+                status += QString("\n%1: %2")
                         .arg(m_plotValues[(YAxisType) i]->title(m_units))
                         .arg(m_yPlot[i]);
             }
         }
 
-        m_statusLabel->setText(status);
+        QToolTip::showText(QCursor::pos(), status);
     }
     else
     {
         onDataPlot_clear();
-        m_statusLabel->setText("");
     }
 }
 
 void MainWindow::onDataPlot_clear()
 {
     m_markActive = false;
+
+    QToolTip::hideText();
 
     updatePlotData();
     updateViewData();

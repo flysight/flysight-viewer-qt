@@ -38,6 +38,7 @@ private:
 signals:
     void zoom(const QCPRange &range);
     void pan(double xBegin, double xEnd);
+    void measure(double xBegin, double xEnd);
 
     void mark(double xMark);
     void clear();

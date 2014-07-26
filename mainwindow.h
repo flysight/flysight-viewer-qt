@@ -49,6 +49,7 @@ private slots:
 
     void onDataPlot_zoom(const QCPRange &range);
     void onDataPlot_pan(double xBegin, double xEnd);
+    void onDataPlot_measure(double xBegin, double xEnd);
 
     void onDataPlot_mark(double xMark);
     void onDataPlot_clear();    
