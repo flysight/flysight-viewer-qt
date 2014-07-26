@@ -133,6 +133,9 @@ private:
                                 const QPointF &point, double &mu);
 
     void updateTool();
+
+    DataPoint interpolateData(double x);
+    void mark(const DataPoint &dp);
 };
 
 #endif // MAINWINDOW_H

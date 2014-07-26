@@ -1,0 +1,33 @@
+#include "datapoint.h"
+
+DataPoint interpolate(const DataPoint &p1,
+                      const DataPoint &p2,
+                      double a)
+{
+    DataPoint ret;
+
+    const qint64 ms1 = p1.dateTime.toMSecsSinceEpoch();
+    const qint64 ms2 = p1.dateTime.toMSecsSinceEpoch();
+    ret.dateTime.fromMSecsSinceEpoch(
+                ms1 + (qint64) (a * (ms2 - ms1)));
+
+    ret.lat = p1.lat + a * (p2.lat - p1.lat);
+    ret.lon = p1.lon + a * (p2.lon - p1.lon);
+    ret.hMSL = p1.hMSL + a * (p2.hMSL - p1.hMSL);
+
+    ret.velN = p1.velN + a * (p2.velN - p1.velN);
+    ret.velE = p1.velE + a * (p2.velE - p1.velE);
+    ret.velD = p1.velD + a * (p2.velD - p1.velD);
+
+    ret.t = p1.t + a * (p2.t - p1.t);
+    ret.x = p1.x + a * (p2.x - p1.x);
+    ret.y = p1.y + a * (p2.y - p1.y);
+    ret.z = p1.z + a * (p2.z - p1.z);
+
+    ret.dist2D = p1.dist2D + a * (p2.dist2D - p1.dist2D);
+    ret.dist3D = p1.dist3D + a * (p2.dist3D - p1.dist3D);
+
+    ret.curv = p1.curv + a * (p2.curv - p1.curv);
+
+    return ret;
+}

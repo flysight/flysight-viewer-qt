@@ -120,77 +120,126 @@ void MainWindow::onDataPlot_measure(
         double xStart,
         double xEnd)
 {
+    if (m_data.isEmpty()) return;
 
+    DataPoint dpStart = interpolateData(xStart);
+    DataPoint dpEnd = interpolateData(xEnd);
+
+    QString status;
+
+    if (m_units == PlotValue::Metric)
+    {
+        status = QString("%1: %2 (%3)")
+                .arg(m_xAxisTitlesMetric[m_xAxis])
+                .arg(getXValue(dpEnd, m_xAxis))
+                .arg(getXValue(dpEnd, m_xAxis)
+                     - getXValue(dpStart, m_xAxis));
+    }
+    else
+    {
+        status = QString("%1: %2 (%3)")
+                .arg(m_xAxisTitlesImperial[m_xAxis])
+                .arg(getXValue(dpEnd, m_xAxis))
+                .arg(getXValue(dpEnd, m_xAxis)
+                     - getXValue(dpStart, m_xAxis));
+    }
+
+    for (int i = 0; i < yaLast; ++i)
+    {
+        if (m_yAxis[i])
+        {
+            status += QString("\n%1: %2 (%3)")
+                    .arg(m_plotValues[(YAxisType) i]->title(m_units))
+                    .arg(m_plotValues[i]->value(dpEnd, m_units))
+                    .arg(m_plotValues[i]->value(dpEnd, m_units)
+                         - m_plotValues[i]->value(dpStart, m_units));
+        }
+    }
+
+    QToolTip::showText(QCursor::pos(), status);
+
+    mark(dpEnd);
+}
+
+DataPoint MainWindow::interpolateData(
+        double x)
+{
+    const int i1 = findIndexBelowX(x);
+    const int i2 = findIndexAboveX(x);
+
+    if (i1 < 0)
+    {
+        return m_data.first();
+    }
+    else if (i2 >= m_data.size())
+    {
+        return m_data.last();
+    }
+    else
+    {
+        const DataPoint &dp1 = m_data[i1];
+        const DataPoint &dp2 = m_data[i2];
+        const double x1 = getXValue(dp1, m_xAxis);
+        const double x2 = getXValue(dp2, m_xAxis);
+        return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
+    }
 }
 
 void MainWindow::onDataPlot_mark(
         double xMark)
 {
-    int below = findIndexBelowX(xMark);
-    int above = findIndexAboveX(xMark);
+    if (m_data.isEmpty()) return;
 
-    if (below >= 0 && above < m_data.size())
+    mark(interpolateData(xMark));
+
+    QString status;
+
+    if (m_units == PlotValue::Metric)
     {
-        const DataPoint &dp1 = m_data[below];
-        const DataPoint &dp2 = m_data[above];
-
-        double x1 = getXValue(dp1, m_xAxis);
-        double x2 = getXValue(dp2, m_xAxis);
-
-        m_xPlot = xMark;
-        for (int i = 0; i < yaLast; ++i)
-        {
-            const YAxisType ya = (YAxisType) i;
-
-            if (m_yAxis[i])
-            {
-                m_yPlot[i] = m_plotValues[i]->value(dp1, m_units) +
-                        (xMark - x1) / (x2 - x1) *
-                        (m_plotValues[i]->value(dp2, m_units) -
-                         m_plotValues[i]->value(dp1, m_units));
-            }
-        }
-
-        m_xView = dp1.x + (xMark - x1) / (x2 - x1) * (dp2.x - dp1.x);
-        m_yView = dp1.y + (xMark - x1) / (x2 - x1) * (dp2.y - dp1.y);
-        m_zView = dp1.hMSL + (xMark - x1) / (x2 - x1) * (dp2.hMSL - dp1.hMSL);
-
-        m_markActive = true;
-
-        updatePlotData();
-        updateViewData();
-
-        QString status;
-
-        if (m_units == PlotValue::Metric)
-        {
-            status = QString("%1: %2")
-                    .arg(m_xAxisTitlesMetric[m_xAxis])
-                    .arg(m_xPlot);
-        }
-        else
-        {
-            status = QString("%1: %2")
-                    .arg(m_xAxisTitlesImperial[m_xAxis])
-                    .arg(m_xPlot);
-        }
-
-        for (int i = 0; i < yaLast; ++i)
-        {
-            if (m_yAxis[i])
-            {
-                status += QString("\n%1: %2")
-                        .arg(m_plotValues[(YAxisType) i]->title(m_units))
-                        .arg(m_yPlot[i]);
-            }
-        }
-
-        QToolTip::showText(QCursor::pos(), status);
+        status = QString("%1: %2")
+                .arg(m_xAxisTitlesMetric[m_xAxis])
+                .arg(m_xPlot);
     }
     else
     {
-        onDataPlot_clear();
+        status = QString("%1: %2")
+                .arg(m_xAxisTitlesImperial[m_xAxis])
+                .arg(m_xPlot);
     }
+
+    for (int i = 0; i < yaLast; ++i)
+    {
+        if (m_yAxis[i])
+        {
+            status += QString("\n%1: %2")
+                    .arg(m_plotValues[(YAxisType) i]->title(m_units))
+                    .arg(m_yPlot[i]);
+        }
+    }
+
+    QToolTip::showText(QCursor::pos(), status);
+}
+
+void MainWindow::mark(
+        const DataPoint &dp)
+{
+    m_xPlot = getXValue(dp, m_xAxis);
+    for (int i = 0; i < yaLast; ++i)
+    {
+        if (m_yAxis[i])
+        {
+            m_yPlot[i] = m_plotValues[i]->value(dp, m_units);
+        }
+    }
+
+    m_xView = dp.x;
+    m_yView = dp.y;
+    m_zView = dp.hMSL;
+
+    m_markActive = true;
+
+    updatePlotData();
+    updateViewData();
 }
 
 void MainWindow::onDataPlot_clear()

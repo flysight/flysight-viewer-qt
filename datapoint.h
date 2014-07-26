@@ -27,4 +27,8 @@ public:
     double      curv;
 };
 
+DataPoint interpolate(const DataPoint &p1,
+                      const DataPoint &p2,
+                      double a);
+
 #endif // DATAPOINT_H
