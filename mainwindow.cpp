@@ -127,9 +127,11 @@ void MainWindow::onDataPlot_measure(
 
     QString status;
 
+    status = QString("<table width='300'>");
+
     if (m_units == PlotValue::Metric)
     {
-        status = QString("%1: %2 (%3)")
+        status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
                 .arg(m_xAxisTitlesMetric[m_xAxis])
                 .arg(getXValue(dpEnd, m_xAxis))
                 .arg(getXValue(dpEnd, m_xAxis)
@@ -137,7 +139,7 @@ void MainWindow::onDataPlot_measure(
     }
     else
     {
-        status = QString("%1: %2 (%3)")
+        status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
                 .arg(m_xAxisTitlesImperial[m_xAxis])
                 .arg(getXValue(dpEnd, m_xAxis))
                 .arg(getXValue(dpEnd, m_xAxis)
@@ -148,13 +150,15 @@ void MainWindow::onDataPlot_measure(
     {
         if (m_yAxis[i])
         {
-            status += QString("\n%1: %2 (%3)")
+            status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
                     .arg(m_plotValues[i]->value(dpEnd, m_units))
                     .arg(m_plotValues[i]->value(dpEnd, m_units)
                          - m_plotValues[i]->value(dpStart, m_units));
         }
     }
+
+    status += QString("</table>");
 
     QToolTip::showText(QCursor::pos(), status);
 
@@ -194,15 +198,17 @@ void MainWindow::onDataPlot_mark(
 
     QString status;
 
+    status = QString("<table width='200'>");
+
     if (m_units == PlotValue::Metric)
     {
-        status = QString("%1: %2")
+        status += QString("<tr><td>%1</td><td>%2</td></tr>")
                 .arg(m_xAxisTitlesMetric[m_xAxis])
                 .arg(m_xPlot);
     }
     else
     {
-        status = QString("%1: %2")
+        status += QString("<tr><td>%1</td><td>%2</td></tr>")
                 .arg(m_xAxisTitlesImperial[m_xAxis])
                 .arg(m_xPlot);
     }
@@ -211,11 +217,13 @@ void MainWindow::onDataPlot_mark(
     {
         if (m_yAxis[i])
         {
-            status += QString("\n%1: %2")
+            status += QString("<tr><td>%1</td><td>%2</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
                     .arg(m_yPlot[i]);
         }
     }
+
+    status += QString("</table>");
 
     QToolTip::showText(QCursor::pos(), status);
 }
