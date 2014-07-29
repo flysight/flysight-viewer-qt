@@ -131,30 +131,37 @@ void MainWindow::onDataPlot_measure(
 
     if (m_units == PlotValue::Metric)
     {
-        status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
+        const double val = getXValue(dpEnd, m_xAxis)
+                - getXValue(dpStart, m_xAxis);
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
                 .arg(m_xAxisTitlesMetric[m_xAxis])
                 .arg(getXValue(dpEnd, m_xAxis))
-                .arg(getXValue(dpEnd, m_xAxis)
-                     - getXValue(dpStart, m_xAxis));
+                .arg(val < 0 ? "" : "+")
+                .arg(val);
     }
     else
     {
-        status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
+        const double val = getXValue(dpEnd, m_xAxis)
+                - getXValue(dpStart, m_xAxis);
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
                 .arg(m_xAxisTitlesImperial[m_xAxis])
                 .arg(getXValue(dpEnd, m_xAxis))
-                .arg(getXValue(dpEnd, m_xAxis)
-                     - getXValue(dpStart, m_xAxis));
+                .arg(val < 0 ? "" : "+")
+                .arg(val);
     }
 
     for (int i = 0; i < yaLast; ++i)
     {
         if (m_yAxis[i])
         {
-            status += QString("<tr><td>%1</td><td>%2</td><td>(%3)</td></tr>")
+            const double val = m_plotValues[i]->value(dpEnd, m_units)
+                    - m_plotValues[i]->value(dpStart, m_units);
+            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
                     .arg(m_plotValues[i]->value(dpEnd, m_units))
-                    .arg(m_plotValues[i]->value(dpEnd, m_units)
-                         - m_plotValues[i]->value(dpStart, m_units));
+                    .arg(val < 0 ? "" : "+")
+                    .arg(val)
+                    .arg(m_plotValues[i]->color().name());
         }
     }
 
@@ -202,13 +209,13 @@ void MainWindow::onDataPlot_mark(
 
     if (m_units == PlotValue::Metric)
     {
-        status += QString("<tr><td>%1</td><td>%2</td></tr>")
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
                 .arg(m_xAxisTitlesMetric[m_xAxis])
                 .arg(m_xPlot);
     }
     else
     {
-        status += QString("<tr><td>%1</td><td>%2</td></tr>")
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
                 .arg(m_xAxisTitlesImperial[m_xAxis])
                 .arg(m_xPlot);
     }
@@ -217,9 +224,10 @@ void MainWindow::onDataPlot_mark(
     {
         if (m_yAxis[i])
         {
-            status += QString("<tr><td>%1</td><td>%2</td></tr>")
+            status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
-                    .arg(m_yPlot[i]);
+                    .arg(m_yPlot[i])
+                    .arg(m_plotValues[i]->color().name());
         }
     }
 
