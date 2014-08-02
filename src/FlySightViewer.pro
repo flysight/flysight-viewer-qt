@@ -8,7 +8,7 @@ QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = FlySightViewer3
+TARGET = FlySightViewer
 TEMPLATE = app
 
 
@@ -29,3 +29,5 @@ HEADERS  += mainwindow.h \
     plotvalue.h
 
 FORMS    += mainwindow.ui
+
+RC_FILE += FlySightViewer.rc
