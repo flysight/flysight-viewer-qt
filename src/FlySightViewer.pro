@@ -29,3 +29,5 @@ HEADERS  += mainwindow.h \
     plotvalue.h
 
 FORMS    += mainwindow.ui
+
+RC_FILE += FlySightViewer.rc
