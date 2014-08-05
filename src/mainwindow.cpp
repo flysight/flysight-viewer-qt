@@ -23,14 +23,14 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
+    // Restore window state
+    readSettings();
+
     // Intitialize plot area
     initPlot();
 
     // Initialize 3D views
     initViews();
-
-    // Restore window state
-    readSettings();
 }
 
 MainWindow::~MainWindow()
@@ -51,6 +51,7 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
+    settings.setValue("xAxis", m_xAxis);
     settings.endGroup();
 }
 
@@ -62,6 +63,7 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units").toInt();
+    m_xAxis = (XAxisType) settings.value("xAxis").toInt();
     settings.endGroup();
 }
 
@@ -95,6 +97,8 @@ void MainWindow::initPlot()
     m_ui->actionDiveAngle->setChecked(m_plotValues[DiveAngle]->visible());
     m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
     m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
+
+    updateBottomActions();
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -1046,20 +1050,44 @@ void MainWindow::on_actionHorizontalSpeed_triggered()
 
 void MainWindow::on_actionTime_triggered()
 {
-    m_xAxis = Time;
-    initPlotData();
+    updateBottom(Time);
 }
 
 void MainWindow::on_actionDistance2D_triggered()
 {
-    m_xAxis = Distance2D;
-    initPlotData();
+    updateBottom(Distance2D);
 }
 
 void MainWindow::on_actionDistance3D_triggered()
 {
-    m_xAxis = Distance3D;
+    updateBottom(Distance3D);
+}
+
+void MainWindow::updateBottom(
+        XAxisType xAxis)
+{
+    QCPRange range = m_ui->plotArea->xAxis->range();
+
+    DataPoint dpStart = interpolateData(range.lower);
+    DataPoint dpEnd = interpolateData(range.upper);
+
+    m_xAxis = xAxis;
     initPlotData();
+
+    m_ui->plotArea->xAxis->setRange(
+                getXValue(dpStart, m_xAxis),
+                getXValue(dpEnd, m_xAxis));
+    updateYRanges();
+    m_ui->plotArea->replot();
+
+    updateBottomActions();
+}
+
+void MainWindow::updateBottomActions()
+{
+    m_ui->actionTime->setChecked(m_xAxis == Time);
+    m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
+    m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()

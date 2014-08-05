@@ -54,7 +54,7 @@
    </widget>
    <widget class="QMenu" name="menuPlots">
     <property name="title">
-     <string>&amp;Plots</string>
+     <string>&amp;Left</string>
     </property>
     <addaction name="actionElevation"/>
     <addaction name="actionVerticalSpeed"/>
@@ -154,11 +154,17 @@
    </property>
   </action>
   <action name="actionTime">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Time</string>
    </property>
   </action>
   <action name="actionDistance2D">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Horizontal Distance</string>
    </property>
@@ -186,6 +192,9 @@
    </property>
   </action>
   <action name="actionDistance3D">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Total Distance</string>
    </property>
