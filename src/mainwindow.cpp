@@ -19,16 +19,27 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
-    for (int i = 0; i < yaLast; ++i)
+    // Intitialize plot area
+    initPlot();
+
+    // Initialize 3D views
+    initViews();
+
+    m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
+}
+
+MainWindow::~MainWindow()
+{
+    while (!m_plotValues.isEmpty())
     {
-        m_yAxis[i] = false;
+        delete m_plotValues.takeLast();
     }
-    m_yAxis[Elevation] = true;
-    m_yAxis[VerticalSpeed] = true;
 
-    m_ui->actionElevation->setChecked(true);
-    m_ui->actionVerticalSpeed->setChecked(true);
+    delete m_ui;
+}
 
+void MainWindow::initPlot()
+{
     m_xAxisTitlesMetric.append(tr("Time (s)"));
     m_xAxisTitlesMetric.append(tr("Horizontal Distance (m)"));
     m_xAxisTitlesMetric.append(tr("Total Distance (m)"));
@@ -45,11 +56,18 @@ MainWindow::MainWindow(
     m_plotValues.append(new PlotCurvature);
     m_plotValues.append(new PlotGlideRatio);
 
-    m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
+    foreach (PlotValue *v, m_plotValues)
+    {
+        v->readSettings();
+    }
 
-    m_ui->topView->setMouseTracking(true);
-    m_ui->leftView->setMouseTracking(true);
-    m_ui->frontView->setMouseTracking(true);
+    m_ui->actionElevation->setChecked(m_plotValues[Elevation]->visible());
+    m_ui->actionVerticalSpeed->setChecked(m_plotValues[VerticalSpeed]->visible());
+    m_ui->actionHorizontalSpeed->setChecked(m_plotValues[HorizontalSpeed]->visible());
+    m_ui->actionTotalSpeed->setChecked(m_plotValues[TotalSpeed]->visible());
+    m_ui->actionDiveAngle->setChecked(m_plotValues[DiveAngle]->visible());
+    m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
+    m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -64,6 +82,19 @@ MainWindow::MainWindow(
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
+    connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
+            this, SLOT(onPlotArea_expand(QPoint, QPoint)));
+
+    m_ui->plotArea->setTool(DataPlot::Pan);
+    updateTool();
+}
+
+void MainWindow::initViews()
+{
+    m_ui->topView->setMouseTracking(true);
+    m_ui->leftView->setMouseTracking(true);
+    m_ui->frontView->setMouseTracking(true);
+
     connect(m_ui->topView, SIGNAL(mousePress(QMouseEvent *)),
             this, SLOT(onTopView_mousePress(QMouseEvent *)));
     connect(m_ui->topView, SIGNAL(mouseRelease(QMouseEvent *)),
@@ -75,22 +106,17 @@ MainWindow::MainWindow(
             this, SLOT(onLeftView_mouseMove(QMouseEvent *)));
     connect(m_ui->frontView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onFrontView_mouseMove(QMouseEvent *)));
-
-    connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
-            this, SLOT(onPlotArea_expand(QPoint, QPoint)));
-
-    m_ui->plotArea->setTool(DataPlot::Pan);
-    updateTool();
 }
 
-MainWindow::~MainWindow()
+void MainWindow::closeEvent(
+        QCloseEvent *event)
 {
-    while (!m_plotValues.isEmpty())
+    foreach (PlotValue *v, m_plotValues)
     {
-        delete m_plotValues.takeLast();
+        v->writeSettings();
     }
 
-    delete m_ui;
+    event->accept();
 }
 
 void MainWindow::onDataPlot_zoom(const QCPRange &range)
@@ -152,7 +178,7 @@ void MainWindow::onDataPlot_measure(
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             const double val = m_plotValues[i]->value(dpEnd, m_units)
                     - m_plotValues[i]->value(dpStart, m_units);
@@ -222,7 +248,7 @@ void MainWindow::onDataPlot_mark(
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
@@ -242,7 +268,7 @@ void MainWindow::mark(
     m_xPlot = getXValue(dp, m_xAxis);
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             m_yPlot[i] = m_plotValues[i]->value(dp, m_units);
         }
@@ -331,7 +357,7 @@ void MainWindow::updateYRanges()
     int k = 0;
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_yAxis[j]) continue;
+        if (!m_plotValues[j]->visible()) continue;
 
         double yMin, yMax;
         int iMin, iMax;
@@ -617,7 +643,7 @@ void MainWindow::updatePlotData()
 
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_yAxis[j]) continue;
+        if (!m_plotValues[j]->visible()) continue;
 
         QVector< double > y;
         for (int i = 0; i < m_data.size(); ++i)
@@ -642,7 +668,7 @@ void MainWindow::updatePlotData()
         int k = 0;
         for (int i = 0; i < yaLast; ++i)
         {
-            if (m_yAxis[i])
+            if (m_plotValues[i]->visible())
             {
                 yMark.clear();
                 yMark.append(m_yPlot[i]);
@@ -938,19 +964,22 @@ double MainWindow::getXValue(
 
 void MainWindow::on_actionElevation_triggered()
 {
-    m_yAxis[Elevation] = !m_yAxis[Elevation];
+    m_plotValues[Elevation]->setVisible(
+                !m_plotValues[Elevation]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
-    m_yAxis[VerticalSpeed] = !m_yAxis[VerticalSpeed];
+    m_plotValues[VerticalSpeed]->setVisible(
+                !m_plotValues[VerticalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
-    m_yAxis[HorizontalSpeed] = !m_yAxis[HorizontalSpeed];
+    m_plotValues[HorizontalSpeed]->setVisible(
+                !m_plotValues[HorizontalSpeed]->visible());
     updatePlotData();
 }
 
@@ -988,25 +1017,29 @@ void MainWindow::on_actionDistance3D_triggered()
 
 void MainWindow::on_actionTotalSpeed_triggered()
 {
-    m_yAxis[TotalSpeed] = !m_yAxis[TotalSpeed];
+    m_plotValues[TotalSpeed]->setVisible(
+                !m_plotValues[TotalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
-    m_yAxis[DiveAngle] = !m_yAxis[DiveAngle];
+    m_plotValues[DiveAngle]->setVisible(
+                !m_plotValues[DiveAngle]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
-    m_yAxis[Curvature] = !m_yAxis[Curvature];
+    m_plotValues[Curvature]->setVisible(
+                !m_plotValues[Curvature]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
-    m_yAxis[GlideRatio] = !m_yAxis[GlideRatio];
+    m_plotValues[GlideRatio]->setVisible(
+                !m_plotValues[GlideRatio]->visible());
     updatePlotData();
 }
 

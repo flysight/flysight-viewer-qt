@@ -23,7 +23,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private slots:
     void on_actionImport_triggered();
     void on_actionExit_triggered();
@@ -87,7 +90,6 @@ private:
     QVector< DataPoint >  m_data;
 
     XAxisType             m_xAxis;
-    bool                  m_yAxis[yaLast];
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
     QVector< PlotValue* > m_plotValues;
@@ -105,6 +107,9 @@ private:
     QVector< DataPoint >  m_waypoints;
 
     double                m_timeStep;
+
+    void initPlot();
+    void initViews();
 
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
