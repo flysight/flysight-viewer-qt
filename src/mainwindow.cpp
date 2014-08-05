@@ -19,16 +19,6 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
-    for (int i = 0; i < yaLast; ++i)
-    {
-        m_yAxis[i] = false;
-    }
-    m_yAxis[Elevation] = true;
-    m_yAxis[VerticalSpeed] = true;
-
-    m_ui->actionElevation->setChecked(true);
-    m_ui->actionVerticalSpeed->setChecked(true);
-
     m_xAxisTitlesMetric.append(tr("Time (s)"));
     m_xAxisTitlesMetric.append(tr("Horizontal Distance (m)"));
     m_xAxisTitlesMetric.append(tr("Total Distance (m)"));
@@ -44,6 +34,12 @@ MainWindow::MainWindow(
     m_plotValues.append(new PlotDiveAngle);
     m_plotValues.append(new PlotCurvature);
     m_plotValues.append(new PlotGlideRatio);
+
+    m_plotValues[Elevation]->setVisible(true);
+    m_plotValues[VerticalSpeed]->setVisible(true);
+
+    m_ui->actionElevation->setChecked(true);
+    m_ui->actionVerticalSpeed->setChecked(true);
 
     m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
 
@@ -152,7 +148,7 @@ void MainWindow::onDataPlot_measure(
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             const double val = m_plotValues[i]->value(dpEnd, m_units)
                     - m_plotValues[i]->value(dpStart, m_units);
@@ -222,7 +218,7 @@ void MainWindow::onDataPlot_mark(
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
                     .arg(m_plotValues[(YAxisType) i]->title(m_units))
@@ -242,7 +238,7 @@ void MainWindow::mark(
     m_xPlot = getXValue(dp, m_xAxis);
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_yAxis[i])
+        if (m_plotValues[i]->visible())
         {
             m_yPlot[i] = m_plotValues[i]->value(dp, m_units);
         }
@@ -331,7 +327,7 @@ void MainWindow::updateYRanges()
     int k = 0;
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_yAxis[j]) continue;
+        if (!m_plotValues[j]->visible()) continue;
 
         double yMin, yMax;
         int iMin, iMax;
@@ -617,7 +613,7 @@ void MainWindow::updatePlotData()
 
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_yAxis[j]) continue;
+        if (!m_plotValues[j]->visible()) continue;
 
         QVector< double > y;
         for (int i = 0; i < m_data.size(); ++i)
@@ -642,7 +638,7 @@ void MainWindow::updatePlotData()
         int k = 0;
         for (int i = 0; i < yaLast; ++i)
         {
-            if (m_yAxis[i])
+            if (m_plotValues[i]->visible())
             {
                 yMark.clear();
                 yMark.append(m_yPlot[i]);
@@ -938,19 +934,22 @@ double MainWindow::getXValue(
 
 void MainWindow::on_actionElevation_triggered()
 {
-    m_yAxis[Elevation] = !m_yAxis[Elevation];
+    m_plotValues[Elevation]->setVisible(
+                !m_plotValues[Elevation]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
-    m_yAxis[VerticalSpeed] = !m_yAxis[VerticalSpeed];
+    m_plotValues[VerticalSpeed]->setVisible(
+                !m_plotValues[VerticalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
-    m_yAxis[HorizontalSpeed] = !m_yAxis[HorizontalSpeed];
+    m_plotValues[HorizontalSpeed]->setVisible(
+                !m_plotValues[HorizontalSpeed]->visible());
     updatePlotData();
 }
 
@@ -988,25 +987,29 @@ void MainWindow::on_actionDistance3D_triggered()
 
 void MainWindow::on_actionTotalSpeed_triggered()
 {
-    m_yAxis[TotalSpeed] = !m_yAxis[TotalSpeed];
+    m_plotValues[TotalSpeed]->setVisible(
+                !m_plotValues[TotalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
-    m_yAxis[DiveAngle] = !m_yAxis[DiveAngle];
+    m_plotValues[DiveAngle]->setVisible(
+                !m_plotValues[DiveAngle]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
-    m_yAxis[Curvature] = !m_yAxis[Curvature];
+    m_plotValues[Curvature]->setVisible(
+                !m_plotValues[Curvature]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
-    m_yAxis[GlideRatio] = !m_yAxis[GlideRatio];
+    m_plotValues[GlideRatio]->setVisible(
+                !m_plotValues[GlideRatio]->visible());
     updatePlotData();
 }
 

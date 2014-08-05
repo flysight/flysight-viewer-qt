@@ -87,7 +87,6 @@ private:
     QVector< DataPoint >  m_data;
 
     XAxisType             m_xAxis;
-    bool                  m_yAxis[yaLast];
 
     QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
     QVector< PlotValue* > m_plotValues;

@@ -24,6 +24,8 @@ public:
         Imperial
     } Units;
 
+    PlotValue(): mVisible(false) {}
+
     virtual const QString title(Units units) = 0;
     virtual const QColor color() = 0;
     virtual double value(const DataPoint &dp, Units units) = 0;
@@ -39,6 +41,12 @@ public:
         axis->setLabel(title(units));
         return axis;
     }
+
+    bool visible() const { return mVisible; }
+    void setVisible(bool visible) { mVisible = visible; }
+
+private:
+    bool mVisible;
 };
 
 class PlotElevation: public PlotValue
