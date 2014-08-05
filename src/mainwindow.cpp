@@ -1,10 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
 #include <QToolTip>
+
+#include "dataview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -25,7 +28,8 @@ MainWindow::MainWindow(
     // Initialize 3D views
     initViews();
 
-    m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
+    // Restore window state
+    readSettings();
 }
 
 MainWindow::~MainWindow()
@@ -36,6 +40,24 @@ MainWindow::~MainWindow()
     }
 
     delete m_ui;
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("mainWindow");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("state", saveState());
+    settings.endGroup();
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("mainWindow");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("state").toByteArray());
+    settings.endGroup();
 }
 
 void MainWindow::initPlot()
@@ -82,35 +104,69 @@ void MainWindow::initPlot()
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
-    connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
-            this, SLOT(onPlotArea_expand(QPoint, QPoint)));
-
     m_ui->plotArea->setTool(DataPlot::Pan);
     updateTool();
 }
 
 void MainWindow::initViews()
 {
-    m_ui->topView->setMouseTracking(true);
-    m_ui->leftView->setMouseTracking(true);
-    m_ui->frontView->setMouseTracking(true);
+    // Add side view
+    mLeftView = new DataView;
+    QDockWidget *leftDock = new QDockWidget(tr("Side View"));
+    leftDock->setWidget(mLeftView);
+    leftDock->setObjectName("leftView");
+    addDockWidget(Qt::BottomDockWidgetArea, leftDock);
+    connect(m_ui->actionShowLeftView, SIGNAL(toggled(bool)),
+            leftDock, SLOT(setVisible(bool)));
+    connect(leftDock, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLeftView, SLOT(setChecked(bool)));
 
-    connect(m_ui->topView, SIGNAL(mousePress(QMouseEvent *)),
+    // Add top view
+    mTopView = new DataView;
+    QDockWidget *topDock = new QDockWidget(tr("Top View"));
+    topDock->setWidget(mTopView);
+    topDock->setObjectName("topView");
+    addDockWidget(Qt::BottomDockWidgetArea, topDock);
+    connect(m_ui->actionShowTopView, SIGNAL(toggled(bool)),
+            topDock, SLOT(setVisible(bool)));
+    connect(topDock, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowTopView, SLOT(setChecked(bool)));
+
+    // Add front view
+    mFrontView = new DataView;
+    QDockWidget *frontDock = new QDockWidget(tr("Front View"));
+    frontDock->setWidget(mFrontView);
+    frontDock->setObjectName("frontView");
+    addDockWidget(Qt::BottomDockWidgetArea, frontDock);
+    connect(m_ui->actionShowFrontView, SIGNAL(toggled(bool)),
+            frontDock, SLOT(setVisible(bool)));
+    connect(frontDock, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowFrontView, SLOT(setChecked(bool)));
+
+    mTopView->setMouseTracking(true);
+    mLeftView->setMouseTracking(true);
+    mFrontView->setMouseTracking(true);
+
+    connect(mTopView, SIGNAL(mousePress(QMouseEvent *)),
             this, SLOT(onTopView_mousePress(QMouseEvent *)));
-    connect(m_ui->topView, SIGNAL(mouseRelease(QMouseEvent *)),
+    connect(mTopView, SIGNAL(mouseRelease(QMouseEvent *)),
             this, SLOT(onTopView_mouseRelease(QMouseEvent *)));
-    connect(m_ui->topView, SIGNAL(mouseMove(QMouseEvent *)),
+    connect(mTopView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onTopView_mouseMove(QMouseEvent *)));
 
-    connect(m_ui->leftView, SIGNAL(mouseMove(QMouseEvent *)),
+    connect(mLeftView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onLeftView_mouseMove(QMouseEvent *)));
-    connect(m_ui->frontView, SIGNAL(mouseMove(QMouseEvent *)),
+    connect(mFrontView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onFrontView_mouseMove(QMouseEvent *)));
 }
 
 void MainWindow::closeEvent(
         QCloseEvent *event)
 {
+    // Save window state
+    writeSettings();
+
+    // Save plot state
     foreach (PlotValue *v, m_plotValues)
     {
         v->writeSettings();
@@ -743,44 +799,44 @@ void MainWindow::updateViewData()
         }
     }
 
-    m_ui->leftView->clearPlottables();
-    QCPCurve *left = new QCPCurve(m_ui->leftView->xAxis, m_ui->leftView->yAxis);
+    mLeftView->clearPlottables();
+    QCPCurve *left = new QCPCurve(mLeftView->xAxis, mLeftView->yAxis);
     left->setData(t, x, z);
     left->setPen(QPen(Qt::blue));
-    m_ui->leftView->addPlottable(left);
-    setViewRange(m_ui->leftView,
+    mLeftView->addPlottable(left);
+    setViewRange(mLeftView,
                  xMin, xMax,
                  zMin, zMax);
 
-    m_ui->frontView->clearPlottables();
-    QCPCurve *front = new QCPCurve(m_ui->frontView->xAxis, m_ui->frontView->yAxis);
+    mFrontView->clearPlottables();
+    QCPCurve *front = new QCPCurve(mFrontView->xAxis, mFrontView->yAxis);
     front->setData(t, y, z);
     front->setPen(QPen(Qt::red));
-    m_ui->frontView->addPlottable(front);
-    setViewRange(m_ui->frontView,
+    mFrontView->addPlottable(front);
+    setViewRange(mFrontView,
                  yMin, yMax,
                  zMin, zMax);
 
-    m_ui->topView->clearPlottables();
-    QCPCurve *top = new QCPCurve(m_ui->topView->xAxis, m_ui->topView->yAxis);
+    mTopView->clearPlottables();
+    QCPCurve *top = new QCPCurve(mTopView->xAxis, mTopView->yAxis);
     top->setData(t, x, y);
     top->setPen(QPen(Qt::black));
-    m_ui->topView->addPlottable(top);
-    setViewRange(m_ui->topView,
+    mTopView->addPlottable(top);
+    setViewRange(mTopView,
                  xMin, xMax,
                  yMin, yMax);
 
-    m_ui->topView->addGraph();
-    m_ui->topView->graph(0)->addData(m_ui->topView->xAxis->range().upper, (yMin + yMax) / 2);
-    m_ui->topView->graph(0)->setPen(QPen(Qt::red));
-    m_ui->topView->graph(0)->setLineStyle(QCPGraph::lsNone);
-    m_ui->topView->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
+    mTopView->addGraph();
+    mTopView->graph(0)->addData(mTopView->xAxis->range().upper, (yMin + yMax) / 2);
+    mTopView->graph(0)->setPen(QPen(Qt::red));
+    mTopView->graph(0)->setLineStyle(QCPGraph::lsNone);
+    mTopView->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
 
-    m_ui->topView->addGraph();
-    m_ui->topView->graph(1)->addData((xMin + xMax) / 2, m_ui->topView->yAxis->range().lower);
-    m_ui->topView->graph(1)->setPen(QPen(Qt::blue));
-    m_ui->topView->graph(1)->setLineStyle(QCPGraph::lsNone);
-    m_ui->topView->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
+    mTopView->addGraph();
+    mTopView->graph(1)->addData((xMin + xMax) / 2, mTopView->yAxis->range().lower);
+    mTopView->graph(1)->setPen(QPen(Qt::blue));
+    mTopView->graph(1)->setLineStyle(QCPGraph::lsNone);
+    mTopView->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
 
     if (m_markActive)
     {
@@ -799,23 +855,23 @@ void MainWindow::updateViewData()
             zMark.append((m_zView - m_data.back().hMSL) * METERS_TO_FEET);
         }
 
-        m_ui->leftView->addGraph();
-        m_ui->leftView->graph(0)->setData(xMark, zMark);
-        m_ui->leftView->graph(0)->setPen(QPen(Qt::black));
-        m_ui->leftView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        m_ui->leftView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
+        mLeftView->addGraph();
+        mLeftView->graph(0)->setData(xMark, zMark);
+        mLeftView->graph(0)->setPen(QPen(Qt::black));
+        mLeftView->graph(0)->setLineStyle(QCPGraph::lsNone);
+        mLeftView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
 
-        m_ui->frontView->addGraph();
-        m_ui->frontView->graph(0)->setData(yMark, zMark);
-        m_ui->frontView->graph(0)->setPen(QPen(Qt::black));
-        m_ui->frontView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        m_ui->frontView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
+        mFrontView->addGraph();
+        mFrontView->graph(0)->setData(yMark, zMark);
+        mFrontView->graph(0)->setPen(QPen(Qt::black));
+        mFrontView->graph(0)->setLineStyle(QCPGraph::lsNone);
+        mFrontView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
 
-        m_ui->topView->addGraph();
-        m_ui->topView->graph(2)->setData(xMark, yMark);
-        m_ui->topView->graph(2)->setPen(QPen(Qt::black));
-        m_ui->topView->graph(2)->setLineStyle(QCPGraph::lsNone);
-        m_ui->topView->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
+        mTopView->addGraph();
+        mTopView->graph(2)->setData(xMark, yMark);
+        mTopView->graph(2)->setPen(QPen(Qt::black));
+        mTopView->graph(2)->setLineStyle(QCPGraph::lsNone);
+        mTopView->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
     }
 
     if (!m_data.empty())
@@ -847,30 +903,30 @@ void MainWindow::updateViewData()
             }
         }
 
-        QCPGraph *cur = m_ui->leftView->addGraph();
+        QCPGraph *cur = mLeftView->addGraph();
         cur->setData(xMark, zMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
         cur->setScatterStyle(QCPScatterStyle::ssPlus);
 
-        cur = m_ui->frontView->addGraph();
+        cur = mFrontView->addGraph();
         cur->setData(yMark, zMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
         cur->setScatterStyle(QCPScatterStyle::ssPlus);
 
-        cur = m_ui->topView->addGraph();
+        cur = mTopView->addGraph();
         cur->setData(xMark, yMark);
         cur->setPen(QPen(Qt::black));
         cur->setLineStyle(QCPGraph::lsNone);
         cur->setScatterStyle(QCPScatterStyle::ssPlus);
     }
 
-    addNorthArrow(m_ui->topView);
+    addNorthArrow(mTopView);
 
-    m_ui->leftView->replot();
-    m_ui->frontView->replot();
-    m_ui->topView->replot();
+    mLeftView->replot();
+    mFrontView->replot();
+    mTopView->replot();
 }
 
 void MainWindow::addNorthArrow(
@@ -1071,9 +1127,9 @@ void MainWindow::updateTool()
 void MainWindow::onTopView_mousePress(
         QMouseEvent *event)
 {
-    if (m_ui->topView->axisRect()->rect().contains(event->pos()))
+    if (mTopView->axisRect()->rect().contains(event->pos()))
     {
-        m_topViewBeginPos = event->pos() - m_ui->topView->axisRect()->center();
+        m_topViewBeginPos = event->pos() - mTopView->axisRect()->center();
         m_topViewPan = true;
     }
 }
@@ -1091,7 +1147,7 @@ void MainWindow::onTopView_mouseMove(
     {
         const double pi = 3.14159265359;
 
-        QRect axisRect = m_ui->topView->axisRect()->rect();
+        QRect axisRect = mTopView->axisRect()->rect();
         QPoint endPos = event->pos() - axisRect.center();
 /*
         double a1 = atan2((double) m_topViewBeginPos.x(), m_topViewBeginPos.y());
@@ -1112,19 +1168,19 @@ void MainWindow::onTopView_mouseMove(
         m_topViewBeginPos = endPos;
     }
 
-    onView_mouseMove(m_ui->topView, event);
+    onView_mouseMove(mTopView, event);
 }
 
 void MainWindow::onLeftView_mouseMove(
         QMouseEvent *event)
 {
-    onView_mouseMove(m_ui->leftView, event);
+    onView_mouseMove(mLeftView, event);
 }
 
 void MainWindow::onFrontView_mouseMove(
         QMouseEvent *event)
 {
-    onView_mouseMove(m_ui->frontView, event);
+    onView_mouseMove(mFrontView, event);
 }
 
 void MainWindow::onView_mouseMove(
@@ -1275,72 +1331,5 @@ void MainWindow::on_actionImportGates_triggered()
         }
     }
 
-    updateViewData();
-}
-
-void MainWindow::onPlotArea_expand(
-        QPoint pos,
-        QPoint angleDelta)
-{
-    QRect windowRect = m_ui->plotArea->rect();
-    QRect axisRect = m_ui->plotArea->axisRect()->rect();
-
-    qDebug() << windowRect;
-    qDebug() << axisRect;
-
-    double multiplier = exp((double) angleDelta.y() / 500);
-
-    qDebug() << multiplier;
-
-    QRect newAxisRect(pos.x() + (axisRect.x() - pos.x()) * multiplier,
-                      pos.y() + (axisRect.y() - pos.y()) * multiplier,
-                      axisRect.width() * multiplier,
-                      axisRect.height() * multiplier);
-
-    qDebug() << newAxisRect;
-
-    QRect newWindowRect(newAxisRect.x() + windowRect.x() - axisRect.x(),
-                        newAxisRect.y() + windowRect.y() - axisRect.y(),
-                        newAxisRect.width() + windowRect.width() - axisRect.width(),
-                        newAxisRect.height() + windowRect.height() - axisRect.height());
-
-    qDebug() << newWindowRect;
-
-    QRect finalWindowRect(QPoint(m_ui->vSplitter->rect().left(),
-                                 m_ui->vSplitter->rect().top()),
-                          QPoint(m_ui->vSplitter->rect().right(),
-                                 qMin(m_ui->vSplitter->rect().bottom(), newWindowRect.bottom())));
-
-    qDebug() << finalWindowRect;
-
-    QRect finalAxisRect(finalWindowRect.x() + axisRect.x() - windowRect.x(),
-                        finalWindowRect.y() + axisRect.y() - windowRect.y(),
-                        finalWindowRect.width() + axisRect.width() - windowRect.width(),
-                        finalWindowRect.height() + axisRect.height() - windowRect.height());
-
-    qDebug() << finalAxisRect;
-
-    QCPRange xRange = m_ui->plotArea->xAxis->range();
-    QCPRange y1Range = m_ui->plotArea->yAxis->range();
-    QCPRange y2Range = m_ui->plotArea->yAxis2->range();
-
-    qDebug() << xRange.lower << xRange.upper;
-    qDebug() << y1Range.lower << y1Range.upper;
-    qDebug() << y2Range.lower << y2Range.upper;
-
-    double xScale = xRange.size() / newAxisRect.width();
-
-    qDebug() << xScale;
-
-    QCPRange newXRange(xRange.lower + (finalAxisRect.left() - newAxisRect.left()) * xScale,
-                       xRange.lower + (finalAxisRect.right() - newAxisRect.left()) * xScale);
-
-    qDebug() << newXRange.lower << newXRange.upper;
-
-    m_ui->plotArea->xAxis->setRange(newXRange);
-
-    m_ui->vSplitter->setSizes(QList< int > () << finalWindowRect.height() << m_ui->vSplitter->rect().height() - finalWindowRect.height());
-
-    updateYRanges();
     updateViewData();
 }
