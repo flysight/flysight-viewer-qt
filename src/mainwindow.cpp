@@ -19,6 +19,27 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
+    // Intitialize plot area
+    initPlot();
+
+    // Initialize 3D views
+    initViews();
+
+    m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
+}
+
+MainWindow::~MainWindow()
+{
+    while (!m_plotValues.isEmpty())
+    {
+        delete m_plotValues.takeLast();
+    }
+
+    delete m_ui;
+}
+
+void MainWindow::initPlot()
+{
     m_xAxisTitlesMetric.append(tr("Time (s)"));
     m_xAxisTitlesMetric.append(tr("Horizontal Distance (m)"));
     m_xAxisTitlesMetric.append(tr("Total Distance (m)"));
@@ -40,14 +61,13 @@ MainWindow::MainWindow(
         v->readSettings();
     }
 
-    m_ui->actionElevation->setChecked(true);
-    m_ui->actionVerticalSpeed->setChecked(true);
-
-    m_ui->vSplitter->setSizes(QList< int > () << 100 << 100);
-
-    m_ui->topView->setMouseTracking(true);
-    m_ui->leftView->setMouseTracking(true);
-    m_ui->frontView->setMouseTracking(true);
+    m_ui->actionElevation->setChecked(m_plotValues[Elevation]->visible());
+    m_ui->actionVerticalSpeed->setChecked(m_plotValues[VerticalSpeed]->visible());
+    m_ui->actionHorizontalSpeed->setChecked(m_plotValues[HorizontalSpeed]->visible());
+    m_ui->actionTotalSpeed->setChecked(m_plotValues[TotalSpeed]->visible());
+    m_ui->actionDiveAngle->setChecked(m_plotValues[DiveAngle]->visible());
+    m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
+    m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -62,6 +82,19 @@ MainWindow::MainWindow(
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
+    connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
+            this, SLOT(onPlotArea_expand(QPoint, QPoint)));
+
+    m_ui->plotArea->setTool(DataPlot::Pan);
+    updateTool();
+}
+
+void MainWindow::initViews()
+{
+    m_ui->topView->setMouseTracking(true);
+    m_ui->leftView->setMouseTracking(true);
+    m_ui->frontView->setMouseTracking(true);
+
     connect(m_ui->topView, SIGNAL(mousePress(QMouseEvent *)),
             this, SLOT(onTopView_mousePress(QMouseEvent *)));
     connect(m_ui->topView, SIGNAL(mouseRelease(QMouseEvent *)),
@@ -73,22 +106,6 @@ MainWindow::MainWindow(
             this, SLOT(onLeftView_mouseMove(QMouseEvent *)));
     connect(m_ui->frontView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onFrontView_mouseMove(QMouseEvent *)));
-
-    connect(m_ui->plotArea, SIGNAL(expand(QPoint, QPoint)),
-            this, SLOT(onPlotArea_expand(QPoint, QPoint)));
-
-    m_ui->plotArea->setTool(DataPlot::Pan);
-    updateTool();
-}
-
-MainWindow::~MainWindow()
-{
-    while (!m_plotValues.isEmpty())
-    {
-        delete m_plotValues.takeLast();
-    }
-
-    delete m_ui;
 }
 
 void MainWindow::closeEvent(

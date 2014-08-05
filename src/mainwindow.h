@@ -108,6 +108,9 @@ private:
 
     double                m_timeStep;
 
+    void initPlot();
+    void initViews();
+
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
 
