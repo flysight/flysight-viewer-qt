@@ -43,9 +43,6 @@ private slots:
     void on_actionZoom_triggered();
     void on_actionMeasure_triggered();
 
-    void on_actionMetric_triggered();
-    void on_actionImperial_triggered();
-
     void on_actionTime_triggered();
     void on_actionDistance2D_triggered();
     void on_actionDistance3D_triggered();
@@ -65,6 +62,7 @@ private slots:
     void onFrontView_mouseMove(QMouseEvent *event);
 
     void on_actionImportGates_triggered();
+    void on_actionPreferences_triggered();
 
 private:
     typedef enum {

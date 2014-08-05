@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     dataplot.cpp \
     dataview.cpp \
     waypoint.cpp \
-    datapoint.cpp
+    datapoint.cpp \
+    configdialog.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -26,8 +27,10 @@ HEADERS  += mainwindow.h \
     dataplot.h \
     dataview.h \
     waypoint.h \
-    plotvalue.h
+    plotvalue.h \
+    configdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    configdialog.ui
 
 RC_FILE += FlySightViewer.rc

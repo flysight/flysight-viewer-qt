@@ -36,6 +36,8 @@
     <addaction name="actionImport"/>
     <addaction name="actionImportGates"/>
     <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuPlots">
@@ -58,13 +60,6 @@
     <addaction name="actionDistance2D"/>
     <addaction name="actionDistance3D"/>
    </widget>
-   <widget class="QMenu" name="menuUnits">
-    <property name="title">
-     <string>&amp;Units</string>
-    </property>
-    <addaction name="actionMetric"/>
-    <addaction name="actionImperial"/>
-   </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
      <string>&amp;Tools</string>
@@ -84,7 +79,6 @@
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
-   <addaction name="menuUnits"/>
    <addaction name="menu_Tools"/>
    <addaction name="menuWindow"/>
   </widget>
@@ -278,6 +272,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
    </property>
   </action>
  </widget>
