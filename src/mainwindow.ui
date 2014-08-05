@@ -11,10 +11,22 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>FlySight Viewer</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="DataPlot" name="plotArea" native="true"/>
     </item>
@@ -35,6 +47,8 @@
     </property>
     <addaction name="actionImport"/>
     <addaction name="actionImportGates"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -58,13 +72,6 @@
     <addaction name="actionDistance2D"/>
     <addaction name="actionDistance3D"/>
    </widget>
-   <widget class="QMenu" name="menuUnits">
-    <property name="title">
-     <string>&amp;Units</string>
-    </property>
-    <addaction name="actionMetric"/>
-    <addaction name="actionImperial"/>
-   </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
      <string>&amp;Tools</string>
@@ -84,7 +91,6 @@
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
-   <addaction name="menuUnits"/>
    <addaction name="menu_Tools"/>
    <addaction name="menuWindow"/>
   </widget>
@@ -278,6 +284,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
    </property>
   </action>
  </widget>

@@ -21,7 +21,7 @@ class PlotValue: public QObject
 public:
     typedef enum
     {
-        Metric,
+        Metric = 0,
         Imperial
     } Units;
 

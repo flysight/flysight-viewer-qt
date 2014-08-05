@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QToolTip>
 
+#include "configdialog.h"
 #include "dataview.h"
 
 MainWindow::MainWindow(
@@ -45,18 +46,22 @@ MainWindow::~MainWindow()
 void MainWindow::writeSettings()
 {
     QSettings settings("FlySight", "Viewer");
+
     settings.beginGroup("mainWindow");
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
+    settings.setValue("units", m_units);
     settings.endGroup();
 }
 
 void MainWindow::readSettings()
 {
     QSettings settings("FlySight", "Viewer");
+
     settings.beginGroup("mainWindow");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
+    m_units = (PlotValue::Units) settings.value("units").toInt();
     settings.endGroup();
 }
 
@@ -1039,20 +1044,6 @@ void MainWindow::on_actionHorizontalSpeed_triggered()
     updatePlotData();
 }
 
-void MainWindow::on_actionMetric_triggered()
-{
-    m_units = PlotValue::Metric;
-    initPlotData();
-    updateViewData();
-}
-
-void MainWindow::on_actionImperial_triggered()
-{
-    m_units = PlotValue::Imperial;
-    initPlotData();
-    updateViewData();
-}
-
 void MainWindow::on_actionTime_triggered()
 {
     m_xAxis = Time;
@@ -1332,4 +1323,20 @@ void MainWindow::on_actionImportGates_triggered()
     }
 
     updateViewData();
+}
+
+void MainWindow::on_actionPreferences_triggered()
+{
+    ConfigDialog dlg;
+
+    dlg.setUnits(m_units);
+
+    dlg.exec();
+
+    if (m_units != dlg.units())
+    {
+        m_units = dlg.units();
+        initPlotData();
+        updateViewData();
+    }
 }
