@@ -66,8 +66,6 @@ private slots:
 
     void on_actionImportGates_triggered();
 
-    void onPlotArea_expand(QPoint pos, QPoint angleDelta);
-
 private:
     typedef enum {
         Time,
@@ -107,6 +105,13 @@ private:
     QVector< DataPoint >  m_waypoints;
 
     double                m_timeStep;
+
+    DataView             *mLeftView;
+    DataView             *mTopView;
+    DataView             *mFrontView;
+
+    void writeSettings();
+    void readSettings();
 
     void initPlot();
     void initViews();

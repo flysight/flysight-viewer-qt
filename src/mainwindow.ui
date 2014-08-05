@@ -14,22 +14,9 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QSplitter" name="vSplitter">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="DataPlot" name="plotArea" native="true"/>
-      <widget class="QSplitter" name="hSplitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="DataView" name="leftView" native="true"/>
-       <widget class="DataView" name="topView" native="true"/>
-       <widget class="DataView" name="frontView" native="true"/>
-      </widget>
-     </widget>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="DataPlot" name="plotArea" native="true"/>
     </item>
    </layout>
   </widget>
@@ -86,11 +73,20 @@
     <addaction name="actionZoom"/>
     <addaction name="actionMeasure"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <addaction name="actionShowLeftView"/>
+    <addaction name="actionShowTopView"/>
+    <addaction name="actionShowFrontView"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
    <addaction name="menuUnits"/>
    <addaction name="menu_Tools"/>
+   <addaction name="menuWindow"/>
   </widget>
   <action name="actionImport">
    <property name="text">
@@ -251,6 +247,39 @@
     <string>M</string>
    </property>
   </action>
+  <action name="actionShowLeftView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Side View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+1</string>
+   </property>
+  </action>
+  <action name="actionShowTopView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>T&amp;op View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+2</string>
+   </property>
+  </action>
+  <action name="actionShowFrontView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Front View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -258,12 +287,6 @@
    <class>DataPlot</class>
    <extends>QWidget</extends>
    <header>dataplot.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DataView</class>
-   <extends>QWidget</extends>
-   <header>dataview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
