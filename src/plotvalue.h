@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <QColor>
+#include <QSettings>
 #include <QString>
 
 #include "datapoint.h"
@@ -45,12 +46,35 @@ public:
     bool visible() const { return mVisible; }
     void setVisible(bool visible) { mVisible = visible; }
 
+    void readSettings()
+    {
+        QSettings settings("FlySight", "Viewer");
+        settings.beginGroup("plotValue/" + key());
+        mVisible = settings.value("visible").toBool();
+        settings.endGroup();
+    }
+
+    void writeSettings() const
+    {
+        QSettings settings("FlySight", "Viewer");
+        settings.beginGroup("plotValue/" + key());
+        settings.setValue("visible", mVisible);
+        settings.endGroup();
+    }
+
 private:
     bool mVisible;
+
+    const QString key() const
+    {
+        return metaObject()->className();
+    }
 };
 
 class PlotElevation: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotElevation() {}
     const QString title(Units units)
@@ -68,6 +92,8 @@ public:
 
 class PlotVerticalSpeed: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotVerticalSpeed() {}
     const QString title(Units units)
@@ -85,6 +111,8 @@ public:
 
 class PlotHorizontalSpeed: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotHorizontalSpeed() {}
     const QString title(Units units)
@@ -102,6 +130,8 @@ public:
 
 class PlotTotalSpeed: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotTotalSpeed() {}
     const QString title(Units units)
@@ -119,6 +149,8 @@ public:
 
 class PlotDiveAngle: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotDiveAngle() {}
     const QString title(Units units)
@@ -137,6 +169,8 @@ public:
 
 class PlotCurvature: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotCurvature() {}
     const QString title(Units units)
@@ -154,6 +188,8 @@ public:
 
 class PlotGlideRatio: public PlotValue
 {
+    Q_OBJECT
+
 public:
     PlotGlideRatio() {}
     const QString title(Units units)

@@ -35,8 +35,10 @@ MainWindow::MainWindow(
     m_plotValues.append(new PlotCurvature);
     m_plotValues.append(new PlotGlideRatio);
 
-    m_plotValues[Elevation]->setVisible(true);
-    m_plotValues[VerticalSpeed]->setVisible(true);
+    foreach (PlotValue *v, m_plotValues)
+    {
+        v->readSettings();
+    }
 
     m_ui->actionElevation->setChecked(true);
     m_ui->actionVerticalSpeed->setChecked(true);
@@ -87,6 +89,17 @@ MainWindow::~MainWindow()
     }
 
     delete m_ui;
+}
+
+void MainWindow::closeEvent(
+        QCloseEvent *event)
+{
+    foreach (PlotValue *v, m_plotValues)
+    {
+        v->writeSettings();
+    }
+
+    event->accept();
 }
 
 void MainWindow::onDataPlot_zoom(const QCPRange &range)
