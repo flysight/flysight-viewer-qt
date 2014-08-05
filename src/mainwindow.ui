@@ -160,6 +160,9 @@
    <property name="text">
     <string>&amp;Time</string>
    </property>
+   <property name="shortcut">
+    <string>T</string>
+   </property>
   </action>
   <action name="actionDistance2D">
    <property name="checkable">
@@ -167,6 +170,9 @@
    </property>
    <property name="text">
     <string>Horizontal Distance</string>
+   </property>
+   <property name="shortcut">
+    <string>2</string>
    </property>
   </action>
   <action name="actionTotalSpeed">
@@ -197,6 +203,9 @@
    </property>
    <property name="text">
     <string>Total Distance</string>
+   </property>
+   <property name="shortcut">
+    <string>3</string>
    </property>
   </action>
   <action name="actionImportGates">
