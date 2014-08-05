@@ -142,6 +142,7 @@ private:
 
     void updateTool();
     void updateBottom(XAxisType xAxis);
+    void updateBottomActions();
 
     DataPoint interpolateData(double x);
     void mark(const DataPoint &dp);

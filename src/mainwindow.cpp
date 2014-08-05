@@ -23,14 +23,14 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
+    // Restore window state
+    readSettings();
+
     // Intitialize plot area
     initPlot();
 
     // Initialize 3D views
     initViews();
-
-    // Restore window state
-    readSettings();
 }
 
 MainWindow::~MainWindow()
@@ -51,6 +51,7 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
+    settings.setValue("xAxis", m_xAxis);
     settings.endGroup();
 }
 
@@ -62,6 +63,7 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units").toInt();
+    m_xAxis = (XAxisType) settings.value("xAxis").toInt();
     settings.endGroup();
 }
 
@@ -96,9 +98,7 @@ void MainWindow::initPlot()
     m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
     m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
 
-    m_ui->actionTime->setChecked(m_xAxis == Time);
-    m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
-    m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
+    updateBottomActions();
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -1080,6 +1080,11 @@ void MainWindow::updateBottom(
     updateYRanges();
     m_ui->plotArea->replot();
 
+    updateBottomActions();
+}
+
+void MainWindow::updateBottomActions()
+{
     m_ui->actionTime->setChecked(m_xAxis == Time);
     m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
     m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
