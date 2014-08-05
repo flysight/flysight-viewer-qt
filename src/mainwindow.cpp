@@ -96,6 +96,10 @@ void MainWindow::initPlot()
     m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
     m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
 
+    m_ui->actionTime->setChecked(m_xAxis == Time);
+    m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
+    m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
+
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
     connect(m_ui->plotArea, SIGNAL(pan(double, double)),
@@ -1046,20 +1050,39 @@ void MainWindow::on_actionHorizontalSpeed_triggered()
 
 void MainWindow::on_actionTime_triggered()
 {
-    m_xAxis = Time;
-    initPlotData();
+    updateBottom(Time);
 }
 
 void MainWindow::on_actionDistance2D_triggered()
 {
-    m_xAxis = Distance2D;
-    initPlotData();
+    updateBottom(Distance2D);
 }
 
 void MainWindow::on_actionDistance3D_triggered()
 {
-    m_xAxis = Distance3D;
+    updateBottom(Distance3D);
+}
+
+void MainWindow::updateBottom(
+        XAxisType xAxis)
+{
+    QCPRange range = m_ui->plotArea->xAxis->range();
+
+    DataPoint dpStart = interpolateData(range.lower);
+    DataPoint dpEnd = interpolateData(range.upper);
+
+    m_xAxis = xAxis;
     initPlotData();
+
+    m_ui->plotArea->xAxis->setRange(
+                getXValue(dpStart, m_xAxis),
+                getXValue(dpEnd, m_xAxis));
+    updateYRanges();
+    m_ui->plotArea->replot();
+
+    m_ui->actionTime->setChecked(m_xAxis == Time);
+    m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
+    m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()

@@ -141,6 +141,7 @@ private:
                                 const QPointF &point, double &mu);
 
     void updateTool();
+    void updateBottom(XAxisType xAxis);
 
     DataPoint interpolateData(double x);
     void mark(const DataPoint &dp);
