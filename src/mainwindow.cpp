@@ -108,6 +108,8 @@ void MainWindow::initPlot()
             this, SLOT(onDataPlot_measure(double, double)));
     connect(m_ui->plotArea, SIGNAL(zero(double)),
             this, SLOT(onDataPlot_zero(double)));
+    connect(m_ui->plotArea, SIGNAL(ground(double)),
+            this, SLOT(onDataPlot_ground(double)));
 
     connect(m_ui->plotArea, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
@@ -296,7 +298,7 @@ void MainWindow::onDataPlot_zero(
 
     DataPoint dp0 = interpolateData(xMark);
 
-    for (int i = 0; i < m_data.size(); ++ i)
+    for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
 
@@ -312,6 +314,31 @@ void MainWindow::onDataPlot_zero(
     double x0 = getXValue(dp0, m_xAxis);
     QCPRange range = m_ui->plotArea->xAxis->range();
     range = QCPRange (range.lower - x0, range.upper - x0);
+
+    initPlotData();
+    updateViewData();
+
+    m_ui->plotArea->xAxis->setRange(range);
+    m_ui->plotArea->replot();
+
+    m_ui->plotArea->setTool(mPrevTool);
+    updateTool();
+}
+
+void MainWindow::onDataPlot_ground(
+        double xMark)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateData(xMark);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.alt -= dp0.alt;
+    }
+
+    QCPRange range = m_ui->plotArea->xAxis->range();
 
     initPlotData();
     updateViewData();
@@ -557,7 +584,7 @@ void MainWindow::on_actionImport_triggered()
 
         dp.x = distance * sin(bearing);
         dp.y = distance * cos(bearing);
-        dp.z = dp.hMSL - dp0.hMSL;
+        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
 
         if (i > 0)
         {
@@ -1174,8 +1201,21 @@ void MainWindow::on_actionMeasure_triggered()
 
 void MainWindow::on_actionZero_triggered()
 {
-    mPrevTool = m_ui->plotArea->tool();
+    if (m_ui->plotArea->tool() != DataPlot::Ground)
+    {
+        mPrevTool = m_ui->plotArea->tool();
+    }
     m_ui->plotArea->setTool(DataPlot::Zero);
+    updateTool();
+}
+
+void MainWindow::on_actionGround_triggered()
+{
+    if (m_ui->plotArea->tool() != DataPlot::Zero)
+    {
+        mPrevTool = m_ui->plotArea->tool();
+    }
+    m_ui->plotArea->setTool(DataPlot::Ground);
     updateTool();
 }
 
@@ -1185,6 +1225,7 @@ void MainWindow::updateTool()
     m_ui->actionZoom->setChecked(m_ui->plotArea->tool() == DataPlot::Zoom);
     m_ui->actionMeasure->setChecked(m_ui->plotArea->tool() == DataPlot::Measure);
     m_ui->actionZero->setChecked(m_ui->plotArea->tool() == DataPlot::Zero);
+    m_ui->actionGround->setChecked(m_ui->plotArea->tool() == DataPlot::Ground);
 }
 
 void MainWindow::onTopView_mousePress(

@@ -85,8 +85,8 @@ public:
     const QColor color() { return Qt::black ; }
     double value(const DataPoint &dp, Units units)
     {
-        if (units == Metric) return dp.z;
-        else                 return dp.z * METERS_TO_FEET;
+        if (units == Metric) return dp.alt;
+        else                 return dp.alt * METERS_TO_FEET;
     }
 };
 

@@ -39,6 +39,10 @@ void DataPlot::mouseReleaseEvent(
     {
         emit zero(xAxis->pixelToCoord(endPos.x()));
     }
+    if (m_dragging && m_tool == Ground)
+    {
+        emit ground(xAxis->pixelToCoord(endPos.x()));
+    }
 
     if (m_dragging)
     {
