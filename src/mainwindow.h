@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QVector>
 
+#include "dataplot.h"
 #include "datapoint.h"
 #include "plotvalue.h"
 
@@ -42,6 +43,8 @@ private slots:
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
     void on_actionMeasure_triggered();
+    void on_actionZero_triggered();
+    void on_actionGround_triggered();
 
     void on_actionTime_triggered();
     void on_actionDistance2D_triggered();
@@ -50,6 +53,8 @@ private slots:
     void onDataPlot_zoom(const QCPRange &range);
     void onDataPlot_pan(double xBegin, double xEnd);
     void onDataPlot_measure(double xBegin, double xEnd);
+    void onDataPlot_zero(double xMark);
+    void onDataPlot_ground(double xMark);
 
     void onDataPlot_mark(double xMark);
     void onDataPlot_clear();    
@@ -107,6 +112,8 @@ private:
     DataView             *mLeftView;
     DataView             *mTopView;
     DataView             *mFrontView;
+
+    DataPlot::Tool        mPrevTool;
 
     void writeSettings();
     void readSettings();

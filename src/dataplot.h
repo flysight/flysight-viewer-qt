@@ -9,7 +9,7 @@ class DataPlot : public QCustomPlot
 
 public:
     typedef enum {
-        Pan, Zoom, Measure
+        Pan, Zoom, Measure, Zero, Ground
     } Tool;
 
     explicit DataPlot(QWidget *parent = 0);
@@ -39,6 +39,8 @@ signals:
     void zoom(const QCPRange &range);
     void pan(double xBegin, double xEnd);
     void measure(double xBegin, double xEnd);
+    void zero(double xMark);
+    void ground(double xMark);
 
     void mark(double xMark);
     void clear();

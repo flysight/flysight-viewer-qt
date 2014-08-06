@@ -23,6 +23,7 @@ DataPoint interpolate(const DataPoint &p1,
     ret.x = p1.x + a * (p2.x - p1.x);
     ret.y = p1.y + a * (p2.y - p1.y);
     ret.z = p1.z + a * (p2.z - p1.z);
+    ret.alt = p1.alt + a * (p2.alt - p1.alt);
 
     ret.dist2D = p1.dist2D + a * (p2.dist2D - p1.dist2D);
     ret.dist3D = p1.dist3D + a * (p2.dist3D - p1.dist3D);

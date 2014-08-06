@@ -106,6 +106,10 @@ void MainWindow::initPlot()
             this, SLOT(onDataPlot_pan(double, double)));
     connect(m_ui->plotArea, SIGNAL(measure(double, double)),
             this, SLOT(onDataPlot_measure(double, double)));
+    connect(m_ui->plotArea, SIGNAL(zero(double)),
+            this, SLOT(onDataPlot_zero(double)));
+    connect(m_ui->plotArea, SIGNAL(ground(double)),
+            this, SLOT(onDataPlot_ground(double)));
 
     connect(m_ui->plotArea, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
@@ -287,6 +291,65 @@ DataPoint MainWindow::interpolateData(
     }
 }
 
+void MainWindow::onDataPlot_zero(
+        double xMark)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateData(xMark);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        dp.t -= dp0.t;
+        dp.x -= dp0.x;
+        dp.y -= dp0.y;
+        dp.z -= dp0.z;
+
+        dp.dist2D -= dp0.dist2D;
+        dp.dist3D -= dp0.dist3D;
+    }
+
+    double x0 = getXValue(dp0, m_xAxis);
+    QCPRange range = m_ui->plotArea->xAxis->range();
+    range = QCPRange (range.lower - x0, range.upper - x0);
+
+    initPlotData();
+    updateViewData();
+
+    m_ui->plotArea->xAxis->setRange(range);
+    m_ui->plotArea->replot();
+
+    m_ui->plotArea->setTool(mPrevTool);
+    updateTool();
+}
+
+void MainWindow::onDataPlot_ground(
+        double xMark)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateData(xMark);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.alt -= dp0.alt;
+    }
+
+    QCPRange range = m_ui->plotArea->xAxis->range();
+
+    initPlotData();
+    updateViewData();
+
+    m_ui->plotArea->xAxis->setRange(range);
+    m_ui->plotArea->replot();
+
+    m_ui->plotArea->setTool(mPrevTool);
+    updateTool();
+}
+
 void MainWindow::onDataPlot_mark(
         double xMark)
 {
@@ -341,7 +404,7 @@ void MainWindow::mark(
 
     m_xView = dp.x;
     m_yView = dp.y;
-    m_zView = dp.hMSL;
+    m_zView = dp.z;
 
     m_markActive = true;
 
@@ -521,7 +584,7 @@ void MainWindow::on_actionImport_triggered()
 
         dp.x = distance * sin(bearing);
         dp.y = distance * cos(bearing);
-        dp.z = dp.hMSL - dp0.hMSL;
+        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
 
         if (i > 0)
         {
@@ -777,13 +840,13 @@ void MainWindow::updateViewData()
             {
                 x.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
                 y.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
-                z.append(dp.hMSL - m_data.back().hMSL);
+                z.append(dp.z);
             }
             else
             {
                 x.append((dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation)) * METERS_TO_FEET);
                 y.append((dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation)) * METERS_TO_FEET);
-                z.append((dp.hMSL - m_data.back().hMSL) * METERS_TO_FEET);
+                z.append((dp.z) * METERS_TO_FEET);
             }
 
             if (first)
@@ -855,13 +918,13 @@ void MainWindow::updateViewData()
         {
             xMark.append(m_xView *  cos(m_viewDataRotation) + m_yView * sin(m_viewDataRotation));
             yMark.append(m_xView * -sin(m_viewDataRotation) + m_yView * cos(m_viewDataRotation));
-            zMark.append(m_zView - m_data.back().hMSL);
+            zMark.append(m_zView);
         }
         else
         {
             xMark.append((m_xView *  cos(m_viewDataRotation) + m_yView * sin(m_viewDataRotation)) * METERS_TO_FEET);
             yMark.append((m_xView * -sin(m_viewDataRotation) + m_yView * cos(m_viewDataRotation)) * METERS_TO_FEET);
-            zMark.append((m_zView - m_data.back().hMSL) * METERS_TO_FEET);
+            zMark.append((m_zView) * METERS_TO_FEET);
         }
 
         mLeftView->addGraph();
@@ -902,13 +965,13 @@ void MainWindow::updateViewData()
             {
                 xMark.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
                 yMark.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
-                zMark.append(dp.hMSL - m_data.back().hMSL);
+                zMark.append(dp.z);
             }
             else
             {
                 xMark.append((dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation)) * METERS_TO_FEET);
                 yMark.append((dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation)) * METERS_TO_FEET);
-                zMark.append((dp.hMSL - m_data.back().hMSL) * METERS_TO_FEET);
+                zMark.append((dp.z) * METERS_TO_FEET);
             }
         }
 
@@ -1136,11 +1199,33 @@ void MainWindow::on_actionMeasure_triggered()
     updateTool();
 }
 
+void MainWindow::on_actionZero_triggered()
+{
+    if (m_ui->plotArea->tool() != DataPlot::Ground)
+    {
+        mPrevTool = m_ui->plotArea->tool();
+    }
+    m_ui->plotArea->setTool(DataPlot::Zero);
+    updateTool();
+}
+
+void MainWindow::on_actionGround_triggered()
+{
+    if (m_ui->plotArea->tool() != DataPlot::Zero)
+    {
+        mPrevTool = m_ui->plotArea->tool();
+    }
+    m_ui->plotArea->setTool(DataPlot::Ground);
+    updateTool();
+}
+
 void MainWindow::updateTool()
 {
     m_ui->actionPan->setChecked(m_ui->plotArea->tool() == DataPlot::Pan);
     m_ui->actionZoom->setChecked(m_ui->plotArea->tool() == DataPlot::Zoom);
     m_ui->actionMeasure->setChecked(m_ui->plotArea->tool() == DataPlot::Measure);
+    m_ui->actionZero->setChecked(m_ui->plotArea->tool() == DataPlot::Zero);
+    m_ui->actionGround->setChecked(m_ui->plotArea->tool() == DataPlot::Ground);
 }
 
 void MainWindow::onTopView_mousePress(

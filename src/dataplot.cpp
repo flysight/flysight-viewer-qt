@@ -26,14 +26,22 @@ void DataPlot::mouseReleaseEvent(
 {
     QPoint endPos = event->pos();
 
-    QCPRange range(qMin(xAxis->pixelToCoord(m_beginPos.x()),
-                        xAxis->pixelToCoord(endPos.x())),
-                   qMax(xAxis->pixelToCoord(m_beginPos.x()),
-                        xAxis->pixelToCoord(endPos.x())));
-
     if (m_dragging && m_tool == Zoom)
     {
+        QCPRange range(qMin(xAxis->pixelToCoord(m_beginPos.x()),
+                            xAxis->pixelToCoord(endPos.x())),
+                       qMax(xAxis->pixelToCoord(m_beginPos.x()),
+                            xAxis->pixelToCoord(endPos.x())));
+
         emit zoom(range);
+    }
+    if (m_dragging && m_tool == Zero)
+    {
+        emit zero(xAxis->pixelToCoord(endPos.x()));
+    }
+    if (m_dragging && m_tool == Ground)
+    {
+        emit ground(xAxis->pixelToCoord(endPos.x()));
     }
 
     if (m_dragging)

@@ -20,6 +20,7 @@ public:
     double      x;
     double      y;
     double      z;
+    double      alt;
 
     double      dist2D;
     double      dist3D;
