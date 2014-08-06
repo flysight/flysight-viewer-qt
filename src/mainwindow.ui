@@ -79,6 +79,7 @@
     <addaction name="actionPan"/>
     <addaction name="actionZoom"/>
     <addaction name="actionMeasure"/>
+    <addaction name="actionZero"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -307,6 +308,17 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="actionZero">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Zer&amp;o</string>
+   </property>
+   <property name="shortcut">
+    <string>0</string>
    </property>
   </action>
  </widget>
