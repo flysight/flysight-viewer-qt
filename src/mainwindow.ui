@@ -317,10 +317,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Set Zer&amp;o</string>
+    <string>Set E&amp;xit</string>
    </property>
    <property name="shortcut">
-    <string>0</string>
+    <string>X</string>
    </property>
   </action>
   <action name="actionGround">
