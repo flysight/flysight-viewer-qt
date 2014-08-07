@@ -443,7 +443,7 @@ int MainWindow::findIndexAboveX(
     {
         DataPoint &dp = m_data[i];
 
-        if (getXValue(dp, m_xAxis) < x)
+        if (getXValue(dp, m_xAxis) <= x)
             return i + 1;
     }
 
@@ -471,7 +471,7 @@ int MainWindow::findIndexAboveT(
     {
         DataPoint &dp = m_data[i];
 
-        if (dp.t < t)
+        if (dp.t <= t)
             return i + 1;
     }
 
