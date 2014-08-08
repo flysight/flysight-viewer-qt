@@ -39,6 +39,10 @@ private slots:
     void on_actionDiveAngle_triggered();
     void on_actionCurvature_triggered();
     void on_actionGlideRatio_triggered();
+    void on_actionHorizontalAccuracy_triggered();
+    void on_actionVerticalAccuracy_triggered();
+    void on_actionSpeedAccuracy_triggered();
+    void on_actionNumberOfSatellites_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -84,6 +88,10 @@ private:
         DiveAngle,
         Curvature,
         GlideRatio,
+        HorizontalAccuracy,
+        VerticalAccuracy,
+        SpeedAccuracy,
+        NumberOfSatellites,
         yaLast
     } YAxisType;
 

@@ -92,6 +92,10 @@ void MainWindow::initPlot()
     m_yValues.append(new PlotDiveAngle);
     m_yValues.append(new PlotCurvature);
     m_yValues.append(new PlotGlideRatio);
+    m_yValues.append(new PlotHorizontalAccuracy);
+    m_yValues.append(new PlotVerticalAccuracy);
+    m_yValues.append(new PlotSpeedAccuracy);
+    m_yValues.append(new PlotNumberOfSatellites);
 
     foreach (PlotValue *v, m_yValues)
     {
@@ -105,6 +109,10 @@ void MainWindow::initPlot()
     m_ui->actionDiveAngle->setChecked(m_yValues[DiveAngle]->visible());
     m_ui->actionCurvature->setChecked(m_yValues[Curvature]->visible());
     m_ui->actionGlideRatio->setChecked(m_yValues[GlideRatio]->visible());
+    m_ui->actionHorizontalAccuracy->setChecked(m_yValues[HorizontalAccuracy]->visible());
+    m_ui->actionVerticalAccuracy->setChecked(m_yValues[VerticalAccuracy]->visible());
+    m_ui->actionSpeedAccuracy->setChecked(m_yValues[SpeedAccuracy]->visible());
+    m_ui->actionNumberOfSatellites->setChecked(m_yValues[NumberOfSatellites]->visible());
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -545,12 +553,24 @@ void MainWindow::on_actionImport_triggered()
         DataPoint pt;
 
         pt.dateTime = QDateTime::fromString(cols[0], Qt::ISODate);
-        pt.lat  = cols[1].toDouble();
-        pt.lon  = cols[2].toDouble();
-        pt.hMSL = cols[3].toDouble();
-        pt.velN = cols[4].toDouble();
-        pt.velE = cols[5].toDouble();
-        pt.velD = cols[6].toDouble();
+
+        pt.lat   = cols[1].toDouble();
+        pt.lon   = cols[2].toDouble();
+        pt.hMSL  = cols[3].toDouble();
+
+        pt.velN  = cols[4].toDouble();
+        pt.velE  = cols[5].toDouble();
+        pt.velD  = cols[6].toDouble();
+
+        pt.hAcc  = cols[7].toDouble();
+        pt.vAcc  = cols[8].toDouble();
+        pt.sAcc  = cols[9].toDouble();
+
+        pt.numSV = cols[11].toDouble();
+
+        //
+        // TODO: Handle newer CSV version
+        //
 
         m_data.append(pt);
     }
@@ -1143,6 +1163,34 @@ void MainWindow::on_actionGlideRatio_triggered()
 {
     m_yValues[GlideRatio]->setVisible(
                 !m_yValues[GlideRatio]->visible());
+    updatePlotData();
+}
+
+void MainWindow::on_actionHorizontalAccuracy_triggered()
+{
+    m_yValues[HorizontalAccuracy]->setVisible(
+                !m_yValues[HorizontalAccuracy]->visible());
+    updatePlotData();
+}
+
+void MainWindow::on_actionVerticalAccuracy_triggered()
+{
+    m_yValues[VerticalAccuracy]->setVisible(
+                !m_yValues[VerticalAccuracy]->visible());
+    updatePlotData();
+}
+
+void MainWindow::on_actionSpeedAccuracy_triggered()
+{
+    m_yValues[SpeedAccuracy]->setVisible(
+                !m_yValues[SpeedAccuracy]->visible());
+    updatePlotData();
+}
+
+void MainWindow::on_actionNumberOfSatellites_triggered()
+{
+    m_yValues[NumberOfSatellites]->setVisible(
+                !m_yValues[NumberOfSatellites]->visible());
     updatePlotData();
 }
 
