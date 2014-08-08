@@ -274,7 +274,7 @@ public:
         Q_UNUSED(units);
         return tr("Number of Satellites");
     }
-    const QColor color() { return Qt::darkGray; }
+    const QColor color() { return Qt::darkCyan; }
     double value(const DataPoint &dp, Units units)
     {
         Q_UNUSED(units);
