@@ -71,7 +71,7 @@ private slots:
 
 private:
     typedef enum {
-        Time,
+        Time = 0,
         Distance2D,
         Distance3D
     } XAxisType;
@@ -90,10 +90,10 @@ private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
 
+    QVector< PlotValue* > m_xValues;
     XAxisType             m_xAxis;
 
-    QVector< QString >    m_xAxisTitlesMetric, m_xAxisTitlesImperial;
-    QVector< PlotValue* > m_plotValues;
+    QVector< PlotValue* > m_yValues;
 
     double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;
