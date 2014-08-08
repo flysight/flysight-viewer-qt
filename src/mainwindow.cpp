@@ -35,9 +35,14 @@ MainWindow::MainWindow(
 
 MainWindow::~MainWindow()
 {
-    while (!m_plotValues.isEmpty())
+    while (!m_xValues.isEmpty())
     {
-        delete m_plotValues.takeLast();
+        delete m_xValues.takeLast();
+    }
+
+    while (!m_yValues.isEmpty())
+    {
+        delete m_yValues.takeLast();
     }
 
     delete m_ui;
@@ -69,36 +74,37 @@ void MainWindow::readSettings()
 
 void MainWindow::initPlot()
 {
-    m_xAxisTitlesMetric.append(tr("Time (s)"));
-    m_xAxisTitlesMetric.append(tr("Horizontal Distance (m)"));
-    m_xAxisTitlesMetric.append(tr("Total Distance (m)"));
+    m_xValues.append(new PlotTime);
+    m_xValues.append(new PlotDistance2D);
+    m_xValues.append(new PlotDistance3D);
 
-    m_xAxisTitlesImperial.append(tr("Time (s)"));
-    m_xAxisTitlesImperial.append(tr("Horizontal Distance (ft)"));
-    m_xAxisTitlesImperial.append(tr("Total Distance (ft)"));
-
-    m_plotValues.append(new PlotElevation);
-    m_plotValues.append(new PlotVerticalSpeed);
-    m_plotValues.append(new PlotHorizontalSpeed);
-    m_plotValues.append(new PlotTotalSpeed);
-    m_plotValues.append(new PlotDiveAngle);
-    m_plotValues.append(new PlotCurvature);
-    m_plotValues.append(new PlotGlideRatio);
-
-    foreach (PlotValue *v, m_plotValues)
+    foreach (PlotValue *v, m_xValues)
     {
         v->readSettings();
     }
 
-    m_ui->actionElevation->setChecked(m_plotValues[Elevation]->visible());
-    m_ui->actionVerticalSpeed->setChecked(m_plotValues[VerticalSpeed]->visible());
-    m_ui->actionHorizontalSpeed->setChecked(m_plotValues[HorizontalSpeed]->visible());
-    m_ui->actionTotalSpeed->setChecked(m_plotValues[TotalSpeed]->visible());
-    m_ui->actionDiveAngle->setChecked(m_plotValues[DiveAngle]->visible());
-    m_ui->actionCurvature->setChecked(m_plotValues[Curvature]->visible());
-    m_ui->actionGlideRatio->setChecked(m_plotValues[GlideRatio]->visible());
-
     updateBottomActions();
+
+    m_yValues.append(new PlotElevation);
+    m_yValues.append(new PlotVerticalSpeed);
+    m_yValues.append(new PlotHorizontalSpeed);
+    m_yValues.append(new PlotTotalSpeed);
+    m_yValues.append(new PlotDiveAngle);
+    m_yValues.append(new PlotCurvature);
+    m_yValues.append(new PlotGlideRatio);
+
+    foreach (PlotValue *v, m_yValues)
+    {
+        v->readSettings();
+    }
+
+    m_ui->actionElevation->setChecked(m_yValues[Elevation]->visible());
+    m_ui->actionVerticalSpeed->setChecked(m_yValues[VerticalSpeed]->visible());
+    m_ui->actionHorizontalSpeed->setChecked(m_yValues[HorizontalSpeed]->visible());
+    m_ui->actionTotalSpeed->setChecked(m_yValues[TotalSpeed]->visible());
+    m_ui->actionDiveAngle->setChecked(m_yValues[DiveAngle]->visible());
+    m_ui->actionCurvature->setChecked(m_yValues[Curvature]->visible());
+    m_ui->actionGlideRatio->setChecked(m_yValues[GlideRatio]->visible());
 
     connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
             this, SLOT(onDataPlot_zoom(const QCPRange &)));
@@ -180,7 +186,7 @@ void MainWindow::closeEvent(
     writeSettings();
 
     // Save plot state
-    foreach (PlotValue *v, m_plotValues)
+    foreach (PlotValue *v, m_yValues)
     {
         v->writeSettings();
     }
@@ -224,39 +230,26 @@ void MainWindow::onDataPlot_measure(
 
     status = QString("<table width='300'>");
 
-    if (m_units == PlotValue::Metric)
-    {
-        const double val = getXValue(dpEnd, m_xAxis)
-                - getXValue(dpStart, m_xAxis);
-        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                .arg(m_xAxisTitlesMetric[m_xAxis])
-                .arg(getXValue(dpEnd, m_xAxis))
-                .arg(val < 0 ? "" : "+")
-                .arg(val);
-    }
-    else
-    {
-        const double val = getXValue(dpEnd, m_xAxis)
-                - getXValue(dpStart, m_xAxis);
-        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                .arg(m_xAxisTitlesImperial[m_xAxis])
-                .arg(getXValue(dpEnd, m_xAxis))
-                .arg(val < 0 ? "" : "+")
-                .arg(val);
-    }
+    const double val = getXValue(dpEnd, m_xAxis)
+            - getXValue(dpStart, m_xAxis);
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+            .arg(m_xValues[m_xAxis]->title(m_units))
+            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
+            .arg(val < 0 ? "" : "+")
+            .arg(val);
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_plotValues[i]->visible())
+        if (m_yValues[i]->visible())
         {
-            const double val = m_plotValues[i]->value(dpEnd, m_units)
-                    - m_plotValues[i]->value(dpStart, m_units);
+            const double val = m_yValues[i]->value(dpEnd, m_units)
+                    - m_yValues[i]->value(dpStart, m_units);
             status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                    .arg(m_plotValues[(YAxisType) i]->title(m_units))
-                    .arg(m_plotValues[i]->value(dpEnd, m_units))
+                    .arg(m_yValues[(YAxisType) i]->title(m_units))
+                    .arg(m_yValues[i]->value(dpEnd, m_units))
                     .arg(val < 0 ? "" : "+")
                     .arg(val)
-                    .arg(m_plotValues[i]->color().name());
+                    .arg(m_yValues[i]->color().name());
         }
     }
 
@@ -355,33 +348,25 @@ void MainWindow::onDataPlot_mark(
 {
     if (m_data.isEmpty()) return;
 
-    mark(interpolateData(xMark));
+    const DataPoint dp = interpolateData(xMark);
+    mark(dp);
 
     QString status;
 
     status = QString("<table width='200'>");
 
-    if (m_units == PlotValue::Metric)
-    {
-        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-                .arg(m_xAxisTitlesMetric[m_xAxis])
-                .arg(m_xPlot);
-    }
-    else
-    {
-        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-                .arg(m_xAxisTitlesImperial[m_xAxis])
-                .arg(m_xPlot);
-    }
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+            .arg(m_xValues[m_xAxis]->title(m_units))
+            .arg(m_xValues[m_xAxis]->value(dp, m_units));
 
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_plotValues[i]->visible())
+        if (m_yValues[i]->visible())
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-                    .arg(m_plotValues[(YAxisType) i]->title(m_units))
+                    .arg(m_yValues[(YAxisType) i]->title(m_units))
                     .arg(m_yPlot[i])
-                    .arg(m_plotValues[i]->color().name());
+                    .arg(m_yValues[i]->color().name());
         }
     }
 
@@ -396,9 +381,9 @@ void MainWindow::mark(
     m_xPlot = getXValue(dp, m_xAxis);
     for (int i = 0; i < yaLast; ++i)
     {
-        if (m_plotValues[i]->visible())
+        if (m_yValues[i]->visible())
         {
-            m_yPlot[i] = m_plotValues[i]->value(dp, m_units);
+            m_yPlot[i] = m_yValues[i]->value(dp, m_units);
         }
     }
 
@@ -485,7 +470,7 @@ void MainWindow::updateYRanges()
     int k = 0;
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_plotValues[j]->visible()) continue;
+        if (!m_yValues[j]->visible()) continue;
 
         double yMin, yMax;
         int iMin, iMax;
@@ -498,7 +483,7 @@ void MainWindow::updateYRanges()
 
             if (range.contains(getXValue(dp, m_xAxis)))
             {
-                double y = m_plotValues[j]->value(dp, m_units);
+                double y = m_yValues[j]->value(dp, m_units);
 
                 if (first)
                 {
@@ -740,15 +725,7 @@ void MainWindow::initPlotData()
     }
 
     m_ui->plotArea->xAxis->setRange(xMin, xMax);
-
-    if (m_units == PlotValue::Metric)
-    {
-        m_ui->plotArea->xAxis->setLabel(m_xAxisTitlesMetric[m_xAxis]);
-    }
-    else
-    {
-        m_ui->plotArea->xAxis->setLabel(m_xAxisTitlesImperial[m_xAxis]);
-    }
+    m_ui->plotArea->xAxis->setLabel(m_xValues[m_xAxis]->title(m_units));
 
     updatePlotData();
 }
@@ -771,20 +748,20 @@ void MainWindow::updatePlotData()
 
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_plotValues[j]->visible()) continue;
+        if (!m_yValues[j]->visible()) continue;
 
         QVector< double > y;
         for (int i = 0; i < m_data.size(); ++i)
         {
             DataPoint &dp = m_data[i];
-            y.append(m_plotValues[j]->value(dp, m_units));
+            y.append(m_yValues[j]->value(dp, m_units));
         }
 
         QCPGraph *graph = m_ui->plotArea->addGraph(
                     m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
-                    m_plotValues[j]->addAxis(m_ui->plotArea, m_units));
+                    m_yValues[j]->addAxis(m_ui->plotArea, m_units));
         graph->setData(x, y);
-        graph->setPen(QPen(m_plotValues[j]->color()));
+        graph->setPen(QPen(m_yValues[j]->color()));
     }
 
     if (m_markActive)
@@ -796,7 +773,7 @@ void MainWindow::updatePlotData()
         int k = 0;
         for (int i = 0; i < yaLast; ++i)
         {
-            if (m_plotValues[i]->visible())
+            if (m_yValues[i]->visible())
             {
                 yMark.clear();
                 yMark.append(m_yPlot[i]);
@@ -1075,39 +1052,27 @@ double MainWindow::getXValue(
         const DataPoint &dp,
         XAxisType axis)
 {
-    switch (axis)
-    {
-    case Time:
-        return dp.t;
-    case Distance2D:
-        if (m_units == PlotValue::Metric) return dp.dist2D;
-        else                   return dp.dist2D * METERS_TO_FEET;
-    case Distance3D:
-        if (m_units == PlotValue::Metric) return dp.dist3D;
-        else                   return dp.dist3D * METERS_TO_FEET;
-    default:
-        return 0;
-    }
+    return m_xValues[axis]->value(dp, m_units);
 }
 
 void MainWindow::on_actionElevation_triggered()
 {
-    m_plotValues[Elevation]->setVisible(
-                !m_plotValues[Elevation]->visible());
+    m_yValues[Elevation]->setVisible(
+                !m_yValues[Elevation]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
-    m_plotValues[VerticalSpeed]->setVisible(
-                !m_plotValues[VerticalSpeed]->visible());
+    m_yValues[VerticalSpeed]->setVisible(
+                !m_yValues[VerticalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
-    m_plotValues[HorizontalSpeed]->setVisible(
-                !m_plotValues[HorizontalSpeed]->visible());
+    m_yValues[HorizontalSpeed]->setVisible(
+                !m_yValues[HorizontalSpeed]->visible());
     updatePlotData();
 }
 
@@ -1155,29 +1120,29 @@ void MainWindow::updateBottomActions()
 
 void MainWindow::on_actionTotalSpeed_triggered()
 {
-    m_plotValues[TotalSpeed]->setVisible(
-                !m_plotValues[TotalSpeed]->visible());
+    m_yValues[TotalSpeed]->setVisible(
+                !m_yValues[TotalSpeed]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
-    m_plotValues[DiveAngle]->setVisible(
-                !m_plotValues[DiveAngle]->visible());
+    m_yValues[DiveAngle]->setVisible(
+                !m_yValues[DiveAngle]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
-    m_plotValues[Curvature]->setVisible(
-                !m_plotValues[Curvature]->visible());
+    m_yValues[Curvature]->setVisible(
+                !m_yValues[Curvature]->visible());
     updatePlotData();
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
-    m_plotValues[GlideRatio]->setVisible(
-                !m_plotValues[GlideRatio]->visible());
+    m_yValues[GlideRatio]->setVisible(
+                !m_yValues[GlideRatio]->visible());
     updatePlotData();
 }
 
