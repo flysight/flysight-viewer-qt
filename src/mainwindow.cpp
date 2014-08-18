@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
+#include <QShortcut>
 #include <QToolTip>
 
 #include "configdialog.h"
@@ -31,6 +32,20 @@ MainWindow::MainWindow(
 
     // Restore window state
     readSettings();
+
+#ifdef Q_OS_MAC
+    // Single key shortcuts on Mac
+    foreach (QAction *a, m_ui->menuPlots->actions())
+    {
+        QObject::connect(new QShortcut(a->shortcut(), a->parentWidget()),
+                         SIGNAL(activated()), a, SLOT(trigger()));
+    }
+    foreach (QAction *a, m_ui->menu_Tools->actions())
+    {
+        QObject::connect(new QShortcut(a->shortcut(), a->parentWidget()),
+                         SIGNAL(activated()), a, SLOT(trigger()));
+    }
+#endif
 }
 
 MainWindow::~MainWindow()
