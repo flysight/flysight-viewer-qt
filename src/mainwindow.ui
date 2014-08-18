@@ -58,13 +58,13 @@
     </property>
     <addaction name="actionElevation"/>
     <addaction name="separator"/>
-    <addaction name="actionVerticalSpeed"/>
     <addaction name="actionHorizontalSpeed"/>
+    <addaction name="actionVerticalSpeed"/>
     <addaction name="actionTotalSpeed"/>
     <addaction name="separator"/>
+    <addaction name="actionGlideRatio"/>
     <addaction name="actionDiveAngle"/>
     <addaction name="actionCurvature"/>
-    <addaction name="actionGlideRatio"/>
     <addaction name="separator"/>
     <addaction name="actionHorizontalAccuracy"/>
     <addaction name="actionVerticalAccuracy"/>
@@ -243,10 +243,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Curvature</string>
+    <string>Dive &amp;Rate</string>
    </property>
    <property name="shortcut">
-    <string>C</string>
+    <string>R</string>
    </property>
   </action>
   <action name="actionPan">
@@ -349,6 +349,9 @@
    <property name="text">
     <string>Horizontal Accuracy</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+H</string>
+   </property>
   </action>
   <action name="actionVerticalAccuracy">
    <property name="checkable">
@@ -357,6 +360,9 @@
    <property name="text">
     <string>Vertical Accuracy</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+V</string>
+   </property>
   </action>
   <action name="actionSpeedAccuracy">
    <property name="checkable">
@@ -364,6 +370,9 @@
    </property>
    <property name="text">
     <string>Speed Accuracy</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+S</string>
    </property>
   </action>
   <action name="actionNumberOfSatellites">
@@ -375,6 +384,9 @@
    </property>
    <property name="toolTip">
     <string>Number Of Satellites</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+N</string>
    </property>
   </action>
  </widget>
