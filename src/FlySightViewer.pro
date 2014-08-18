@@ -33,4 +33,4 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     configdialog.ui
 
-RC_FILE += FlySightViewer.rc
+RC_ICONS = FlySightViewer.ico
