@@ -35,6 +35,7 @@ MainWindow::MainWindow(
 
 #ifdef Q_OS_MAC
     // Fix for single-key shortcuts on Mac
+    // http://thebreakfastpost.com/2014/06/03/single-key-menu-shortcuts-with-qt5-on-osx/
     foreach (QAction *a, m_ui->menuPlots->actions())
     {
         QObject::connect(new QShortcut(a->shortcut(), a->parentWidget()),
