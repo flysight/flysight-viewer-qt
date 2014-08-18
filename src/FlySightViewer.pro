@@ -34,3 +34,4 @@ FORMS    += mainwindow.ui \
     configdialog.ui
 
 RC_ICONS = FlySightViewer.ico
+ICON = FlySightViewer.icns
