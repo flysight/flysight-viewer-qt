@@ -24,6 +24,12 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
+#ifdef Q_OS_MAC
+    // Ensure that closeEvent is called
+    QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
+                     this, SLOT(close()));
+#endif
+
     // Restore window state
     readSettings();
 
@@ -538,7 +544,7 @@ void MainWindow::on_actionImport_triggered()
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    // Get root folder
+    // Get last file read
     QString rootFolder = settings.value("folder").toString();
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), rootFolder, tr("CSV Files (*.csv)"));
@@ -550,8 +556,8 @@ void MainWindow::on_actionImport_triggered()
         return;
     }
 
-    // Remember root folder
-    settings.setValue("folder", QFileInfo(fileName).absolutePath());
+    // Remember last file read
+    settings.setValue("folder", QFileInfo(fileName).absoluteFilePath());
 
     QTextStream in(&file);
 
