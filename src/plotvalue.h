@@ -206,6 +206,82 @@ public:
     }
 };
 
+class PlotHorizontalAccuracy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotHorizontalAccuracy() {}
+    const QString title(Units units)
+    {
+        if (units == Metric) return tr("Horizontal Accuracy (m)");
+        else                 return tr("Horizontal Accuracy (ft)");
+    }
+    const QColor color() { return Qt::darkRed; }
+    double value(const DataPoint &dp, Units units)
+    {
+        if (units == Metric) return dp.hAcc;
+        else                 return dp.hAcc * METERS_TO_FEET;
+    }
+};
+
+class PlotVerticalAccuracy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotVerticalAccuracy() {}
+    const QString title(Units units)
+    {
+        if (units == Metric) return tr("Vertical Accuracy (m)");
+        else                 return tr("Vertical Accuracy (ft)");
+    }
+    const QColor color() { return Qt::darkGreen; }
+    double value(const DataPoint &dp, Units units)
+    {
+        if (units == Metric) return dp.vAcc;
+        else                 return dp.vAcc * METERS_TO_FEET;
+    }
+};
+
+class PlotSpeedAccuracy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotSpeedAccuracy() {}
+    const QString title(Units units)
+    {
+        if (units == Metric) return tr("Speed Accuracy (km/h)");
+        else                 return tr("Speed Accuracy (mph)");
+    }
+    const QColor color() { return Qt::darkBlue; }
+    double value(const DataPoint &dp, Units units)
+    {
+        if (units == Metric) return dp.sAcc * MPS_TO_KMH;
+        else                 return dp.sAcc * MPS_TO_MPH;
+    }
+};
+
+class PlotNumberOfSatellites: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotNumberOfSatellites() {}
+    const QString title(Units units)
+    {
+        Q_UNUSED(units);
+        return tr("Number of Satellites");
+    }
+    const QColor color() { return Qt::darkCyan; }
+    double value(const DataPoint &dp, Units units)
+    {
+        Q_UNUSED(units);
+        return dp.numSV;
+    }
+};
+
 class PlotTime: public PlotValue
 {
     Q_OBJECT

@@ -19,6 +19,13 @@ DataPoint interpolate(const DataPoint &p1,
     ret.velE = p1.velE + a * (p2.velE - p1.velE);
     ret.velD = p1.velD + a * (p2.velD - p1.velD);
 
+    ret.hAcc = p1.hAcc + a * (p2.hAcc - p1.hAcc);
+    ret.vAcc = p1.vAcc + a * (p2.vAcc - p1.vAcc);
+    ret.sAcc = p1.sAcc + a * (p2.sAcc - p1.sAcc);
+
+    if (a < 0.5) ret.numSV = p1.numSV;
+    else         ret.numSV = p2.numSV;
+
     ret.t = p1.t + a * (p2.t - p1.t);
     ret.x = p1.x + a * (p2.x - p1.x);
     ret.y = p1.y + a * (p2.y - p1.y);

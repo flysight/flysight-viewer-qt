@@ -16,6 +16,12 @@ public:
     double      velE;
     double      velD;
 
+    double      hAcc;
+    double      vAcc;
+    double      sAcc;
+
+    int         numSV;
+
     double      t;
     double      x;
     double      y;

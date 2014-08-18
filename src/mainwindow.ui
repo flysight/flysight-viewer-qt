@@ -57,12 +57,20 @@
      <string>&amp;Left</string>
     </property>
     <addaction name="actionElevation"/>
+    <addaction name="separator"/>
     <addaction name="actionVerticalSpeed"/>
     <addaction name="actionHorizontalSpeed"/>
     <addaction name="actionTotalSpeed"/>
+    <addaction name="separator"/>
     <addaction name="actionDiveAngle"/>
     <addaction name="actionCurvature"/>
     <addaction name="actionGlideRatio"/>
+    <addaction name="separator"/>
+    <addaction name="actionHorizontalAccuracy"/>
+    <addaction name="actionVerticalAccuracy"/>
+    <addaction name="actionSpeedAccuracy"/>
+    <addaction name="separator"/>
+    <addaction name="actionNumberOfSatellites"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -332,6 +340,41 @@
    </property>
    <property name="shortcut">
     <string>N</string>
+   </property>
+  </action>
+  <action name="actionHorizontalAccuracy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Horizontal Accuracy</string>
+   </property>
+  </action>
+  <action name="actionVerticalAccuracy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Vertical Accuracy</string>
+   </property>
+  </action>
+  <action name="actionSpeedAccuracy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Speed Accuracy</string>
+   </property>
+  </action>
+  <action name="actionNumberOfSatellites">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Number Of Satellites</string>
+   </property>
+   <property name="toolTip">
+    <string>Number Of Satellites</string>
    </property>
   </action>
  </widget>
