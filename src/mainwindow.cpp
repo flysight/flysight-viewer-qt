@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
+#include <QShortcut>
 #include <QToolTip>
 
 #include "configdialog.h"
@@ -31,6 +32,21 @@ MainWindow::MainWindow(
 
     // Initialize 3D views
     initViews();
+
+#ifdef Q_OS_MAC
+    // Fix for single-key shortcuts on Mac
+    // http://thebreakfastpost.com/2014/06/03/single-key-menu-shortcuts-with-qt5-on-osx/
+    foreach (QAction *a, m_ui->menuPlots->actions())
+    {
+        QObject::connect(new QShortcut(a->shortcut(), a->parentWidget()),
+                         SIGNAL(activated()), a, SLOT(trigger()));
+    }
+    foreach (QAction *a, m_ui->menu_Tools->actions())
+    {
+        QObject::connect(new QShortcut(a->shortcut(), a->parentWidget()),
+                         SIGNAL(activated()), a, SLOT(trigger()));
+    }
+#endif
 }
 
 MainWindow::~MainWindow()
