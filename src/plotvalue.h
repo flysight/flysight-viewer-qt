@@ -101,7 +101,7 @@ public:
         if (units == Metric) return tr("Vertical Speed (km/h)");
         else                 return tr("Vertical Speed (mph)");
     }
-    const QColor color() { return Qt::red; }
+    const QColor color() { return Qt::green; }
     double value(const DataPoint &dp, Units units)
     {
         if (units == Metric) return dp.velD * MPS_TO_KMH;
@@ -120,7 +120,7 @@ public:
         if (units == Metric) return tr("Horizontal Speed (km/h)");
         else                 return tr("Horizontal Speed (mph)");
     }
-    const QColor color() { return Qt::green; }
+    const QColor color() { return Qt::red; }
     double value(const DataPoint &dp, Units units)
     {
         if (units == Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_KMH;
@@ -158,7 +158,7 @@ public:
         Q_UNUSED(units);
         return tr("Dive Angle (deg)");
     }
-    const QColor color() { return Qt::cyan; }
+    const QColor color() { return Qt::magenta; }
     double value(const DataPoint &dp, Units units)
     {
         Q_UNUSED(units);
@@ -178,7 +178,7 @@ public:
         Q_UNUSED(units);
         return tr("Curvature (deg/s)");
     }
-    const QColor color() { return Qt::magenta; }
+    const QColor color() { return Qt::darkYellow; }
     double value(const DataPoint &dp, Units units)
     {
         Q_UNUSED(units);
@@ -197,7 +197,7 @@ public:
         Q_UNUSED(units);
         return tr("Glide Ratio");
     }
-    const QColor color() { return Qt::yellow; }
+    const QColor color() { return Qt::darkCyan; }
     double value(const DataPoint &dp, Units units)
     {
         Q_UNUSED(units);
@@ -274,7 +274,7 @@ public:
         Q_UNUSED(units);
         return tr("Number of Satellites");
     }
-    const QColor color() { return Qt::darkCyan; }
+    const QColor color() { return Qt::darkMagenta; }
     double value(const DataPoint &dp, Units units)
     {
         Q_UNUSED(units);
