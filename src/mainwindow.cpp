@@ -633,53 +633,12 @@ void MainWindow::on_actionImport_triggered()
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
 
         dp.t = (double) (end - start) / 1000;
+    }
 
-        if (i - 1 >= 0 && i + 1 < m_data.size ())
-        {
-            const DataPoint &dpPrev = m_data[i - 1];
-            const DataPoint &dpNext = m_data[i + 1];
-
-            double t0 = dpPrev.t;
-            double y0 = atan2(dpPrev.velD, sqrt(dpPrev.velE * dpPrev.velE + dpPrev.velN * dpPrev.velN)) / pi * 180;
-
-            double t1 = dp.t;
-            double y1 = atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
-
-            double t2 = dpNext.t;
-            double y2 = atan2(dpNext.velD, sqrt(dpNext.velE * dpNext.velE + dpNext.velN * dpNext.velN)) / pi * 180;
-
-            double sumx = t0 + t1 + t2;
-            double sumy = y0 + y1 + y2;
-            double sumxx = t0 * t0 + t1 * t1 + t2 * t2;
-            double sumxy = t0 * y0 + t1 * y1 + t2 * y2;
-
-            dp.curv = (3 * sumxy - sumx * sumy) /
-                    (3 * sumxx - sumx * sumx);
-        }
-        if (i - 1 >= 0)
-        {
-            const DataPoint &dpPrev = m_data[i - 1];
-
-            double t0 = dpPrev.t;
-            double y0 = atan2(dpPrev.velD, sqrt(dpPrev.velE * dpPrev.velE + dpPrev.velN * dpPrev.velN)) / pi * 180;
-
-            double t1 = dp.t;
-            double y1 = atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
-
-            dp.curv = (y1 - y0) / (t1 - t0);
-        }
-        else
-        {
-            const DataPoint &dpNext = m_data[i + 1];
-
-            double t1 = dp.t;
-            double y1 = atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
-
-            double t2 = dpNext.t;
-            double y2 = atan2(dpNext.velD, sqrt(dpNext.velE * dpNext.velE + dpNext.velN * dpNext.velN)) / pi * 180;
-
-            dp.curv = (y2 - y1) / (t2 - t1);
-        }
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.curv = getSlope(i, DiveAngle);
     }
 
     if (dt.size() > 0)
@@ -694,6 +653,30 @@ void MainWindow::on_actionImport_triggered()
 
     initPlotData();
     updateViewData();
+}
+
+double MainWindow::getSlope(
+        const int center,
+        YAxisType yAxis) const
+{
+    int iMin = qMax (0, center - 2);
+    int iMax = qMin (m_data.size () - 1, center + 2);
+
+    double sumx = 0, sumy = 0, sumxx = 0, sumxy = 0;
+
+    for (int i = iMin; i <= iMax; ++i)
+    {
+        const DataPoint &dp = m_data[i];
+        double yValue = m_yValues[yAxis]->value(dp, m_units);
+
+        sumx += dp.t;
+        sumy += yValue;
+        sumxx += dp.t * dp.t;
+        sumxy += dp.t * yValue;
+    }
+
+    int n = iMax - iMin + 1;
+    return (sumxy - sumx * sumy / n) / (sumxx - sumx * sumx / n);
 }
 
 double MainWindow::getDistance(

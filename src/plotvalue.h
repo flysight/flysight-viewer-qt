@@ -176,7 +176,7 @@ public:
     const QString title(Units units)
     {
         Q_UNUSED(units);
-        return tr("Curvature (deg/s)");
+        return tr("Dive Rate (deg/s)");
     }
     const QColor color() { return Qt::darkYellow; }
     double value(const DataPoint &dp, Units units)

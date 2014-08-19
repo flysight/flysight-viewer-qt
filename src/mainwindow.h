@@ -129,6 +129,7 @@ private:
     void initPlot();
     void initViews();
 
+    double getSlope(const int center, YAxisType yAxis) const;
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
 
