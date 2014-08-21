@@ -30,14 +30,14 @@ MainWindow::MainWindow(
                      this, SLOT(close()));
 #endif
 
-    // Restore window state
-    readSettings();
-
     // Intitialize plot area
     initPlot();
 
     // Initialize 3D views
     initViews();
+
+    // Restore window state
+    readSettings();
 
 #ifdef Q_OS_MAC
     // Fix for single-key shortcuts on Mac
@@ -89,8 +89,8 @@ void MainWindow::readSettings()
     settings.beginGroup("mainWindow");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
-    m_units = (PlotValue::Units) settings.value("units").toInt();
-    m_xAxis = (XAxisType) settings.value("xAxis").toInt();
+    m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
+    m_xAxis = (XAxisType) settings.value("xAxis", m_xAxis).toInt();
     settings.endGroup();
 }
 

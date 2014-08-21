@@ -25,7 +25,7 @@ public:
         Imperial
     } Units;
 
-    PlotValue(): mVisible(false) {}
+    PlotValue(bool visible = false): mVisible(visible) {}
 
     virtual const QString title(Units units) = 0;
     virtual const QColor color() = 0;
@@ -50,7 +50,7 @@ public:
     {
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
-        mVisible = settings.value("visible").toBool();
+        mVisible = settings.value("visible", mVisible).toBool();
         settings.endGroup();
     }
 
@@ -76,7 +76,7 @@ class PlotElevation: public PlotValue
     Q_OBJECT
 
 public:
-    PlotElevation() {}
+    PlotElevation(): PlotValue(true) {}
     const QString title(Units units)
     {
         if (units == Metric) return tr("Elevation (m)");

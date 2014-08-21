@@ -5,3 +5,9 @@ DataView::DataView(QWidget *parent) :
 {
 
 }
+
+QSize DataView::sizeHint() const
+{
+    // Keeps windows from being intialized as very short
+    return QSize(175, 175);
+}

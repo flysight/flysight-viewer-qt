@@ -9,7 +9,9 @@ class DataView : public QCustomPlot
 
 public:
     explicit DataView(QWidget *parent = 0);
-    
+
+    virtual QSize sizeHint() const;
+
 signals:
     
 public slots:
