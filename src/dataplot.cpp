@@ -4,8 +4,7 @@
 DataPlot::DataPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
-    m_dragging(false),
-    m_tool(Pan)
+    m_dragging(false)
 {
     setMouseTracking(true);
 }
@@ -28,7 +27,8 @@ void DataPlot::mouseReleaseEvent(
 {
     QPoint endPos = event->pos();
 
-    if (m_dragging && m_tool == Zoom)
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (m_dragging && tool == MainWindow::Zoom)
     {
         QCPRange range(qMin(xAxis->pixelToCoord(m_beginPos.x()),
                             xAxis->pixelToCoord(endPos.x())),
@@ -37,13 +37,13 @@ void DataPlot::mouseReleaseEvent(
 
         mMainWindow->setRange(range);
     }
-    if (m_dragging && m_tool == Zero)
+    if (m_dragging && tool == MainWindow::Zero)
     {
-        emit zero(xAxis->pixelToCoord(endPos.x()));
+        mMainWindow->setZero(xAxis->pixelToCoord(endPos.x()));
     }
-    if (m_dragging && m_tool == Ground)
+    if (m_dragging && tool == MainWindow::Ground)
     {
-        emit ground(xAxis->pixelToCoord(endPos.x()));
+        mMainWindow->setGround(xAxis->pixelToCoord(endPos.x()));
     }
 
     if (m_dragging)
@@ -60,7 +60,8 @@ void DataPlot::mouseMoveEvent(
 {
     m_cursorPos = event->pos();
 
-    if (m_dragging && m_tool == Pan)
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (m_dragging && tool == MainWindow::Pan)
     {
         QCPRange range = xAxis->range();
 
@@ -75,7 +76,7 @@ void DataPlot::mouseMoveEvent(
 
     if (axisRect()->rect().contains(event->pos()))
     {
-        if (m_dragging && m_tool == Measure)
+        if (m_dragging && tool == MainWindow::Measure)
         {
             emit measure(xAxis->pixelToCoord(m_beginPos.x()),
                          xAxis->pixelToCoord(m_cursorPos.x()));
@@ -125,7 +126,8 @@ void DataPlot::paintEvent(
 {
     QCustomPlot::paintEvent(event);
 
-    if (m_dragging && (m_tool == Zoom || m_tool == Measure))
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (m_dragging && (tool == MainWindow::Zoom || tool == MainWindow::Measure))
     {
         QPainter painter(this);
 

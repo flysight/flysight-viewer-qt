@@ -39,6 +39,9 @@ MainWindow::MainWindow(
     // Restore window state
     readSettings();
 
+    // Set default tool
+    setTool(Pan);
+
 #ifdef Q_OS_MAC
     // Fix for single-key shortcuts on Mac
     // http://thebreakfastpost.com/2014/06/03/single-key-menu-shortcuts-with-qt5-on-osx/
@@ -157,9 +160,6 @@ void MainWindow::initPlot()
 
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
             m_ui->plotArea, SLOT(setRange(const QCPRange &)));
-
-    m_ui->plotArea->setTool(DataPlot::Pan);
-    updateTool();
 }
 
 void MainWindow::initViews()
@@ -296,64 +296,6 @@ DataPoint MainWindow::interpolateData(
     }
 }
 
-void MainWindow::onDataPlot_zero(
-        double xMark)
-{
-    if (m_data.isEmpty()) return;
-
-    DataPoint dp0 = interpolateData(xMark);
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        dp.t -= dp0.t;
-        dp.x -= dp0.x;
-        dp.y -= dp0.y;
-        dp.z -= dp0.z;
-
-        dp.dist2D -= dp0.dist2D;
-        dp.dist3D -= dp0.dist3D;
-    }
-
-    double x0 = getXValue(dp0, m_xAxis);
-    QCPRange range = m_ui->plotArea->xAxis->range();
-    range = QCPRange (range.lower - x0, range.upper - x0);
-
-    initPlotData();
-    updateViewData();
-
-    m_ui->plotArea->xAxis->setRange(range);
-    m_ui->plotArea->replot();
-
-    m_ui->plotArea->setTool(mPrevTool);
-    updateTool();
-}
-
-void MainWindow::onDataPlot_ground(
-        double xMark)
-{
-    if (m_data.isEmpty()) return;
-
-    DataPoint dp0 = interpolateData(xMark);
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.alt -= dp0.alt;
-    }
-
-    QCPRange range = m_ui->plotArea->xAxis->range();
-
-    initPlotData();
-    updateViewData();
-
-    m_ui->plotArea->xAxis->setRange(range);
-    m_ui->plotArea->replot();
-
-    m_ui->plotArea->setTool(mPrevTool);
-    updateTool();
-}
 
 void MainWindow::onDataPlot_mark(
         double xMark)
@@ -1137,49 +1079,27 @@ void MainWindow::on_actionNumberOfSatellites_triggered()
 
 void MainWindow::on_actionPan_triggered()
 {
-    m_ui->plotArea->setTool(DataPlot::Pan);
-    updateTool();
+    setTool(Pan);
 }
 
 void MainWindow::on_actionZoom_triggered()
 {
-    m_ui->plotArea->setTool(DataPlot::Zoom);
-    updateTool();
+    setTool(Zoom);
 }
 
 void MainWindow::on_actionMeasure_triggered()
 {
-    m_ui->plotArea->setTool(DataPlot::Measure);
-    updateTool();
+    setTool(Measure);
 }
 
 void MainWindow::on_actionZero_triggered()
 {
-    if (m_ui->plotArea->tool() != DataPlot::Ground)
-    {
-        mPrevTool = m_ui->plotArea->tool();
-    }
-    m_ui->plotArea->setTool(DataPlot::Zero);
-    updateTool();
+    setTool(Zero);
 }
 
 void MainWindow::on_actionGround_triggered()
 {
-    if (m_ui->plotArea->tool() != DataPlot::Zero)
-    {
-        mPrevTool = m_ui->plotArea->tool();
-    }
-    m_ui->plotArea->setTool(DataPlot::Ground);
-    updateTool();
-}
-
-void MainWindow::updateTool()
-{
-    m_ui->actionPan->setChecked(m_ui->plotArea->tool() == DataPlot::Pan);
-    m_ui->actionZoom->setChecked(m_ui->plotArea->tool() == DataPlot::Zoom);
-    m_ui->actionMeasure->setChecked(m_ui->plotArea->tool() == DataPlot::Measure);
-    m_ui->actionZero->setChecked(m_ui->plotArea->tool() == DataPlot::Zero);
-    m_ui->actionGround->setChecked(m_ui->plotArea->tool() == DataPlot::Ground);
+    setTool(Ground);
 }
 
 void MainWindow::onTopView_mousePress(
@@ -1414,4 +1334,79 @@ void MainWindow::setRange(
 {
     emit rangeChanged(range);
     updateViewData();
+}
+
+void MainWindow::setZero(
+        double x)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateData(x);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        dp.t -= dp0.t;
+        dp.x -= dp0.x;
+        dp.y -= dp0.y;
+        dp.z -= dp0.z;
+
+        dp.dist2D -= dp0.dist2D;
+        dp.dist3D -= dp0.dist3D;
+    }
+
+    double x0 = getXValue(dp0, m_xAxis);
+    QCPRange range = m_ui->plotArea->xAxis->range();
+    range = QCPRange (range.lower - x0, range.upper - x0);
+
+    initPlotData();
+    updateViewData();
+
+    m_ui->plotArea->xAxis->setRange(range);
+    m_ui->plotArea->replot();
+
+    setTool(mPrevTool);
+}
+
+void MainWindow::setGround(
+        double x)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateData(x);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.alt -= dp0.alt;
+    }
+
+    QCPRange range = m_ui->plotArea->xAxis->range();
+
+    initPlotData();
+    updateViewData();
+
+    m_ui->plotArea->xAxis->setRange(range);
+    m_ui->plotArea->replot();
+
+    setTool(mPrevTool);
+}
+
+void MainWindow::setTool(
+        Tool tool)
+{
+    if (tool != Ground && tool != Zero)
+    {
+        mPrevTool = tool;
+    }
+    mTool = tool;
+
+    emit toolChanged(tool);
+
+    m_ui->actionPan->setChecked(tool == Pan);
+    m_ui->actionZoom->setChecked(tool == Zoom);
+    m_ui->actionMeasure->setChecked(tool == Measure);
+    m_ui->actionZero->setChecked(tool == Zero);
+    m_ui->actionGround->setChecked(tool == Ground);
 }

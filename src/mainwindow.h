@@ -43,6 +43,10 @@ public:
         yaLast
     } YAxisType;
 
+    typedef enum {
+        Pan, Zoom, Measure, Zero, Ground
+    } Tool;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -55,6 +59,11 @@ public:
     PlotValue::Units units() const { return m_units; }
 
     void setRange(const QCPRange &range);
+    void setZero(double x);
+    void setGround(double x);
+
+    void setTool(Tool tool);
+    Tool tool() const { return mTool; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -86,8 +95,6 @@ private slots:
     void on_actionDistance3D_triggered();
 
     void onDataPlot_measure(double xBegin, double xEnd);
-    void onDataPlot_zero(double xMark);
-    void onDataPlot_ground(double xMark);
 
     void onDataPlot_mark(double xMark);
     void onDataPlot_clear();    
@@ -129,7 +136,8 @@ private:
     DataView             *mTopView;
     DataView             *mFrontView;
 
-    DataPlot::Tool        mPrevTool;
+    Tool                  mTool;
+    Tool                  mPrevTool;
 
     void writeSettings();
     void readSettings();
@@ -172,6 +180,7 @@ private:
 
 signals:
     void rangeChanged(const QCPRange &range);
+    void toolChanged(Tool);
 };
 
 #endif // MAINWINDOW_H

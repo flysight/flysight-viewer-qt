@@ -10,14 +10,7 @@ class DataPlot : public QCustomPlot
     Q_OBJECT
 
 public:
-    typedef enum {
-        Pan, Zoom, Measure, Zero, Ground
-    } Tool;
-
     explicit DataPlot(QWidget *parent = 0);
-
-    Tool tool() const { return m_tool; }
-    void setTool(Tool tool) { m_tool = tool; }
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
@@ -37,7 +30,6 @@ private:
     QPoint m_beginPos;
 
     bool m_dragging;
-    Tool m_tool;
 
     MainWindow *mMainWindow;
 
@@ -45,8 +37,6 @@ private:
 
 signals:
     void measure(double xBegin, double xEnd);
-    void zero(double xMark);
-    void ground(double xMark);
 
     void mark(double xMark);
     void clear();
