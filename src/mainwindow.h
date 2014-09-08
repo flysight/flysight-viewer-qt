@@ -22,17 +22,37 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
+    typedef enum {
+        Time = 0,
+        Distance2D,
+        Distance3D
+    } XAxisType;
+
+    typedef enum {
+        Elevation = 0,
+        VerticalSpeed,
+        HorizontalSpeed,
+        TotalSpeed,
+        DiveAngle,
+        Curvature,
+        GlideRatio,
+        HorizontalAccuracy,
+        VerticalAccuracy,
+        SpeedAccuracy,
+        NumberOfSatellites,
+        yaLast
+    } YAxisType;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
-    // TODO: Move this to DataPlot
-    void setRange(const QCPRange &range);
 
     int dataSize() const { return m_data.size(); }
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
     const PlotValue *xValue() const { return m_xValues[m_xAxis]; }
     const PlotValue *yValue(int i) const { return m_yValues[i]; }
+
+    PlotValue::Units units() const { return m_units; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -83,27 +103,6 @@ private slots:
     void on_actionPreferences_triggered();
 
 private:
-    typedef enum {
-        Time = 0,
-        Distance2D,
-        Distance3D
-    } XAxisType;
-
-    typedef enum {
-        Elevation = 0,
-        VerticalSpeed,
-        HorizontalSpeed,
-        TotalSpeed,
-        DiveAngle,
-        Curvature,
-        GlideRatio,
-        HorizontalAccuracy,
-        VerticalAccuracy,
-        SpeedAccuracy,
-        NumberOfSatellites,
-        yaLast
-    } YAxisType;
-
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
 
@@ -144,7 +143,6 @@ private:
 
     void initPlotData();
     void updatePlotData();
-    void updateYRanges();
 
     void updateViewData();
     void setViewRange(QCustomPlot *plot,

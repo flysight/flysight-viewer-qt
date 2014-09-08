@@ -41,6 +41,8 @@ private:
 
     MainWindow *mMainWindow;
 
+    void updateYRanges();
+
 signals:
     void zoom(const QCPRange &range);
     void pan(double xBegin, double xEnd);

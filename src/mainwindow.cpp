@@ -229,14 +229,6 @@ void MainWindow::closeEvent(
     event->accept();
 }
 
-// TODO: Move this to DataPlot
-void MainWindow::setRange(
-        const QCPRange &range)
-{
-    m_ui->plotArea->xAxis->setRange(range);
-    updateYRanges();
-}
-
 void MainWindow::onDataPlot_zoom(const QCPRange &range)
 {
     emit rangeChanged(range);
@@ -500,46 +492,6 @@ int MainWindow::findIndexAboveT(
     }
 
     return 0;
-}
-
-void MainWindow::updateYRanges()
-{
-    const QCPRange &range = m_ui->plotArea->xAxis->range();
-
-    int k = 0;
-    for (int j = 0; j < yaLast; ++j)
-    {
-        if (!yValue(j)->visible()) continue;
-
-        double yMin, yMax;
-        bool first = true;
-
-        for (int i = 0; i < dataSize(); ++i)
-        {
-            const DataPoint &dp = dataPoint(i);
-
-            if (range.contains(xValue()->value(dp, m_units)))
-            {
-                double y = yValue(j)->value(dp, m_units);
-
-                if (first)
-                {
-                    yMin = yMax = y;
-                    first = false;
-                }
-                else
-                {
-                    if (y < yMin) yMin = y;
-                    if (y > yMax) yMax = y;
-                }
-            }
-        }
-
-        if (!first)
-            m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
-    }
-
-    m_ui->plotArea->replot();
 }
 
 void MainWindow::on_actionImport_triggered()

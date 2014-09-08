@@ -162,5 +162,46 @@ void DataPlot::paintEvent(
 void DataPlot::setRange(
         const QCPRange &range)
 {
-    mMainWindow->setRange(range);
+    xAxis->setRange(range);
+    updateYRanges();
+}
+
+void DataPlot::updateYRanges()
+{
+    const QCPRange &range = xAxis->range();
+
+    int k = 0;
+    for (int j = 0; j < MainWindow::yaLast; ++j)
+    {
+        if (!mMainWindow->yValue(j)->visible()) continue;
+
+        double yMin, yMax;
+        bool first = true;
+
+        for (int i = 0; i < mMainWindow->dataSize(); ++i)
+        {
+            const DataPoint &dp = mMainWindow->dataPoint(i);
+
+            if (range.contains(mMainWindow->xValue()->value(dp, mMainWindow->units())))
+            {
+                double y = mMainWindow->yValue(j)->value(dp, mMainWindow->units());
+
+                if (first)
+                {
+                    yMin = yMax = y;
+                    first = false;
+                }
+                else
+                {
+                    if (y < yMin) yMin = y;
+                    if (y > yMax) yMax = y;
+                }
+            }
+        }
+
+        if (!first)
+            axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
+    }
+
+    replot();
 }
