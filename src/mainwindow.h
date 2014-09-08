@@ -28,6 +28,12 @@ public:
     // TODO: Move this to DataPlot
     void setRange(const QCPRange &range);
 
+    int dataSize() const { return m_data.size(); }
+    const DataPoint &dataPoint(int i) const { return m_data[i]; }
+
+    const PlotValue *xValue() const { return m_xValues[m_xAxis]; }
+    const PlotValue *yValue(int i) const { return m_yValues[i]; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 

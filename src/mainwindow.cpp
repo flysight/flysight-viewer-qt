@@ -509,32 +509,28 @@ void MainWindow::updateYRanges()
     int k = 0;
     for (int j = 0; j < yaLast; ++j)
     {
-        if (!m_yValues[j]->visible()) continue;
+        if (!yValue(j)->visible()) continue;
 
         double yMin, yMax;
-        int iMin, iMax;
-
         bool first = true;
 
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < dataSize(); ++i)
         {
-            DataPoint &dp = m_data[i];
+            const DataPoint &dp = dataPoint(i);
 
-            if (range.contains(getXValue(dp, m_xAxis)))
+            if (range.contains(xValue()->value(dp, m_units)))
             {
-                double y = m_yValues[j]->value(dp, m_units);
+                double y = yValue(j)->value(dp, m_units);
 
                 if (first)
                 {
                     yMin = yMax = y;
-                    iMin = iMax = i;
                     first = false;
                 }
                 else
                 {
                     if (y < yMin) yMin = y;
                     if (y > yMax) yMax = y;
-                    iMax = i;
                 }
             }
         }
