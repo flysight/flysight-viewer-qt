@@ -44,16 +44,12 @@ private:
     void updateYRanges();
 
 signals:
-    void zoom(const QCPRange &range);
-    void pan(double xBegin, double xEnd);
     void measure(double xBegin, double xEnd);
     void zero(double xMark);
     void ground(double xMark);
 
     void mark(double xMark);
     void clear();
-
-    void expand(QPoint pos, QPoint angleDelta);
 
 public slots:
     void setRange(const QCPRange &range);

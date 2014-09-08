@@ -35,7 +35,7 @@ void DataPlot::mouseReleaseEvent(
                        qMax(xAxis->pixelToCoord(m_beginPos.x()),
                             xAxis->pixelToCoord(endPos.x())));
 
-        emit zoom(range);
+        mMainWindow->setRange(range);
     }
     if (m_dragging && m_tool == Zero)
     {
@@ -62,8 +62,13 @@ void DataPlot::mouseMoveEvent(
 
     if (m_dragging && m_tool == Pan)
     {
-        emit pan(xAxis->pixelToCoord(m_beginPos.x()),
-                 xAxis->pixelToCoord(m_cursorPos.x()));
+        QCPRange range = xAxis->range();
+
+        double diff = xAxis->pixelToCoord(m_beginPos.x())
+                - xAxis->pixelToCoord(m_cursorPos.x());
+        range = QCPRange(range.lower + diff, range.upper + diff);
+
+        mMainWindow->setRange(range);
 
         m_beginPos = m_cursorPos;
     }
@@ -93,26 +98,19 @@ void DataPlot::mouseMoveEvent(
 void DataPlot::wheelEvent(
         QWheelEvent *event)
 {
-    if (!(event->modifiers() & Qt::ControlModifier))
+    if (axisRect()->rect().contains(event->pos()))
     {
-        if (axisRect()->rect().contains(event->pos()))
-        {
-            double multiplier = exp((double) -event->angleDelta().y() / 500);
+        double multiplier = exp((double) -event->angleDelta().y() / 500);
 
-            double x = xAxis->pixelToCoord(event->pos().x());
+        double x = xAxis->pixelToCoord(event->pos().x());
 
-            QCPRange range = xAxis->range();
+        QCPRange range = xAxis->range();
 
-            range = QCPRange(
-                        x + (range.lower - x) * multiplier,
-                        x + (range.upper - x) * multiplier);
+        range = QCPRange(
+                    x + (range.lower - x) * multiplier,
+                    x + (range.upper - x) * multiplier);
 
-            emit zoom(range);
-        }
-    }
-    else
-    {
-        emit expand(event->pos(), event->angleDelta());
+        mMainWindow->setRange(range);
     }
 }
 

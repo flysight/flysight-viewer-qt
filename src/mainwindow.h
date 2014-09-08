@@ -54,6 +54,8 @@ public:
 
     PlotValue::Units units() const { return m_units; }
 
+    void setRange(const QCPRange &range);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -83,8 +85,6 @@ private slots:
     void on_actionDistance2D_triggered();
     void on_actionDistance3D_triggered();
 
-    void onDataPlot_zoom(const QCPRange &range);
-    void onDataPlot_pan(double xBegin, double xEnd);
     void onDataPlot_measure(double xBegin, double xEnd);
     void onDataPlot_zero(double xMark);
     void onDataPlot_ground(double xMark);

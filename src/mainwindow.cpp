@@ -229,25 +229,6 @@ void MainWindow::closeEvent(
     event->accept();
 }
 
-void MainWindow::onDataPlot_zoom(const QCPRange &range)
-{
-    emit rangeChanged(range);
-    updateViewData();
-}
-
-void MainWindow::onDataPlot_pan(
-        double xStart,
-        double xEnd)
-{
-    QCPRange range = m_ui->plotArea->xAxis->range();
-
-    double diff = xStart - xEnd;
-    range = QCPRange(range.lower + diff, range.upper + diff);
-
-    emit rangeChanged(range);
-    updateViewData();
-}
-
 void MainWindow::onDataPlot_measure(
         double xStart,
         double xEnd)
@@ -1425,4 +1406,12 @@ void MainWindow::on_actionPreferences_triggered()
         initPlotData();
         updateViewData();
     }
+}
+
+
+void MainWindow::setRange(
+        const QCPRange &range)
+{
+    emit rangeChanged(range);
+    updateViewData();
 }
