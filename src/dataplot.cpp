@@ -1,7 +1,9 @@
 #include "dataplot.h"
+#include "mainwindow.h"
 
 DataPlot::DataPlot(QWidget *parent) :
     QCustomPlot(parent),
+    mMainWindow(0),
     m_dragging(false),
     m_tool(Pan)
 {
@@ -155,4 +157,10 @@ void DataPlot::paintEvent(
             painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
         }
     }
+}
+
+void DataPlot::setRange(
+        const QCPRange &range)
+{
+    mMainWindow->setRange(range);
 }

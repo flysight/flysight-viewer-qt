@@ -3,6 +3,8 @@
 
 #include "qcustomplot.h"
 
+class MainWindow;
+
 class DataPlot : public QCustomPlot
 {
     Q_OBJECT
@@ -16,6 +18,8 @@ public:
 
     Tool tool() const { return m_tool; }
     void setTool(Tool tool) { m_tool = tool; }
+
+    void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -35,6 +39,8 @@ private:
     bool m_dragging;
     Tool m_tool;
 
+    MainWindow *mMainWindow;
+
 signals:
     void zoom(const QCPRange &range);
     void pan(double xBegin, double xEnd);
@@ -46,6 +52,9 @@ signals:
     void clear();
 
     void expand(QPoint pos, QPoint angleDelta);
+
+public slots:
+    void setRange(const QCPRange &range);
 };
 
 #endif // DATAPLOT_H

@@ -153,6 +153,11 @@ void MainWindow::initPlot()
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
+    m_ui->plotArea->setMainWindow(this);
+
+    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
+            m_ui->plotArea, SLOT(setRange(const QCPRange &)));
+
     m_ui->plotArea->setTool(DataPlot::Pan);
     updateTool();
 }
@@ -224,11 +229,17 @@ void MainWindow::closeEvent(
     event->accept();
 }
 
-void MainWindow::onDataPlot_zoom(const QCPRange &range)
+// TODO: Move this to DataPlot
+void MainWindow::setRange(
+        const QCPRange &range)
 {
     m_ui->plotArea->xAxis->setRange(range);
-
     updateYRanges();
+}
+
+void MainWindow::onDataPlot_zoom(const QCPRange &range)
+{
+    emit rangeChanged(range);
     updateViewData();
 }
 
@@ -241,9 +252,7 @@ void MainWindow::onDataPlot_pan(
     double diff = xStart - xEnd;
     range = QCPRange(range.lower + diff, range.upper + diff);
 
-    m_ui->plotArea->xAxis->setRange(range);
-
-    updateYRanges();
+    emit rangeChanged(range);
     updateViewData();
 }
 
@@ -815,7 +824,7 @@ void MainWindow::updatePlotData()
         }
     }
 
-    updateYRanges();
+    emit rangeChanged(m_ui->plotArea->xAxis->range());
 }
 
 void MainWindow::updateViewData()
@@ -1127,10 +1136,8 @@ void MainWindow::updateBottom(
     m_xAxis = xAxis;
     initPlotData();
 
-    m_ui->plotArea->xAxis->setRange(
-                getXValue(dpStart, m_xAxis),
-                getXValue(dpEnd, m_xAxis));
-    updateYRanges();
+    emit rangeChanged(QCPRange(getXValue(dpStart, m_xAxis),
+                               getXValue(dpEnd, m_xAxis)));
     m_ui->plotArea->replot();
 
     updateBottomActions();

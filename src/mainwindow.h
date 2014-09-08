@@ -25,6 +25,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    // TODO: Move this to DataPlot
+    void setRange(const QCPRange &range);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -162,6 +165,9 @@ private:
 
     DataPoint interpolateData(double x);
     void mark(const DataPoint &dp);
+
+signals:
+    void rangeChanged(const QCPRange &range);
 };
 
 #endif // MAINWINDOW_H
