@@ -31,7 +31,7 @@ public:
     virtual const QColor color() const = 0;
     virtual double value(const DataPoint &dp, Units units) const = 0;
 
-    QCPAxis *addAxis(QCustomPlot *plot, Units units)
+    QCPAxis *addAxis(QCustomPlot *plot, Units units) const
     {
         QCPAxis *axis = plot->axisRect()->addAxis(QCPAxis::atLeft);
         axis->setLabelColor(color());

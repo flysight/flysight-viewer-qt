@@ -205,3 +205,64 @@ void DataPlot::updateYRanges()
 
     replot();
 }
+
+void DataPlot::updateData()
+{
+    QVector< double > x;
+    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+        x.append(mMainWindow->xValue()->value(dp, mMainWindow->units()));
+    }
+
+    clearPlottables();
+    while (axisRect()->axisCount(QCPAxis::atLeft) > 0)
+    {
+        axisRect()->removeAxis(axisRect()->axis(QCPAxis::atLeft, 0));
+    }
+
+    for (int j = 0; j < MainWindow::yaLast; ++j)
+    {
+        if (!mMainWindow->yValue(j)->visible()) continue;
+
+        QVector< double > y;
+        for (int i = 0; i < mMainWindow->dataSize(); ++i)
+        {
+            const DataPoint &dp = mMainWindow->dataPoint(i);
+            y.append(mMainWindow->yValue(j)->value(dp, mMainWindow->units()));
+        }
+
+        QCPGraph *graph = addGraph(
+                    axisRect()->axis(QCPAxis::atBottom),
+                    mMainWindow->yValue(j)->addAxis(this, mMainWindow->units()));
+        graph->setData(x, y);
+        graph->setPen(QPen(mMainWindow->yValue(j)->color()));
+    }
+
+    if (mMainWindow->markActive())
+    {
+        QVector< double > xMark, yMark;
+
+        xMark.append(mMainWindow->xPlot());
+
+        int k = 0;
+        for (int j = 0; j < MainWindow::yaLast; ++j)
+        {
+            if (!mMainWindow->yValue(j)->visible()) continue;
+
+            yMark.clear();
+            yMark.append(mMainWindow->yPlot(j));
+
+            QCPGraph *graph = addGraph(
+                        xAxis,
+                        axisRect()->axis(QCPAxis::atLeft, k++));
+
+            graph->setData(xMark, yMark);
+            graph->setPen(QPen(Qt::black));
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPScatterStyle::ssDisc);
+        }
+    }
+
+    updateYRanges();
+}

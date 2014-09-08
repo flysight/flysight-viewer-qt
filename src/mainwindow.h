@@ -65,6 +65,11 @@ public:
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
 
+    bool markActive() const { return m_markActive; }
+
+    double xPlot() const { return m_xPlot; }
+    double yPlot(int i) const { return m_yPlot[i]; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -150,7 +155,6 @@ private:
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
 
     void initPlotData();
-    void updatePlotData();
 
     void updateViewData();
     void setViewRange(QCustomPlot *plot,
@@ -181,6 +185,7 @@ private:
 signals:
     void rangeChanged(const QCPRange &range);
     void toolChanged(Tool);
+    void dataChanged();
 };
 
 #endif // MAINWINDOW_H

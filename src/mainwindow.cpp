@@ -160,6 +160,8 @@ void MainWindow::initPlot()
 
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
             m_ui->plotArea, SLOT(setRange(const QCPRange &)));
+    connect(this, SIGNAL(dataChanged()),
+            m_ui->plotArea, SLOT(updateData()));
 }
 
 void MainWindow::initViews()
@@ -347,7 +349,7 @@ void MainWindow::mark(
 
     m_markActive = true;
 
-    updatePlotData();
+    emit dataChanged();
     updateViewData();
 }
 
@@ -357,7 +359,7 @@ void MainWindow::onDataPlot_clear()
 
     QToolTip::hideText();
 
-    updatePlotData();
+    emit dataChanged();
     updateViewData();
 }
 
@@ -632,70 +634,7 @@ void MainWindow::initPlotData()
     m_ui->plotArea->xAxis->setRange(xMin, xMax);
     m_ui->plotArea->xAxis->setLabel(m_xValues[m_xAxis]->title(m_units));
 
-    updatePlotData();
-}
-
-void MainWindow::updatePlotData()
-{
-    QVector< double > x;
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        x.append(getXValue(dp, m_xAxis));
-    }
-
-    m_ui->plotArea->clearPlottables();
-    while (m_ui->plotArea->axisRect()->axisCount(QCPAxis::atLeft) > 0)
-    {
-        m_ui->plotArea->axisRect()->removeAxis(
-                    m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, 0));
-    }
-
-    for (int j = 0; j < yaLast; ++j)
-    {
-        if (!m_yValues[j]->visible()) continue;
-
-        QVector< double > y;
-        for (int i = 0; i < m_data.size(); ++i)
-        {
-            DataPoint &dp = m_data[i];
-            y.append(m_yValues[j]->value(dp, m_units));
-        }
-
-        QCPGraph *graph = m_ui->plotArea->addGraph(
-                    m_ui->plotArea->axisRect()->axis(QCPAxis::atBottom),
-                    m_yValues[j]->addAxis(m_ui->plotArea, m_units));
-        graph->setData(x, y);
-        graph->setPen(QPen(m_yValues[j]->color()));
-    }
-
-    if (m_markActive)
-    {
-        QVector< double > xMark, yMark;
-
-        xMark.append(m_xPlot);
-
-        int k = 0;
-        for (int i = 0; i < yaLast; ++i)
-        {
-            if (m_yValues[i]->visible())
-            {
-                yMark.clear();
-                yMark.append(m_yPlot[i]);
-
-                QCPGraph *graph = m_ui->plotArea->addGraph(
-                            m_ui->plotArea->xAxis,
-                            m_ui->plotArea->axisRect()->axis(QCPAxis::atLeft, k++));
-
-                graph->setData(xMark, yMark);
-                graph->setPen(QPen(Qt::black));
-                graph->setLineStyle(QCPGraph::lsNone);
-                graph->setScatterStyle(QCPScatterStyle::ssDisc);
-            }
-        }
-    }
-
-    emit rangeChanged(m_ui->plotArea->xAxis->range());
+    emit dataChanged();
 }
 
 void MainWindow::updateViewData()
@@ -964,21 +903,21 @@ void MainWindow::on_actionElevation_triggered()
 {
     m_yValues[Elevation]->setVisible(
                 !m_yValues[Elevation]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
     m_yValues[VerticalSpeed]->setVisible(
                 !m_yValues[VerticalSpeed]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
     m_yValues[HorizontalSpeed]->setVisible(
                 !m_yValues[HorizontalSpeed]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionTime_triggered()
@@ -1025,56 +964,56 @@ void MainWindow::on_actionTotalSpeed_triggered()
 {
     m_yValues[TotalSpeed]->setVisible(
                 !m_yValues[TotalSpeed]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
     m_yValues[DiveAngle]->setVisible(
                 !m_yValues[DiveAngle]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
     m_yValues[Curvature]->setVisible(
                 !m_yValues[Curvature]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
     m_yValues[GlideRatio]->setVisible(
                 !m_yValues[GlideRatio]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionHorizontalAccuracy_triggered()
 {
     m_yValues[HorizontalAccuracy]->setVisible(
                 !m_yValues[HorizontalAccuracy]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionVerticalAccuracy_triggered()
 {
     m_yValues[VerticalAccuracy]->setVisible(
                 !m_yValues[VerticalAccuracy]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionSpeedAccuracy_triggered()
 {
     m_yValues[SpeedAccuracy]->setVisible(
                 !m_yValues[SpeedAccuracy]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionNumberOfSatellites_triggered()
 {
     m_yValues[NumberOfSatellites]->setVisible(
                 !m_yValues[NumberOfSatellites]->visible());
-    updatePlotData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionPan_triggered()

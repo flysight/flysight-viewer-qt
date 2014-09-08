@@ -43,6 +43,7 @@ signals:
 
 public slots:
     void setRange(const QCPRange &range);
+    void updateData();
 };
 
 #endif // DATAPLOT_H
