@@ -206,7 +206,7 @@ void DataPlot::updateYRanges()
     replot();
 }
 
-void DataPlot::updateData()
+void DataPlot::updatePlot()
 {
     QVector< double > x;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)

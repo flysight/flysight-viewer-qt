@@ -161,7 +161,9 @@ void MainWindow::initPlot()
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
             m_ui->plotArea, SLOT(setRange(const QCPRange &)));
     connect(this, SIGNAL(dataChanged()),
-            m_ui->plotArea, SLOT(updateData()));
+            m_ui->plotArea, SLOT(updatePlot()));
+    connect(this, SIGNAL(plotChanged()),
+            m_ui->plotArea, SLOT(updatePlot()));
 }
 
 void MainWindow::initViews()
@@ -903,21 +905,21 @@ void MainWindow::on_actionElevation_triggered()
 {
     m_yValues[Elevation]->setVisible(
                 !m_yValues[Elevation]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
     m_yValues[VerticalSpeed]->setVisible(
                 !m_yValues[VerticalSpeed]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
     m_yValues[HorizontalSpeed]->setVisible(
                 !m_yValues[HorizontalSpeed]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionTime_triggered()
@@ -964,56 +966,56 @@ void MainWindow::on_actionTotalSpeed_triggered()
 {
     m_yValues[TotalSpeed]->setVisible(
                 !m_yValues[TotalSpeed]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
     m_yValues[DiveAngle]->setVisible(
                 !m_yValues[DiveAngle]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
     m_yValues[Curvature]->setVisible(
                 !m_yValues[Curvature]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
     m_yValues[GlideRatio]->setVisible(
                 !m_yValues[GlideRatio]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionHorizontalAccuracy_triggered()
 {
     m_yValues[HorizontalAccuracy]->setVisible(
                 !m_yValues[HorizontalAccuracy]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionVerticalAccuracy_triggered()
 {
     m_yValues[VerticalAccuracy]->setVisible(
                 !m_yValues[VerticalAccuracy]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionSpeedAccuracy_triggered()
 {
     m_yValues[SpeedAccuracy]->setVisible(
                 !m_yValues[SpeedAccuracy]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionNumberOfSatellites_triggered()
 {
     m_yValues[NumberOfSatellites]->setVisible(
                 !m_yValues[NumberOfSatellites]->visible());
-    emit dataChanged();
+    emit plotChanged();
 }
 
 void MainWindow::on_actionPan_triggered()

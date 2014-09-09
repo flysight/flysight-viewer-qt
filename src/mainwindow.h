@@ -186,6 +186,7 @@ signals:
     void rangeChanged(const QCPRange &range);
     void toolChanged(Tool);
     void dataChanged();
+    void plotChanged();
 };
 
 #endif // MAINWINDOW_H
