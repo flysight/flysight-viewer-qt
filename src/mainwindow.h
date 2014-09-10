@@ -108,9 +108,6 @@ private slots:
     void onTopView_mouseRelease(QMouseEvent *event);
     void onTopView_mouseMove(QMouseEvent *event);
 
-    void onLeftView_mouseMove(QMouseEvent *event);
-    void onFrontView_mouseMove(QMouseEvent *event);
-
     void on_actionImportGates_triggered();
     void on_actionPreferences_triggered();
 
@@ -169,11 +166,6 @@ private:
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
-
-    void onView_mouseMove(DataView *view, QMouseEvent *event);
-
-    static double distSqrToLine(const QPointF &start, const QPointF &end,
-                                const QPointF &point, double &mu);
 
     void updateTool();
     void updateBottom(XAxisType xAxis);

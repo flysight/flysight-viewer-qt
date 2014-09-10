@@ -212,10 +212,23 @@ void MainWindow::initViews()
     connect(mTopView, SIGNAL(mouseMove(QMouseEvent *)),
             this, SLOT(onTopView_mouseMove(QMouseEvent *)));
 
-    connect(mLeftView, SIGNAL(mouseMove(QMouseEvent *)),
-            this, SLOT(onLeftView_mouseMove(QMouseEvent *)));
-    connect(mFrontView, SIGNAL(mouseMove(QMouseEvent *)),
-            this, SLOT(onFrontView_mouseMove(QMouseEvent *)));
+    connect(mTopView, SIGNAL(mark(double)),
+            this, SLOT(onDataPlot_mark(double)));
+    connect(mLeftView, SIGNAL(mark(double)),
+            this, SLOT(onDataPlot_mark(double)));
+    connect(mFrontView, SIGNAL(mark(double)),
+            this, SLOT(onDataPlot_mark(double)));
+
+    connect(mTopView, SIGNAL(clear()),
+            this, SLOT(onDataPlot_clear()));
+    connect(mLeftView, SIGNAL(clear()),
+            this, SLOT(onDataPlot_clear()));
+    connect(mFrontView, SIGNAL(clear()),
+            this, SLOT(onDataPlot_clear()));
+
+    mTopView->setMainWindow(this);
+    mLeftView->setMainWindow(this);
+    mFrontView->setMainWindow(this);
 }
 
 void MainWindow::closeEvent(
@@ -657,7 +670,7 @@ void MainWindow::updateViewData()
 
         if (range.contains(getXValue(dp, m_xAxis)))
         {
-            t.append(dp.t);
+            t.append(getXValue(dp, m_xAxis));
 
             if (m_units == PlotValue::Metric)
             {
@@ -1085,119 +1098,6 @@ void MainWindow::onTopView_mouseMove(
         updateViewData();
 
         m_topViewBeginPos = endPos;
-    }
-
-    onView_mouseMove(mTopView, event);
-}
-
-void MainWindow::onLeftView_mouseMove(
-        QMouseEvent *event)
-{
-    onView_mouseMove(mLeftView, event);
-}
-
-void MainWindow::onFrontView_mouseMove(
-        QMouseEvent *event)
-{
-    onView_mouseMove(mFrontView, event);
-}
-
-void MainWindow::onView_mouseMove(
-        DataView *view,
-        QMouseEvent *event)
-{
-    if (QCPCurve *curve = qobject_cast<QCPCurve *>(view->plottable(0)))
-    {
-        const QCPCurveDataMap *data = curve->data();
-
-        double resultTime;
-        double resultDistance = std::numeric_limits<double>::max();
-
-        for (QCPCurveDataMap::const_iterator it = data->constBegin();
-             it != data->constEnd() && (it + 1) != data->constEnd();
-             ++ it)
-        {
-            QPointF pt1 = QPointF(view->xAxis->coordToPixel(it.value().key),
-                                  view->yAxis->coordToPixel(it.value().value));
-            QPointF pt2 = QPointF(view->xAxis->coordToPixel((it + 1).value().key),
-                                  view->yAxis->coordToPixel((it + 1).value().value));
-
-            double mu;
-            double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
-
-            if (dist < resultDistance)
-            {
-                double t1 = it.value().t;
-                double t2 = (it + 1).value().t;
-
-                resultTime = t1 + mu * (t2 - t1);
-                resultDistance = dist;
-            }
-        }
-
-        if (resultDistance < view->selectionTolerance())
-        {
-            int below = findIndexBelowT(resultTime);
-            int above = findIndexAboveT(resultTime);
-
-            if (below >= 0 && above < m_data.size())
-            {
-                const DataPoint &dp1 = m_data[below];
-                const DataPoint &dp2 = m_data[above];
-
-                double x1 = getXValue(dp1, m_xAxis);
-                double x2 = getXValue(dp2, m_xAxis);
-
-                double x = x1 + (resultTime - dp1.t) / (dp2.t - dp1.t) * (x2 - x1);
-
-                onDataPlot_mark(x);
-            }
-            else
-            {
-                onDataPlot_clear();
-            }
-        }
-        else
-        {
-            onDataPlot_clear();
-        }
-    }
-}
-
-double MainWindow::distSqrToLine(
-        const QPointF &start,
-        const QPointF &end,
-        const QPointF &point,
-        double &mu)
-{
-    QVector2D a(start);
-    QVector2D b(end);
-    QVector2D p(point);
-    QVector2D v(b - a);
-
-    double vLengthSqr = v.lengthSquared();
-    if (!qFuzzyIsNull(vLengthSqr))
-    {
-        mu = QVector2D::dotProduct(p - a, v)/vLengthSqr;
-        if (mu < 0)
-        {
-            mu = 0;
-            return (a - p).lengthSquared();
-        }
-        else if (mu > 1)
-        {
-            mu = 1;
-            return (b - p).lengthSquared();
-        }
-        else
-        {
-            return ((a + mu * v) - p).lengthSquared();
-        }
-    }
-    else
-    {
-        mu = 0;
-        return (a - p).lengthSquared();
     }
 }
 
