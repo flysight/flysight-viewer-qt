@@ -628,7 +628,6 @@ void MainWindow::initPlotData()
     }
 
     setRange(QCPRange(xMin, xMax));
-    m_ui->plotArea->xAxis->setLabel(m_xValues[m_xAxis]->title(m_units));
 
     emit dataChanged();
 }

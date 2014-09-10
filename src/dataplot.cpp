@@ -208,6 +208,8 @@ void DataPlot::updateYRanges()
 
 void DataPlot::updatePlot()
 {
+    xAxis->setLabel(mMainWindow->xValue()->title(mMainWindow->units()));
+
     QVector< double > x;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
