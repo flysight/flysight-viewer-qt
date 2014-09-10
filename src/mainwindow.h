@@ -164,9 +164,6 @@ private:
     int findIndexBelowX(double x);
     int findIndexAboveX(double x);
 
-    int findIndexBelowT(double t);
-    int findIndexAboveT(double t);
-
     void updateTool();
     void updateBottom(XAxisType xAxis);
     void updateBottomActions();

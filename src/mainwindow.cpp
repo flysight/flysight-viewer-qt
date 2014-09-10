@@ -406,34 +406,6 @@ int MainWindow::findIndexAboveX(
     return 0;
 }
 
-int MainWindow::findIndexBelowT(
-        double t)
-{
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (dp.t > t)
-            return i - 1;
-    }
-
-    return m_data.size() - 1;
-}
-
-int MainWindow::findIndexAboveT(
-        double t)
-{
-    for (int i = m_data.size() - 1; i >= 0; --i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (dp.t <= t)
-            return i + 1;
-    }
-
-    return 0;
-}
-
 void MainWindow::on_actionImport_triggered()
 {
     const double pi = 3.14159265359;
@@ -1168,7 +1140,6 @@ void MainWindow::on_actionPreferences_triggered()
         updateViewData();
     }
 }
-
 
 void MainWindow::setRange(
         const QCPRange &range)
