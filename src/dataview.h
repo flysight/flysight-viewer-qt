@@ -39,12 +39,16 @@ private:
     static double distSqrToLine(const QPointF &start, const QPointF &end,
                                 const QPointF &point, double &mu);
 
+    void setViewRange(double xMin, double xMax,
+                      double yMin, double yMax);
+    void addNorthArrow();
+
 signals:
     void mark(double xMark);
     void clear();
 
 public slots:
-    
+    void updateView();
 };
 
 #endif // DATAVIEW_H

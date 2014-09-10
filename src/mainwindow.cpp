@@ -138,10 +138,6 @@ void MainWindow::initPlot()
     m_ui->actionSpeedAccuracy->setChecked(m_yValues[SpeedAccuracy]->visible());
     m_ui->actionNumberOfSatellites->setChecked(m_yValues[NumberOfSatellites]->visible());
 
-    connect(m_ui->plotArea, SIGNAL(zoom(const QCPRange &)),
-            this, SLOT(onDataPlot_zoom(const QCPRange &)));
-    connect(m_ui->plotArea, SIGNAL(pan(double, double)),
-            this, SLOT(onDataPlot_pan(double, double)));
     connect(m_ui->plotArea, SIGNAL(measure(double, double)),
             this, SLOT(onDataPlot_measure(double, double)));
     connect(m_ui->plotArea, SIGNAL(zero(double)),
@@ -151,7 +147,6 @@ void MainWindow::initPlot()
 
     connect(m_ui->plotArea, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
-
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
@@ -225,6 +220,27 @@ void MainWindow::initViews()
     mTopView->setMainWindow(this);
     mLeftView->setMainWindow(this);
     mFrontView->setMainWindow(this);
+
+    connect(this, SIGNAL(dataChanged()),
+            mTopView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
+            mTopView, SLOT(updateView()));
+    connect(this, SIGNAL(rotationChanged(double)),
+            mTopView, SLOT(updateView()));
+
+    connect(this, SIGNAL(dataChanged()),
+            mLeftView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
+            mLeftView, SLOT(updateView()));
+    connect(this, SIGNAL(rotationChanged(double)),
+            mLeftView, SLOT(updateView()));
+
+    connect(this, SIGNAL(dataChanged()),
+            mFrontView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
+            mFrontView, SLOT(updateView()));
+    connect(this, SIGNAL(rotationChanged(double)),
+            mFrontView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -361,7 +377,6 @@ void MainWindow::mark(
     m_markActive = true;
 
     emit dataChanged();
-    updateViewData();
 }
 
 void MainWindow::onDataPlot_clear()
@@ -371,7 +386,6 @@ void MainWindow::onDataPlot_clear()
     QToolTip::hideText();
 
     emit dataChanged();
-    updateViewData();
 }
 
 int MainWindow::findIndexBelowX(
@@ -517,7 +531,6 @@ void MainWindow::on_actionImport_triggered()
     }
 
     initPlotData();
-    updateViewData();
 }
 
 double MainWindow::getSlope(
@@ -614,265 +627,10 @@ void MainWindow::initPlotData()
         }
     }
 
-    m_ui->plotArea->xAxis->setRange(xMin, xMax);
+    setRange(QCPRange(xMin, xMax));
     m_ui->plotArea->xAxis->setLabel(m_xValues[m_xAxis]->title(m_units));
 
     emit dataChanged();
-}
-
-void MainWindow::updateViewData()
-{
-    const QCPRange &range = m_ui->plotArea->xAxis->range();
-
-    QVector< double > t, x, y, z;
-
-    double xMin, xMax;
-    double yMin, yMax;
-    double zMin, zMax;
-
-    bool first = true;
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (range.contains(getXValue(dp, m_xAxis)))
-        {
-            t.append(getXValue(dp, m_xAxis));
-
-            if (m_units == PlotValue::Metric)
-            {
-                x.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
-                y.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
-                z.append(dp.z);
-            }
-            else
-            {
-                x.append((dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation)) * METERS_TO_FEET);
-                y.append((dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation)) * METERS_TO_FEET);
-                z.append((dp.z) * METERS_TO_FEET);
-            }
-
-            if (first)
-            {
-                xMin = xMax = x.back();
-                yMin = yMax = y.back();
-                zMin = zMax = z.back();
-
-                first = false;
-            }
-            else
-            {
-                if (x.back() < xMin) xMin = x.back();
-                if (x.back() > xMax) xMax = x.back();
-
-                if (y.back() < yMin) yMin = y.back();
-                if (y.back() > yMax) yMax = y.back();
-
-                if (z.back() < zMin) zMin = z.back();
-                if (z.back() > zMax) zMax = z.back();
-            }
-        }
-    }
-
-    mLeftView->clearPlottables();
-    QCPCurve *left = new QCPCurve(mLeftView->xAxis, mLeftView->yAxis);
-    left->setData(t, x, z);
-    left->setPen(QPen(Qt::blue));
-    mLeftView->addPlottable(left);
-    setViewRange(mLeftView,
-                 xMin, xMax,
-                 zMin, zMax);
-
-    mFrontView->clearPlottables();
-    QCPCurve *front = new QCPCurve(mFrontView->xAxis, mFrontView->yAxis);
-    front->setData(t, y, z);
-    front->setPen(QPen(Qt::red));
-    mFrontView->addPlottable(front);
-    setViewRange(mFrontView,
-                 yMin, yMax,
-                 zMin, zMax);
-
-    mTopView->clearPlottables();
-    QCPCurve *top = new QCPCurve(mTopView->xAxis, mTopView->yAxis);
-    top->setData(t, x, y);
-    top->setPen(QPen(Qt::black));
-    mTopView->addPlottable(top);
-    setViewRange(mTopView,
-                 xMin, xMax,
-                 yMin, yMax);
-
-    mTopView->addGraph();
-    mTopView->graph(0)->addData(mTopView->xAxis->range().upper, (yMin + yMax) / 2);
-    mTopView->graph(0)->setPen(QPen(Qt::red));
-    mTopView->graph(0)->setLineStyle(QCPGraph::lsNone);
-    mTopView->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
-
-    mTopView->addGraph();
-    mTopView->graph(1)->addData((xMin + xMax) / 2, mTopView->yAxis->range().lower);
-    mTopView->graph(1)->setPen(QPen(Qt::blue));
-    mTopView->graph(1)->setLineStyle(QCPGraph::lsNone);
-    mTopView->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
-
-    if (m_markActive)
-    {
-        QVector< double > xMark, yMark, zMark;
-
-        if (m_units == PlotValue::Metric)
-        {
-            xMark.append(m_xView *  cos(m_viewDataRotation) + m_yView * sin(m_viewDataRotation));
-            yMark.append(m_xView * -sin(m_viewDataRotation) + m_yView * cos(m_viewDataRotation));
-            zMark.append(m_zView);
-        }
-        else
-        {
-            xMark.append((m_xView *  cos(m_viewDataRotation) + m_yView * sin(m_viewDataRotation)) * METERS_TO_FEET);
-            yMark.append((m_xView * -sin(m_viewDataRotation) + m_yView * cos(m_viewDataRotation)) * METERS_TO_FEET);
-            zMark.append((m_zView) * METERS_TO_FEET);
-        }
-
-        mLeftView->addGraph();
-        mLeftView->graph(0)->setData(xMark, zMark);
-        mLeftView->graph(0)->setPen(QPen(Qt::black));
-        mLeftView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        mLeftView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
-
-        mFrontView->addGraph();
-        mFrontView->graph(0)->setData(yMark, zMark);
-        mFrontView->graph(0)->setPen(QPen(Qt::black));
-        mFrontView->graph(0)->setLineStyle(QCPGraph::lsNone);
-        mFrontView->graph(0)->setScatterStyle(QCPScatterStyle::ssDisc);
-
-        mTopView->addGraph();
-        mTopView->graph(2)->setData(xMark, yMark);
-        mTopView->graph(2)->setPen(QPen(Qt::black));
-        mTopView->graph(2)->setLineStyle(QCPGraph::lsNone);
-        mTopView->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
-    }
-
-    if (!m_data.empty())
-    {
-        QVector< double > xMark, yMark, zMark;
-
-        for (int i = 0; i < m_waypoints.size(); ++i)
-        {
-            const DataPoint &dp0 = m_data[m_data.size() - 1];
-            DataPoint &dp = m_waypoints[i];
-
-            double distance = getDistance(dp0, dp);
-            double bearing = getBearing(dp0, dp);
-
-            dp.x = distance * sin(bearing);
-            dp.y = distance * cos(bearing);
-
-            if (m_units == PlotValue::Metric)
-            {
-                xMark.append(dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation));
-                yMark.append(dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation));
-                zMark.append(dp.z);
-            }
-            else
-            {
-                xMark.append((dp.x *  cos(m_viewDataRotation) + dp.y * sin(m_viewDataRotation)) * METERS_TO_FEET);
-                yMark.append((dp.x * -sin(m_viewDataRotation) + dp.y * cos(m_viewDataRotation)) * METERS_TO_FEET);
-                zMark.append((dp.z) * METERS_TO_FEET);
-            }
-        }
-
-        QCPGraph *cur = mLeftView->addGraph();
-        cur->setData(xMark, zMark);
-        cur->setPen(QPen(Qt::black));
-        cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCPScatterStyle::ssPlus);
-
-        cur = mFrontView->addGraph();
-        cur->setData(yMark, zMark);
-        cur->setPen(QPen(Qt::black));
-        cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCPScatterStyle::ssPlus);
-
-        cur = mTopView->addGraph();
-        cur->setData(xMark, yMark);
-        cur->setPen(QPen(Qt::black));
-        cur->setLineStyle(QCPGraph::lsNone);
-        cur->setScatterStyle(QCPScatterStyle::ssPlus);
-    }
-
-    addNorthArrow(mTopView);
-
-    mLeftView->replot();
-    mFrontView->replot();
-    mTopView->replot();
-}
-
-void MainWindow::addNorthArrow(
-        QCustomPlot *plot)
-{
-    QPainter painter(plot);
-
-    double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
-    double valPerPix = plot->xAxis->range().size() / plot->axisRect()->width();
-    double valPerMM = valPerPix / mmPerPix;
-
-    // rotated arrow
-    QPointF north( 5 * sin(m_viewDataRotation),  5 * cos(m_viewDataRotation));
-    QPointF south(-5 * sin(m_viewDataRotation), -5 * cos(m_viewDataRotation));
-
-    // offset from corner
-    north -= QPointF(10, 10);
-    south -= QPointF(10, 10);
-
-    // convert from mm to values
-    north *= valPerMM;
-    south *= valPerMM;
-
-    QPointF corner (plot->xAxis->range().upper, plot->yAxis->range().upper);
-
-    north += corner;
-    south += corner;
-
-    plot->removeItem(0);
-
-    QCPItemLine *arrow = new QCPItemLine(plot);
-    plot->addItem(arrow);
-    arrow->start->setCoords(south);
-    arrow->end->setCoords(north);
-    arrow->setHead(QCPLineEnding::esSpikeArrow);
-}
-
-void MainWindow::setViewRange(
-        QCustomPlot *plot,
-        double xMin,
-        double xMax,
-        double yMin,
-        double yMax)
-{
-    QPainter painter(plot);
-
-    double xMMperPix = (double) painter.device()->widthMM() / painter.device()->width();
-    double yMMperPix = (double) painter.device()->heightMM() / painter.device()->height();
-
-    QRect rect = plot->axisRect()->rect();
-
-    double xSpan = (xMax - xMin) * 1.2;
-    double ySpan = (yMax - yMin) * 1.2;
-
-    double xScale = xSpan / rect.width() / xMMperPix;
-    double yScale = ySpan / rect.height() / yMMperPix;
-
-    double scale = qMax(xScale, yScale);
-
-    double xMid = (xMin + xMax) / 2;
-    double yMid = (yMin + yMax) / 2;
-
-    xMin = xMid - rect.width() * xMMperPix * scale / 2;
-    xMax = xMid + rect.width() * xMMperPix * scale / 2;
-
-    yMin = yMid - rect.height() * yMMperPix * scale / 2;
-    yMax = yMid + rect.height() * yMMperPix * scale / 2;
-
-    plot->xAxis->setRange(xMin, xMax);
-    plot->yAxis->setRange(yMin, yMax);
 }
 
 double MainWindow::getXValue(
@@ -929,9 +687,8 @@ void MainWindow::updateBottom(
     m_xAxis = xAxis;
     initPlotData();
 
-    emit rangeChanged(QCPRange(getXValue(dpStart, m_xAxis),
-                               getXValue(dpEnd, m_xAxis)));
-    m_ui->plotArea->replot();
+    setRange(QCPRange(getXValue(dpStart, m_xAxis),
+                      getXValue(dpEnd, m_xAxis)));
 
     updateBottomActions();
 }
@@ -1073,7 +830,7 @@ void MainWindow::on_actionImportGates_triggered()
         }
     }
 
-    updateViewData();
+    emit dataChanged();
 }
 
 void MainWindow::on_actionPreferences_triggered()
@@ -1088,22 +845,21 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_units = dlg.units();
         initPlotData();
-        updateViewData();
     }
 }
 
 void MainWindow::setRange(
         const QCPRange &range)
 {
-    emit rangeChanged(range);
-    updateViewData();
+    mRange = range;
+    emit rangeChanged(mRange);
 }
 
 void MainWindow::setRotation(
         double rotation)
 {
     m_viewDataRotation = rotation;
-    updateViewData();
+    emit rotationChanged(m_viewDataRotation);
 }
 
 void MainWindow::setZero(
@@ -1131,9 +887,8 @@ void MainWindow::setZero(
     range = QCPRange (range.lower - x0, range.upper - x0);
 
     initPlotData();
-    updateViewData();
 
-    m_ui->plotArea->xAxis->setRange(range);
+    setRange(range);
     m_ui->plotArea->replot();
 
     setTool(mPrevTool);
@@ -1155,9 +910,8 @@ void MainWindow::setGround(
     QCPRange range = m_ui->plotArea->xAxis->range();
 
     initPlotData();
-    updateViewData();
 
-    m_ui->plotArea->xAxis->setRange(range);
+    setRange(range);
     m_ui->plotArea->replot();
 
     setTool(mPrevTool);
