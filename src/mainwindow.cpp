@@ -678,10 +678,8 @@ void MainWindow::on_actionDistance3D_triggered()
 void MainWindow::updateBottom(
         XAxisType xAxis)
 {
-    QCPRange range = m_ui->plotArea->xAxis->range();
-
-    DataPoint dpStart = interpolateData(range.lower);
-    DataPoint dpEnd = interpolateData(range.upper);
+    DataPoint dpStart = interpolateData(mRange.lower);
+    DataPoint dpEnd = interpolateData(mRange.upper);
 
     m_xAxis = xAxis;
     initPlotData();
@@ -882,14 +880,11 @@ void MainWindow::setZero(
     }
 
     double x0 = getXValue(dp0, m_xAxis);
-    QCPRange range = m_ui->plotArea->xAxis->range();
-    range = QCPRange (range.lower - x0, range.upper - x0);
+    QCPRange range (mRange.lower - x0, mRange.upper - x0);
 
     initPlotData();
 
     setRange(range);
-    m_ui->plotArea->replot();
-
     setTool(mPrevTool);
 }
 
@@ -906,13 +901,11 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    QCPRange range = m_ui->plotArea->xAxis->range();
+    QCPRange range = mRange;
 
     initPlotData();
 
     setRange(range);
-    m_ui->plotArea->replot();
-
     setTool(mPrevTool);
 }
 
