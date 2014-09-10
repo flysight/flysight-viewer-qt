@@ -18,7 +18,6 @@ MainWindow::MainWindow(
     m_ui(new Ui::MainWindow),
     m_xAxis(Time),
     m_markActive(false),
-    m_topViewPan(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial)
 {
@@ -205,13 +204,6 @@ void MainWindow::initViews()
     mLeftView->setMouseTracking(true);
     mFrontView->setMouseTracking(true);
 
-    connect(mTopView, SIGNAL(mousePress(QMouseEvent *)),
-            this, SLOT(onTopView_mousePress(QMouseEvent *)));
-    connect(mTopView, SIGNAL(mouseRelease(QMouseEvent *)),
-            this, SLOT(onTopView_mouseRelease(QMouseEvent *)));
-    connect(mTopView, SIGNAL(mouseMove(QMouseEvent *)),
-            this, SLOT(onTopView_mouseMove(QMouseEvent *)));
-
     connect(mTopView, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
     connect(mLeftView, SIGNAL(mark(double)),
@@ -225,6 +217,10 @@ void MainWindow::initViews()
             this, SLOT(onDataPlot_clear()));
     connect(mFrontView, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
+
+    mTopView->setDirection(DataView::Top);
+    mLeftView->setDirection(DataView::Left);
+    mFrontView->setDirection(DataView::Front);
 
     mTopView->setMainWindow(this);
     mLeftView->setMainWindow(this);
@@ -1028,51 +1024,6 @@ void MainWindow::on_actionGround_triggered()
     setTool(Ground);
 }
 
-void MainWindow::onTopView_mousePress(
-        QMouseEvent *event)
-{
-    if (mTopView->axisRect()->rect().contains(event->pos()))
-    {
-        m_topViewBeginPos = event->pos() - mTopView->axisRect()->center();
-        m_topViewPan = true;
-    }
-}
-
-void MainWindow::onTopView_mouseRelease(
-        QMouseEvent *)
-{
-    m_topViewPan = false;
-}
-
-void MainWindow::onTopView_mouseMove(
-        QMouseEvent *event)
-{
-    if (m_topViewPan)
-    {
-        const double pi = 3.14159265359;
-
-        QRect axisRect = mTopView->axisRect()->rect();
-        QPoint endPos = event->pos() - axisRect.center();
-/*
-        double a1 = atan2((double) m_topViewBeginPos.x(), m_topViewBeginPos.y());
-        double a2 = atan2((double) endPos.x(), endPos.y());
-        double a = a2 - a1;
-*/
-        double a1 = (double) (m_topViewBeginPos.x() - axisRect.left()) / axisRect.width();
-        double a2 = (double) (endPos.x() - axisRect.left()) / axisRect.width();
-        double a = a2 - a1;
-
-        while (a < -pi) a += 2 * pi;
-        while (a >  pi) a -= 2 * pi;
-
-        m_viewDataRotation -= a;
-
-        updateViewData();
-
-        m_topViewBeginPos = endPos;
-    }
-}
-
 void MainWindow::on_actionImportGates_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Import"), "", tr("CSV Files (*.csv)"));
@@ -1145,6 +1096,13 @@ void MainWindow::setRange(
         const QCPRange &range)
 {
     emit rangeChanged(range);
+    updateViewData();
+}
+
+void MainWindow::setRotation(
+        double rotation)
+{
+    m_viewDataRotation = rotation;
     updateViewData();
 }
 

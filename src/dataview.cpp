@@ -17,18 +17,48 @@ QSize DataView::sizeHint() const
 void DataView::mousePressEvent(
         QMouseEvent *event)
 {
+    if (mDirection == Top && axisRect()->rect().contains(event->pos()))
+    {
+        m_topViewBeginPos = event->pos() - axisRect()->center();
+        m_topViewPan = true;
+    }
+
     QCustomPlot::mousePressEvent(event);
 }
 
 void DataView::mouseReleaseEvent(
         QMouseEvent *event)
 {
+    m_topViewPan = false;
     QCustomPlot::mouseReleaseEvent(event);
 }
 
 void DataView::mouseMoveEvent(
         QMouseEvent *event)
 {
+    if (m_topViewPan)
+    {
+        const double pi = 3.14159265359;
+
+        QRect rect = axisRect()->rect();
+        QPoint endPos = event->pos() - rect.center();
+/*
+        double a1 = atan2((double) m_topViewBeginPos.x(), m_topViewBeginPos.y());
+        double a2 = atan2((double) endPos.x(), endPos.y());
+        double a = a2 - a1;
+*/
+        double a1 = (double) (m_topViewBeginPos.x() - rect.left()) / rect.width();
+        double a2 = (double) (endPos.x() - rect.left()) / rect.width();
+        double a = a2 - a1;
+
+        while (a < -pi) a += 2 * pi;
+        while (a >  pi) a -= 2 * pi;
+
+        mMainWindow->setRotation(mMainWindow->rotation() - a);
+
+        m_topViewBeginPos = endPos;
+    }
+
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
     {
         const QCPCurveDataMap *data = curve->data();

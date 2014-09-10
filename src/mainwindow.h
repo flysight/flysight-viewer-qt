@@ -70,6 +70,9 @@ public:
     double xPlot() const { return m_xPlot; }
     double yPlot(int i) const { return m_yPlot[i]; }
 
+    void setRotation(double rotation);
+    double rotation() const { return m_viewDataRotation; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -104,10 +107,6 @@ private slots:
     void onDataPlot_mark(double xMark);
     void onDataPlot_clear();    
 
-    void onTopView_mousePress(QMouseEvent *event);
-    void onTopView_mouseRelease(QMouseEvent *event);
-    void onTopView_mouseMove(QMouseEvent *event);
-
     void on_actionImportGates_triggered();
     void on_actionPreferences_triggered();
 
@@ -124,8 +123,6 @@ private:
     double                m_xView, m_yView, m_zView;
     bool                  m_markActive;
 
-    QPoint                m_topViewBeginPos;
-    bool                  m_topViewPan;
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
