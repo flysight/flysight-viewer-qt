@@ -67,20 +67,15 @@ public:
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
 
-    bool markActive() const { return m_markActive; }
-
-    double xPlot() const { return m_xPlot; }
-    double yPlot(int i) const { return m_yPlot[i]; }
+    const DataPoint &markStart() const { return mMarkStart; }
+    const DataPoint &markEnd() const { return mMarkEnd; }
+    bool markActive() const { return mMarkActive; }
 
     void setRotation(double rotation);
     double rotation() const { return m_viewDataRotation; }
 
     int waypointSize() const { return m_waypoints.size(); }
     const DataPoint &waypoint(int i) const { return m_waypoints[i]; }
-
-    double xView() const { return m_xView; }
-    double yView() const { return m_yView; }
-    double zView() const { return m_zView; }
 
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
@@ -131,7 +126,10 @@ private:
 
     double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;
-    bool                  m_markActive;
+
+    DataPoint             mMarkStart;
+    DataPoint             mMarkEnd;
+    bool                  mMarkActive;
 
     double                m_viewDataRotation;
 
@@ -170,7 +168,6 @@ private:
     void updateLeftActions();
 
     DataPoint interpolateData(double x);
-    void mark(const DataPoint &dp);
 
 signals:
     void rangeChanged(const QCPRange &range);

@@ -245,9 +245,11 @@ void DataPlot::updatePlot()
 
     if (mMainWindow->markActive())
     {
+        const DataPoint &dpEnd = mMainWindow->markEnd();
+
         QVector< double > xMark, yMark;
 
-        xMark.append(mMainWindow->xPlot());
+        xMark.append(mMainWindow->xValue()->value(dpEnd, mMainWindow->units()));
 
         int k = 0;
         for (int j = 0; j < MainWindow::yaLast; ++j)
@@ -255,7 +257,7 @@ void DataPlot::updatePlot()
             if (!mMainWindow->yValue(j)->visible()) continue;
 
             yMark.clear();
-            yMark.append(mMainWindow->yPlot(j));
+            yMark.append(mMainWindow->yValue(j)->value(dpEnd, mMainWindow->units()));
 
             QCPGraph *graph = addGraph(
                         xAxis,

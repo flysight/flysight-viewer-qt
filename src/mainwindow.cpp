@@ -17,7 +17,7 @@ MainWindow::MainWindow(
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     m_xAxis(Time),
-    m_markActive(false),
+    mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial)
 {
@@ -213,27 +213,6 @@ DataPoint MainWindow::interpolateData(
         const double x2 = getXValue(dp2, m_xAxis);
         return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
     }
-}
-
-void MainWindow::mark(
-        const DataPoint &dp)
-{
-    m_xPlot = getXValue(dp, m_xAxis);
-    for (int i = 0; i < yaLast; ++i)
-    {
-        if (m_yValues[i]->visible())
-        {
-            m_yPlot[i] = m_yValues[i]->value(dp, m_units);
-        }
-    }
-
-    m_xView = dp.x;
-    m_yView = dp.y;
-    m_zView = dp.z;
-
-    m_markActive = true;
-
-    emit dataChanged();
 }
 
 int MainWindow::findIndexBelowX(
@@ -455,18 +434,21 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    DataPoint dpStart = interpolateData(xStart);
-    DataPoint dpEnd = interpolateData(xEnd);
+    mMarkStart = interpolateData(xStart);
+    mMarkEnd = interpolateData(xEnd);
+    mMarkActive = true;
+
+    emit dataChanged();
 
     QString status;
 
     status = QString("<table width='300'>");
 
-    const double val = getXValue(dpEnd, m_xAxis)
-            - getXValue(dpStart, m_xAxis);
+    const double val = getXValue(mMarkEnd, m_xAxis)
+            - getXValue(mMarkStart, m_xAxis);
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
             .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
+            .arg(m_xValues[m_xAxis]->value(mMarkEnd, m_units))
             .arg(val < 0 ? "" : "+")
             .arg(val);
 
@@ -474,11 +456,11 @@ void MainWindow::setMark(
     {
         if (m_yValues[i]->visible())
         {
-            const double val = m_yValues[i]->value(dpEnd, m_units)
-                    - m_yValues[i]->value(dpStart, m_units);
+            const double val = m_yValues[i]->value(mMarkEnd, m_units)
+                    - m_yValues[i]->value(mMarkStart, m_units);
             status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                    .arg(m_yValues[(YAxisType) i]->title(m_units))
-                    .arg(m_yValues[i]->value(dpEnd, m_units))
+                    .arg(m_yValues[i]->title(m_units))
+                    .arg(m_yValues[i]->value(mMarkEnd, m_units))
                     .arg(val < 0 ? "" : "+")
                     .arg(val)
                     .arg(m_yValues[i]->color().name());
@@ -488,8 +470,6 @@ void MainWindow::setMark(
     status += QString("</table>");
 
     QToolTip::showText(QCursor::pos(), status);
-
-    mark(dpEnd);
 }
 
 void MainWindow::setMark(
@@ -497,8 +477,10 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    const DataPoint dp = interpolateData(xMark);
-    mark(dp);
+    mMarkStart = mMarkEnd = interpolateData(xMark);
+    mMarkActive = true;
+
+    emit dataChanged();
 
     QString status;
 
@@ -506,15 +488,15 @@ void MainWindow::setMark(
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
             .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dp, m_units));
+            .arg(m_xValues[m_xAxis]->value(mMarkStart, m_units));
 
     for (int i = 0; i < yaLast; ++i)
     {
         if (m_yValues[i]->visible())
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-                    .arg(m_yValues[(YAxisType) i]->title(m_units))
-                    .arg(m_yPlot[i])
+                    .arg(m_yValues[i]->title(m_units))
+                    .arg(m_yValues[i]->value(mMarkStart, m_units))
                     .arg(m_yValues[i]->color().name());
         }
     }
@@ -526,11 +508,11 @@ void MainWindow::setMark(
 
 void MainWindow::clearMark()
 {
-    m_markActive = false;
-
-    QToolTip::hideText();
+    mMarkActive = false;
 
     emit dataChanged();
+
+    QToolTip::hideText();
 }
 
 void MainWindow::initPlotData()

@@ -244,19 +244,21 @@ void DataView::updateView()
 
     if (mMainWindow->markActive())
     {
+        const DataPoint &dpEnd = mMainWindow->markEnd();
+
         QVector< double > xMark, yMark, zMark;
 
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            xMark.append(mMainWindow->xView() *  cos(mMainWindow->rotation()) + mMainWindow->yView() * sin(mMainWindow->rotation()));
-            yMark.append(mMainWindow->xView() * -sin(mMainWindow->rotation()) + mMainWindow->yView() * cos(mMainWindow->rotation()));
-            zMark.append(mMainWindow->zView());
+            xMark.append(dpEnd.x *  cos(mMainWindow->rotation()) + dpEnd.y * sin(mMainWindow->rotation()));
+            yMark.append(dpEnd.x * -sin(mMainWindow->rotation()) + dpEnd.y * cos(mMainWindow->rotation()));
+            zMark.append(dpEnd.z);
         }
         else
         {
-            xMark.append((mMainWindow->xView() *  cos(mMainWindow->rotation()) + mMainWindow->yView() * sin(mMainWindow->rotation())) * METERS_TO_FEET);
-            yMark.append((mMainWindow->xView() * -sin(mMainWindow->rotation()) + mMainWindow->yView() * cos(mMainWindow->rotation())) * METERS_TO_FEET);
-            zMark.append((mMainWindow->zView()) * METERS_TO_FEET);
+            xMark.append((dpEnd.x *  cos(mMainWindow->rotation()) + dpEnd.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
+            yMark.append((dpEnd.x * -sin(mMainWindow->rotation()) + dpEnd.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
+            zMark.append((dpEnd.z) * METERS_TO_FEET);
         }
 
         QCPGraph *graph = addGraph();
