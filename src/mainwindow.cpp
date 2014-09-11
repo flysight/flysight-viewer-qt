@@ -23,14 +23,9 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
-#ifdef Q_OS_MAC
     // Ensure that closeEvent is called
     QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
                      this, SLOT(close()));
-#endif
-
-    QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
-                     qApp, SLOT(quit()));
 
     // Intitialize plot area
     initPlot();
