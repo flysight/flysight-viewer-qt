@@ -7,9 +7,9 @@
 
 #include "dataplot.h"
 #include "datapoint.h"
+#include "dataview.h"
 #include "plotvalue.h"
 
-class DataView;
 class QCPRange;
 class QCustomPlot;
 
@@ -142,10 +142,6 @@ private:
 
     double                m_timeStep;
 
-    DataView             *mLeftView;
-    DataView             *mTopView;
-    DataView             *mFrontView;
-
     Tool                  mTool;
     Tool                  mPrevTool;
 
@@ -156,6 +152,8 @@ private:
 
     void initPlot();
     void initViews();
+    void initSingleView(const QString &title, const QString &objectName,
+                        QAction *actionShow, DataView::Direction direction);
 
     double getSlope(const int center, YAxisType yAxis) const;
 

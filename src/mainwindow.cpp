@@ -162,85 +162,43 @@ void MainWindow::initPlot()
 
 void MainWindow::initViews()
 {
-    // Add side view
-    mLeftView = new DataView;
-    QDockWidget *leftDock = new QDockWidget(tr("Side View"));
-    leftDock->setWidget(mLeftView);
-    leftDock->setObjectName("leftView");
-    addDockWidget(Qt::BottomDockWidgetArea, leftDock);
-    connect(m_ui->actionShowLeftView, SIGNAL(toggled(bool)),
-            leftDock, SLOT(setVisible(bool)));
-    connect(leftDock, SIGNAL(visibilityChanged(bool)),
-            m_ui->actionShowLeftView, SLOT(setChecked(bool)));
+    initSingleView(tr("Top View"), "topView", m_ui->actionShowTopView, DataView::Top);
+    initSingleView(tr("Side View"), "leftView", m_ui->actionShowLeftView, DataView::Left);
+    initSingleView(tr("Front View"), "frontView", m_ui->actionShowFrontView, DataView::Front);
+}
 
-    // Add top view
-    mTopView = new DataView;
-    QDockWidget *topDock = new QDockWidget(tr("Top View"));
-    topDock->setWidget(mTopView);
-    topDock->setObjectName("topView");
-    addDockWidget(Qt::BottomDockWidgetArea, topDock);
-    connect(m_ui->actionShowTopView, SIGNAL(toggled(bool)),
-            topDock, SLOT(setVisible(bool)));
-    connect(topDock, SIGNAL(visibilityChanged(bool)),
-            m_ui->actionShowTopView, SLOT(setChecked(bool)));
+void MainWindow::initSingleView(
+        const QString &title,
+        const QString &objectName,
+        QAction *actionShow,
+        DataView::Direction direction)
+{
+    DataView *dataView = new DataView;
+    QDockWidget *dockWidget = new QDockWidget(title);
+    dockWidget->setWidget(dataView);
+    dockWidget->setObjectName(objectName);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+    connect(actionShow, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            actionShow, SLOT(setChecked(bool)));
 
-    // Add front view
-    mFrontView = new DataView;
-    QDockWidget *frontDock = new QDockWidget(tr("Front View"));
-    frontDock->setWidget(mFrontView);
-    frontDock->setObjectName("frontView");
-    addDockWidget(Qt::BottomDockWidgetArea, frontDock);
-    connect(m_ui->actionShowFrontView, SIGNAL(toggled(bool)),
-            frontDock, SLOT(setVisible(bool)));
-    connect(frontDock, SIGNAL(visibilityChanged(bool)),
-            m_ui->actionShowFrontView, SLOT(setChecked(bool)));
+    dataView->setMouseTracking(true);
 
-    mTopView->setMouseTracking(true);
-    mLeftView->setMouseTracking(true);
-    mFrontView->setMouseTracking(true);
-
-    connect(mTopView, SIGNAL(mark(double)),
+    connect(dataView, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
-    connect(mLeftView, SIGNAL(mark(double)),
-            this, SLOT(onDataPlot_mark(double)));
-    connect(mFrontView, SIGNAL(mark(double)),
-            this, SLOT(onDataPlot_mark(double)));
-
-    connect(mTopView, SIGNAL(clear()),
-            this, SLOT(onDataPlot_clear()));
-    connect(mLeftView, SIGNAL(clear()),
-            this, SLOT(onDataPlot_clear()));
-    connect(mFrontView, SIGNAL(clear()),
+    connect(dataView, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
 
-    mTopView->setDirection(DataView::Top);
-    mLeftView->setDirection(DataView::Left);
-    mFrontView->setDirection(DataView::Front);
-
-    mTopView->setMainWindow(this);
-    mLeftView->setMainWindow(this);
-    mFrontView->setMainWindow(this);
+    dataView->setMainWindow(this);
+    dataView->setDirection(direction);
 
     connect(this, SIGNAL(dataChanged()),
-            mTopView, SLOT(updateView()));
+            dataView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
-            mTopView, SLOT(updateView()));
+            dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
-            mTopView, SLOT(updateView()));
-
-    connect(this, SIGNAL(dataChanged()),
-            mLeftView, SLOT(updateView()));
-    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
-            mLeftView, SLOT(updateView()));
-    connect(this, SIGNAL(rotationChanged(double)),
-            mLeftView, SLOT(updateView()));
-
-    connect(this, SIGNAL(dataChanged()),
-            mFrontView, SLOT(updateView()));
-    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
-            mFrontView, SLOT(updateView()));
-    connect(this, SIGNAL(rotationChanged(double)),
-            mFrontView, SLOT(updateView()));
+            dataView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
