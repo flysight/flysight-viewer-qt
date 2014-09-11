@@ -58,8 +58,9 @@ public:
 
     PlotValue::Units units() const { return m_units; }
 
-    void setRange(const QCPRange &range);
-    const QCPRange &range() const { return mRange; }
+    void setRange(double lower, double upper);
+    double rangeLower() const { return mRangeLower; }
+    double rangeUpper() const { return mRangeUpper; }
 
     void setZero(double x);
     void setGround(double x);
@@ -83,6 +84,9 @@ public:
     void setMark(double xStart, double xEnd);
     void setMark(double xMark);
     void clearMark();
+
+    DataPoint interpolateDataX(double x);
+    DataPoint interpolateDataT(double t);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -142,7 +146,8 @@ private:
     Tool                  mTool;
     Tool                  mPrevTool;
 
-    QCPRange              mRange;
+    double                mRangeLower;
+    double                mRangeUpper;
 
     void writeSettings();
     void readSettings();
@@ -161,16 +166,17 @@ private:
     int findIndexBelowX(double x);
     int findIndexAboveX(double x);
 
+    int findIndexBelowT(double t);
+    int findIndexAboveT(double t);
+
     void updateTool();
     void updateBottom(XAxisType xAxis);
 
     void updateBottomActions();
     void updateLeftActions();
 
-    DataPoint interpolateData(double x);
-
 signals:
-    void rangeChanged(const QCPRange &range);
+    void rangeChanged(double lower, double upper);
     void dataChanged();
     void plotChanged();
     void rotationChanged(double rotation);

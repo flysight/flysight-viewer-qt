@@ -35,7 +35,7 @@ void DataPlot::mouseReleaseEvent(
                        qMax(xAxis->pixelToCoord(m_beginPos.x()),
                             xAxis->pixelToCoord(endPos.x())));
 
-        mMainWindow->setRange(range);
+        setRange(range);
     }
     if (m_dragging && tool == MainWindow::Zero)
     {
@@ -69,7 +69,7 @@ void DataPlot::mouseMoveEvent(
                 - xAxis->pixelToCoord(m_cursorPos.x());
         range = QCPRange(range.lower + diff, range.upper + diff);
 
-        mMainWindow->setRange(range);
+        setRange(range);
 
         m_beginPos = m_cursorPos;
     }
@@ -111,7 +111,7 @@ void DataPlot::wheelEvent(
                     x + (range.lower - x) * multiplier,
                     x + (range.upper - x) * multiplier);
 
-        mMainWindow->setRange(range);
+        setRange(range);
     }
 }
 
@@ -164,7 +164,22 @@ void DataPlot::paintEvent(
 void DataPlot::setRange(
         const QCPRange &range)
 {
-    xAxis->setRange(range);
+    DataPoint dpLower = mMainWindow->interpolateDataX(range.lower);
+    DataPoint dpUpper = mMainWindow->interpolateDataX(range.upper);
+
+    mMainWindow->setRange(dpLower.t, dpUpper.t);
+}
+
+void DataPlot::setRange(
+        double lower,
+        double upper)
+{
+    DataPoint dpLower = mMainWindow->interpolateDataT(lower);
+    DataPoint dpUpper = mMainWindow->interpolateDataT(upper);
+
+    xAxis->setRange(QCPRange(mMainWindow->xValue()->value(dpLower, mMainWindow->units()),
+                             mMainWindow->xValue()->value(dpUpper, mMainWindow->units())));
+
     updateYRanges();
 }
 

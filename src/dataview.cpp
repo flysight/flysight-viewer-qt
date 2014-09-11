@@ -138,7 +138,8 @@ double DataView::distSqrToLine(
 
 void DataView::updateView()
 {
-    const QCPRange &range = mMainWindow->range();
+    double lower = mMainWindow->rangeLower();
+    double upper = mMainWindow->rangeUpper();
 
     QVector< double > t, x, y, z;
 
@@ -152,7 +153,7 @@ void DataView::updateView()
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
 
-        if (range.contains(mMainWindow->xValue()->value(dp, mMainWindow->units())))
+        if (lower <= dp.t && dp.t <= upper)
         {
             t.append(mMainWindow->xValue()->value(dp, mMainWindow->units()));
 

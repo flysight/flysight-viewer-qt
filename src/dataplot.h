@@ -34,9 +34,10 @@ private:
     MainWindow *mMainWindow;
 
     void updateYRanges();
+    void setRange(const QCPRange &range);
 
 public slots:
-    void setRange(const QCPRange &range);
+    void setRange(double lower, double upper);
     void updatePlot();
 };
 

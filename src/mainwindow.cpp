@@ -133,8 +133,8 @@ void MainWindow::initPlot()
     connect(m_ui->plotArea, SIGNAL(ground(double)),
             this, SLOT(onDataPlot_ground(double)));
 
-    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
-            m_ui->plotArea, SLOT(setRange(const QCPRange &)));
+    connect(this, SIGNAL(rangeChanged(double, double)),
+            m_ui->plotArea, SLOT(setRange(double, double)));
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
     connect(this, SIGNAL(plotChanged()),
@@ -170,7 +170,7 @@ void MainWindow::initSingleView(
 
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
-    connect(this, SIGNAL(rangeChanged(const QCPRange &)),
+    connect(this, SIGNAL(rangeChanged(double, double)),
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
@@ -191,7 +191,7 @@ void MainWindow::closeEvent(
     event->accept();
 }
 
-DataPoint MainWindow::interpolateData(
+DataPoint MainWindow::interpolateDataX(
         double x)
 {
     const int i1 = findIndexBelowX(x);
@@ -238,6 +238,52 @@ int MainWindow::findIndexAboveX(
 
         if (getXValue(dp, m_xAxis) <= x)
             return i + 1;
+    }
+
+    return 0;
+}
+
+DataPoint MainWindow::interpolateDataT(
+        double t)
+{
+    const int i1 = findIndexBelowT(t);
+    const int i2 = findIndexAboveT(t);
+
+    if (i1 < 0)
+    {
+        return m_data.first();
+    }
+    else if (i2 >= m_data.size())
+    {
+        return m_data.last();
+    }
+    else
+    {
+        const DataPoint &dp1 = m_data[i1];
+        const DataPoint &dp2 = m_data[i2];
+        return interpolate(dp1, dp2, (t - dp1.t) / (dp2.t - dp1.t));
+    }
+}
+
+int MainWindow::findIndexBelowT(
+        double t)
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        if (dp.t > t) return i - 1;
+    }
+
+    return m_data.size() - 1;
+}
+
+int MainWindow::findIndexAboveT(
+        double t)
+{
+    for (int i = m_data.size() - 1; i >= 0; --i)
+    {
+        DataPoint &dp = m_data[i];
+        if (dp.t <= t) return i + 1;
     }
 
     return 0;
@@ -434,8 +480,8 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = interpolateData(xStart);
-    mMarkEnd = interpolateData(xEnd);
+    mMarkStart = interpolateDataX(xStart);
+    mMarkEnd = interpolateDataX(xEnd);
     mMarkActive = true;
 
     emit dataChanged();
@@ -477,7 +523,7 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = mMarkEnd = interpolateData(xMark);
+    mMarkStart = mMarkEnd = interpolateDataX(xMark);
     mMarkActive = true;
 
     emit dataChanged();
@@ -517,26 +563,24 @@ void MainWindow::clearMark()
 
 void MainWindow::initPlotData()
 {
-    double xMin, xMax;
+    double lower, upper;
 
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
 
-        double x = getXValue(dp, m_xAxis);
-
         if (i == 0)
         {
-            xMin = xMax = x;
+            lower = upper = dp.t;
         }
         else
         {
-            if (x < xMin) xMin = x;
-            if (x > xMax) xMax = x;
+            if (dp.t < lower) lower = dp.t;
+            if (dp.t > upper) upper = dp.t;
         }
     }
 
-    setRange(QCPRange(xMin, xMax));
+    setRange(lower, upper);
 
     emit dataChanged();
 }
@@ -587,14 +631,13 @@ void MainWindow::on_actionDistance3D_triggered()
 void MainWindow::updateBottom(
         XAxisType xAxis)
 {
-    DataPoint dpStart = interpolateData(mRange.lower);
-    DataPoint dpEnd = interpolateData(mRange.upper);
+    double lower = mRangeLower;
+    double upper = mRangeUpper;
 
     m_xAxis = xAxis;
     initPlotData();
 
-    setRange(QCPRange(getXValue(dpStart, m_xAxis),
-                      getXValue(dpEnd, m_xAxis)));
+    setRange(lower, upper);
 
     updateBottomActions();
 }
@@ -770,10 +813,12 @@ void MainWindow::on_actionPreferences_triggered()
 }
 
 void MainWindow::setRange(
-        const QCPRange &range)
+        double lower,
+        double upper)
 {
-    mRange = range;
-    emit rangeChanged(mRange);
+    mRangeLower = lower;
+    mRangeUpper = upper;
+    emit rangeChanged(lower, upper);
 }
 
 void MainWindow::setRotation(
@@ -788,7 +833,7 @@ void MainWindow::setZero(
 {
     if (m_data.isEmpty()) return;
 
-    DataPoint dp0 = interpolateData(x);
+    DataPoint dp0 = interpolateDataX(x);
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -803,12 +848,12 @@ void MainWindow::setZero(
         dp.dist3D -= dp0.dist3D;
     }
 
-    double x0 = getXValue(dp0, m_xAxis);
-    QCPRange range (mRange.lower - x0, mRange.upper - x0);
+    double lower = mRangeLower;
+    double upper = mRangeUpper;
 
     initPlotData();
 
-    setRange(range);
+    setRange(lower - dp0.t, upper - dp0.t);
     setTool(mPrevTool);
 }
 
@@ -817,7 +862,7 @@ void MainWindow::setGround(
 {
     if (m_data.isEmpty()) return;
 
-    DataPoint dp0 = interpolateData(x);
+    DataPoint dp0 = interpolateDataX(x);
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -825,11 +870,12 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    QCPRange range = mRange;
+    double lower = mRangeLower;
+    double upper = mRangeUpper;
 
     initPlotData();
 
-    setRange(range);
+    setRange(lower, upper);
     setTool(mPrevTool);
 }
 
