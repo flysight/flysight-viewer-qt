@@ -816,8 +816,8 @@ void MainWindow::setRange(
         double lower,
         double upper)
 {
-    mRangeLower = lower;
-    mRangeUpper = upper;
+    mRangeLower = qMin(lower, upper);
+    mRangeUpper = qMax(lower, upper);
     emit rangeChanged(lower, upper);
 }
 
