@@ -78,17 +78,17 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            emit measure(xAxis->pixelToCoord(m_beginPos.x()),
-                         xAxis->pixelToCoord(m_cursorPos.x()));
+            mMainWindow->setMark(xAxis->pixelToCoord(m_beginPos.x()),
+                                 xAxis->pixelToCoord(m_cursorPos.x()));
         }
         else
         {
-            emit mark(xAxis->pixelToCoord(m_cursorPos.x()));
+            mMainWindow->setMark(xAxis->pixelToCoord(m_cursorPos.x()));
         }
     }
     else
     {
-        emit clear();
+        mMainWindow->clearMark();
     }
 
     update();
@@ -118,8 +118,7 @@ void DataPlot::wheelEvent(
 void DataPlot::leaveEvent(
         QEvent *)
 {
-    emit clear();
-
+    mMainWindow->clearMark();
     m_cursorPos = QPoint();
     update();
 }

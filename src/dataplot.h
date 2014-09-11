@@ -35,12 +35,6 @@ private:
 
     void updateYRanges();
 
-signals:
-    void measure(double xBegin, double xEnd);
-
-    void mark(double xMark);
-    void clear();
-
 public slots:
     void setRange(const QCPRange &range);
     void updatePlot();

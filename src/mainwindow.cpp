@@ -128,17 +128,10 @@ void MainWindow::initPlot()
 
     m_ui->plotArea->setMainWindow(this);
 
-    connect(m_ui->plotArea, SIGNAL(measure(double, double)),
-            this, SLOT(onDataPlot_measure(double, double)));
     connect(m_ui->plotArea, SIGNAL(zero(double)),
             this, SLOT(onDataPlot_zero(double)));
     connect(m_ui->plotArea, SIGNAL(ground(double)),
             this, SLOT(onDataPlot_ground(double)));
-
-    connect(m_ui->plotArea, SIGNAL(mark(double)),
-            this, SLOT(onDataPlot_mark(double)));
-    connect(m_ui->plotArea, SIGNAL(clear()),
-            this, SLOT(onDataPlot_clear()));
 
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
             m_ui->plotArea, SLOT(setRange(const QCPRange &)));
@@ -175,11 +168,6 @@ void MainWindow::initSingleView(
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             actionShow, SLOT(setChecked(bool)));
 
-    connect(dataView, SIGNAL(mark(double)),
-            this, SLOT(onDataPlot_mark(double)));
-    connect(dataView, SIGNAL(clear()),
-            this, SLOT(onDataPlot_clear()));
-
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
@@ -201,49 +189,6 @@ void MainWindow::closeEvent(
     }
 
     event->accept();
-}
-
-void MainWindow::onDataPlot_measure(
-        double xStart,
-        double xEnd)
-{
-    if (m_data.isEmpty()) return;
-
-    DataPoint dpStart = interpolateData(xStart);
-    DataPoint dpEnd = interpolateData(xEnd);
-
-    QString status;
-
-    status = QString("<table width='300'>");
-
-    const double val = getXValue(dpEnd, m_xAxis)
-            - getXValue(dpStart, m_xAxis);
-    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-            .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
-            .arg(val < 0 ? "" : "+")
-            .arg(val);
-
-    for (int i = 0; i < yaLast; ++i)
-    {
-        if (m_yValues[i]->visible())
-        {
-            const double val = m_yValues[i]->value(dpEnd, m_units)
-                    - m_yValues[i]->value(dpStart, m_units);
-            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                    .arg(m_yValues[(YAxisType) i]->title(m_units))
-                    .arg(m_yValues[i]->value(dpEnd, m_units))
-                    .arg(val < 0 ? "" : "+")
-                    .arg(val)
-                    .arg(m_yValues[i]->color().name());
-        }
-    }
-
-    status += QString("</table>");
-
-    QToolTip::showText(QCursor::pos(), status);
-
-    mark(dpEnd);
 }
 
 DataPoint MainWindow::interpolateData(
@@ -270,39 +215,6 @@ DataPoint MainWindow::interpolateData(
     }
 }
 
-
-void MainWindow::onDataPlot_mark(
-        double xMark)
-{
-    if (m_data.isEmpty()) return;
-
-    const DataPoint dp = interpolateData(xMark);
-    mark(dp);
-
-    QString status;
-
-    status = QString("<table width='200'>");
-
-    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-            .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dp, m_units));
-
-    for (int i = 0; i < yaLast; ++i)
-    {
-        if (m_yValues[i]->visible())
-        {
-            status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-                    .arg(m_yValues[(YAxisType) i]->title(m_units))
-                    .arg(m_yPlot[i])
-                    .arg(m_yValues[i]->color().name());
-        }
-    }
-
-    status += QString("</table>");
-
-    QToolTip::showText(QCursor::pos(), status);
-}
-
 void MainWindow::mark(
         const DataPoint &dp)
 {
@@ -320,15 +232,6 @@ void MainWindow::mark(
     m_zView = dp.z;
 
     m_markActive = true;
-
-    emit dataChanged();
-}
-
-void MainWindow::onDataPlot_clear()
-{
-    m_markActive = false;
-
-    QToolTip::hideText();
 
     emit dataChanged();
 }
@@ -544,6 +447,90 @@ double MainWindow::getBearing(
             sin(lat1) * cos(lat2) * cos(dLon);
 
     return atan2(y, x);
+}
+
+void MainWindow::setMark(
+        double xStart,
+        double xEnd)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dpStart = interpolateData(xStart);
+    DataPoint dpEnd = interpolateData(xEnd);
+
+    QString status;
+
+    status = QString("<table width='300'>");
+
+    const double val = getXValue(dpEnd, m_xAxis)
+            - getXValue(dpStart, m_xAxis);
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+            .arg(m_xValues[m_xAxis]->title(m_units))
+            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
+            .arg(val < 0 ? "" : "+")
+            .arg(val);
+
+    for (int i = 0; i < yaLast; ++i)
+    {
+        if (m_yValues[i]->visible())
+        {
+            const double val = m_yValues[i]->value(dpEnd, m_units)
+                    - m_yValues[i]->value(dpStart, m_units);
+            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+                    .arg(m_yValues[(YAxisType) i]->title(m_units))
+                    .arg(m_yValues[i]->value(dpEnd, m_units))
+                    .arg(val < 0 ? "" : "+")
+                    .arg(val)
+                    .arg(m_yValues[i]->color().name());
+        }
+    }
+
+    status += QString("</table>");
+
+    QToolTip::showText(QCursor::pos(), status);
+
+    mark(dpEnd);
+}
+
+void MainWindow::setMark(
+        double xMark)
+{
+    if (m_data.isEmpty()) return;
+
+    const DataPoint dp = interpolateData(xMark);
+    mark(dp);
+
+    QString status;
+
+    status = QString("<table width='200'>");
+
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+            .arg(m_xValues[m_xAxis]->title(m_units))
+            .arg(m_xValues[m_xAxis]->value(dp, m_units));
+
+    for (int i = 0; i < yaLast; ++i)
+    {
+        if (m_yValues[i]->visible())
+        {
+            status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
+                    .arg(m_yValues[(YAxisType) i]->title(m_units))
+                    .arg(m_yPlot[i])
+                    .arg(m_yValues[i]->color().name());
+        }
+    }
+
+    status += QString("</table>");
+
+    QToolTip::showText(QCursor::pos(), status);
+}
+
+void MainWindow::clearMark()
+{
+    m_markActive = false;
+
+    QToolTip::hideText();
+
+    emit dataChanged();
 }
 
 void MainWindow::initPlotData()

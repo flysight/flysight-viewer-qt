@@ -43,10 +43,6 @@ private:
                       double yMin, double yMax);
     void addNorthArrow();
 
-signals:
-    void mark(double xMark);
-    void clear();
-
 public slots:
     void updateView();
 };

@@ -90,11 +90,11 @@ void DataView::mouseMoveEvent(
 
         if (resultDistance < selectionTolerance())
         {
-            emit mark(resultTime);
+            mMainWindow->setMark(resultTime);
         }
         else
         {
-            emit clear();
+            mMainWindow->clearMark();
         }
     }
 }

@@ -85,6 +85,10 @@ public:
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
 
+    void setMark(double xStart, double xEnd);
+    void setMark(double xMark);
+    void clearMark();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -112,10 +116,6 @@ private slots:
     void on_actionTime_triggered();
     void on_actionDistance2D_triggered();
     void on_actionDistance3D_triggered();
-
-    void onDataPlot_measure(double xBegin, double xEnd);
-    void onDataPlot_mark(double xMark);
-    void onDataPlot_clear();    
 
     void on_actionImportGates_triggered();
     void on_actionPreferences_triggered();
