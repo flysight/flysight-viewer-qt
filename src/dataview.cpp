@@ -5,7 +5,7 @@ DataView::DataView(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0)
 {
-
+    setMouseTracking(true);
 }
 
 QSize DataView::sizeHint() const

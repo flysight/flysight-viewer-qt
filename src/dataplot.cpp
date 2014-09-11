@@ -119,6 +119,9 @@ void DataPlot::leaveEvent(
         QEvent *)
 {
     emit clear();
+
+    m_cursorPos = QPoint();
+    update();
 }
 
 void DataPlot::paintEvent(

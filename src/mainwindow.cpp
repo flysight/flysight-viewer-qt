@@ -126,6 +126,8 @@ void MainWindow::initPlot()
 
     updateLeftActions();
 
+    m_ui->plotArea->setMainWindow(this);
+
     connect(m_ui->plotArea, SIGNAL(measure(double, double)),
             this, SLOT(onDataPlot_measure(double, double)));
     connect(m_ui->plotArea, SIGNAL(zero(double)),
@@ -137,8 +139,6 @@ void MainWindow::initPlot()
             this, SLOT(onDataPlot_mark(double)));
     connect(m_ui->plotArea, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
-
-    m_ui->plotArea->setMainWindow(this);
 
     connect(this, SIGNAL(rangeChanged(const QCPRange &)),
             m_ui->plotArea, SLOT(setRange(const QCPRange &)));
@@ -166,20 +166,19 @@ void MainWindow::initSingleView(
     dockWidget->setWidget(dataView);
     dockWidget->setObjectName(objectName);
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    dataView->setMainWindow(this);
+    dataView->setDirection(direction);
+
     connect(actionShow, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             actionShow, SLOT(setChecked(bool)));
 
-    dataView->setMouseTracking(true);
-
     connect(dataView, SIGNAL(mark(double)),
             this, SLOT(onDataPlot_mark(double)));
     connect(dataView, SIGNAL(clear()),
             this, SLOT(onDataPlot_clear()));
-
-    dataView->setMainWindow(this);
-    dataView->setDirection(direction);
 
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
