@@ -29,6 +29,9 @@ MainWindow::MainWindow(
                      this, SLOT(close()));
 #endif
 
+    QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
+                     qApp, SLOT(quit()));
+
     // Intitialize plot area
     initPlot();
 
@@ -557,11 +560,6 @@ double MainWindow::getBearing(
             sin(lat1) * cos(lat2) * cos(dLon);
 
     return atan2(y, x);
-}
-
-void MainWindow::on_actionExit_triggered()
-{
-    qApp->quit();
 }
 
 void MainWindow::initPlotData()

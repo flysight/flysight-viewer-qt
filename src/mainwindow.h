@@ -90,7 +90,6 @@ protected:
 
 private slots:
     void on_actionImport_triggered();
-    void on_actionExit_triggered();
 
     void on_actionElevation_triggered();
     void on_actionVerticalSpeed_triggered();
