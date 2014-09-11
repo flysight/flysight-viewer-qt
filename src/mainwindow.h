@@ -165,14 +165,15 @@ private:
 
     void updateTool();
     void updateBottom(XAxisType xAxis);
+
     void updateBottomActions();
+    void updateLeftActions();
 
     DataPoint interpolateData(double x);
     void mark(const DataPoint &dp);
 
 signals:
     void rangeChanged(const QCPRange &range);
-    void toolChanged(Tool);
     void dataChanged();
     void plotChanged();
     void rotationChanged(double rotation);

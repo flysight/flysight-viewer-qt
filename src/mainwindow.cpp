@@ -124,17 +124,7 @@ void MainWindow::initPlot()
         v->readSettings();
     }
 
-    m_ui->actionElevation->setChecked(m_yValues[Elevation]->visible());
-    m_ui->actionVerticalSpeed->setChecked(m_yValues[VerticalSpeed]->visible());
-    m_ui->actionHorizontalSpeed->setChecked(m_yValues[HorizontalSpeed]->visible());
-    m_ui->actionTotalSpeed->setChecked(m_yValues[TotalSpeed]->visible());
-    m_ui->actionDiveAngle->setChecked(m_yValues[DiveAngle]->visible());
-    m_ui->actionCurvature->setChecked(m_yValues[Curvature]->visible());
-    m_ui->actionGlideRatio->setChecked(m_yValues[GlideRatio]->visible());
-    m_ui->actionHorizontalAccuracy->setChecked(m_yValues[HorizontalAccuracy]->visible());
-    m_ui->actionVerticalAccuracy->setChecked(m_yValues[VerticalAccuracy]->visible());
-    m_ui->actionSpeedAccuracy->setChecked(m_yValues[SpeedAccuracy]->visible());
-    m_ui->actionNumberOfSatellites->setChecked(m_yValues[NumberOfSatellites]->visible());
+    updateLeftActions();
 
     connect(m_ui->plotArea, SIGNAL(measure(double, double)),
             this, SLOT(onDataPlot_measure(double, double)));
@@ -648,6 +638,21 @@ void MainWindow::updateBottomActions()
     m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
 }
 
+void MainWindow::updateLeftActions()
+{
+    m_ui->actionElevation->setChecked(m_yValues[Elevation]->visible());
+    m_ui->actionVerticalSpeed->setChecked(m_yValues[VerticalSpeed]->visible());
+    m_ui->actionHorizontalSpeed->setChecked(m_yValues[HorizontalSpeed]->visible());
+    m_ui->actionTotalSpeed->setChecked(m_yValues[TotalSpeed]->visible());
+    m_ui->actionDiveAngle->setChecked(m_yValues[DiveAngle]->visible());
+    m_ui->actionCurvature->setChecked(m_yValues[Curvature]->visible());
+    m_ui->actionGlideRatio->setChecked(m_yValues[GlideRatio]->visible());
+    m_ui->actionHorizontalAccuracy->setChecked(m_yValues[HorizontalAccuracy]->visible());
+    m_ui->actionVerticalAccuracy->setChecked(m_yValues[VerticalAccuracy]->visible());
+    m_ui->actionSpeedAccuracy->setChecked(m_yValues[SpeedAccuracy]->visible());
+    m_ui->actionNumberOfSatellites->setChecked(m_yValues[NumberOfSatellites]->visible());
+}
+
 void MainWindow::on_actionTotalSpeed_triggered()
 {
     m_yValues[TotalSpeed]->setVisible(
@@ -868,8 +873,6 @@ void MainWindow::setTool(
         mPrevTool = tool;
     }
     mTool = tool;
-
-    emit toolChanged(tool);
 
     m_ui->actionPan->setChecked(tool == Pan);
     m_ui->actionZoom->setChecked(tool == Zoom);
