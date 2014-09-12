@@ -466,7 +466,7 @@ DataPoint DataPlot::interpolateDataX(
         const DataPoint &dp2 = mMainWindow->dataPoint(i2);
         const double x1 = xValue()->value(dp1, mMainWindow->units());
         const double x2 = xValue()->value(dp2, mMainWindow->units());
-        return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
+        return DataPoint::interpolate(dp1, dp2, (x - x1) / (x2 - x1));
     }
 }
 

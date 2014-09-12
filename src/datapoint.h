@@ -32,10 +32,10 @@ public:
     double      dist3D;
 
     double      curv;
-};
 
-DataPoint interpolate(const DataPoint &p1,
-                      const DataPoint &p2,
-                      double a);
+    static DataPoint interpolate(const DataPoint &p1,
+                                 const DataPoint &p2,
+                                 double a);
+};
 
 #endif // DATAPOINT_H

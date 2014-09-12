@@ -161,7 +161,7 @@ DataPoint MainWindow::interpolateDataT(
     {
         const DataPoint &dp1 = m_data[i1];
         const DataPoint &dp2 = m_data[i2];
-        return interpolate(dp1, dp2, (t - dp1.t) / (dp2.t - dp1.t));
+        return DataPoint::interpolate(dp1, dp2, (t - dp1.t) / (dp2.t - dp1.t));
     }
 }
 
