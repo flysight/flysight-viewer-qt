@@ -475,26 +475,28 @@ double MainWindow::getBearing(
 }
 
 void MainWindow::setMark(
-        double xStart,
-        double xEnd)
+        double start,
+        double end)
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = interpolateDataX(xStart);
-    mMarkEnd = interpolateDataX(xEnd);
+    mMarkStart = start;
+    mMarkEnd = end;
     mMarkActive = true;
 
     emit dataChanged();
 
     QString status;
-
     status = QString("<table width='300'>");
 
-    const double val = getXValue(mMarkEnd, m_xAxis)
-            - getXValue(mMarkStart, m_xAxis);
+    const DataPoint &dpStart = interpolateDataT(start);
+    const DataPoint &dpEnd = interpolateDataT(end);
+
+    const double val = getXValue(dpEnd, m_xAxis)
+            - getXValue(dpStart, m_xAxis);
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
             .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(mMarkEnd, m_units))
+            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
             .arg(val < 0 ? "" : "+")
             .arg(val);
 
@@ -502,11 +504,11 @@ void MainWindow::setMark(
     {
         if (m_yValues[i]->visible())
         {
-            const double val = m_yValues[i]->value(mMarkEnd, m_units)
-                    - m_yValues[i]->value(mMarkStart, m_units);
+            const double val = m_yValues[i]->value(dpEnd, m_units)
+                    - m_yValues[i]->value(dpStart, m_units);
             status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
                     .arg(m_yValues[i]->title(m_units))
-                    .arg(m_yValues[i]->value(mMarkEnd, m_units))
+                    .arg(m_yValues[i]->value(dpEnd, m_units))
                     .arg(val < 0 ? "" : "+")
                     .arg(val)
                     .arg(m_yValues[i]->color().name());
@@ -519,22 +521,23 @@ void MainWindow::setMark(
 }
 
 void MainWindow::setMark(
-        double xMark)
+        double mark)
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = mMarkEnd = interpolateDataX(xMark);
+    mMarkStart = mMarkEnd = mark;
     mMarkActive = true;
 
     emit dataChanged();
 
     QString status;
-
     status = QString("<table width='200'>");
+
+    const DataPoint &dpMark = interpolateDataT(mark);
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
             .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(mMarkStart, m_units));
+            .arg(m_xValues[m_xAxis]->value(dpMark, m_units));
 
     for (int i = 0; i < yaLast; ++i)
     {
@@ -542,7 +545,7 @@ void MainWindow::setMark(
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
                     .arg(m_yValues[i]->title(m_units))
-                    .arg(m_yValues[i]->value(mMarkStart, m_units))
+                    .arg(m_yValues[i]->value(dpMark, m_units))
                     .arg(m_yValues[i]->color().name());
         }
     }

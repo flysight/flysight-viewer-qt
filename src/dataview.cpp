@@ -155,7 +155,7 @@ void DataView::updateView()
 
         if (lower <= dp.t && dp.t <= upper)
         {
-            t.append(mMainWindow->xValue()->value(dp, mMainWindow->units()));
+            t.append(dp.t);
 
             if (mMainWindow->units() == PlotValue::Metric)
             {
@@ -245,7 +245,7 @@ void DataView::updateView()
 
     if (mMainWindow->markActive())
     {
-        const DataPoint &dpEnd = mMainWindow->markEnd();
+        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
         QVector< double > xMark, yMark, zMark;
 

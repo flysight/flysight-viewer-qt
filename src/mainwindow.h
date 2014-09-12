@@ -68,8 +68,8 @@ public:
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
 
-    const DataPoint &markStart() const { return mMarkStart; }
-    const DataPoint &markEnd() const { return mMarkEnd; }
+    double markStart() const { return mMarkStart; }
+    double markEnd() const { return mMarkEnd; }
     bool markActive() const { return mMarkActive; }
 
     void setRotation(double rotation);
@@ -81,8 +81,8 @@ public:
     double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
     double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
 
-    void setMark(double xStart, double xEnd);
-    void setMark(double xMark);
+    void setMark(double start, double end);
+    void setMark(double mark);
     void clearMark();
 
     DataPoint interpolateDataX(double x);
@@ -131,8 +131,8 @@ private:
     double                m_xPlot, m_yPlot[yaLast];
     double                m_xView, m_yView, m_zView;
 
-    DataPoint             mMarkStart;
-    DataPoint             mMarkEnd;
+    double                mMarkStart;
+    double                mMarkEnd;
     bool                  mMarkActive;
 
     double                m_viewDataRotation;

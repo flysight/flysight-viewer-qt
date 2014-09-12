@@ -78,12 +78,17 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            mMainWindow->setMark(xAxis->pixelToCoord(m_beginPos.x()),
-                                 xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dpStart = mMainWindow->interpolateDataX(
+                        xAxis->pixelToCoord(m_beginPos.x()));
+            DataPoint dpEnd = mMainWindow->interpolateDataX(
+                        xAxis->pixelToCoord(m_cursorPos.x()));
+            mMainWindow->setMark(dpStart.t, dpEnd.t);
         }
         else
         {
-            mMainWindow->setMark(xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dpEnd = mMainWindow->interpolateDataX(
+                        xAxis->pixelToCoord(m_cursorPos.x()));
+            mMainWindow->setMark(dpEnd.t);
         }
     }
     else
@@ -260,7 +265,7 @@ void DataPlot::updatePlot()
 
     if (mMainWindow->markActive())
     {
-        const DataPoint &dpEnd = mMainWindow->markEnd();
+        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
         QVector< double > xMark, yMark;
 
