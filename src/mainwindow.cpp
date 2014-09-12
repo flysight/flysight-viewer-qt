@@ -832,11 +832,11 @@ void MainWindow::setRotation(
 }
 
 void MainWindow::setZero(
-        double x)
+        double t)
 {
     if (m_data.isEmpty()) return;
 
-    DataPoint dp0 = interpolateDataX(x);
+    DataPoint dp0 = interpolateDataT(t);
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -861,11 +861,11 @@ void MainWindow::setZero(
 }
 
 void MainWindow::setGround(
-        double x)
+        double t)
 {
     if (m_data.isEmpty()) return;
 
-    DataPoint dp0 = interpolateDataX(x);
+    DataPoint dp0 = interpolateDataT(t);
 
     for (int i = 0; i < m_data.size(); ++i)
     {

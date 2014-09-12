@@ -62,8 +62,8 @@ public:
     double rangeLower() const { return mRangeLower; }
     double rangeUpper() const { return mRangeUpper; }
 
-    void setZero(double x);
-    void setGround(double x);
+    void setZero(double t);
+    void setGround(double t);
 
     void setTool(Tool tool);
     Tool tool() const { return mTool; }

@@ -39,11 +39,15 @@ void DataPlot::mouseReleaseEvent(
     }
     if (m_dragging && tool == MainWindow::Zero)
     {
-        mMainWindow->setZero(xAxis->pixelToCoord(endPos.x()));
+        DataPoint dpEnd = mMainWindow->interpolateDataX(
+                    xAxis->pixelToCoord(endPos.x()));
+        mMainWindow->setZero(dpEnd.t);
     }
     if (m_dragging && tool == MainWindow::Ground)
     {
-        mMainWindow->setGround(xAxis->pixelToCoord(endPos.x()));
+        DataPoint dpEnd = mMainWindow->interpolateDataX(
+                    xAxis->pixelToCoord(endPos.x()));
+        mMainWindow->setGround(dpEnd.t);
     }
 
     if (m_dragging)
