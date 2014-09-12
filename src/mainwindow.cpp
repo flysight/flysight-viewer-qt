@@ -37,6 +37,9 @@ MainWindow::MainWindow(
     // Set default tool
     setTool(Pan);
 
+    // Redraw plots
+    emit dataChanged();
+
 #ifdef Q_OS_MAC
     // Fix for single-key shortcuts on Mac
     // http://thebreakfastpost.com/2014/06/03/single-key-menu-shortcuts-with-qt5-on-osx/
