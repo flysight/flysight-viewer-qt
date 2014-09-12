@@ -476,13 +476,6 @@ void MainWindow::initPlotData()
     emit dataChanged();
 }
 
-double MainWindow::getXValue(
-        const DataPoint &dp,
-        XAxisType axis)
-{
-    return m_xValues[axis]->value(dp, m_units);
-}
-
 void MainWindow::on_actionElevation_triggered()
 {
     m_yValues[Elevation]->setVisible(

@@ -160,8 +160,6 @@ private:
 
     void initPlotData();
 
-    double getXValue(const DataPoint &dp, XAxisType axis);
-
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
