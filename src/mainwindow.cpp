@@ -6,7 +6,6 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QShortcut>
-#include <QToolTip>
 
 #include "configdialog.h"
 #include "dataview.h"
@@ -433,39 +432,6 @@ void MainWindow::setMark(
     mMarkActive = true;
 
     emit dataChanged();
-
-    QString status;
-    status = QString("<table width='300'>");
-
-    const DataPoint &dpStart = interpolateDataT(start);
-    const DataPoint &dpEnd = interpolateDataT(end);
-
-    const double val = getXValue(dpEnd, m_xAxis)
-            - getXValue(dpStart, m_xAxis);
-    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-            .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dpEnd, m_units))
-            .arg(val < 0 ? "" : "+")
-            .arg(val);
-
-    for (int i = 0; i < yaLast; ++i)
-    {
-        if (m_yValues[i]->visible())
-        {
-            const double val = m_yValues[i]->value(dpEnd, m_units)
-                    - m_yValues[i]->value(dpStart, m_units);
-            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                    .arg(m_yValues[i]->title(m_units))
-                    .arg(m_yValues[i]->value(dpEnd, m_units))
-                    .arg(val < 0 ? "" : "+")
-                    .arg(val)
-                    .arg(m_yValues[i]->color().name());
-        }
-    }
-
-    status += QString("</table>");
-
-    QToolTip::showText(QCursor::pos(), status);
 }
 
 void MainWindow::setMark(
@@ -477,30 +443,6 @@ void MainWindow::setMark(
     mMarkActive = true;
 
     emit dataChanged();
-
-    QString status;
-    status = QString("<table width='200'>");
-
-    const DataPoint &dpMark = interpolateDataT(mark);
-
-    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-            .arg(m_xValues[m_xAxis]->title(m_units))
-            .arg(m_xValues[m_xAxis]->value(dpMark, m_units));
-
-    for (int i = 0; i < yaLast; ++i)
-    {
-        if (m_yValues[i]->visible())
-        {
-            status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-                    .arg(m_yValues[i]->title(m_units))
-                    .arg(m_yValues[i]->value(dpMark, m_units))
-                    .arg(m_yValues[i]->color().name());
-        }
-    }
-
-    status += QString("</table>");
-
-    QToolTip::showText(QCursor::pos(), status);
 }
 
 void MainWindow::clearMark()
@@ -508,8 +450,6 @@ void MainWindow::clearMark()
     mMarkActive = false;
 
     emit dataChanged();
-
-    QToolTip::hideText();
 }
 
 void MainWindow::initPlotData()

@@ -37,6 +37,9 @@ private:
     void updateYRanges();
     void setRange(const QCPRange &range);
 
+    void setMark(double start, double end);
+    void setMark(double mark);
+
     DataPoint interpolateDataX(double x);
 
     int findIndexBelowX(double x);

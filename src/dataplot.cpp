@@ -1,3 +1,5 @@
+#include <QToolTip>
+
 #include "dataplot.h"
 #include "mainwindow.h"
 
@@ -7,6 +9,7 @@ DataPlot::DataPlot(QWidget *parent) :
     m_dragging(false)
 {
     setMouseTracking(true);
+    setCursor(QCursor(Qt::ArrowCursor));
 }
 
 void DataPlot::mousePressEvent(
@@ -80,19 +83,18 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            DataPoint dpStart = interpolateDataX(xAxis->pixelToCoord(m_beginPos.x()));
-            DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(m_cursorPos.x()));
-            mMainWindow->setMark(dpStart.t, dpEnd.t);
+            setMark(xAxis->pixelToCoord(m_beginPos.x()),
+                    xAxis->pixelToCoord(m_cursorPos.x()));
         }
         else
         {
-            DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(m_cursorPos.x()));
-            mMainWindow->setMark(dpEnd.t);
+            setMark(xAxis->pixelToCoord(m_cursorPos.x()));
         }
     }
     else
     {
         mMainWindow->clearMark();
+        QToolTip::hideText();
     }
 
     update();
@@ -163,6 +165,80 @@ void DataPlot::paintEvent(
             painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
         }
     }
+}
+
+void DataPlot::setMark(
+        double start,
+        double end)
+{
+    DataPoint dpStart = interpolateDataX(start);
+    DataPoint dpEnd = interpolateDataX(end);
+
+    mMainWindow->setMark(dpStart.t, dpEnd.t);
+
+    if (mMainWindow->dataSize() == 0) return;
+
+    QString status;
+    status = QString("<table width='300'>");
+
+    const double val = mMainWindow->xValue()->value(dpEnd, mMainWindow->units())
+            - mMainWindow->xValue()->value(dpStart, mMainWindow->units());
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+            .arg(mMainWindow->xValue()->title(mMainWindow->units()))
+            .arg(mMainWindow->xValue()->value(dpEnd, mMainWindow->units()))
+            .arg(val < 0 ? "" : "+")
+            .arg(val);
+
+    for (int i = 0; i < MainWindow::yaLast; ++i)
+    {
+        if (mMainWindow->yValue(i)->visible())
+        {
+            const double val = mMainWindow->yValue(i)->value(dpEnd, mMainWindow->units())
+                    - mMainWindow->yValue(i)->value(dpStart, mMainWindow->units());
+            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+                    .arg(mMainWindow->yValue(i)->title(mMainWindow->units()))
+                    .arg(mMainWindow->yValue(i)->value(dpEnd, mMainWindow->units()))
+                    .arg(val < 0 ? "" : "+")
+                    .arg(val)
+                    .arg(mMainWindow->yValue(i)->color().name());
+        }
+    }
+
+    status += QString("</table>");
+
+    QToolTip::showText(QCursor::pos(), status);
+}
+
+void DataPlot::setMark(
+        double mark)
+{
+    DataPoint dp = interpolateDataX(mark);
+
+    mMainWindow->setMark(dp.t);
+
+    if (mMainWindow->dataSize() == 0) return;
+
+    QString status;
+    status = QString("<table width='200'>");
+
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+            .arg(mMainWindow->xValue()->title(mMainWindow->units()))
+            .arg(mMainWindow->xValue()->value(dp, mMainWindow->units()));
+
+    for (int i = 0; i < MainWindow::yaLast; ++i)
+    {
+        if (mMainWindow->yValue(i)->visible())
+        {
+            status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
+                    .arg(mMainWindow->yValue(i)->title(mMainWindow->units()))
+                    .arg(mMainWindow->yValue(i)->value(dp, mMainWindow->units()))
+                    .arg(mMainWindow->yValue(i)->color().name());
+        }
+    }
+
+    status += QString("</table>");
+
+    QToolTip::showText(QCursor::pos(), status);
 }
 
 void DataPlot::setRange(
