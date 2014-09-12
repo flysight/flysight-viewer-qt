@@ -191,58 +191,6 @@ void MainWindow::closeEvent(
     event->accept();
 }
 
-DataPoint MainWindow::interpolateDataX(
-        double x)
-{
-    const int i1 = findIndexBelowX(x);
-    const int i2 = findIndexAboveX(x);
-
-    if (i1 < 0)
-    {
-        return m_data.first();
-    }
-    else if (i2 >= m_data.size())
-    {
-        return m_data.last();
-    }
-    else
-    {
-        const DataPoint &dp1 = m_data[i1];
-        const DataPoint &dp2 = m_data[i2];
-        const double x1 = getXValue(dp1, m_xAxis);
-        const double x2 = getXValue(dp2, m_xAxis);
-        return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
-    }
-}
-
-int MainWindow::findIndexBelowX(
-        double x)
-{
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (getXValue(dp, m_xAxis) > x)
-            return i - 1;
-    }
-
-    return m_data.size() - 1;
-}
-
-int MainWindow::findIndexAboveX(
-        double x)
-{
-    for (int i = m_data.size() - 1; i >= 0; --i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (getXValue(dp, m_xAxis) <= x)
-            return i + 1;
-    }
-
-    return 0;
-}
-
 DataPoint MainWindow::interpolateDataT(
         double t)
 {

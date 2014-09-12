@@ -85,7 +85,6 @@ public:
     void setMark(double mark);
     void clearMark();
 
-    DataPoint interpolateDataX(double x);
     DataPoint interpolateDataT(double t);
 
 protected:
@@ -162,9 +161,6 @@ private:
     void initPlotData();
 
     double getXValue(const DataPoint &dp, XAxisType axis);
-
-    int findIndexBelowX(double x);
-    int findIndexAboveX(double x);
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);

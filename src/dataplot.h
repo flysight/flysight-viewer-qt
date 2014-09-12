@@ -1,6 +1,7 @@
 #ifndef DATAPLOT_H
 #define DATAPLOT_H
 
+#include "datapoint.h"
 #include "qcustomplot.h"
 
 class MainWindow;
@@ -35,6 +36,11 @@ private:
 
     void updateYRanges();
     void setRange(const QCPRange &range);
+
+    DataPoint interpolateDataX(double x);
+
+    int findIndexBelowX(double x);
+    int findIndexAboveX(double x);
 
 public slots:
     void setRange(double lower, double upper);

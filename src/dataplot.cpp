@@ -39,14 +39,12 @@ void DataPlot::mouseReleaseEvent(
     }
     if (m_dragging && tool == MainWindow::Zero)
     {
-        DataPoint dpEnd = mMainWindow->interpolateDataX(
-                    xAxis->pixelToCoord(endPos.x()));
+        DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(endPos.x()));
         mMainWindow->setZero(dpEnd.t);
     }
     if (m_dragging && tool == MainWindow::Ground)
     {
-        DataPoint dpEnd = mMainWindow->interpolateDataX(
-                    xAxis->pixelToCoord(endPos.x()));
+        DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(endPos.x()));
         mMainWindow->setGround(dpEnd.t);
     }
 
@@ -82,16 +80,13 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            DataPoint dpStart = mMainWindow->interpolateDataX(
-                        xAxis->pixelToCoord(m_beginPos.x()));
-            DataPoint dpEnd = mMainWindow->interpolateDataX(
-                        xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dpStart = interpolateDataX(xAxis->pixelToCoord(m_beginPos.x()));
+            DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(m_cursorPos.x()));
             mMainWindow->setMark(dpStart.t, dpEnd.t);
         }
         else
         {
-            DataPoint dpEnd = mMainWindow->interpolateDataX(
-                        xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(m_cursorPos.x()));
             mMainWindow->setMark(dpEnd.t);
         }
     }
@@ -173,8 +168,8 @@ void DataPlot::paintEvent(
 void DataPlot::setRange(
         const QCPRange &range)
 {
-    DataPoint dpLower = mMainWindow->interpolateDataX(range.lower);
-    DataPoint dpUpper = mMainWindow->interpolateDataX(range.upper);
+    DataPoint dpLower = interpolateDataX(range.lower);
+    DataPoint dpUpper = interpolateDataX(range.upper);
 
     mMainWindow->setRange(dpLower.t, dpUpper.t);
 }
@@ -295,4 +290,54 @@ void DataPlot::updatePlot()
     }
 
     updateYRanges();
+}
+
+DataPoint DataPlot::interpolateDataX(
+        double x)
+{
+    const int i1 = findIndexBelowX(x);
+    const int i2 = findIndexAboveX(x);
+
+    if (i1 < 0)
+    {
+        return mMainWindow->dataPoint(0);
+    }
+    else if (i2 >= mMainWindow->dataSize())
+    {
+        return mMainWindow->dataPoint(mMainWindow->dataSize() - 1);
+    }
+    else
+    {
+        const DataPoint &dp1 = mMainWindow->dataPoint(i1);
+        const DataPoint &dp2 = mMainWindow->dataPoint(i2);
+        const double x1 = mMainWindow->xValue()->value(dp1, mMainWindow->units());
+        const double x2 = mMainWindow->xValue()->value(dp2, mMainWindow->units());
+        return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
+    }
+}
+
+int DataPlot::findIndexBelowX(
+        double x)
+{
+    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+        if (mMainWindow->xValue()->value(dp, mMainWindow->units()) > x)
+            return i - 1;
+    }
+
+    return mMainWindow->dataSize() - 1;
+}
+
+int DataPlot::findIndexAboveX(
+        double x)
+{
+    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+        if (mMainWindow->xValue()->value(dp, mMainWindow->units()) <= x)
+            return i + 1;
+    }
+
+    return 0;
 }
