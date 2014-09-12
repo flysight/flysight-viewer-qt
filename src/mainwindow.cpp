@@ -15,7 +15,6 @@ MainWindow::MainWindow(
 
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
-    m_xAxis(Time),
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial)
@@ -56,16 +55,6 @@ MainWindow::MainWindow(
 
 MainWindow::~MainWindow()
 {
-    while (!m_xValues.isEmpty())
-    {
-        delete m_xValues.takeLast();
-    }
-
-    while (!m_yValues.isEmpty())
-    {
-        delete m_yValues.takeLast();
-    }
-
     delete m_ui;
 }
 
@@ -77,7 +66,6 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
-    settings.setValue("xAxis", m_xAxis);
     settings.endGroup();
 }
 
@@ -89,40 +77,12 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
-    m_xAxis = (XAxisType) settings.value("xAxis", m_xAxis).toInt();
     settings.endGroup();
 }
 
 void MainWindow::initPlot()
 {
-    m_xValues.append(new PlotTime);
-    m_xValues.append(new PlotDistance2D);
-    m_xValues.append(new PlotDistance3D);
-
-    foreach (PlotValue *v, m_xValues)
-    {
-        v->readSettings();
-    }
-
     updateBottomActions();
-
-    m_yValues.append(new PlotElevation);
-    m_yValues.append(new PlotVerticalSpeed);
-    m_yValues.append(new PlotHorizontalSpeed);
-    m_yValues.append(new PlotTotalSpeed);
-    m_yValues.append(new PlotDiveAngle);
-    m_yValues.append(new PlotCurvature);
-    m_yValues.append(new PlotGlideRatio);
-    m_yValues.append(new PlotHorizontalAccuracy);
-    m_yValues.append(new PlotVerticalAccuracy);
-    m_yValues.append(new PlotSpeedAccuracy);
-    m_yValues.append(new PlotNumberOfSatellites);
-
-    foreach (PlotValue *v, m_yValues)
-    {
-        v->readSettings();
-    }
-
     updateLeftActions();
 
     m_ui->plotArea->setMainWindow(this);
@@ -135,8 +95,6 @@ void MainWindow::initPlot()
     connect(this, SIGNAL(rangeChanged(double, double)),
             m_ui->plotArea, SLOT(setRange(double, double)));
     connect(this, SIGNAL(dataChanged()),
-            m_ui->plotArea, SLOT(updatePlot()));
-    connect(this, SIGNAL(plotChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
 }
 
@@ -181,12 +139,7 @@ void MainWindow::closeEvent(
     // Save window state
     writeSettings();
 
-    // Save plot state
-    foreach (PlotValue *v, m_yValues)
-    {
-        v->writeSettings();
-    }
-
+    // Okay to close
     event->accept();
 }
 
@@ -238,8 +191,6 @@ int MainWindow::findIndexAboveT(
 
 void MainWindow::on_actionImport_triggered()
 {
-    const double pi = 3.14159265359;
-
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
@@ -337,7 +288,7 @@ void MainWindow::on_actionImport_triggered()
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
-        dp.curv = getSlope(i, DiveAngle);
+        dp.curv = getSlope(i, DataPlot::DiveAngle);
     }
 
     if (dt.size() > 0)
@@ -353,9 +304,14 @@ void MainWindow::on_actionImport_triggered()
     initPlotData();
 }
 
+//
+// TODO: This is the only place in MainWindow that we use DataPlot::yValue().
+//       How can we avoid this?
+//
+
 double MainWindow::getSlope(
         const int center,
-        YAxisType yAxis) const
+        DataPlot::YAxisType yAxis) const
 {
     int iMin = qMax (0, center - 2);
     int iMax = qMin (m_data.size () - 1, center + 2);
@@ -365,12 +321,12 @@ double MainWindow::getSlope(
     for (int i = iMin; i <= iMax; ++i)
     {
         const DataPoint &dp = m_data[i];
-        double yValue = m_yValues[yAxis]->value(dp, m_units);
+        double y = m_ui->plotArea->yValue(yAxis)->value(dp, m_units);
 
         sumx += dp.t;
-        sumy += yValue;
+        sumy += y;
         sumxx += dp.t * dp.t;
-        sumxy += dp.t * yValue;
+        sumxy += dp.t * y;
     }
 
     int n = iMax - iMin + 1;
@@ -478,130 +434,97 @@ void MainWindow::initPlotData()
 
 void MainWindow::on_actionElevation_triggered()
 {
-    m_yValues[Elevation]->setVisible(
-                !m_yValues[Elevation]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::Elevation);
 }
 
 void MainWindow::on_actionVerticalSpeed_triggered()
 {
-    m_yValues[VerticalSpeed]->setVisible(
-                !m_yValues[VerticalSpeed]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::VerticalSpeed);
 }
 
 void MainWindow::on_actionHorizontalSpeed_triggered()
 {
-    m_yValues[HorizontalSpeed]->setVisible(
-                !m_yValues[HorizontalSpeed]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::HorizontalSpeed);
 }
 
 void MainWindow::on_actionTime_triggered()
 {
-    updateBottom(Time);
+    m_ui->plotArea->setXAxisType(DataPlot::Time);
+    updateBottomActions();
 }
 
 void MainWindow::on_actionDistance2D_triggered()
 {
-    updateBottom(Distance2D);
+    m_ui->plotArea->setXAxisType(DataPlot::Distance2D);
+    updateBottomActions();
 }
 
 void MainWindow::on_actionDistance3D_triggered()
 {
-    updateBottom(Distance3D);
-}
-
-void MainWindow::updateBottom(
-        XAxisType xAxis)
-{
-    double lower = mRangeLower;
-    double upper = mRangeUpper;
-
-    m_xAxis = xAxis;
-    initPlotData();
-
-    setRange(lower, upper);
-
+    m_ui->plotArea->setXAxisType(DataPlot::Distance3D);
     updateBottomActions();
 }
 
 void MainWindow::updateBottomActions()
 {
-    m_ui->actionTime->setChecked(m_xAxis == Time);
-    m_ui->actionDistance2D->setChecked(m_xAxis == Distance2D);
-    m_ui->actionDistance3D->setChecked(m_xAxis == Distance3D);
+    m_ui->actionTime->setChecked(m_ui->plotArea->xAxisType() == DataPlot::Time);
+    m_ui->actionDistance2D->setChecked(m_ui->plotArea->xAxisType() == DataPlot::Distance2D);
+    m_ui->actionDistance3D->setChecked(m_ui->plotArea->xAxisType() == DataPlot::Distance3D);
 }
 
 void MainWindow::updateLeftActions()
 {
-    m_ui->actionElevation->setChecked(m_yValues[Elevation]->visible());
-    m_ui->actionVerticalSpeed->setChecked(m_yValues[VerticalSpeed]->visible());
-    m_ui->actionHorizontalSpeed->setChecked(m_yValues[HorizontalSpeed]->visible());
-    m_ui->actionTotalSpeed->setChecked(m_yValues[TotalSpeed]->visible());
-    m_ui->actionDiveAngle->setChecked(m_yValues[DiveAngle]->visible());
-    m_ui->actionCurvature->setChecked(m_yValues[Curvature]->visible());
-    m_ui->actionGlideRatio->setChecked(m_yValues[GlideRatio]->visible());
-    m_ui->actionHorizontalAccuracy->setChecked(m_yValues[HorizontalAccuracy]->visible());
-    m_ui->actionVerticalAccuracy->setChecked(m_yValues[VerticalAccuracy]->visible());
-    m_ui->actionSpeedAccuracy->setChecked(m_yValues[SpeedAccuracy]->visible());
-    m_ui->actionNumberOfSatellites->setChecked(m_yValues[NumberOfSatellites]->visible());
+    m_ui->actionElevation->setChecked(m_ui->plotArea->plotVisible(DataPlot::Elevation));
+    m_ui->actionVerticalSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::VerticalSpeed));
+    m_ui->actionHorizontalSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::HorizontalSpeed));
+    m_ui->actionTotalSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalSpeed));
+    m_ui->actionDiveAngle->setChecked(m_ui->plotArea->plotVisible(DataPlot::DiveAngle));
+    m_ui->actionCurvature->setChecked(m_ui->plotArea->plotVisible(DataPlot::Curvature));
+    m_ui->actionGlideRatio->setChecked(m_ui->plotArea->plotVisible(DataPlot::GlideRatio));
+    m_ui->actionHorizontalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::HorizontalAccuracy));
+    m_ui->actionVerticalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::VerticalAccuracy));
+    m_ui->actionSpeedAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::SpeedAccuracy));
+    m_ui->actionNumberOfSatellites->setChecked(m_ui->plotArea->plotVisible(DataPlot::NumberOfSatellites));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
 {
-    m_yValues[TotalSpeed]->setVisible(
-                !m_yValues[TotalSpeed]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::TotalSpeed);
 }
 
 void MainWindow::on_actionDiveAngle_triggered()
 {
-    m_yValues[DiveAngle]->setVisible(
-                !m_yValues[DiveAngle]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::DiveAngle);
 }
 
 void MainWindow::on_actionCurvature_triggered()
 {
-    m_yValues[Curvature]->setVisible(
-                !m_yValues[Curvature]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::Curvature);
 }
 
 void MainWindow::on_actionGlideRatio_triggered()
 {
-    m_yValues[GlideRatio]->setVisible(
-                !m_yValues[GlideRatio]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::GlideRatio);
 }
 
 void MainWindow::on_actionHorizontalAccuracy_triggered()
 {
-    m_yValues[HorizontalAccuracy]->setVisible(
-                !m_yValues[HorizontalAccuracy]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::HorizontalAccuracy);
 }
 
 void MainWindow::on_actionVerticalAccuracy_triggered()
 {
-    m_yValues[VerticalAccuracy]->setVisible(
-                !m_yValues[VerticalAccuracy]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::VerticalAccuracy);
 }
 
 void MainWindow::on_actionSpeedAccuracy_triggered()
 {
-    m_yValues[SpeedAccuracy]->setVisible(
-                !m_yValues[SpeedAccuracy]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::SpeedAccuracy);
 }
 
 void MainWindow::on_actionNumberOfSatellites_triggered()
 {
-    m_yValues[NumberOfSatellites]->setVisible(
-                !m_yValues[NumberOfSatellites]->visible());
-    emit plotChanged();
+    m_ui->plotArea->togglePlot(DataPlot::NumberOfSatellites);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -702,6 +625,7 @@ void MainWindow::setRange(
 {
     mRangeLower = qMin(lower, upper);
     mRangeUpper = qMax(lower, upper);
+
     emit rangeChanged(lower, upper);
 }
 

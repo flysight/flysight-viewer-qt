@@ -8,7 +8,6 @@
 #include "dataplot.h"
 #include "datapoint.h"
 #include "dataview.h"
-#include "plotvalue.h"
 
 class QCPRange;
 class QCustomPlot;
@@ -23,27 +22,6 @@ class MainWindow : public QMainWindow
     
 public:
     typedef enum {
-        Time = 0,
-        Distance2D,
-        Distance3D
-    } XAxisType;
-
-    typedef enum {
-        Elevation = 0,
-        VerticalSpeed,
-        HorizontalSpeed,
-        TotalSpeed,
-        DiveAngle,
-        Curvature,
-        GlideRatio,
-        HorizontalAccuracy,
-        VerticalAccuracy,
-        SpeedAccuracy,
-        NumberOfSatellites,
-        yaLast
-    } YAxisType;
-
-    typedef enum {
         Pan, Zoom, Measure, Zero, Ground
     } Tool;
 
@@ -52,9 +30,6 @@ public:
 
     int dataSize() const { return m_data.size(); }
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
-
-    const PlotValue *xValue() const { return m_xValues[m_xAxis]; }
-    const PlotValue *yValue(int i) const { return m_yValues[i]; }
 
     PlotValue::Units units() const { return m_units; }
 
@@ -122,14 +97,6 @@ private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
 
-    QVector< PlotValue* > m_xValues;
-    XAxisType             m_xAxis;
-
-    QVector< PlotValue* > m_yValues;
-
-    double                m_xPlot, m_yPlot[yaLast];
-    double                m_xView, m_yView, m_zView;
-
     double                mMarkStart;
     double                mMarkEnd;
     bool                  mMarkActive;
@@ -156,15 +123,12 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    double getSlope(const int center, YAxisType yAxis) const;
+    double getSlope(const int center, DataPlot::YAxisType yAxis) const;
 
     void initPlotData();
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
-
-    void updateTool();
-    void updateBottom(XAxisType xAxis);
 
     void updateBottomActions();
     void updateLeftActions();
@@ -172,7 +136,6 @@ private:
 signals:
     void rangeChanged(double lower, double upper);
     void dataChanged();
-    void plotChanged();
     void rotationChanged(double rotation);
 };
 

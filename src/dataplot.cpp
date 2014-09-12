@@ -6,10 +6,88 @@
 DataPlot::DataPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
-    m_dragging(false)
+    m_dragging(false),
+    m_xAxisType(Time)
 {
+    // Initialize window
     setMouseTracking(true);
     setCursor(QCursor(Qt::ArrowCursor));
+
+    // Intitialize plot area
+    initPlot();
+
+    // Read plot settings
+    readSettings();
+}
+
+DataPlot::~DataPlot()
+{
+    // Write plot settings
+    writeSettings();
+
+    // Save plot state
+    foreach (PlotValue *v, m_yValues)
+    {
+        v->writeSettings();
+    }
+
+    // Delete plots
+    while (!m_xValues.isEmpty())
+    {
+        delete m_xValues.takeLast();
+    }
+
+    while (!m_yValues.isEmpty())
+    {
+        delete m_yValues.takeLast();
+    }
+}
+
+void DataPlot::initPlot()
+{
+    m_xValues.append(new PlotTime);
+    m_xValues.append(new PlotDistance2D);
+    m_xValues.append(new PlotDistance3D);
+
+    foreach (PlotValue *v, m_xValues)
+    {
+        v->readSettings();
+    }
+
+    m_yValues.append(new PlotElevation);
+    m_yValues.append(new PlotVerticalSpeed);
+    m_yValues.append(new PlotHorizontalSpeed);
+    m_yValues.append(new PlotTotalSpeed);
+    m_yValues.append(new PlotDiveAngle);
+    m_yValues.append(new PlotCurvature);
+    m_yValues.append(new PlotGlideRatio);
+    m_yValues.append(new PlotHorizontalAccuracy);
+    m_yValues.append(new PlotVerticalAccuracy);
+    m_yValues.append(new PlotSpeedAccuracy);
+    m_yValues.append(new PlotNumberOfSatellites);
+
+    foreach (PlotValue *v, m_yValues)
+    {
+        v->readSettings();
+    }
+}
+
+void DataPlot::readSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("mainWindow");
+    m_xAxisType = (XAxisType) settings.value("xAxis", m_xAxisType).toInt();
+    settings.endGroup();
+}
+
+void DataPlot::writeSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("mainWindow");
+    settings.setValue("xAxis", m_xAxisType);
+    settings.endGroup();
 }
 
 void DataPlot::mousePressEvent(
@@ -181,26 +259,26 @@ void DataPlot::setMark(
     QString status;
     status = QString("<table width='300'>");
 
-    const double val = mMainWindow->xValue()->value(dpEnd, mMainWindow->units())
-            - mMainWindow->xValue()->value(dpStart, mMainWindow->units());
+    const double val = xValue()->value(dpEnd, mMainWindow->units())
+            - xValue()->value(dpStart, mMainWindow->units());
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-            .arg(mMainWindow->xValue()->title(mMainWindow->units()))
-            .arg(mMainWindow->xValue()->value(dpEnd, mMainWindow->units()))
+            .arg(xValue()->title(mMainWindow->units()))
+            .arg(xValue()->value(dpEnd, mMainWindow->units()))
             .arg(val < 0 ? "" : "+")
             .arg(val);
 
-    for (int i = 0; i < MainWindow::yaLast; ++i)
+    for (int i = 0; i < yaLast; ++i)
     {
-        if (mMainWindow->yValue(i)->visible())
+        if (yValue(i)->visible())
         {
-            const double val = mMainWindow->yValue(i)->value(dpEnd, mMainWindow->units())
-                    - mMainWindow->yValue(i)->value(dpStart, mMainWindow->units());
+            const double val = yValue(i)->value(dpEnd, mMainWindow->units())
+                    - yValue(i)->value(dpStart, mMainWindow->units());
             status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-                    .arg(mMainWindow->yValue(i)->title(mMainWindow->units()))
-                    .arg(mMainWindow->yValue(i)->value(dpEnd, mMainWindow->units()))
+                    .arg(yValue(i)->title(mMainWindow->units()))
+                    .arg(yValue(i)->value(dpEnd, mMainWindow->units()))
                     .arg(val < 0 ? "" : "+")
                     .arg(val)
-                    .arg(mMainWindow->yValue(i)->color().name());
+                    .arg(yValue(i)->color().name());
         }
     }
 
@@ -222,17 +300,17 @@ void DataPlot::setMark(
     status = QString("<table width='200'>");
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-            .arg(mMainWindow->xValue()->title(mMainWindow->units()))
-            .arg(mMainWindow->xValue()->value(dp, mMainWindow->units()));
+            .arg(xValue()->title(mMainWindow->units()))
+            .arg(xValue()->value(dp, mMainWindow->units()));
 
-    for (int i = 0; i < MainWindow::yaLast; ++i)
+    for (int i = 0; i < yaLast; ++i)
     {
-        if (mMainWindow->yValue(i)->visible())
+        if (yValue(i)->visible())
         {
             status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-                    .arg(mMainWindow->yValue(i)->title(mMainWindow->units()))
-                    .arg(mMainWindow->yValue(i)->value(dp, mMainWindow->units()))
-                    .arg(mMainWindow->yValue(i)->color().name());
+                    .arg(yValue(i)->title(mMainWindow->units()))
+                    .arg(yValue(i)->value(dp, mMainWindow->units()))
+                    .arg(yValue(i)->color().name());
         }
     }
 
@@ -257,8 +335,8 @@ void DataPlot::setRange(
     DataPoint dpLower = mMainWindow->interpolateDataT(lower);
     DataPoint dpUpper = mMainWindow->interpolateDataT(upper);
 
-    xAxis->setRange(QCPRange(mMainWindow->xValue()->value(dpLower, mMainWindow->units()),
-                             mMainWindow->xValue()->value(dpUpper, mMainWindow->units())));
+    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
+                             xValue()->value(dpUpper, mMainWindow->units())));
 
     updateYRanges();
 }
@@ -268,9 +346,9 @@ void DataPlot::updateYRanges()
     const QCPRange &range = xAxis->range();
 
     int k = 0;
-    for (int j = 0; j < MainWindow::yaLast; ++j)
+    for (int j = 0; j < yaLast; ++j)
     {
-        if (!mMainWindow->yValue(j)->visible()) continue;
+        if (!yValue(j)->visible()) continue;
 
         double yMin, yMax;
         bool first = true;
@@ -279,9 +357,9 @@ void DataPlot::updateYRanges()
         {
             const DataPoint &dp = mMainWindow->dataPoint(i);
 
-            if (range.contains(mMainWindow->xValue()->value(dp, mMainWindow->units())))
+            if (range.contains(xValue()->value(dp, mMainWindow->units())))
             {
-                double y = mMainWindow->yValue(j)->value(dp, mMainWindow->units());
+                double y = yValue(j)->value(dp, mMainWindow->units());
 
                 if (first)
                 {
@@ -305,13 +383,13 @@ void DataPlot::updateYRanges()
 
 void DataPlot::updatePlot()
 {
-    xAxis->setLabel(mMainWindow->xValue()->title(mMainWindow->units()));
+    xAxis->setLabel(xValue()->title(mMainWindow->units()));
 
     QVector< double > x;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
-        x.append(mMainWindow->xValue()->value(dp, mMainWindow->units()));
+        x.append(xValue()->value(dp, mMainWindow->units()));
     }
 
     clearPlottables();
@@ -320,22 +398,22 @@ void DataPlot::updatePlot()
         axisRect()->removeAxis(axisRect()->axis(QCPAxis::atLeft, 0));
     }
 
-    for (int j = 0; j < MainWindow::yaLast; ++j)
+    for (int j = 0; j < yaLast; ++j)
     {
-        if (!mMainWindow->yValue(j)->visible()) continue;
+        if (!yValue(j)->visible()) continue;
 
         QVector< double > y;
         for (int i = 0; i < mMainWindow->dataSize(); ++i)
         {
             const DataPoint &dp = mMainWindow->dataPoint(i);
-            y.append(mMainWindow->yValue(j)->value(dp, mMainWindow->units()));
+            y.append(yValue(j)->value(dp, mMainWindow->units()));
         }
 
         QCPGraph *graph = addGraph(
                     axisRect()->axis(QCPAxis::atBottom),
-                    mMainWindow->yValue(j)->addAxis(this, mMainWindow->units()));
+                    yValue(j)->addAxis(this, mMainWindow->units()));
         graph->setData(x, y);
-        graph->setPen(QPen(mMainWindow->yValue(j)->color()));
+        graph->setPen(QPen(yValue(j)->color()));
     }
 
     if (mMainWindow->markActive())
@@ -344,15 +422,15 @@ void DataPlot::updatePlot()
 
         QVector< double > xMark, yMark;
 
-        xMark.append(mMainWindow->xValue()->value(dpEnd, mMainWindow->units()));
+        xMark.append(xValue()->value(dpEnd, mMainWindow->units()));
 
         int k = 0;
-        for (int j = 0; j < MainWindow::yaLast; ++j)
+        for (int j = 0; j < yaLast; ++j)
         {
-            if (!mMainWindow->yValue(j)->visible()) continue;
+            if (!yValue(j)->visible()) continue;
 
             yMark.clear();
-            yMark.append(mMainWindow->yValue(j)->value(dpEnd, mMainWindow->units()));
+            yMark.append(yValue(j)->value(dpEnd, mMainWindow->units()));
 
             QCPGraph *graph = addGraph(
                         xAxis,
@@ -386,8 +464,8 @@ DataPoint DataPlot::interpolateDataX(
     {
         const DataPoint &dp1 = mMainWindow->dataPoint(i1);
         const DataPoint &dp2 = mMainWindow->dataPoint(i2);
-        const double x1 = mMainWindow->xValue()->value(dp1, mMainWindow->units());
-        const double x2 = mMainWindow->xValue()->value(dp2, mMainWindow->units());
+        const double x1 = xValue()->value(dp1, mMainWindow->units());
+        const double x2 = xValue()->value(dp2, mMainWindow->units());
         return interpolate(dp1, dp2, (x - x1) / (x2 - x1));
     }
 }
@@ -398,7 +476,7 @@ int DataPlot::findIndexBelowX(
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (mMainWindow->xValue()->value(dp, mMainWindow->units()) > x)
+        if (xValue()->value(dp, mMainWindow->units()) > x)
             return i - 1;
     }
 
@@ -411,9 +489,32 @@ int DataPlot::findIndexAboveX(
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (mMainWindow->xValue()->value(dp, mMainWindow->units()) <= x)
+        if (xValue()->value(dp, mMainWindow->units()) <= x)
             return i + 1;
     }
 
     return 0;
+}
+
+void DataPlot::togglePlot(
+        YAxisType plot)
+{
+    m_yValues[plot]->setVisible(!m_yValues[plot]->visible());
+    updatePlot();
+}
+
+void DataPlot::setXAxisType(
+        XAxisType xAxisType)
+{
+    const QCPRange &range = xAxis->range();
+
+    DataPoint dpLower = interpolateDataX(range.lower);
+    DataPoint dpUpper = interpolateDataX(range.upper);
+
+    m_xAxisType = xAxisType;
+
+    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
+                             xValue()->value(dpUpper, mMainWindow->units())));
+
+    updatePlot();
 }
