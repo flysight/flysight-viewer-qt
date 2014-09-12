@@ -1,8 +1,6 @@
 #ifndef PLOTVALUE_H
 #define PLOTVALUE_H
 
-#include <math.h>
-
 #include <QColor>
 #include <QSettings>
 #include <QString>
@@ -85,8 +83,8 @@ public:
     const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.alt;
-        else                 return dp.alt * METERS_TO_FEET;
+        if (units == Metric) return DataPoint::elevation(dp);
+        else                 return DataPoint::elevation(dp) * METERS_TO_FEET;
     }
 };
 
@@ -104,8 +102,8 @@ public:
     const QColor color() const { return Qt::green; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.velD * MPS_TO_KMH;
-        else                 return dp.velD * MPS_TO_MPH;
+        if (units == Metric) return DataPoint::verticalSpeed(dp) * MPS_TO_KMH;
+        else                 return DataPoint::verticalSpeed(dp) * MPS_TO_MPH;
     }
 };
 
@@ -123,8 +121,8 @@ public:
     const QColor color() const { return Qt::red; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_KMH;
-        else                 return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) * MPS_TO_MPH;
+        if (units == Metric) return DataPoint::horizontalSpeed(dp) * MPS_TO_KMH;
+        else                 return DataPoint::horizontalSpeed(dp) * MPS_TO_MPH;
     }
 };
 
@@ -142,8 +140,8 @@ public:
     const QColor color() const { return Qt::blue; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_KMH;
-        else                 return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD) * MPS_TO_MPH;
+        if (units == Metric) return DataPoint::totalSpeed(dp) * MPS_TO_KMH;
+        else                 return DataPoint::totalSpeed(dp) * MPS_TO_MPH;
     }
 };
 
@@ -162,8 +160,7 @@ public:
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
-        const double pi = 3.14159265359;
-        return atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
+        return DataPoint::diveAngle(dp);
     }
 };
 
@@ -182,7 +179,7 @@ public:
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
-        return dp.curv;
+        return DataPoint::curvature(dp);
     }
 };
 
@@ -201,8 +198,7 @@ public:
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
-        if (dp.velD != 0) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) / dp.velD;
-        else              return 0;
+        return DataPoint::glideRatio(dp);
     }
 };
 
@@ -220,8 +216,8 @@ public:
     const QColor color() const { return Qt::darkRed; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.hAcc;
-        else                 return dp.hAcc * METERS_TO_FEET;
+        if (units == Metric) return dp.DataPoint::horizontalAccuracy(dp);
+        else                 return dp.DataPoint::horizontalAccuracy(dp) * METERS_TO_FEET;
     }
 };
 
@@ -239,8 +235,8 @@ public:
     const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.vAcc;
-        else                 return dp.vAcc * METERS_TO_FEET;
+        if (units == Metric) return DataPoint::verticalAccuracy(dp);
+        else                 return DataPoint::verticalAccuracy(dp) * METERS_TO_FEET;
     }
 };
 
@@ -258,8 +254,8 @@ public:
     const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.sAcc * MPS_TO_KMH;
-        else                 return dp.sAcc * MPS_TO_MPH;
+        if (units == Metric) return DataPoint::speedAccuracy(dp) * MPS_TO_KMH;
+        else                 return DataPoint::speedAccuracy(dp) * MPS_TO_MPH;
     }
 };
 
@@ -278,7 +274,7 @@ public:
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
-        return dp.numSV;
+        return DataPoint::numberOfSatellites(dp);
     }
 };
 
@@ -297,7 +293,7 @@ public:
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
-        return dp.t;
+        return DataPoint::time(dp);
     }
 };
 
@@ -315,8 +311,8 @@ public:
     const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.dist2D;
-        else                 return dp.dist2D * METERS_TO_FEET;
+        if (units == Metric) return DataPoint::distance2D(dp);
+        else                 return DataPoint::distance2D(dp) * METERS_TO_FEET;
     }
 };
 
@@ -334,8 +330,8 @@ public:
     const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
-        if (units == Metric) return dp.dist3D;
-        else                 return dp.dist3D * METERS_TO_FEET;
+        if (units == Metric) return DataPoint::distance3D(dp);
+        else                 return DataPoint::distance3D(dp) * METERS_TO_FEET;
     }
 };
 

@@ -123,7 +123,7 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    double getSlope(const int center, DataPlot::YAxisType yAxis) const;
+    double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initPlotData();
 

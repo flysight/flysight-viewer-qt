@@ -288,7 +288,7 @@ void MainWindow::on_actionImport_triggered()
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
-        dp.curv = getSlope(i, DataPlot::DiveAngle);
+        dp.curv = getSlope(i, DataPoint::diveAngle);
     }
 
     if (dt.size() > 0)
@@ -304,14 +304,9 @@ void MainWindow::on_actionImport_triggered()
     initPlotData();
 }
 
-//
-// TODO: This is the only place in MainWindow that we use DataPlot::yValue().
-//       How can we avoid this?
-//
-
 double MainWindow::getSlope(
         const int center,
-        DataPlot::YAxisType yAxis) const
+        double (*value)(const DataPoint &)) const
 {
     int iMin = qMax (0, center - 2);
     int iMax = qMin (m_data.size () - 1, center + 2);
@@ -321,7 +316,7 @@ double MainWindow::getSlope(
     for (int i = iMin; i <= iMax; ++i)
     {
         const DataPoint &dp = m_data[i];
-        double y = m_ui->plotArea->yValue(yAxis)->value(dp, m_units);
+        double y = value(dp);
 
         sumx += dp.t;
         sumy += y;
