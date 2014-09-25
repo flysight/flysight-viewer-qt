@@ -426,8 +426,6 @@ void MainWindow::initPlotData()
     }
 
     setRange(lower, upper);
-
-    emit dataChanged();
 }
 
 void MainWindow::on_actionElevation_triggered()
