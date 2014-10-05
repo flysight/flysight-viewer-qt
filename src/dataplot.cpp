@@ -378,6 +378,11 @@ void DataPlot::updateYRanges()
             axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
     }
 
+    //
+    // TODO: When replot is called here, the ranges don't seem to have been updated.
+    //       For example, see first update or when exit or ground is set.
+    //
+
     replot();
 }
 

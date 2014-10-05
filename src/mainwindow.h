@@ -125,7 +125,7 @@ private:
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
-    void initPlotData();
+    void initRange();
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);

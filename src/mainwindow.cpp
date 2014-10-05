@@ -304,7 +304,7 @@ void MainWindow::on_actionImport_triggered()
         m_timeStep = 1.0;
     }
 
-    initPlotData();
+    initRange();
 }
 
 double MainWindow::getSlope(
@@ -406,7 +406,7 @@ void MainWindow::clearMark()
     emit dataChanged();
 }
 
-void MainWindow::initPlotData()
+void MainWindow::initRange()
 {
     double lower, upper;
 
@@ -611,7 +611,7 @@ void MainWindow::on_actionPreferences_triggered()
     if (m_units != dlg.units())
     {
         m_units = dlg.units();
-        initPlotData();
+        initRange();
     }
 }
 
@@ -652,12 +652,7 @@ void MainWindow::setZero(
         dp.dist3D -= dp0.dist3D;
     }
 
-    double lower = mRangeLower;
-    double upper = mRangeUpper;
-
-    initPlotData();
-
-    setRange(lower - dp0.t, upper - dp0.t);
+    setRange(mRangeLower - dp0.t, mRangeUpper - dp0.t);
     setTool(mPrevTool);
 }
 
@@ -674,12 +669,7 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    double lower = mRangeLower;
-    double upper = mRangeUpper;
-
-    initPlotData();
-
-    setRange(lower, upper);
+    setRange(mRangeLower, mRangeUpper);
     setTool(mPrevTool);
 }
 
