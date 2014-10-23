@@ -1,8 +1,9 @@
 #include "datapoint.h"
 
-DataPoint interpolate(const DataPoint &p1,
-                      const DataPoint &p2,
-                      double a)
+DataPoint DataPoint::interpolate(
+        const DataPoint &p1,
+        const DataPoint &p2,
+        double a)
 {
     DataPoint ret;
 

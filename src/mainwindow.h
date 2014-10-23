@@ -7,9 +7,8 @@
 
 #include "dataplot.h"
 #include "datapoint.h"
-#include "plotvalue.h"
+#include "dataview.h"
 
-class DataView;
 class QCPRange;
 class QCustomPlot;
 
@@ -22,15 +21,52 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
+    typedef enum {
+        Pan, Zoom, Measure, Zero, Ground
+    } Tool;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    int dataSize() const { return m_data.size(); }
+    const DataPoint &dataPoint(int i) const { return m_data[i]; }
+
+    PlotValue::Units units() const { return m_units; }
+
+    void setRange(double lower, double upper);
+    double rangeLower() const { return mRangeLower; }
+    double rangeUpper() const { return mRangeUpper; }
+
+    void setZero(double t);
+    void setGround(double t);
+
+    void setTool(Tool tool);
+    Tool tool() const { return mTool; }
+
+    double markStart() const { return mMarkStart; }
+    double markEnd() const { return mMarkEnd; }
+    bool markActive() const { return mMarkActive; }
+
+    void setRotation(double rotation);
+    double rotation() const { return m_viewDataRotation; }
+
+    int waypointSize() const { return m_waypoints.size(); }
+    const DataPoint &waypoint(int i) const { return m_waypoints[i]; }
+
+    double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
+    double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
+
+    void setMark(double start, double end);
+    void setMark(double mark);
+    void clearMark();
+
+    DataPoint interpolateDataT(double t);
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
     void on_actionImport_triggered();
-    void on_actionExit_triggered();
 
     void on_actionElevation_triggered();
     void on_actionVerticalSpeed_triggered();
@@ -54,61 +90,17 @@ private slots:
     void on_actionDistance2D_triggered();
     void on_actionDistance3D_triggered();
 
-    void onDataPlot_zoom(const QCPRange &range);
-    void onDataPlot_pan(double xBegin, double xEnd);
-    void onDataPlot_measure(double xBegin, double xEnd);
-    void onDataPlot_zero(double xMark);
-    void onDataPlot_ground(double xMark);
-
-    void onDataPlot_mark(double xMark);
-    void onDataPlot_clear();    
-
-    void onTopView_mousePress(QMouseEvent *event);
-    void onTopView_mouseRelease(QMouseEvent *event);
-    void onTopView_mouseMove(QMouseEvent *event);
-
-    void onLeftView_mouseMove(QMouseEvent *event);
-    void onFrontView_mouseMove(QMouseEvent *event);
-
     void on_actionImportGates_triggered();
     void on_actionPreferences_triggered();
 
 private:
-    typedef enum {
-        Time = 0,
-        Distance2D,
-        Distance3D
-    } XAxisType;
-
-    typedef enum {
-        Elevation = 0,
-        VerticalSpeed,
-        HorizontalSpeed,
-        TotalSpeed,
-        DiveAngle,
-        Curvature,
-        GlideRatio,
-        HorizontalAccuracy,
-        VerticalAccuracy,
-        SpeedAccuracy,
-        NumberOfSatellites,
-        yaLast
-    } YAxisType;
-
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
 
-    QVector< PlotValue* > m_xValues;
-    XAxisType             m_xAxis;
+    double                mMarkStart;
+    double                mMarkEnd;
+    bool                  mMarkActive;
 
-    QVector< PlotValue* > m_yValues;
-
-    double                m_xPlot, m_yPlot[yaLast];
-    double                m_xView, m_yView, m_zView;
-    bool                  m_markActive;
-
-    QPoint                m_topViewBeginPos;
-    bool                  m_topViewPan;
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
@@ -117,51 +109,34 @@ private:
 
     double                m_timeStep;
 
-    DataView             *mLeftView;
-    DataView             *mTopView;
-    DataView             *mFrontView;
+    Tool                  mTool;
+    Tool                  mPrevTool;
 
-    DataPlot::Tool        mPrevTool;
+    double                mRangeLower;
+    double                mRangeUpper;
 
     void writeSettings();
     void readSettings();
 
     void initPlot();
     void initViews();
+    void initSingleView(const QString &title, const QString &objectName,
+                        QAction *actionShow, DataView::Direction direction);
 
-    double getSlope(const int center, YAxisType yAxis) const;
-    double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
-    double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
+    double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
-    void initPlotData();
-    void updatePlotData();
-    void updateYRanges();
-
-    void updateViewData();
-    void setViewRange(QCustomPlot *plot,
-                      double xMin, double xMax,
-                      double yMin, double yMax);
-    void addNorthArrow(QCustomPlot *plot);
-
-    double getXValue(const DataPoint &dp, XAxisType axis);
-
-    int findIndexBelowX(double x);
-    int findIndexAboveX(double x);
+    void initRange();
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
-    void onView_mouseMove(DataView *view, QMouseEvent *event);
-
-    static double distSqrToLine(const QPointF &start, const QPointF &end,
-                                const QPointF &point, double &mu);
-
-    void updateTool();
-    void updateBottom(XAxisType xAxis);
     void updateBottomActions();
+    void updateLeftActions();
 
-    DataPoint interpolateData(double x);
-    void mark(const DataPoint &dp);
+signals:
+    void rangeChanged(double lower, double upper);
+    void dataChanged();
+    void rotationChanged(double rotation);
 };
 
 #endif // MAINWINDOW_H
