@@ -509,7 +509,7 @@ int DataPlot::findIndexBelowX(
 int DataPlot::findIndexAboveX(
         double x)
 {
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    for (int i = mMainWindow->dataSize() - 1; i >= 0; --i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
         if (xValue()->value(dp, mMainWindow->units()) <= x)
