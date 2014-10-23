@@ -134,7 +134,6 @@ private:
     void updateLeftActions();
 
 signals:
-    void rangeChanged(double lower, double upper);
     void dataChanged();
     void rotationChanged(double rotation);
 };

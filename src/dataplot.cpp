@@ -346,19 +346,6 @@ void DataPlot::setRange(
     mMainWindow->setRange(dpLower.t, dpUpper.t);
 }
 
-void DataPlot::setRange(
-        double lower,
-        double upper)
-{
-    DataPoint dpLower = mMainWindow->interpolateDataT(lower);
-    DataPoint dpUpper = mMainWindow->interpolateDataT(upper);
-
-    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
-                             xValue()->value(dpUpper, mMainWindow->units())));
-
-    updateYRanges();
-}
-
 void DataPlot::updateYRanges()
 {
     const QCPRange &range = xAxis->range();
@@ -395,11 +382,6 @@ void DataPlot::updateYRanges()
         if (!first)
             axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
     }
-
-    //
-    // TODO: When replot is called here, the ranges don't seem to have been updated.
-    //       For example, see first update or when exit or ground is set.
-    //
 
     replot();
 }
@@ -465,6 +447,12 @@ void DataPlot::updatePlot()
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
         }
     }
+
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
+    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
+                             xValue()->value(dpUpper, mMainWindow->units())));
 
     updateYRanges();
 }
