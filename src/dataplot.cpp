@@ -259,13 +259,24 @@ void DataPlot::setMark(
     QString status;
     status = QString("<table width='300'>");
 
-    const double val = xValue()->value(dpEnd, mMainWindow->units())
-            - xValue()->value(dpStart, mMainWindow->units());
+    double val = m_xValues[Time]->value(dpEnd, mMainWindow->units())
+            - m_xValues[Time]->value(dpStart, mMainWindow->units());
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-            .arg(xValue()->title(mMainWindow->units()))
-            .arg(xValue()->value(dpEnd, mMainWindow->units()))
+            .arg(m_xValues[Time]->title(mMainWindow->units()))
+            .arg(m_xValues[Time]->value(dpEnd, mMainWindow->units()))
             .arg(val < 0 ? "" : "+")
             .arg(val);
+
+    if (m_xAxisType != Time)
+    {
+        val = xValue()->value(dpEnd, mMainWindow->units())
+                - xValue()->value(dpStart, mMainWindow->units());
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+                .arg(xValue()->title(mMainWindow->units()))
+                .arg(xValue()->value(dpEnd, mMainWindow->units()))
+                .arg(val < 0 ? "" : "+")
+                .arg(val);
+    }
 
     for (int i = 0; i < yaLast; ++i)
     {
@@ -300,8 +311,15 @@ void DataPlot::setMark(
     status = QString("<table width='200'>");
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-            .arg(xValue()->title(mMainWindow->units()))
-            .arg(xValue()->value(dp, mMainWindow->units()));
+            .arg(m_xValues[Time]->title(mMainWindow->units()))
+            .arg(m_xValues[Time]->value(dp, mMainWindow->units()));
+
+    if (m_xAxisType != Time)
+    {
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+                .arg(xValue()->title(mMainWindow->units()))
+                .arg(xValue()->value(dp, mMainWindow->units()));
+    }
 
     for (int i = 0; i < yaLast; ++i)
     {
