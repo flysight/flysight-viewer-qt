@@ -9,6 +9,7 @@
 
 #include "configdialog.h"
 #include "dataview.h"
+#include "mapview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -30,6 +31,9 @@ MainWindow::MainWindow(
 
     // Initialize 3D views
     initViews();
+
+    // Initialize map view
+    initMapView();
 
     // Restore window state
     readSettings();
@@ -130,6 +134,25 @@ void MainWindow::initSingleView(
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
+}
+
+void MainWindow::initMapView()
+{
+    MapView *mapView = new MapView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Map View"));
+    dockWidget->setWidget(mapView);
+    dockWidget->setObjectName("mapView");
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    mapView->setMainWindow(this);
+
+    connect(m_ui->actionShowMapView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowMapView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            mapView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(

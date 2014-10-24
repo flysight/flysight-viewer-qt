@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <p>Hello world!</p>
+        <script>
+            function moveon() {
+                // Display a modal dialog to ask the user a question
+                var answer = confirm("Ready to move on?");
+                // If they clicked the "OK" button, make the browser load a new page
+                if (answer) window.location = "http://google.com";
+            }
+            // Run the function defined above 5 seconds
+            setTimeout(moveon, 5000);
+        </script>
+    </body>
+</html>

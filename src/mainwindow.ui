@@ -98,6 +98,7 @@
     <addaction name="actionShowLeftView"/>
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
+    <addaction name="actionShowMapView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -387,6 +388,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+N</string>
+   </property>
+  </action>
+  <action name="actionShowMapView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Map View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+4</string>
    </property>
   </action>
  </widget>
