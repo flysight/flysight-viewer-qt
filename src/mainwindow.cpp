@@ -233,8 +233,23 @@ void MainWindow::on_actionImport_triggered()
 
     QTextStream in(&file);
 
+    // Column enumeration
+    typedef enum {
+        Time = 0,
+        Lat,
+        Lon,
+        HMSL,
+        VelN,
+        VelE,
+        VelD,
+        HAcc,
+        VAcc,
+        SAcc,
+        NumSV
+    } Columns;
+
     // Read column labels
-    QList< int > colMap;
+    QMap< int, int > colMap;
     if (!in.atEnd())
     {
         QString line = in.readLine();
@@ -244,17 +259,17 @@ void MainWindow::on_actionImport_triggered()
         {
             const QString &s = cols[i];
 
-            if (s == "time")  colMap[0]  = i;
-            if (s == "lat")   colMap[1]  = i;
-            if (s == "lon")   colMap[2]  = i;
-            if (s == "hMSL")  colMap[3]  = i;
-            if (s == "velN")  colMap[4]  = i;
-            if (s == "velE")  colMap[5]  = i;
-            if (s == "velD")  colMap[6]  = i;
-            if (s == "hAcc")  colMap[7]  = i;
-            if (s == "vAcc")  colMap[8]  = i;
-            if (s == "sAcc")  colMap[9]  = i;
-            if (s == "numSV") colMap[11] = i;
+            if (s == "time")  colMap[Time]  = i;
+            if (s == "lat")   colMap[Lat]   = i;
+            if (s == "lon")   colMap[Lon]   = i;
+            if (s == "hMSL")  colMap[HMSL]  = i;
+            if (s == "velN")  colMap[VelN]  = i;
+            if (s == "velE")  colMap[VelE]  = i;
+            if (s == "velD")  colMap[VelD]  = i;
+            if (s == "hAcc")  colMap[HAcc]  = i;
+            if (s == "vAcc")  colMap[VAcc]  = i;
+            if (s == "sAcc")  colMap[SAcc]  = i;
+            if (s == "numSV") colMap[NumSV] = i;
         }
     }
 
@@ -270,21 +285,21 @@ void MainWindow::on_actionImport_triggered()
 
         DataPoint pt;
 
-        pt.dateTime = QDateTime::fromString(cols[0], Qt::ISODate);
+        pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
 
-        pt.lat   = cols[colMap[1]].toDouble();
-        pt.lon   = cols[colMap[2]].toDouble();
-        pt.hMSL  = cols[colMap[3]].toDouble();
+        pt.lat   = cols[colMap[Lat]].toDouble();
+        pt.lon   = cols[colMap[Lon]].toDouble();
+        pt.hMSL  = cols[colMap[HMSL]].toDouble();
 
-        pt.velN  = cols[colMap[4]].toDouble();
-        pt.velE  = cols[colMap[5]].toDouble();
-        pt.velD  = cols[colMap[6]].toDouble();
+        pt.velN  = cols[colMap[VelN]].toDouble();
+        pt.velE  = cols[colMap[VelE]].toDouble();
+        pt.velD  = cols[colMap[VelD]].toDouble();
 
-        pt.hAcc  = cols[colMap[7]].toDouble();
-        pt.vAcc  = cols[colMap[8]].toDouble();
-        pt.sAcc  = cols[colMap[9]].toDouble();
+        pt.hAcc  = cols[colMap[HAcc]].toDouble();
+        pt.vAcc  = cols[colMap[VAcc]].toDouble();
+        pt.sAcc  = cols[colMap[SAcc]].toDouble();
 
-        pt.numSV = cols[colMap[11]].toDouble();
+        pt.numSV = cols[colMap[NumSV]].toDouble();
 
         m_data.append(pt);
     }
