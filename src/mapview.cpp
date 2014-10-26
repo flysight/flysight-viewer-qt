@@ -28,7 +28,9 @@ void MapView::updateView()
 
     bool first = true;
 
-    QString flightPath("var flightPlanCoordinates = [");
+    QString js;
+    js = QString("var path = poly.getPath();") +
+         QString("while (path.length > 0) { path.pop(); }");
 
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
@@ -51,31 +53,18 @@ void MapView::updateView()
                 if (dp.lat > yMax) yMax = dp.lat;
             }
 
-            flightPath += QString("new google.maps.LatLng(%1, %2),").arg(dp.lat, 0, 'f').arg(dp.lon, 0, 'f');
+            js += QString("path.push(new google.maps.LatLng(%1, %2));").arg(dp.lat, 0, 'f').arg(dp.lon, 0, 'f');
         }
     }
 
-    flightPath = flightPath.left(flightPath.size() - 1);
-    flightPath += QString("];");
-
-    flightPath += QString("var flightPath = new google.maps.Polyline({");
-    flightPath += QString("  path: flightPlanCoordinates,");
-    flightPath += QString("  geodesic: true,");
-    flightPath += QString("  strokeColor: '#FF0000',");
-    flightPath += QString("  strokeOpacity: 1.0,");
-    flightPath += QString("  strokeWeight: 2");
-    flightPath += QString("});");
-
-    flightPath += QString("flightPath.setMap(map);");
-    page()->currentFrame()->documentElement().evaluateJavaScript(flightPath);
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
 
     //
     // TODO: Manage flight path better
     //
 
-    QString str =
-            QString("var newLoc = new google.maps.LatLng(%1, %2); ").arg((yMin + yMax) / 2).arg((xMin + xMax) / 2) +
-            QString("map.setCenter(newLoc);");
+    js = QString("var newLoc = new google.maps.LatLng(%1, %2); ").arg((yMin + yMax) / 2).arg((xMin + xMax) / 2) +
+         QString("map.setCenter(newLoc);");
 
-    page()->currentFrame()->documentElement().evaluateJavaScript(str);
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
 }
