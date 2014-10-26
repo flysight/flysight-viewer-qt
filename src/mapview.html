@@ -35,6 +35,14 @@
                 poly.setMap(map);
 
                 var markerOptions = {
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#000000',
+                        fillOpacity: 1.0,
+                        strokeColor: '#FF0000',
+                        strokeWeight: 1.5,
+                        scale: 3.5
+                    }
                 };
 
                 marker = new google.maps.Marker(markerOptions);
