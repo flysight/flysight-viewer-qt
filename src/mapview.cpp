@@ -63,8 +63,10 @@ void MapView::updateView()
     // TODO: Manage flight path better
     //
 
-    js = QString("var newLoc = new google.maps.LatLng(%1, %2); ").arg((yMin + yMax) / 2).arg((xMin + xMax) / 2) +
-         QString("map.setCenter(newLoc);");
+    js = QString("var bounds = new google.maps.LatLngBounds();") +
+         QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMin).arg(xMin) +
+         QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMax).arg(xMax) +
+         QString("map.fitBounds(bounds);");
 
     page()->currentFrame()->documentElement().evaluateJavaScript(js);
 }
