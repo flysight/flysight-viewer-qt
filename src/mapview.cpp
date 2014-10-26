@@ -69,6 +69,10 @@ void MapView::updateView()
     flightPath += QString("flightPath.setMap(map);");
     page()->currentFrame()->documentElement().evaluateJavaScript(flightPath);
 
+    //
+    // TODO: Manage flight path better
+    //
+
     QString str =
             QString("var newLoc = new google.maps.LatLng(%1, %2); ").arg((yMin + yMax) / 2).arg((xMin + xMax) / 2) +
             QString("map.setCenter(newLoc);");

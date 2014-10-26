@@ -233,8 +233,32 @@ void MainWindow::on_actionImport_triggered()
 
     QTextStream in(&file);
 
-    // skip first 2 rows
-    if (!in.atEnd()) in.readLine();
+    // Read column labels
+    QList< int > colMap;
+    if (!in.atEnd())
+    {
+        QString line = in.readLine();
+        QStringList cols = line.split(",");
+
+        for (int i = 0; i < cols.size(); ++i)
+        {
+            const QString &s = cols[i];
+
+            if (s == "time")  colMap[0]  = i;
+            if (s == "lat")   colMap[1]  = i;
+            if (s == "lon")   colMap[2]  = i;
+            if (s == "hMSL")  colMap[3]  = i;
+            if (s == "velN")  colMap[4]  = i;
+            if (s == "velE")  colMap[5]  = i;
+            if (s == "velD")  colMap[6]  = i;
+            if (s == "hAcc")  colMap[7]  = i;
+            if (s == "vAcc")  colMap[8]  = i;
+            if (s == "sAcc")  colMap[9]  = i;
+            if (s == "numSV") colMap[11] = i;
+        }
+    }
+
+    // Skip next row
     if (!in.atEnd()) in.readLine();
 
     m_data.clear();
@@ -248,23 +272,19 @@ void MainWindow::on_actionImport_triggered()
 
         pt.dateTime = QDateTime::fromString(cols[0], Qt::ISODate);
 
-        pt.lat   = cols[1].toDouble();
-        pt.lon   = cols[2].toDouble();
-        pt.hMSL  = cols[3].toDouble();
+        pt.lat   = cols[colMap[1]].toDouble();
+        pt.lon   = cols[colMap[2]].toDouble();
+        pt.hMSL  = cols[colMap[3]].toDouble();
 
-        pt.velN  = cols[4].toDouble();
-        pt.velE  = cols[5].toDouble();
-        pt.velD  = cols[6].toDouble();
+        pt.velN  = cols[colMap[4]].toDouble();
+        pt.velE  = cols[colMap[5]].toDouble();
+        pt.velD  = cols[colMap[6]].toDouble();
 
-        pt.hAcc  = cols[7].toDouble();
-        pt.vAcc  = cols[8].toDouble();
-        pt.sAcc  = cols[9].toDouble();
+        pt.hAcc  = cols[colMap[7]].toDouble();
+        pt.vAcc  = cols[colMap[8]].toDouble();
+        pt.sAcc  = cols[colMap[9]].toDouble();
 
-        pt.numSV = cols[11].toDouble();
-
-        //
-        // TODO: Handle newer CSV version
-        //
+        pt.numSV = cols[colMap[11]].toDouble();
 
         m_data.append(pt);
     }
