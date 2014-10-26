@@ -28,9 +28,9 @@ void MapView::updateView()
 
     bool first = true;
 
-    QString js;
-    js = QString("var path = poly.getPath();") +
-         QString("while (path.length > 0) { path.pop(); }");
+    // Add track to map
+    QString js = QString("var path = poly.getPath();") +
+                 QString("while (path.length > 0) { path.pop(); }");
 
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
@@ -59,10 +59,25 @@ void MapView::updateView()
 
     page()->currentFrame()->documentElement().evaluateJavaScript(js);
 
-    //
-    // TODO: Manage flight path better
-    //
+    if (mMainWindow->markActive())
+    {
+        // Add marker to map
+        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
+        js = QString("marker.setPosition(new google.maps.LatLng(%1, %2));").arg(dpEnd.lat, 0, 'f').arg(dpEnd.lon, 0, 'f') +
+             QString("marker.setVisible(true);");
+
+        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    }
+    else
+    {
+        // Clear marker
+        js = QString("marker.setVisible(false);");
+
+        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    }
+
+    // Resize map
     js = QString("var bounds = new google.maps.LatLngBounds();") +
          QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMin).arg(xMin) +
          QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMax).arg(xMax) +

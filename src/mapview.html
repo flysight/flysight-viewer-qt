@@ -12,6 +12,7 @@
         </script>
         <script type="text/javascript">
             var poly;
+            var marker;
             var map;
 
             function initialize() {
@@ -32,6 +33,12 @@
 
                 poly = new google.maps.Polyline(polyOptions);
                 poly.setMap(map);
+
+                var markerOptions = {
+                };
+
+                marker = new google.maps.Marker(markerOptions);
+                marker.setMap(map);
             }
         </script>
     </head>
