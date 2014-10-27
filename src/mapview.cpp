@@ -28,13 +28,22 @@ void MapView::updateView()
 
     bool first = true;
 
+    // Distance threshold
+    const double earthCircumference = 40075000; // m
+    const double zoom = page()->currentFrame()->documentElement().evaluateJavaScript("map.getZoom();").toDouble();
+    const double threshold = earthCircumference / pow(2, zoom) / width();
+
     // Add track to map
     QString js = QString("var path = poly.getPath();") +
                  QString("while (path.length > 0) { path.pop(); }");
 
+    double distPrev;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
+
+        if (i > 0 && dp.dist2D - distPrev < threshold) continue;
+        distPrev = dp.dist2D;
 
         if (lower <= dp.t && dp.t <= upper)
         {
