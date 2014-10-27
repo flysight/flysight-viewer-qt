@@ -94,11 +94,6 @@ void MainWindow::initPlot()
 
     m_ui->plotArea->setMainWindow(this);
 
-    connect(m_ui->plotArea, SIGNAL(zero(double)),
-            this, SLOT(onDataPlot_zero(double)));
-    connect(m_ui->plotArea, SIGNAL(ground(double)),
-            this, SLOT(onDataPlot_ground(double)));
-
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
 }
