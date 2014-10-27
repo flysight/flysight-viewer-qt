@@ -3,6 +3,7 @@
 #include <QWebFrame>
 #include <QWebElement>
 
+#include "common.h"
 #include "mainwindow.h"
 
 MapView::MapView(QWidget *parent) :
@@ -16,6 +17,65 @@ QSize MapView::sizeHint() const
 {
     // Keeps windows from being intialized as very short
     return QSize(175, 175);
+}
+
+void MapView::mouseMoveEvent(
+        QMouseEvent *event)
+{
+    // Get map view bounds
+    QString js = QString("var bounds = map.getBounds();") +
+                 QString("var ne = bounds.getNorthEast();") +
+                 QString("var sw = bounds.getSouthWest();");
+
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+
+    const double latMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lat();").toDouble();
+    const double latMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lat();").toDouble();
+    const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lon();").toDouble();
+    const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lon();").toDouble();
+
+    double lower = mMainWindow->rangeLower();
+    double upper = mMainWindow->rangeUpper();
+
+    double resultTime;
+    double resultDistance = std::numeric_limits<double>::max();
+
+    for (int i = 0; i + 1 < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp1 = mMainWindow->dataPoint(i);
+        const DataPoint &dp2 = mMainWindow->dataPoint(i + 1);
+
+        if (lower <= dp1.t && dp1.t <= upper &&
+            lower <= dp2.t && dp2.t <= upper)
+        {
+            QPointF pt1 = QPointF(width() * (dp1.lon - lonMin) / (lonMax - lonMin),
+                                  height() * (latMax - dp1.lat) / (latMax - latMin));
+            QPointF pt2 = QPointF(width() * (dp2.lon - lonMin) / (lonMax - lonMin),
+                                  height() * (latMax - dp2.lat) / (latMax - latMin));
+
+            double mu;
+            double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
+
+            if (dist < resultDistance)
+            {
+                double t1 = dp1.t;
+                double t2 = dp2.t;
+
+                resultTime = t1 + mu * (t2 - t1);
+                resultDistance = dist;
+            }
+        }
+    }
+
+    const int selectionTolerance = 8;
+    if (resultDistance < selectionTolerance)
+    {
+        mMainWindow->setMark(resultTime);
+    }
+    else
+    {
+        mMainWindow->clearMark();
+    }
 }
 
 void MapView::initView()

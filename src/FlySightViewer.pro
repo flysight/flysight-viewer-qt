@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     waypoint.cpp \
     datapoint.cpp \
     configdialog.cpp \
-    mapview.cpp
+    mapview.cpp \
+    common.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -30,7 +31,8 @@ HEADERS  += mainwindow.h \
     waypoint.h \
     plotvalue.h \
     configdialog.h \
-    mapview.h
+    mapview.h \
+    common.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui
