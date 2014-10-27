@@ -19,6 +19,7 @@ private:
     MainWindow *mMainWindow;
 
 public slots:
+    void initView();
     void updateView();
 };
 

@@ -18,6 +18,39 @@ QSize MapView::sizeHint() const
     return QSize(175, 175);
 }
 
+void MapView::initView()
+{
+    double xMin, xMax;
+    double yMin, yMax;
+
+    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+
+        if (i == 0)
+        {
+            xMin = xMax = dp.lon;
+            yMin = yMax = dp.lat;
+        }
+        else
+        {
+            if (dp.lon < xMin) xMin = dp.lon;
+            if (dp.lon > xMax) xMax = dp.lon;
+
+            if (dp.lat < yMin) yMin = dp.lat;
+            if (dp.lat > yMax) yMax = dp.lat;
+        }
+    }
+
+    // Resize map
+    QString js = QString("var bounds = new google.maps.LatLngBounds();") +
+                 QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMin).arg(xMin) +
+                 QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMax).arg(xMax) +
+                 QString("map.fitBounds(bounds);");
+
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+}
+
 void MapView::updateView()
 {
     double lower = mMainWindow->rangeLower();
@@ -85,12 +118,4 @@ void MapView::updateView()
 
         page()->currentFrame()->documentElement().evaluateJavaScript(js);
     }
-
-    // Resize map
-    js = QString("var bounds = new google.maps.LatLngBounds();") +
-         QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMin).arg(xMin) +
-         QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMax).arg(xMax) +
-         QString("map.fitBounds(bounds);");
-
-    page()->currentFrame()->documentElement().evaluateJavaScript(js);
 }

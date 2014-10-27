@@ -146,6 +146,8 @@ void MainWindow::initMapView()
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowMapView, SLOT(setChecked(bool)));
 
+    connect(this, SIGNAL(dataLoaded()),
+            mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
 }
@@ -354,6 +356,8 @@ void MainWindow::on_actionImport_triggered()
     }
 
     initRange();
+
+    emit dataLoaded();
 }
 
 double MainWindow::getSlope(
