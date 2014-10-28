@@ -5,7 +5,8 @@
 
 DataView::DataView(QWidget *parent) :
     QCustomPlot(parent),
-    mMainWindow(0)
+    mMainWindow(0),
+    m_topViewPan(false)
 {
     setMouseTracking(true);
 }

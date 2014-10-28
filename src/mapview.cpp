@@ -31,8 +31,8 @@ void MapView::mouseMoveEvent(
 
     const double latMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lat();").toDouble();
     const double latMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lat();").toDouble();
-    const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lon();").toDouble();
-    const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lon();").toDouble();
+    const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lng();").toDouble();
+    const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lng();").toDouble();
 
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
@@ -76,6 +76,9 @@ void MapView::mouseMoveEvent(
     {
         mMainWindow->clearMark();
     }
+
+    // Call base class
+    QWebView::mouseMoveEvent(event);
 }
 
 void MapView::initView()
