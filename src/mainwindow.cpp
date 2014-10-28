@@ -95,8 +95,6 @@ void MainWindow::initPlot()
     connect(m_ui->plotArea, SIGNAL(ground(double)),
             this, SLOT(onDataPlot_ground(double)));
 
-    connect(this, SIGNAL(rangeChanged(double, double)),
-            m_ui->plotArea, SLOT(setRange(double, double)));
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
 }
@@ -129,8 +127,6 @@ void MainWindow::initSingleView(
             actionShow, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
-            dataView, SLOT(updateView()));
-    connect(this, SIGNAL(rangeChanged(double, double)),
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
@@ -622,7 +618,7 @@ void MainWindow::setRange(
     mRangeLower = qMin(lower, upper);
     mRangeUpper = qMax(lower, upper);
 
-    emit rangeChanged(lower, upper);
+    emit dataChanged();
 }
 
 void MainWindow::setRotation(
@@ -651,6 +647,9 @@ void MainWindow::setZero(
         dp.dist2D -= dp0.dist2D;
         dp.dist3D -= dp0.dist3D;
     }
+
+    mMarkStart -= dp0.t;
+    mMarkEnd -= dp0.t;
 
     setRange(mRangeLower - dp0.t, mRangeUpper - dp0.t);
     setTool(mPrevTool);

@@ -88,7 +88,6 @@ private:
     void writeSettings();
 
 public slots:
-    void setRange(double lower, double upper);
     void updatePlot();
 };
 

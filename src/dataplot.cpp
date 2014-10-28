@@ -259,13 +259,24 @@ void DataPlot::setMark(
     QString status;
     status = QString("<table width='300'>");
 
-    const double val = xValue()->value(dpEnd, mMainWindow->units())
-            - xValue()->value(dpStart, mMainWindow->units());
+    double val = m_xValues[Time]->value(dpEnd, mMainWindow->units())
+            - m_xValues[Time]->value(dpStart, mMainWindow->units());
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
-            .arg(xValue()->title(mMainWindow->units()))
-            .arg(xValue()->value(dpEnd, mMainWindow->units()))
+            .arg(m_xValues[Time]->title(mMainWindow->units()))
+            .arg(m_xValues[Time]->value(dpEnd, mMainWindow->units()))
             .arg(val < 0 ? "" : "+")
             .arg(val);
+
+    if (m_xAxisType != Time)
+    {
+        val = xValue()->value(dpEnd, mMainWindow->units())
+                - xValue()->value(dpStart, mMainWindow->units());
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+                .arg(xValue()->title(mMainWindow->units()))
+                .arg(xValue()->value(dpEnd, mMainWindow->units()))
+                .arg(val < 0 ? "" : "+")
+                .arg(val);
+    }
 
     for (int i = 0; i < yaLast; ++i)
     {
@@ -300,8 +311,15 @@ void DataPlot::setMark(
     status = QString("<table width='200'>");
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
-            .arg(xValue()->title(mMainWindow->units()))
-            .arg(xValue()->value(dp, mMainWindow->units()));
+            .arg(m_xValues[Time]->title(mMainWindow->units()))
+            .arg(m_xValues[Time]->value(dp, mMainWindow->units()));
+
+    if (m_xAxisType != Time)
+    {
+        status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+                .arg(xValue()->title(mMainWindow->units()))
+                .arg(xValue()->value(dp, mMainWindow->units()));
+    }
 
     for (int i = 0; i < yaLast; ++i)
     {
@@ -326,19 +344,6 @@ void DataPlot::setRange(
     DataPoint dpUpper = interpolateDataX(range.upper);
 
     mMainWindow->setRange(dpLower.t, dpUpper.t);
-}
-
-void DataPlot::setRange(
-        double lower,
-        double upper)
-{
-    DataPoint dpLower = mMainWindow->interpolateDataT(lower);
-    DataPoint dpUpper = mMainWindow->interpolateDataT(upper);
-
-    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
-                             xValue()->value(dpUpper, mMainWindow->units())));
-
-    updateYRanges();
 }
 
 void DataPlot::updateYRanges()
@@ -377,11 +382,6 @@ void DataPlot::updateYRanges()
         if (!first)
             axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
     }
-
-    //
-    // TODO: When replot is called here, the ranges don't seem to have been updated.
-    //       For example, see first update or when exit or ground is set.
-    //
 
     replot();
 }
@@ -448,6 +448,12 @@ void DataPlot::updatePlot()
         }
     }
 
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
+    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
+                             xValue()->value(dpUpper, mMainWindow->units())));
+
     updateYRanges();
 }
 
@@ -491,7 +497,7 @@ int DataPlot::findIndexBelowX(
 int DataPlot::findIndexAboveX(
         double x)
 {
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    for (int i = mMainWindow->dataSize() - 1; i >= 0; --i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
         if (xValue()->value(dp, mMainWindow->units()) <= x)
