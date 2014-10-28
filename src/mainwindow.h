@@ -120,6 +120,7 @@ private:
 
     void initPlot();
     void initViews();
+    void initMapView();
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
@@ -134,6 +135,7 @@ private:
     void updateLeftActions();
 
 signals:
+    void dataLoaded();
     void dataChanged();
     void rotationChanged(double rotation);
 };

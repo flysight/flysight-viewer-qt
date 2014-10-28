@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport
+QT       += core gui printsupport webkitwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,7 +19,9 @@ SOURCES += main.cpp\
     dataview.cpp \
     waypoint.cpp \
     datapoint.cpp \
-    configdialog.cpp
+    configdialog.cpp \
+    mapview.cpp \
+    common.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -28,10 +30,15 @@ HEADERS  += mainwindow.h \
     dataview.h \
     waypoint.h \
     plotvalue.h \
-    configdialog.h
+    configdialog.h \
+    mapview.h \
+    common.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui
 
 RC_ICONS = FlySightViewer.ico
 ICON = FlySightViewer.icns
+
+RESOURCES += \
+    resource.qrc

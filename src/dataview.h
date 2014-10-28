@@ -35,10 +35,7 @@ private:
 
     QPoint      m_topViewBeginPos;
     bool        m_topViewPan;
-
-    static double distSqrToLine(const QPointF &start, const QPointF &end,
-                                const QPointF &point, double &mu);
-
+\
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
     void addNorthArrow();

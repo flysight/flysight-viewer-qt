@@ -301,6 +301,8 @@ void DataPlot::setMark(
 void DataPlot::setMark(
         double mark)
 {
+    if (mMainWindow->dataSize() == 0) return;
+
     DataPoint dp = interpolateDataX(mark);
 
     mMainWindow->setMark(dp.t);
@@ -448,11 +450,14 @@ void DataPlot::updatePlot()
         }
     }
 
-    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
-    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+    if (mMainWindow->dataSize() > 0)
+    {
+        DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+        DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
 
-    xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
-                             xValue()->value(dpUpper, mMainWindow->units())));
+        xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
+                                 xValue()->value(dpUpper, mMainWindow->units())));
+    }
 
     updateYRanges();
 }

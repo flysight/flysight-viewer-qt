@@ -9,6 +9,7 @@
 
 #include "configdialog.h"
 #include "dataview.h"
+#include "mapview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -30,6 +31,9 @@ MainWindow::MainWindow(
 
     // Initialize 3D views
     initViews();
+
+    // Initialize map view
+    initMapView();
 
     // Restore window state
     readSettings();
@@ -90,11 +94,6 @@ void MainWindow::initPlot()
 
     m_ui->plotArea->setMainWindow(this);
 
-    connect(m_ui->plotArea, SIGNAL(zero(double)),
-            this, SLOT(onDataPlot_zero(double)));
-    connect(m_ui->plotArea, SIGNAL(ground(double)),
-            this, SLOT(onDataPlot_ground(double)));
-
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
 }
@@ -130,6 +129,27 @@ void MainWindow::initSingleView(
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
+}
+
+void MainWindow::initMapView()
+{
+    MapView *mapView = new MapView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Map View"));
+    dockWidget->setWidget(mapView);
+    dockWidget->setObjectName("mapView");
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    mapView->setMainWindow(this);
+
+    connect(m_ui->actionShowMapView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowMapView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataLoaded()),
+            mapView, SLOT(initView()));
+    connect(this, SIGNAL(dataChanged()),
+            mapView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -210,8 +230,47 @@ void MainWindow::on_actionImport_triggered()
 
     QTextStream in(&file);
 
-    // skip first 2 rows
-    if (!in.atEnd()) in.readLine();
+    // Column enumeration
+    typedef enum {
+        Time = 0,
+        Lat,
+        Lon,
+        HMSL,
+        VelN,
+        VelE,
+        VelD,
+        HAcc,
+        VAcc,
+        SAcc,
+        NumSV
+    } Columns;
+
+    // Read column labels
+    QMap< int, int > colMap;
+    if (!in.atEnd())
+    {
+        QString line = in.readLine();
+        QStringList cols = line.split(",");
+
+        for (int i = 0; i < cols.size(); ++i)
+        {
+            const QString &s = cols[i];
+
+            if (s == "time")  colMap[Time]  = i;
+            if (s == "lat")   colMap[Lat]   = i;
+            if (s == "lon")   colMap[Lon]   = i;
+            if (s == "hMSL")  colMap[HMSL]  = i;
+            if (s == "velN")  colMap[VelN]  = i;
+            if (s == "velE")  colMap[VelE]  = i;
+            if (s == "velD")  colMap[VelD]  = i;
+            if (s == "hAcc")  colMap[HAcc]  = i;
+            if (s == "vAcc")  colMap[VAcc]  = i;
+            if (s == "sAcc")  colMap[SAcc]  = i;
+            if (s == "numSV") colMap[NumSV] = i;
+        }
+    }
+
+    // Skip next row
     if (!in.atEnd()) in.readLine();
 
     m_data.clear();
@@ -223,25 +282,21 @@ void MainWindow::on_actionImport_triggered()
 
         DataPoint pt;
 
-        pt.dateTime = QDateTime::fromString(cols[0], Qt::ISODate);
+        pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
 
-        pt.lat   = cols[1].toDouble();
-        pt.lon   = cols[2].toDouble();
-        pt.hMSL  = cols[3].toDouble();
+        pt.lat   = cols[colMap[Lat]].toDouble();
+        pt.lon   = cols[colMap[Lon]].toDouble();
+        pt.hMSL  = cols[colMap[HMSL]].toDouble();
 
-        pt.velN  = cols[4].toDouble();
-        pt.velE  = cols[5].toDouble();
-        pt.velD  = cols[6].toDouble();
+        pt.velN  = cols[colMap[VelN]].toDouble();
+        pt.velE  = cols[colMap[VelE]].toDouble();
+        pt.velD  = cols[colMap[VelD]].toDouble();
 
-        pt.hAcc  = cols[7].toDouble();
-        pt.vAcc  = cols[8].toDouble();
-        pt.sAcc  = cols[9].toDouble();
+        pt.hAcc  = cols[colMap[HAcc]].toDouble();
+        pt.vAcc  = cols[colMap[VAcc]].toDouble();
+        pt.sAcc  = cols[colMap[SAcc]].toDouble();
 
-        pt.numSV = cols[11].toDouble();
-
-        //
-        // TODO: Handle newer CSV version
-        //
+        pt.numSV = cols[colMap[NumSV]].toDouble();
 
         m_data.append(pt);
     }
@@ -301,6 +356,8 @@ void MainWindow::on_actionImport_triggered()
     }
 
     initRange();
+
+    emit dataLoaded();
 }
 
 double MainWindow::getSlope(
