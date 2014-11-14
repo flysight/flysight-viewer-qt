@@ -121,6 +121,7 @@ private:
     void initPlot();
     void initViews();
     void initMapView();
+    void initVideoView();
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
