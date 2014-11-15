@@ -67,6 +67,9 @@ void VideoView::openFile()
         mPlayer.setMedia(QUrl::fromLocalFile(fileName));
         ui->playButton->setEnabled(true);
         ui->zeroButton->setEnabled(true);
+
+        // Update display
+        positionChanged(mPlayer.position());
     }
 }
 
@@ -98,10 +101,15 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
 
 void VideoView::positionChanged(qint64 position)
 {
+    // Update position slider
     ui->positionSlider->setValue(position);
 
+    // Update text label
+    double time = (double) (position - mZeroPosition) / 1000;
+    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
     // Update other views
-    mMainWindow->setMark((double) (position - mZeroPosition) / 1000);
+    mMainWindow->setMark(time);
 }
 
 void VideoView::durationChanged(qint64 duration)
@@ -117,6 +125,7 @@ void VideoView::setPosition(int position)
 void VideoView::zero()
 {
     mZeroPosition = mPlayer.position();
+    positionChanged(mPlayer.position());
 }
 
 void VideoView::updateView()
