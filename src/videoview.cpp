@@ -23,16 +23,14 @@ VideoView::VideoView(QWidget *parent) :
 
     ui->playButton->setEnabled(false);
     ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(play()));
 
     ui->zeroButton->setEnabled(false);
-
     connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zero()));
 
     ui->positionSlider->setRange(0, 0);
-
-    connect(ui->positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(setPosition(int)));
+    ui->positionSlider->setSingleStep(10);
+    connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
 
     mPlayer.setVideoOutput(ui->videoWidget);
     connect(&mPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(mediaStateChanged(QMediaPlayer::State)));
@@ -63,6 +61,9 @@ void VideoView::openFile()
 
     if (!fileName.isEmpty())
     {
+        // Remember last file read
+        settings.setValue("videoFolder", QFileInfo(fileName).absoluteFilePath());
+
         mPlayer.setMedia(QUrl::fromLocalFile(fileName));
         ui->playButton->setEnabled(true);
         ui->zeroButton->setEnabled(true);
