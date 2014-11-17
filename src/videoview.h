@@ -39,6 +39,7 @@ private slots:
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
     void setPosition(int position);
+    void setScrubPosition(int position);
 };
 
 #endif // VIDEOVIEW_H

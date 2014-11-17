@@ -17,8 +17,6 @@ VideoView::VideoView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QVideoWidget *videoWidget = new QVideoWidget;
-
     connect(ui->openButton, SIGNAL(clicked()), this, SLOT(openFile()));
 
     ui->playButton->setEnabled(false);
@@ -30,7 +28,11 @@ VideoView::VideoView(QWidget *parent) :
 
     ui->positionSlider->setRange(0, 0);
     ui->positionSlider->setSingleStep(10);
-    connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
+    connect(ui->positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(setPosition(int)));
+
+    ui->scrubDial->setRange(0, 1000);
+    ui->scrubDial->setSingleStep(10);
+    connect(ui->scrubDial, SIGNAL(sliderMoved(int)), this, SLOT(setScrubPosition(int)));
 
     mPlayer.setVideoOutput(ui->videoWidget);
     connect(&mPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(mediaStateChanged(QMediaPlayer::State)));
@@ -64,7 +66,10 @@ void VideoView::openFile()
         // Remember last file read
         settings.setValue("videoFolder", QFileInfo(fileName).absoluteFilePath());
 
+        // Set media
         mPlayer.setMedia(QUrl::fromLocalFile(fileName));
+
+        // Update buttons
         ui->playButton->setEnabled(true);
         ui->zeroButton->setEnabled(true);
 
@@ -101,8 +106,13 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
 
 void VideoView::positionChanged(qint64 position)
 {
-    // Update position slider
+    // NOTE: QMediaPlayer works asynchronously, so we can't set the position
+    //       here, since we may be receiving these notifications after the
+    //       fact.
+
+    // Update position sliders
     ui->positionSlider->setValue(position);
+    ui->scrubDial->setValue(position % 1000);
 
     // Update text label
     double time = (double) (position - mZeroPosition) / 1000;
@@ -120,6 +130,17 @@ void VideoView::durationChanged(qint64 duration)
 void VideoView::setPosition(int position)
 {
     mPlayer.setPosition(position);
+}
+
+void VideoView::setScrubPosition(int position)
+{
+    int oldPosition = mPlayer.position();
+    int newPosition = oldPosition - oldPosition % 1000 + position;
+
+    while (newPosition <= oldPosition - 500) newPosition += 1000;
+    while (newPosition >  oldPosition + 500) newPosition -= 1000;
+
+    mPlayer.setPosition(newPosition);
 }
 
 void VideoView::zero()
