@@ -26,12 +26,16 @@ VideoView::VideoView(QWidget *parent) :
     ui->zeroButton->setEnabled(false);
     connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zero()));
 
+    ui->positionSlider->setEnabled(false);
     ui->positionSlider->setRange(0, 0);
-    ui->positionSlider->setSingleStep(10);
+    ui->positionSlider->setSingleStep(200);
+    ui->positionSlider->setPageStep(2000);
     connect(ui->positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(setPosition(int)));
 
+    ui->scrubDial->setEnabled(false);
     ui->scrubDial->setRange(0, 1000);
-    ui->scrubDial->setSingleStep(10);
+    ui->scrubDial->setSingleStep(30);
+    ui->scrubDial->setPageStep(300);
     connect(ui->scrubDial, SIGNAL(sliderMoved(int)), this, SLOT(setScrubPosition(int)));
 
     mPlayer.setVideoOutput(ui->videoWidget);
@@ -72,6 +76,8 @@ void VideoView::openFile()
         // Update buttons
         ui->playButton->setEnabled(true);
         ui->zeroButton->setEnabled(true);
+        ui->positionSlider->setEnabled(true);
+        ui->scrubDial->setEnabled(true);
 
         // Update display
         positionChanged(mPlayer.position());
