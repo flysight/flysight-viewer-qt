@@ -13,7 +13,8 @@ VideoView::VideoView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::VideoView),
     mMainWindow(0),
-    mZeroPosition(0)
+    mZeroPosition(0),
+    mBlockUpdate(false)
 {
     ui->setupUi(this);
 
@@ -30,13 +31,13 @@ VideoView::VideoView(QWidget *parent) :
     ui->positionSlider->setRange(0, 0);
     ui->positionSlider->setSingleStep(200);
     ui->positionSlider->setPageStep(2000);
-    connect(ui->positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(setPosition(int)));
+    connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
 
     ui->scrubDial->setEnabled(false);
     ui->scrubDial->setRange(0, 1000);
     ui->scrubDial->setSingleStep(30);
     ui->scrubDial->setPageStep(300);
-    connect(ui->scrubDial, SIGNAL(sliderMoved(int)), this, SLOT(setScrubPosition(int)));
+    connect(ui->scrubDial, SIGNAL(valueChanged(int)), this, SLOT(setScrubPosition(int)));
 
     mPlayer.setVideoOutput(ui->videoWidget);
     connect(&mPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(mediaStateChanged(QMediaPlayer::State)));
@@ -80,7 +81,8 @@ void VideoView::openFile()
         ui->scrubDial->setEnabled(true);
 
         // Update display
-        positionChanged(mPlayer.position());
+        mPlayer.play();
+        mPlayer.pause();
     }
 }
 
@@ -106,26 +108,39 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
         break;
     default:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+
+        // Update position sliders
+        qint64 position = mPlayer.position();
+        ui->positionSlider->setValue(position);
+        ui->scrubDial->setValue(position % 1000);
+
+        // Update other views
+        double time = (double) (position - mZeroPosition) / 1000;
+        mMainWindow->setMark(time);
+
         break;
     }
 }
 
 void VideoView::positionChanged(qint64 position)
 {
-    // NOTE: QMediaPlayer works asynchronously, so we can't set the position
-    //       here, since we may be receiving these notifications after the
-    //       fact.
+    if (mPlayer.state() == QMediaPlayer::PlayingState)
+    {
+        mBlockUpdate = true;
 
-    // Update position sliders
-    ui->positionSlider->setValue(position);
-    ui->scrubDial->setValue(position % 1000);
+        // Update controls
+        ui->positionSlider->setValue(position);
+        ui->scrubDial->setValue(position % 1000);
 
-    // Update text label
-    double time = (double) (position - mZeroPosition) / 1000;
-    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+        // Update text label
+        double time = (double) (position - mZeroPosition) / 1000;
+        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
 
-    // Update other views
-    mMainWindow->setMark(time);
+        // Update other views
+        mMainWindow->setMark(time);
+
+        mBlockUpdate = false;
+    }
 }
 
 void VideoView::durationChanged(qint64 duration)
@@ -135,43 +150,96 @@ void VideoView::durationChanged(qint64 duration)
 
 void VideoView::setPosition(int position)
 {
-    mPlayer.setPosition(position);
+    if (!mBlockUpdate &&
+            mPlayer.state() != QMediaPlayer::PlayingState)
+    {
+        mBlockUpdate = true;
+
+        // Update video position
+        mPlayer.setPosition(position);
+
+        // Update scrub control
+        ui->scrubDial->setValue(position % 1000);
+
+        // Update text label
+        double time = (double) (position - mZeroPosition) / 1000;
+        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
+        // Update other views
+        mMainWindow->setMark(time);
+
+        mBlockUpdate = false;
+    }
 }
 
 void VideoView::setScrubPosition(int position)
 {
-    int oldPosition = mPlayer.position();
-    int newPosition = oldPosition - oldPosition % 1000 + position;
+    if (!mBlockUpdate &&
+            mPlayer.state() != QMediaPlayer::PlayingState)
+    {
+        mBlockUpdate = true;
 
-    while (newPosition <= oldPosition - 500) newPosition += 1000;
-    while (newPosition >  oldPosition + 500) newPosition -= 1000;
+        int oldPosition = mPlayer.position();
+        int newPosition = oldPosition - oldPosition % 1000 + position;
 
-    mPlayer.setPosition(newPosition);
+        while (newPosition <= oldPosition - 500) newPosition += 1000;
+        while (newPosition >  oldPosition + 500) newPosition -= 1000;
+
+        // Update video position
+        mPlayer.setPosition(newPosition);
+
+        // Update position control
+        ui->positionSlider->setValue(newPosition);
+
+        // Update text label
+        double time = (double) (newPosition - mZeroPosition) / 1000;
+        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
+        // Update other views
+        mMainWindow->setMark(time);
+
+        mBlockUpdate = false;
+    }
 }
 
 void VideoView::zero()
 {
     mZeroPosition = mPlayer.position();
-    positionChanged(mPlayer.position());
+
+    // Update text label
+    double time = (double) (mZeroPosition - mZeroPosition) / 1000;
+    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
 }
 
 void VideoView::updateView()
 {
-/*    if (mMainWindow->markActive())
+    if (!mBlockUpdate &&
+            mMainWindow->markActive() &&
+            mPlayer.state() != QMediaPlayer::PlayingState)
     {
-        // Add marker to map
+        mBlockUpdate = true;
+
+        // Get marked point
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
-        if (dpEnd.t * 1000 != mPlayer.position())
-        {
-            // Set playback position
-            mPlayer.setPosition(dpEnd.t * 1000);
+        // Set playback position
+        qint64 position = dpEnd.t * 1000 + mZeroPosition;
 
-            // Force update
-            // TODO: There must be a better way to handle this
-            //mPlayer.play();
-            //mPlayer.pause();
-        }
+        // Clamp to video bounds
+        if (position < 0) position = 0;
+        if (position >= mPlayer.duration()) position = mPlayer.duration() - 1;
+
+        // Update video position
+        mPlayer.setPosition(position);
+
+        // Update text label
+        double time = (double) (position - mZeroPosition) / 1000;
+        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
+        // Update controls
+        ui->positionSlider->setValue(position);
+        ui->scrubDial->setValue(position % 1000);
+
+        mBlockUpdate = false;
     }
-*/
 }

@@ -27,6 +27,7 @@ private:
     MainWindow    *mMainWindow;
     QMediaPlayer   mPlayer;
     qint64         mZeroPosition;
+    bool           mBlockUpdate;
 
 public slots:
     void openFile();

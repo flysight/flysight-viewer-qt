@@ -21,9 +21,7 @@ SOURCES += main.cpp \
     configdialog.cpp \
     mapview.cpp \
     common.cpp \
-    videoview.cpp \
-    scrubdial.cpp \
-    positionslider.cpp
+    videoview.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -35,9 +33,7 @@ HEADERS  += mainwindow.h \
     configdialog.h \
     mapview.h \
     common.h \
-    videoview.h \
-    scrubdial.h \
-    positionslider.h
+    videoview.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

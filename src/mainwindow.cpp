@@ -457,9 +457,19 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = start;
-    mMarkEnd = end;
-    mMarkActive = true;
+    if (start >= m_data.front().t &&
+            start <= m_data.back().t &&
+            end >= m_data.front().t &&
+            end <= m_data.back().t)
+    {
+        mMarkStart = start;
+        mMarkEnd = end;
+        mMarkActive = true;
+    }
+    else
+    {
+        mMarkActive = false;
+    }
 
     emit dataChanged();
 }
@@ -469,8 +479,16 @@ void MainWindow::setMark(
 {
     if (m_data.isEmpty()) return;
 
-    mMarkStart = mMarkEnd = mark;
-    mMarkActive = true;
+    if (mark >= m_data.front().t &&
+            mark <= m_data.back().t)
+    {
+        mMarkStart = mMarkEnd = mark;
+        mMarkActive = true;
+    }
+    else
+    {
+        mMarkActive = false;
+    }
 
     emit dataChanged();
 }
