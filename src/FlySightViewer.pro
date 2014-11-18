@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport webkitwidgets multimedia
+QT       += core gui printsupport webkitwidgets multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -22,7 +22,9 @@ SOURCES += main.cpp\
     configdialog.cpp \
     mapview.cpp \
     common.cpp \
-    videoview.cpp
+    videoview.cpp \
+    scrubdial.cpp \
+    positionslider.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -34,7 +36,9 @@ HEADERS  += mainwindow.h \
     configdialog.h \
     mapview.h \
     common.h \
-    videoview.h
+    videoview.h \
+    scrubdial.h \
+    positionslider.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

@@ -84,7 +84,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QSlider" name="positionSlider">
+          <widget class="PositionSlider" name="positionSlider">
            <property name="maximum">
             <number>0</number>
            </property>
@@ -101,7 +101,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QDial" name="scrubDial">
+      <widget class="ScrubDial" name="scrubDial">
        <property name="maximumSize">
         <size>
          <width>50</width>
@@ -123,6 +123,16 @@
    <extends>QWidget</extends>
    <header>qvideowidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ScrubDial</class>
+   <extends>QDial</extends>
+   <header>scrubdial.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PositionSlider</class>
+   <extends>QSlider</extends>
+   <header>positionslider.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
