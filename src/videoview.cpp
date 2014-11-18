@@ -108,18 +108,20 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
         break;
     default:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-
-        // Update position sliders
-        qint64 position = mPlayer.position();
-        ui->positionSlider->setValue(position);
-        ui->scrubDial->setValue(position % 1000);
-
-        // Update other views
-        double time = (double) (position - mZeroPosition) / 1000;
-        mMainWindow->setMark(time);
-
         break;
     }
+
+    // Update position sliders
+    qint64 position = mPlayer.position();
+    ui->positionSlider->setValue(position);
+    ui->scrubDial->setValue(position % 1000);
+
+    // Update text label
+    double time = (double) (position - mZeroPosition) / 1000;
+    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
+    // Update other views
+    mMainWindow->setMark(time);
 }
 
 void VideoView::positionChanged(qint64 position)
