@@ -11,9 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FlySightViewer
 TEMPLATE = app
 
-
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += main.cpp \
+    mainwindow.cpp \
     qcustomplot.cpp \
     dataplot.cpp \
     dataview.cpp \
