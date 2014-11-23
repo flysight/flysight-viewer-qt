@@ -3,8 +3,11 @@
 
 #include <QDir>
 #include <QFileDialog>
-#include <QMediaPlayer>
-#include <QMediaPlaylist>
+
+#include <vlc-qt/Common.h>
+#include <vlc-qt/Instance.h>
+#include <vlc-qt/Media.h>
+#include <vlc-qt/MediaPlayer.h>
 
 #include "common.h"
 #include "mainwindow.h"
@@ -14,7 +17,8 @@ VideoView::VideoView(QWidget *parent) :
     ui(new Ui::VideoView),
     mMainWindow(0),
     mZeroPosition(0),
-    mBlockUpdate(false)
+    mBlockUpdate(false),
+    mMedia(0)
 {
     ui->setupUi(this);
 
@@ -39,14 +43,20 @@ VideoView::VideoView(QWidget *parent) :
     ui->scrubDial->setPageStep(300);
     connect(ui->scrubDial, SIGNAL(valueChanged(int)), this, SLOT(setScrubPosition(int)));
 
-    mPlayer.setVideoOutput(ui->videoWidget);
-    connect(&mPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(mediaStateChanged(QMediaPlayer::State)));
-    connect(&mPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
-    connect(&mPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
+    mInstance = new VlcInstance(VlcCommon::args(), this);
+    mPlayer = new VlcMediaPlayer(mInstance);
+    mPlayer->setVideoWidget(ui->videoWidget);
+
+    connect(mPlayer, SIGNAL(stateChanged()), this, SLOT(stateChanged()));
+    connect(mPlayer, SIGNAL(timeChanged(int)), this, SLOT(timeChanged(int)));
+    connect(mPlayer, SIGNAL(lengthChanged(int)), this, SLOT(lengthChanged(int)));
 }
 
 VideoView::~VideoView()
 {
+    delete mPlayer;
+    delete mMedia;
+    delete mInstance;
     delete ui;
 }
 
@@ -72,38 +82,35 @@ void VideoView::openFile()
         settings.setValue("videoFolder", QFileInfo(fileName).absoluteFilePath());
 
         // Set media
-        mPlayer.setMedia(QUrl::fromLocalFile(fileName));
+        mMedia = new VlcMedia(fileName, true, mInstance);
+        mPlayer->open(mMedia);
 
         // Update buttons
         ui->playButton->setEnabled(true);
         ui->zeroButton->setEnabled(true);
         ui->positionSlider->setEnabled(true);
         ui->scrubDial->setEnabled(true);
-
-        // Update display
-        mPlayer.play();
-        mPlayer.pause();
     }
 }
 
 void VideoView::play()
 {
-    switch(mPlayer.state())
+    switch(mPlayer->state())
     {
-    case QMediaPlayer::PlayingState:
-        mPlayer.pause();
+    case Vlc::Playing:
+        mPlayer->pause();
         break;
     default:
-        mPlayer.play();
+        mPlayer->play();
         break;
     }
 }
 
-void VideoView::mediaStateChanged(QMediaPlayer::State state)
+void VideoView::stateChanged()
 {
-    switch(state)
+    switch(mPlayer->state())
     {
-    case QMediaPlayer::PlayingState:
+    case Vlc::Playing:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
         break;
     default:
@@ -112,7 +119,7 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
     }
 
     // Update position sliders
-    qint64 position = mPlayer.position();
+    int position = mPlayer->time();
     ui->positionSlider->setValue(position);
     ui->scrubDial->setValue(position % 1000);
 
@@ -124,9 +131,9 @@ void VideoView::mediaStateChanged(QMediaPlayer::State state)
     mMainWindow->setMark(time);
 }
 
-void VideoView::positionChanged(qint64 position)
+void VideoView::timeChanged(int position)
 {
-    if (mPlayer.state() == QMediaPlayer::PlayingState)
+    if (mPlayer->state() == Vlc::Playing)
     {
         mBlockUpdate = true;
 
@@ -145,7 +152,7 @@ void VideoView::positionChanged(qint64 position)
     }
 }
 
-void VideoView::durationChanged(qint64 duration)
+void VideoView::lengthChanged(int duration)
 {
     ui->positionSlider->setRange(0, duration);
 }
@@ -153,12 +160,12 @@ void VideoView::durationChanged(qint64 duration)
 void VideoView::setPosition(int position)
 {
     if (!mBlockUpdate &&
-            mPlayer.state() != QMediaPlayer::PlayingState)
+            mPlayer->state() != Vlc::Playing)
     {
         mBlockUpdate = true;
 
         // Update video position
-        mPlayer.setPosition(position);
+        mPlayer->setTime(position);
 
         // Update scrub control
         ui->scrubDial->setValue(position % 1000);
@@ -177,18 +184,18 @@ void VideoView::setPosition(int position)
 void VideoView::setScrubPosition(int position)
 {
     if (!mBlockUpdate &&
-            mPlayer.state() != QMediaPlayer::PlayingState)
+            mPlayer->state() != Vlc::Playing)
     {
         mBlockUpdate = true;
 
-        int oldPosition = mPlayer.position();
+        int oldPosition = mPlayer->time();
         int newPosition = oldPosition - oldPosition % 1000 + position;
 
         while (newPosition <= oldPosition - 500) newPosition += 1000;
         while (newPosition >  oldPosition + 500) newPosition -= 1000;
 
         // Update video position
-        mPlayer.setPosition(newPosition);
+        mPlayer->setTime(newPosition);
 
         // Update position control
         ui->positionSlider->setValue(newPosition);
@@ -206,7 +213,7 @@ void VideoView::setScrubPosition(int position)
 
 void VideoView::zero()
 {
-    mZeroPosition = mPlayer.position();
+    mZeroPosition = mPlayer->time();
 
     // Update text label
     double time = (double) (mZeroPosition - mZeroPosition) / 1000;
@@ -217,7 +224,7 @@ void VideoView::updateView()
 {
     if (!mBlockUpdate &&
             mMainWindow->markActive() &&
-            mPlayer.state() != QMediaPlayer::PlayingState)
+            mPlayer->state() != Vlc::Playing)
     {
         mBlockUpdate = true;
 
@@ -229,10 +236,10 @@ void VideoView::updateView()
 
         // Clamp to video bounds
         if (position < 0) position = 0;
-        if (position >= mPlayer.duration()) position = mPlayer.duration() - 1;
+        if (position >= mPlayer->length()) position = mPlayer->length() - 1;
 
         // Update video position
-        mPlayer.setPosition(position);
+        mPlayer->setTime(position);
 
         // Update text label
         double time = (double) (position - mZeroPosition) / 1000;

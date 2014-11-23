@@ -2,13 +2,16 @@
 #define VIDEOVIEW_H
 
 #include <QWidget>
-#include <QMediaPlayer>
-
-class MainWindow;
 
 namespace Ui {
     class VideoView;
 }
+
+class MainWindow;
+
+class VlcInstance;
+class VlcMedia;
+class VlcMediaPlayer;
 
 class VideoView : public QWidget
 {
@@ -23,11 +26,15 @@ public:
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
 private:
-    Ui::VideoView *ui;
-    MainWindow    *mMainWindow;
-    QMediaPlayer   mPlayer;
-    qint64         mZeroPosition;
-    bool           mBlockUpdate;
+    Ui::VideoView  *ui;
+    MainWindow     *mMainWindow;
+
+    VlcInstance    *mInstance;
+    VlcMedia       *mMedia;
+    VlcMediaPlayer *mPlayer;
+
+    qint64          mZeroPosition;
+    bool            mBlockUpdate;
 
 public slots:
     void openFile();
@@ -36,9 +43,9 @@ public slots:
     void zero();
 
 private slots:
-    void mediaStateChanged(QMediaPlayer::State state);
-    void positionChanged(qint64 position);
-    void durationChanged(qint64 duration);
+    void stateChanged();
+    void timeChanged(int position);
+    void lengthChanged(int duration);
     void setPosition(int position);
     void setScrubPosition(int position);
 };

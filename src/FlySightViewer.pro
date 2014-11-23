@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport webkitwidgets multimedia multimediawidgets
+QT       += core gui printsupport webkitwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -44,3 +44,8 @@ ICON = FlySightViewer.icns
 
 RESOURCES += \
     resource.qrc
+
+LIBS        += -lvlc-qt -lvlc-qt-widgets
+LIBS        += -L../lib
+
+INCLUDEPATH += ../include

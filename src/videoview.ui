@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QVideoWidget" name="videoWidget" native="true"/>
+    <widget class="VlcWidgetVideo" name="videoWidget" native="true"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -119,10 +119,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVideoWidget</class>
+   <class>VlcWidgetVideo</class>
    <extends>QWidget</extends>
-   <header>qvideowidget.h</header>
+   <header>vlc-qt/WidgetVideo.h</header>
    <container>1</container>
+   <slots>
+    <signal>fullscreen()</signal>
+    <slot>toggleFullscreen()</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
