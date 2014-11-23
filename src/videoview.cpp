@@ -184,15 +184,15 @@ void VideoView::updateView()
         // Get marked point
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
-        // Set playback position
+        // Get playback position
         int position = dpEnd.t * 1000 + mZeroPosition;
 
-        // Clamp to video bounds
-        if (position < 0) position = 0;
-        if (position >= mPlayer->length()) position = mPlayer->length() - 1;
-
-        // Update video position
-        mPlayer->setTime(position);
-        timeChanged(position);
+        // If playback position is within video bounds
+        if (0 <= position && position <= mPlayer->length())
+        {
+            // Update video position
+            mPlayer->setTime(position);
+            timeChanged(position);
+        }
     }
 }
