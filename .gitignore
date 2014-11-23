@@ -24,3 +24,6 @@
 # QtCreator project files
 *.pro.user
 *.pro.user*
+
+# QtCreator build files
+build*/
