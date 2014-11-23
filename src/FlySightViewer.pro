@@ -39,15 +39,23 @@ FORMS    += mainwindow.ui \
     configdialog.ui \
     videoview.ui
 
-RC_ICONS = FlySightViewer.ico
-ICON = FlySightViewer.icns
+win32 {
+    RC_ICONS = FlySightViewer.ico
+}
+else {
+    ICON = FlySightViewer.icns
+}
 
 RESOURCES += \
     resource.qrc
 
-LIBS        += -lvlc-qt -lvlc-qt-widgets
-LIBS        += -L../lib
-LIBS        += -L/usr/local/lib
+LIBS     += -lvlc-qt -lvlc-qt-widgets
 
-INCLUDEPATH += ../include
-INCLUDEPATH += /usr/local/include
+win32 {
+    LIBS        += -L../lib
+    INCLUDEPATH += ../include
+}
+else {
+    LIBS        += -L/usr/local/lib
+    INCLUDEPATH += /usr/local/include
+}
