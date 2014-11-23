@@ -47,5 +47,7 @@ RESOURCES += \
 
 LIBS        += -lvlc-qt -lvlc-qt-widgets
 LIBS        += -L../lib
+LIBS        += -L/usr/local/lib
 
 INCLUDEPATH += ../include
+INCLUDEPATH += /usr/local/include

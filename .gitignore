@@ -26,5 +26,8 @@
 *.pro.user
 *.pro.user*
 
-# QtCreator build files
+# QtCreator build folders
 build*/
+
+# Mac files
+.DS_Store
