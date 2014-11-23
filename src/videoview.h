@@ -34,7 +34,7 @@ private:
     VlcMediaPlayer *mPlayer;
 
     qint64          mZeroPosition;
-    bool            mBlockUpdate;
+    bool            mBusy;
 
 public slots:
     void openFile();

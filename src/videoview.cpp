@@ -17,7 +17,7 @@ VideoView::VideoView(QWidget *parent) :
     ui(new Ui::VideoView),
     mMainWindow(0),
     mZeroPosition(0),
-    mBlockUpdate(false),
+    mBusy(false),
     mMedia(0)
 {
     ui->setupUi(this);
@@ -117,9 +117,13 @@ void VideoView::stateChanged()
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         break;
     }
+}
 
-    // Update position sliders
-    int position = mPlayer->time();
+void VideoView::timeChanged(int position)
+{
+    mBusy = true;
+
+    // Update controls
     ui->positionSlider->setValue(position);
     ui->scrubDial->setValue(position % 1000);
 
@@ -129,27 +133,8 @@ void VideoView::stateChanged()
 
     // Update other views
     mMainWindow->setMark(time);
-}
 
-void VideoView::timeChanged(int position)
-{
-    if (mPlayer->state() == Vlc::Playing)
-    {
-        mBlockUpdate = true;
-
-        // Update controls
-        ui->positionSlider->setValue(position);
-        ui->scrubDial->setValue(position % 1000);
-
-        // Update text label
-        double time = (double) (position - mZeroPosition) / 1000;
-        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
-
-        // Update other views
-        mMainWindow->setMark(time);
-
-        mBlockUpdate = false;
-    }
+    mBusy = false;
 }
 
 void VideoView::lengthChanged(int duration)
@@ -159,35 +144,18 @@ void VideoView::lengthChanged(int duration)
 
 void VideoView::setPosition(int position)
 {
-    if (!mBlockUpdate &&
-            mPlayer->state() != Vlc::Playing)
+    if (!mBusy)
     {
-        mBlockUpdate = true;
-
         // Update video position
         mPlayer->setTime(position);
-
-        // Update scrub control
-        ui->scrubDial->setValue(position % 1000);
-
-        // Update text label
-        double time = (double) (position - mZeroPosition) / 1000;
-        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
-
-        // Update other views
-        mMainWindow->setMark(time);
-
-        mBlockUpdate = false;
+        timeChanged(position);
     }
 }
 
 void VideoView::setScrubPosition(int position)
 {
-    if (!mBlockUpdate &&
-            mPlayer->state() != Vlc::Playing)
+    if (!mBusy)
     {
-        mBlockUpdate = true;
-
         int oldPosition = mPlayer->time();
         int newPosition = oldPosition - oldPosition % 1000 + position;
 
@@ -196,18 +164,7 @@ void VideoView::setScrubPosition(int position)
 
         // Update video position
         mPlayer->setTime(newPosition);
-
-        // Update position control
-        ui->positionSlider->setValue(newPosition);
-
-        // Update text label
-        double time = (double) (newPosition - mZeroPosition) / 1000;
-        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
-
-        // Update other views
-        mMainWindow->setMark(time);
-
-        mBlockUpdate = false;
+        timeChanged(newPosition);
     }
 }
 
@@ -222,17 +179,13 @@ void VideoView::zero()
 
 void VideoView::updateView()
 {
-    if (!mBlockUpdate &&
-            mMainWindow->markActive() &&
-            mPlayer->state() != Vlc::Playing)
+    if (!mBusy && mMainWindow->markActive())
     {
-        mBlockUpdate = true;
-
         // Get marked point
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
         // Set playback position
-        qint64 position = dpEnd.t * 1000 + mZeroPosition;
+        int position = dpEnd.t * 1000 + mZeroPosition;
 
         // Clamp to video bounds
         if (position < 0) position = 0;
@@ -240,15 +193,6 @@ void VideoView::updateView()
 
         // Update video position
         mPlayer->setTime(position);
-
-        // Update text label
-        double time = (double) (position - mZeroPosition) / 1000;
-        ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
-
-        // Update controls
-        ui->positionSlider->setValue(position);
-        ui->scrubDial->setValue(position % 1000);
-
-        mBlockUpdate = false;
+        timeChanged(position);
     }
 }
