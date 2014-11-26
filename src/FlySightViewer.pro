@@ -11,9 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FlySightViewer
 TEMPLATE = app
 
-
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += main.cpp \
+    mainwindow.cpp \
     qcustomplot.cpp \
     dataplot.cpp \
     dataview.cpp \
@@ -21,7 +20,8 @@ SOURCES += main.cpp\
     datapoint.cpp \
     configdialog.cpp \
     mapview.cpp \
-    common.cpp
+    common.cpp \
+    videoview.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -32,13 +32,30 @@ HEADERS  += mainwindow.h \
     plotvalue.h \
     configdialog.h \
     mapview.h \
-    common.h
+    common.h \
+    videoview.h
 
 FORMS    += mainwindow.ui \
-    configdialog.ui
+    configdialog.ui \
+    videoview.ui
 
-RC_ICONS = FlySightViewer.ico
-ICON = FlySightViewer.icns
+win32 {
+    RC_ICONS = FlySightViewer.ico
+}
+else {
+    ICON = FlySightViewer.icns
+}
 
 RESOURCES += \
     resource.qrc
+
+LIBS     += -lvlc-qt -lvlc-qt-widgets
+
+win32 {
+    LIBS        += -L../lib
+    INCLUDEPATH += ../include
+}
+else {
+    LIBS        += -L/usr/local/lib
+    INCLUDEPATH += /usr/local/include
+}

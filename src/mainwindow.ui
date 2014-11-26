@@ -47,6 +47,7 @@
     </property>
     <addaction name="actionImport"/>
     <addaction name="actionImportGates"/>
+    <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
     <addaction name="separator"/>
@@ -399,6 +400,14 @@
    </property>
    <property name="shortcut">
     <string>Alt+4</string>
+   </property>
+  </action>
+  <action name="actionImportVideo">
+   <property name="text">
+    <string>Import Vi&amp;deo...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
    </property>
   </action>
  </widget>

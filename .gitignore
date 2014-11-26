@@ -15,6 +15,7 @@
 *.la
 *.a
 *.lib
+!lib/*
 
 # Executables
 *.exe
@@ -24,3 +25,9 @@
 # QtCreator project files
 *.pro.user
 *.pro.user*
+
+# QtCreator build folders
+build*/
+
+# Mac files
+.DS_Store
