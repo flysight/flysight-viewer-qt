@@ -61,7 +61,7 @@ VideoView::~VideoView()
 QSize VideoView::sizeHint() const
 {
     // Keeps windows from being intialized as very short
-    return QSize(175, 175);
+    return QSize(400, 300);
 }
 
 void VideoView::setMedia(const QString &fileName)
