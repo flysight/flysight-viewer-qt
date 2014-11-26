@@ -1,7 +1,7 @@
 #ifndef VIDEOVIEW_H
 #define VIDEOVIEW_H
 
-#include <QWidget>
+#include <QDialog>
 
 namespace Ui {
     class VideoView;
@@ -24,6 +24,7 @@ public:
     virtual QSize sizeHint() const;
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
+    void setMedia(const QString &fileName);
 
 private:
     Ui::VideoView  *ui;
@@ -37,7 +38,6 @@ private:
     bool            mBusy;
 
 public slots:
-    void openFile();
     void play();
     void updateView();
     void zero();

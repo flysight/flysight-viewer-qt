@@ -22,8 +22,6 @@ VideoView::VideoView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(openFile()));
-
     ui->playButton->setEnabled(false);
     ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(play()));
@@ -66,31 +64,17 @@ QSize VideoView::sizeHint() const
     return QSize(175, 175);
 }
 
-void VideoView::openFile()
+void VideoView::setMedia(const QString &fileName)
 {
-    // Initialize settings object
-    QSettings settings("FlySight", "Viewer");
+    // Set media
+    mMedia = new VlcMedia(fileName, true, mInstance);
+    mPlayer->open(mMedia);
 
-    // Get last file read
-    QString rootFolder = settings.value("videoFolder").toString();
-
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), rootFolder);
-
-    if (!fileName.isEmpty())
-    {
-        // Remember last file read
-        settings.setValue("videoFolder", QFileInfo(fileName).absoluteFilePath());
-
-        // Set media
-        mMedia = new VlcMedia(fileName, true, mInstance);
-        mPlayer->open(mMedia);
-
-        // Update buttons
-        ui->playButton->setEnabled(true);
-        ui->zeroButton->setEnabled(true);
-        ui->positionSlider->setEnabled(true);
-        ui->scrubDial->setEnabled(true);
-    }
+    // Update buttons
+    ui->playButton->setEnabled(true);
+    ui->zeroButton->setEnabled(true);
+    ui->positionSlider->setEnabled(true);
+    ui->scrubDial->setEnabled(true);
 }
 
 void VideoView::play()

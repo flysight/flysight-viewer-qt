@@ -93,6 +93,8 @@ private slots:
     void on_actionImportGates_triggered();
     void on_actionPreferences_triggered();
 
+    void on_actionImportVideo_triggered();
+
 private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
@@ -121,7 +123,6 @@ private:
     void initPlot();
     void initViews();
     void initMapView();
-    void initVideoView();
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 

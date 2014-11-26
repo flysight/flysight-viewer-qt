@@ -36,9 +36,6 @@ MainWindow::MainWindow(
     // Initialize map view
     initMapView();
 
-    // Initialize video view
-    initVideoView();
-
     // Restore window state
     readSettings();
 
@@ -154,25 +151,6 @@ void MainWindow::initMapView()
             mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
-}
-
-void MainWindow::initVideoView()
-{
-    VideoView *videoView = new VideoView;
-    QDockWidget *dockWidget = new QDockWidget(tr("Video View"));
-    dockWidget->setWidget(videoView);
-    dockWidget->setObjectName("videoView");
-    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
-
-    videoView->setMainWindow(this);
-
-    connect(m_ui->actionShowVideoView, SIGNAL(toggled(bool)),
-            dockWidget, SLOT(setVisible(bool)));
-    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
-            m_ui->actionShowVideoView, SLOT(setChecked(bool)));
-
-    connect(this, SIGNAL(dataChanged()),
-            videoView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -706,6 +684,44 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_units = dlg.units();
         initRange();
+    }
+}
+
+void MainWindow::on_actionImportVideo_triggered()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get last file read
+    QString rootFolder = settings.value("videoFolder").toString();
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), rootFolder);
+
+    if (!fileName.isEmpty())
+    {
+        // Remember last file read
+        settings.setValue("videoFolder", QFileInfo(fileName).absoluteFilePath());
+
+        // Create video view
+        VideoView *videoView = new VideoView;
+        QDockWidget *dockWidget = new QDockWidget(tr("Video View"));
+        dockWidget->setWidget(videoView);
+        dockWidget->setObjectName("videoView");
+        addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+        // Default to floating and delete when closed
+        dockWidget->setFloating(true);
+        dockWidget->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Associate the view with the main window
+        videoView->setMainWindow(this);
+
+        // Set up notifications for video view
+        connect(this, SIGNAL(dataChanged()),
+                videoView, SLOT(updateView()));
+
+        // Associate view with this file
+        videoView->setMedia(fileName);
     }
 }
 

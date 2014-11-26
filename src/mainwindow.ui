@@ -47,6 +47,7 @@
     </property>
     <addaction name="actionImport"/>
     <addaction name="actionImportGates"/>
+    <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
     <addaction name="separator"/>
@@ -99,7 +100,6 @@
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
-    <addaction name="actionShowVideoView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -402,15 +402,12 @@
     <string>Alt+4</string>
    </property>
   </action>
-  <action name="actionShowVideoView">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
+  <action name="actionImportVideo">
    <property name="text">
-    <string>&amp;Video View</string>
+    <string>Import Vi&amp;deo...</string>
    </property>
    <property name="shortcut">
-    <string>Alt+5</string>
+    <string>Ctrl+D</string>
    </property>
   </action>
  </widget>
