@@ -758,11 +758,11 @@ void MainWindow::on_actionExportKML_triggered()
         // Write headers
         stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
         stream << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << endl;
-        stream << "<Placemark>" << endl;
+        stream << "  <Placemark>" << endl;
         stream << "    <name>" << QFileInfo(fileName).baseName() << "</name>" << endl;
         stream << "    <LineString>" << endl;
-        stream << "        <altitudeMode>absolute</altitudeMode>" << endl;
-        stream << "        <coordinates>" << endl;
+        stream << "      <altitudeMode>absolute</altitudeMode>" << endl;
+        stream << "      <coordinates>" << endl;
 
         double lower = rangeLower();
         double upper = rangeUpper();
@@ -776,7 +776,7 @@ void MainWindow::on_actionExportKML_triggered()
             {
                 if (first)
                 {
-                    stream << "            ";
+                    stream << "        ";
                     first = false;
                 }
                 else
@@ -795,9 +795,9 @@ void MainWindow::on_actionExportKML_triggered()
 
 
         // Write footers
-        stream << "        </coordinates>" << endl;
+        stream << "      </coordinates>" << endl;
         stream << "    </LineString>" << endl;
-        stream << "</Placemark>" << endl;
+        stream << "  </Placemark>" << endl;
         stream << "</kml>" << endl;
     }
 }
