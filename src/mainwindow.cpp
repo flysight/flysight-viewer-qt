@@ -2,10 +2,12 @@
 #include "ui_mainwindow.h"
 
 #include <QDockWidget>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
 #include <QShortcut>
+#include <QTextStream>
 
 #include "configdialog.h"
 #include "dataview.h"
@@ -217,7 +219,7 @@ void MainWindow::on_actionImport_triggered()
     // Get last file read
     QString rootFolder = settings.value("folder").toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), rootFolder, tr("CSV Files (*.csv)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Import Track"), rootFolder, tr("CSV Files (*.csv)"));
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
@@ -622,7 +624,7 @@ void MainWindow::on_actionGround_triggered()
 
 void MainWindow::on_actionImportGates_triggered()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Import"), "", tr("CSV Files (*.csv)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Import Gates"), "", tr("CSV Files (*.csv)"));
 
     for (int i = 0; i < fileNames.size(); ++i)
     {
@@ -695,7 +697,7 @@ void MainWindow::on_actionImportVideo_triggered()
     // Get last file read
     QString rootFolder = settings.value("videoFolder").toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), rootFolder);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Import Video"), rootFolder);
 
     if (!fileName.isEmpty())
     {
@@ -722,6 +724,81 @@ void MainWindow::on_actionImportVideo_triggered()
 
         // Associate view with this file
         videoView->setMedia(fileName);
+    }
+}
+
+void MainWindow::on_actionExportKML_triggered()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get last file read
+    QString rootFolder = settings.value("kmlFolder").toString();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Export KML"),
+                                                    rootFolder,
+                                                    tr("KML Files (*.kml)"));
+
+    if (!fileName.isEmpty())
+    {
+        // Remember last file read
+        settings.setValue("kmlFolder", QFileInfo(fileName).absoluteFilePath());
+
+        // Open output file
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            // TODO: Error message
+            return;
+        }
+
+        QTextStream stream(&file);
+
+        // Write headers
+        stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+        stream << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << endl;
+        stream << "<Placemark>" << endl;
+        stream << "    <name>" << QFileInfo(fileName).baseName() << "</name>" << endl;
+        stream << "    <LineString>" << endl;
+        stream << "        <altitudeMode>absolute</altitudeMode>" << endl;
+        stream << "        <coordinates>" << endl;
+
+        double lower = rangeLower();
+        double upper = rangeUpper();
+
+        bool first = true;
+        for (int i = 0; i < dataSize(); ++i)
+        {
+            const DataPoint &dp = dataPoint(i);
+
+            if (lower <= dp.t && dp.t <= upper)
+            {
+                if (first)
+                {
+                    stream << "            ";
+                    first = false;
+                }
+                else
+                {
+                    stream << " ";
+                }
+
+                stream << QString("%1,%2,%3").arg(dp.lon, 0, 'f').arg(dp.lat, 0, 'f').arg(dp.hMSL, 0, 'f');
+            }
+        }
+
+        if (!first)
+        {
+            stream << endl;
+        }
+
+
+        // Write footers
+        stream << "        </coordinates>" << endl;
+        stream << "    </LineString>" << endl;
+        stream << "</Placemark>" << endl;
+        stream << "</kml>" << endl;
     }
 }
 

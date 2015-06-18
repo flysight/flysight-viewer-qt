@@ -49,6 +49,8 @@
     <addaction name="actionImportGates"/>
     <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
+    <addaction name="actionExportKML"/>
+    <addaction name="separator"/>
     <addaction name="actionPreferences"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -408,6 +410,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionExportKML">
+   <property name="text">
+    <string>Export &amp;KML...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
    </property>
   </action>
  </widget>
