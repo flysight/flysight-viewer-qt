@@ -388,7 +388,6 @@ void MainWindow::getWind(
         if (dt >  dtMax) break;
 
         const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
-        // const double wi = 1;
 
         const double xi = dp.velE;
         const double yi = dp.velN;
@@ -422,7 +421,6 @@ void MainWindow::getWind(
         if (dt >  dtMax) break;
 
         const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
-        // const double wi = 1;
 
         const double xi = dp.velE;
         const double yi = dp.velN;
@@ -451,7 +449,7 @@ void MainWindow::getWind(
     }
 
     const double uc = 1 / det * (0.5 * svv * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
-    const double vc = 1 / det * (0.5 * suu * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
+    const double vc = 1 / det * (0.5 * suu * (svvv + svuu) - 0.5 * suv * (suuu + suvv));
 
     const double xc = uc + xbar;
     const double yc = vc + ybar;

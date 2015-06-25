@@ -346,7 +346,7 @@ public:
         if (units == Metric) return tr("Wind Speed (km/h)");
         else                 return tr("Wind Speed (mph)");
     }
-    const QColor color() const { return Qt::darkGray; }
+    const QColor color() const { return Qt::darkRed; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::windSpeed(dp) * MPS_TO_KMH;
@@ -365,7 +365,7 @@ public:
         Q_UNUSED(units);
         return tr("Wind Direction (deg)");
     }
-    const QColor color() const { return Qt::lightGray; }
+    const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -384,7 +384,7 @@ public:
         if (units == Metric) return tr("Aircraft Speed (km/h)");
         else                 return tr("Aircraft Speed (mph)");
     }
-    const QColor color() const { return Qt::gray; }
+    const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::aircraftSpeed(dp) * MPS_TO_KMH;

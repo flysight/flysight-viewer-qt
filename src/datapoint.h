@@ -122,7 +122,7 @@ public:
 
     static double windDirection(const DataPoint &dp)
     {
-        return atan2(-dp.windE, -dp.windN) / M_PI * 180;
+        return fmod(atan2(-dp.windE, -dp.windN) / M_PI * 180 + 360, 360);
     }
 
     static double aircraftSpeed(const DataPoint &dp)
