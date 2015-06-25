@@ -386,16 +386,15 @@ void MainWindow::getWind(
 
     DataPoint &dp0 = m_data[center];
 
+    int start = findIndexBelowT(dp0.t - m_dtWind) + 1;
+    int end   = findIndexAboveT(dp0.t + m_dtWind);
+
     double xbar = 0, ybar = 0, N = 0;
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = start; i < end; ++i)
     {
         DataPoint &dp = m_data[i];
 
         const double dt = dp.t - dp0.t;
-
-        if (dt < -m_dtWind) continue;
-        if (dt >  m_dtWind) break;
-
         const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
 
         const double xi = dp.velE;
@@ -420,15 +419,11 @@ void MainWindow::getWind(
 
     double suu = 0, suv = 0, svv = 0;
     double suuu = 0, suvv = 0, svuu = 0, svvv = 0;
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = start; i < end; ++i)
     {
         DataPoint &dp = m_data[i];
 
         const double dt = dp.t - dp0.t;
-
-        if (dt < -m_dtWind) continue;
-        if (dt >  m_dtWind) break;
-
         const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
 
         const double xi = dp.velE;
