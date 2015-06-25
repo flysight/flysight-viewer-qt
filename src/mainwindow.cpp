@@ -411,6 +411,7 @@ void MainWindow::getWind(
         dp0.windE = 0;
         dp0.windN = 0;
         dp0.velAircraft = 0;
+        dp0.windErr = 0;
         return;
     }
 
@@ -449,6 +450,7 @@ void MainWindow::getWind(
         dp0.windE = 0;
         dp0.windN = 0;
         dp0.velAircraft = 0;
+        dp0.windErr = 0;
         return;
     }
 
@@ -464,6 +466,26 @@ void MainWindow::getWind(
     dp0.windE = xc;
     dp0.windN = yc;
     dp0.velAircraft = R;
+
+    double err = 0;
+    for (int i = start; i < end; ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        const double dx = xi - xc;
+        const double dy = yi - yc;
+
+        const double term = sqrt(dx * dx + dy * dy) - R;
+        err += wi * term * term;
+    }
+
+    dp0.windErr = sqrt(err / N);
 }
 
 double MainWindow::getSlope(
@@ -661,6 +683,7 @@ void MainWindow::updateLeftActions()
     m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
     m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
     m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
+    m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -716,6 +739,11 @@ void MainWindow::on_actionWindDirection_triggered()
 void MainWindow::on_actionAircraftSpeed_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::AircraftSpeed);
+}
+
+void MainWindow::on_actionWindError_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindError);
 }
 
 void MainWindow::on_actionPan_triggered()

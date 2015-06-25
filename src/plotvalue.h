@@ -392,4 +392,23 @@ public:
     }
 };
 
+class PlotWindError: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotWindError() {}
+    const QString title(Units units) const
+    {
+        if (units == Metric) return tr("Wind Error (km/h)");
+        else                 return tr("Wind Error (mph)");
+    }
+    const QColor color() const { return Qt::lightGray; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        if (units == Metric) return DataPoint::windError(dp) * MPS_TO_KMH;
+        else                 return DataPoint::windError(dp) * MPS_TO_MPH;
+    }
+};
+
 #endif // PLOTVALUE_H

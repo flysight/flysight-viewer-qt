@@ -33,6 +33,7 @@ public:
         WindSpeed,
         WindDirection,
         AircraftSpeed,
+        WindError,
         yaLast
     } YAxisType;
 

@@ -79,6 +79,7 @@
     <addaction name="actionWindSpeed"/>
     <addaction name="actionWindDirection"/>
     <addaction name="actionAircraftSpeed"/>
+    <addaction name="actionWindError"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -464,6 +465,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+A</string>
+   </property>
+  </action>
+  <action name="actionWindError">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wind Error</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+E</string>
    </property>
   </action>
  </widget>

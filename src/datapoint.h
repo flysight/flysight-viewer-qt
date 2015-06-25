@@ -38,6 +38,7 @@ public:
     double      windE;
     double      windN;
     double      velAircraft;
+    double      windErr;
 
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
@@ -128,6 +129,11 @@ public:
     static double aircraftSpeed(const DataPoint &dp)
     {
         return dp.velAircraft;
+    }
+
+    static double windError(const DataPoint &dp)
+    {
+        return dp.windErr;
     }
 };
 

@@ -82,6 +82,7 @@ private slots:
     void on_actionWindSpeed_triggered();
     void on_actionWindDirection_triggered();
     void on_actionAircraftSpeed_triggered();
+    void on_actionWindError_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
