@@ -9,6 +9,8 @@
 #include <QShortcut>
 #include <QTextStream>
 
+#include <math.h>
+
 #include "configdialog.h"
 #include "dataview.h"
 #include "mapview.h"
@@ -348,6 +350,11 @@ void MainWindow::on_actionImport_triggered()
         dp.curv = getSlope(i, DataPoint::diveAngle);
     }
 
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        getWind(i);
+    }
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -361,6 +368,100 @@ void MainWindow::on_actionImport_triggered()
     initRange();
 
     emit dataLoaded();
+}
+
+void MainWindow::getWind(
+        const int center)
+{
+    const double dtMax = 30;    // TODO: This should be a preference
+
+    DataPoint &dp0 = m_data[center];
+
+    double xbar = 0, ybar = 0, N = 0;
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+
+        if (dt < -dtMax) continue;
+        if (dt >  dtMax) break;
+
+        const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
+        // const double wi = 1;
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        xbar += wi * xi;
+        ybar += wi * yi;
+
+        N += wi;
+    }
+
+    if (N == 0)
+    {
+        dp0.windE = 0;
+        dp0.windN = 0;
+        dp0.velAircraft = 0;
+        return;
+    }
+
+    xbar /= N;
+    ybar /= N;
+
+    double suu = 0, suv = 0, svv = 0;
+    double suuu = 0, suvv = 0, svuu = 0, svvv = 0;
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+
+        if (dt < -dtMax) continue;
+        if (dt >  dtMax) break;
+
+        const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
+        // const double wi = 1;
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        const double ui = xi - xbar;
+        const double vi = yi - ybar;
+
+        suu += wi * ui * ui;
+        suv += wi * ui * vi;
+        svv += wi * vi * vi;
+
+        suuu += wi * ui * ui * ui;
+        suvv += wi * ui * vi * vi;
+        svuu += wi * vi * ui * ui;
+        svvv += wi * vi * vi * vi;
+    }
+
+    const double det = suu * svv - suv * suv;
+
+    if (det == 0)
+    {
+        dp0.windE = 0;
+        dp0.windN = 0;
+        dp0.velAircraft = 0;
+        return;
+    }
+
+    const double uc = 1 / det * (0.5 * svv * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
+    const double vc = 1 / det * (0.5 * suu * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
+
+    const double xc = uc + xbar;
+    const double yc = vc + ybar;
+
+    const double alpha = uc * uc + vc * vc + (suu + svv) / N;
+    const double R = sqrt(alpha);
+
+    dp0.windE = xc;
+    dp0.windN = yc;
+    dp0.velAircraft = R;
 }
 
 double MainWindow::getSlope(
@@ -555,6 +656,9 @@ void MainWindow::updateLeftActions()
     m_ui->actionVerticalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::VerticalAccuracy));
     m_ui->actionSpeedAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::SpeedAccuracy));
     m_ui->actionNumberOfSatellites->setChecked(m_ui->plotArea->plotVisible(DataPlot::NumberOfSatellites));
+    m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
+    m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
+    m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -595,6 +699,21 @@ void MainWindow::on_actionSpeedAccuracy_triggered()
 void MainWindow::on_actionNumberOfSatellites_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::NumberOfSatellites);
+}
+
+void MainWindow::on_actionWindSpeed_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindSpeed);
+}
+
+void MainWindow::on_actionWindDirection_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindDirection);
+}
+
+void MainWindow::on_actionAircraftSpeed_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AircraftSpeed);
 }
 
 void MainWindow::on_actionPan_triggered()

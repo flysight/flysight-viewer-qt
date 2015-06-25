@@ -79,6 +79,9 @@ private slots:
     void on_actionVerticalAccuracy_triggered();
     void on_actionSpeedAccuracy_triggered();
     void on_actionNumberOfSatellites_triggered();
+    void on_actionWindSpeed_triggered();
+    void on_actionWindDirection_triggered();
+    void on_actionAircraftSpeed_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -128,6 +131,7 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
+    void getWind(const int center);
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initRange();

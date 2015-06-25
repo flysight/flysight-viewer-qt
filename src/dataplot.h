@@ -30,6 +30,9 @@ public:
         VerticalAccuracy,
         SpeedAccuracy,
         NumberOfSatellites,
+        WindSpeed,
+        WindDirection,
+        AircraftSpeed,
         yaLast
     } YAxisType;
 

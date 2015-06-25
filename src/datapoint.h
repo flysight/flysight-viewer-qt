@@ -35,6 +35,10 @@ public:
 
     double      curv;
 
+    double      windE;
+    double      windN;
+    double      velAircraft;
+
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
                                  double a);
@@ -109,6 +113,21 @@ public:
     static double distance3D(const DataPoint &dp)
     {
         return dp.dist3D;
+    }
+
+    static double windSpeed(const DataPoint &dp)
+    {
+        return sqrt(dp.windE * dp.windE + dp.windN * dp.windN);
+    }
+
+    static double windDirection(const DataPoint &dp)
+    {
+        return atan2(-dp.windE, -dp.windN) / M_PI * 180;
+    }
+
+    static double aircraftSpeed(const DataPoint &dp)
+    {
+        return dp.velAircraft;
     }
 };
 
