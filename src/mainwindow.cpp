@@ -373,6 +373,9 @@ void MainWindow::on_actionImport_triggered()
 void MainWindow::getWind(
         const int center)
 {
+    // Weighted least-squares circle fit based on this:
+    //   http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf
+
     const double dtMax = 30;    // TODO: This should be a preference
 
     DataPoint &dp0 = m_data[center];
