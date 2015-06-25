@@ -111,6 +111,7 @@ private:
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
+    double                m_dtWind;
 
     QVector< DataPoint >  m_waypoints;
 
@@ -131,7 +132,9 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
+    void initWind();
     void getWind(const int center);
+
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initRange();

@@ -21,11 +21,14 @@ public:
     void setUnits(PlotValue::Units units);
     PlotValue::Units units() const;
 
+    void setDtWind(double dtWind);
+    double dtWind() const;
+
 private:
     Ui::ConfigDialog *ui;
 
 private slots:
-    void ChangePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
 };
 
 #endif // CONFIGDIALOG_H

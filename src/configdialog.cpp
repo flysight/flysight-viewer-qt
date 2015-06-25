@@ -10,6 +10,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     // Add page
     ui->contentsWidget->addItems(
                 QStringList() << tr("General"));
+    ui->contentsWidget->addItems(
+                QStringList() << tr("Wind"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -19,6 +21,9 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     connect(ui->contentsWidget,
             SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
             this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
+
+    // Go to first page
+    ui->contentsWidget->setCurrentRow(0);
 }
 
 ConfigDialog::~ConfigDialog()
@@ -26,7 +31,7 @@ ConfigDialog::~ConfigDialog()
     delete ui;
 }
 
-void ConfigDialog::ChangePage(
+void ConfigDialog::changePage(
         QListWidgetItem *current,
         QListWidgetItem *previous)
 {
@@ -44,4 +49,15 @@ void ConfigDialog::setUnits(
 PlotValue::Units ConfigDialog::units() const
 {
     return (PlotValue::Units) ui->unitsCombo->currentIndex();
+}
+
+void ConfigDialog::setDtWind(
+        double dtWind)
+{
+    ui->dtWindEdit->setText(QString("%1").arg(dtWind));
+}
+
+double ConfigDialog::dtWind() const
+{
+    return ui->dtWindEdit->text().toDouble();
 }

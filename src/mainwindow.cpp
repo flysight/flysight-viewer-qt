@@ -23,7 +23,8 @@ MainWindow::MainWindow(
     m_ui(new Ui::MainWindow),
     mMarkActive(false),
     m_viewDataRotation(0),
-    m_units(PlotValue::Imperial)
+    m_units(PlotValue::Imperial),
+    m_dtWind(30)
 {
     m_ui->setupUi(this);
 
@@ -78,6 +79,7 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
+    settings.setValue("dtWind", m_dtWind);
     settings.endGroup();
 }
 
@@ -89,6 +91,7 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
+    m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
     settings.endGroup();
 }
 
@@ -350,10 +353,7 @@ void MainWindow::on_actionImport_triggered()
         dp.curv = getSlope(i, DataPoint::diveAngle);
     }
 
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        getWind(i);
-    }
+    initWind();
 
     if (dt.size() > 0)
     {
@@ -370,13 +370,19 @@ void MainWindow::on_actionImport_triggered()
     emit dataLoaded();
 }
 
+void MainWindow::initWind()
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        getWind(i);
+    }
+}
+
 void MainWindow::getWind(
         const int center)
 {
     // Weighted least-squares circle fit based on this:
     //   http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf
-
-    const double dtMax = 30;    // TODO: This should be a preference
 
     DataPoint &dp0 = m_data[center];
 
@@ -387,10 +393,10 @@ void MainWindow::getWind(
 
         const double dt = dp.t - dp0.t;
 
-        if (dt < -dtMax) continue;
-        if (dt >  dtMax) break;
+        if (dt < -m_dtWind) continue;
+        if (dt >  m_dtWind) break;
 
-        const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
 
         const double xi = dp.velE;
         const double yi = dp.velN;
@@ -420,10 +426,10 @@ void MainWindow::getWind(
 
         const double dt = dp.t - dp0.t;
 
-        if (dt < -dtMax) continue;
-        if (dt >  dtMax) break;
+        if (dt < -m_dtWind) continue;
+        if (dt >  m_dtWind) break;
 
-        const double wi = 0.5 * (1 + cos(M_PI * dt / dtMax));
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
 
         const double xi = dp.velE;
         const double yi = dp.velN;
@@ -799,6 +805,7 @@ void MainWindow::on_actionPreferences_triggered()
     ConfigDialog dlg;
 
     dlg.setUnits(m_units);
+    dlg.setDtWind(m_dtWind);
 
     dlg.exec();
 
@@ -806,6 +813,14 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_units = dlg.units();
         initRange();
+    }
+
+    if (m_dtWind != dlg.dtWind())
+    {
+        m_dtWind = dlg.dtWind();
+        initWind();
+
+        emit dataChanged();
     }
 }
 
