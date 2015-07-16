@@ -141,6 +141,36 @@ void WindPlot::updatePlot()
         graph->setPen(QPen(Qt::black));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
+
+        const double x0 = dpEnd.windE;
+        const double y0 = dpEnd.windN;
+        const double r = dpEnd.velAircraft;
+
+        QVector< double > tCircle, xCircle, yCircle;
+
+        for (int i = 0; i <= 100; ++i)
+        {
+            tCircle.append(i);
+
+            const double x = x0 + r * cos((double) i / 100 * 2 * M_PI);
+            const double y = y0 + r * sin((double) i / 100 * 2 * M_PI);
+
+            if (mMainWindow->units() == PlotValue::Metric)
+            {
+                xCircle.append(x * MPS_TO_KMH);
+                yCircle.append(y * MPS_TO_KMH);
+            }
+            else
+            {
+                xCircle.append(x * MPS_TO_MPH);
+                yCircle.append(y * MPS_TO_MPH);
+            }
+        }
+
+        curve = new QCPCurve(xAxis, yAxis);
+        curve->setData(tCircle, xCircle, yCircle);
+        curve->setPen(QPen(Qt::red));
+        addPlottable(curve);
     }
 
     replot();
