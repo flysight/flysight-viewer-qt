@@ -385,7 +385,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Number Of Satellites</string>
+    <string>&amp;Number Of Satellites</string>
    </property>
    <property name="toolTip">
     <string>Number Of Satellites</string>
@@ -423,7 +423,7 @@
   </action>
   <action name="actionExportPlot">
    <property name="text">
-    <string>Export Plot...</string>
+    <string>Export P&amp;lot...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
