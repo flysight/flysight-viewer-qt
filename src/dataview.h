@@ -35,7 +35,7 @@ private:
 
     QPoint      m_topViewBeginPos;
     bool        m_topViewPan;
-\
+
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
     void addNorthArrow();

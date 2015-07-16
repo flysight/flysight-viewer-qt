@@ -130,6 +130,7 @@ private:
     void initPlot();
     void initViews();
     void initMapView();
+    void initWindView();
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 

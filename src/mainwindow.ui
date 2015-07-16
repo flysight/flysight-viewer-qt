@@ -108,6 +108,7 @@
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
+    <addaction name="actionShowWindView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -476,6 +477,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+E</string>
+   </property>
+  </action>
+  <action name="actionShowWindView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Wind View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+5</string>
    </property>
   </action>
  </widget>

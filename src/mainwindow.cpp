@@ -15,6 +15,7 @@
 #include "dataview.h"
 #include "mapview.h"
 #include "videoview.h"
+#include "windplot.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -40,6 +41,9 @@ MainWindow::MainWindow(
 
     // Initialize map view
     initMapView();
+
+    // Initialize wind view
+    initWindView();
 
     // Restore window state
     readSettings();
@@ -158,6 +162,27 @@ void MainWindow::initMapView()
             mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
+}
+
+void MainWindow::initWindView()
+{
+    WindPlot *windPlot = new WindPlot;
+    QDockWidget *dockWidget = new QDockWidget(tr("Wind View"));
+    dockWidget->setWidget(windPlot);
+    dockWidget->setObjectName("windView");
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    windPlot->setMainWindow(this);
+
+    connect(m_ui->actionShowWindView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowWindView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataLoaded()),
+            windPlot, SLOT(initPlot()));
+    connect(this, SIGNAL(dataChanged()),
+            windPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::closeEvent(
