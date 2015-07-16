@@ -16,6 +16,9 @@ public:
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
+protected:
+    void mouseMoveEvent(QMouseEvent *event);
+
 private:
     MainWindow *mMainWindow;
 
