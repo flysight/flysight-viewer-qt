@@ -802,6 +802,64 @@ void MainWindow::on_actionExportKML_triggered()
     }
 }
 
+void MainWindow::on_actionExportPlot_triggered()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get last file read
+    QString rootFolder = settings.value("plotFolder").toString();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Export Plot"),
+                                                    rootFolder,
+                                                    tr("CSV Files (*.csv)"));
+
+    if (!fileName.isEmpty())
+    {
+        // Remember last file read
+        settings.setValue("plotFolder", QFileInfo(fileName).absoluteFilePath());
+
+        // Open output file
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            // TODO: Error message
+            return;
+        }
+
+        QTextStream stream(&file);
+
+        // Write header
+        stream << m_ui->plotArea->xValue()->title(m_units);
+        for (int j = 0; j < DataPlot::yaLast; ++j)
+        {
+            if (!m_ui->plotArea->yValue(j)->visible()) continue;
+            stream << "," << m_ui->plotArea->yValue(j)->title(m_units);
+        }
+        stream << endl;
+
+        double lower = rangeLower();
+        double upper = rangeUpper();
+
+        for (int i = 0; i < dataSize(); ++i)
+        {
+            const DataPoint &dp = dataPoint(i);
+
+            if (lower <= dp.t && dp.t <= upper)
+            {
+                stream << m_ui->plotArea->xValue()->value(dp, m_units);
+                for (int j = 0; j < DataPlot::yaLast; ++j)
+                {
+                    if (!m_ui->plotArea->yValue(j)->visible()) continue;
+                    stream << QString(",%1").arg(m_ui->plotArea->yValue(j)->value(dp, m_units), 0, 'f');
+                }
+                stream << endl;
+            }
+        }
+    }
+}
+
 void MainWindow::setRange(
         double lower,
         double upper)

@@ -49,6 +49,7 @@
     <addaction name="actionImportGates"/>
     <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
+    <addaction name="actionExportPlot"/>
     <addaction name="actionExportKML"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
@@ -418,6 +419,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionExportPlot">
+   <property name="text">
+    <string>Export Plot...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>
