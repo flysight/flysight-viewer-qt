@@ -95,6 +95,7 @@ private slots:
 
     void on_actionImportVideo_triggered();
     void on_actionExportKML_triggered();
+    void on_actionExportPlot_triggered();
 
 private:
     Ui::MainWindow       *m_ui;

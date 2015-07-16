@@ -49,6 +49,7 @@
     <addaction name="actionImportGates"/>
     <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
+    <addaction name="actionExportPlot"/>
     <addaction name="actionExportKML"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
@@ -384,7 +385,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Number Of Satellites</string>
+    <string>&amp;Number Of Satellites</string>
    </property>
    <property name="toolTip">
     <string>Number Of Satellites</string>
@@ -418,6 +419,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionExportPlot">
+   <property name="text">
+    <string>Export P&amp;lot...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>
