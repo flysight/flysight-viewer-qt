@@ -393,6 +393,12 @@ void MainWindow::on_actionImport_triggered()
 
     initWind();
 
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.accel = getSlope(i, DataPoint::totalSpeed);
+    }
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -722,6 +728,9 @@ void MainWindow::updateLeftActions()
     m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
     m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
     m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
+    m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
+    m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
+    m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -782,6 +791,21 @@ void MainWindow::on_actionAircraftSpeed_triggered()
 void MainWindow::on_actionWindError_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::WindError);
+}
+
+void MainWindow::on_actionAcceleration_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Acceleration);
+}
+
+void MainWindow::on_actionTotalEnergy_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::TotalEnergy);
+}
+
+void MainWindow::on_actionEnergyRate_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::EnergyRate);
 }
 
 void MainWindow::on_actionPan_triggered()

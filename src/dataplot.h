@@ -34,6 +34,9 @@ public:
         WindDirection,
         AircraftSpeed,
         WindError,
+        Acceleration,
+        TotalEnergy,
+        EnergyRate,
         yaLast
     } YAxisType;
 

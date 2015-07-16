@@ -37,6 +37,7 @@ DataPoint DataPoint::interpolate(
     ret.dist3D = p1.dist3D + a * (p2.dist3D - p1.dist3D);
 
     ret.curv = p1.curv + a * (p2.curv - p1.curv);
+    ret.accel = p1.accel + a * (p2.accel - p1.accel);
 
     ret.windE = p1.windE + a * (p2.windE - p1.windE);
     ret.windN = p1.windN + a * (p2.windN - p1.windN);
