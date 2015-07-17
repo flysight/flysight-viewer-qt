@@ -170,6 +170,7 @@ void MainWindow::initWindView()
     QDockWidget *dockWidget = new QDockWidget(tr("Wind View"));
     dockWidget->setWidget(windPlot);
     dockWidget->setObjectName("windView");
+    dockWidget->setVisible(false);
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
     windPlot->setMainWindow(this);
