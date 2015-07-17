@@ -79,7 +79,6 @@
     <addaction name="actionWindSpeed"/>
     <addaction name="actionWindDirection"/>
     <addaction name="actionAircraftSpeed"/>
-    <addaction name="actionWindError"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">

@@ -82,6 +82,11 @@ void WindPlot::setMark(
             .arg(PlotWindDirection().value(dp, mMainWindow->units()))
             .arg(PlotWindDirection().color().name());
 
+    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
+            .arg(PlotAircraftSpeed().title(mMainWindow->units()))
+            .arg(PlotAircraftSpeed().value(dp, mMainWindow->units()))
+            .arg(PlotAircraftSpeed().color().name());
+
     status += QString("</table>");
 
     QToolTip::showText(QCursor::pos(), status);
