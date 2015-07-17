@@ -32,6 +32,7 @@ public:
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
     PlotValue::Units units() const { return m_units; }
+    double dtWind() const { return m_dtWind; }
 
     void setRange(double lower, double upper);
     double rangeLower() const { return mRangeLower; }

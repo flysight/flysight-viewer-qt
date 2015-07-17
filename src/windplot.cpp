@@ -62,6 +62,8 @@ void WindPlot::mouseMoveEvent(
 
 void WindPlot::updatePlot()
 {
+    clearPlottables();
+
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
@@ -71,7 +73,6 @@ void WindPlot::updatePlot()
     double yMin, yMax;
 
     bool first = true;
-
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
@@ -109,12 +110,9 @@ void WindPlot::updatePlot()
         }
     }
 
-    clearPlottables();
-
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::black));
-
+    curve->setPen(QPen(Qt::lightGray));
     addPlottable(curve);
 
     setViewRange(xMin, xMax, yMin, yMax);
@@ -122,6 +120,36 @@ void WindPlot::updatePlot()
     if (mMainWindow->markActive())
     {
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
+
+        t.clear();
+        x.clear();
+        y.clear();
+
+        for (int i = 0; i < mMainWindow->dataSize(); ++i)
+        {
+            const DataPoint &dp = mMainWindow->dataPoint(i);
+
+            if (dpEnd.t - mMainWindow->dtWind() <= dp.t && dp.t <= dpEnd.t + mMainWindow->dtWind())
+            {
+                t.append(dp.t);
+
+                if (mMainWindow->units() == PlotValue::Metric)
+                {
+                    x.append(dp.velE * MPS_TO_KMH);
+                    y.append(dp.velN * MPS_TO_KMH);
+                }
+                else
+                {
+                    x.append(dp.velE * MPS_TO_MPH);
+                    y.append(dp.velN * MPS_TO_MPH);
+                }
+            }
+        }
+
+        curve = new QCPCurve(xAxis, yAxis);
+        curve->setData(t, x, y);
+        curve->setPen(QPen(Qt::black));
+        addPlottable(curve);
 
         QVector< double > xMark, yMark;
 
