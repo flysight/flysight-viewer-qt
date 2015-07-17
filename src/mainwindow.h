@@ -32,6 +32,7 @@ public:
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
     PlotValue::Units units() const { return m_units; }
+    double dtWind() const { return m_dtWind; }
 
     void setRange(double lower, double upper);
     double rangeLower() const { return mRangeLower; }
@@ -62,6 +63,9 @@ public:
 
     DataPoint interpolateDataT(double t);
 
+    int findIndexBelowT(double t);
+    int findIndexAboveT(double t);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -79,6 +83,10 @@ private slots:
     void on_actionVerticalAccuracy_triggered();
     void on_actionSpeedAccuracy_triggered();
     void on_actionNumberOfSatellites_triggered();
+    void on_actionWindSpeed_triggered();
+    void on_actionWindDirection_triggered();
+    void on_actionAircraftSpeed_triggered();
+    void on_actionWindError_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -108,6 +116,7 @@ private:
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
+    double                m_dtWind;
 
     QVector< DataPoint >  m_waypoints;
 
@@ -125,15 +134,16 @@ private:
     void initPlot();
     void initViews();
     void initMapView();
+    void initWindView();
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
+
+    void initWind();
+    void getWind(const int center);
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initRange();
-
-    int findIndexBelowT(double t);
-    int findIndexAboveT(double t);
 
     void updateBottomActions();
     void updateLeftActions();

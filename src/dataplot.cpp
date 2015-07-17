@@ -65,6 +65,10 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotVerticalAccuracy);
     m_yValues.append(new PlotSpeedAccuracy);
     m_yValues.append(new PlotNumberOfSatellites);
+    m_yValues.append(new PlotWindSpeed);
+    m_yValues.append(new PlotWindDirection);
+    m_yValues.append(new PlotAircraftSpeed);
+    m_yValues.append(new PlotWindError);
 
     foreach (PlotValue *v, m_yValues)
     {
@@ -256,40 +260,91 @@ void DataPlot::setMark(
 
     if (mMainWindow->dataSize() == 0) return;
 
+    const int jStart = findIndexAboveX(start);
+    const int jEnd = findIndexBelowX(end);
+
     QString status;
     status = QString("<table width='300'>");
 
-    double val = m_xValues[Time]->value(dpEnd, mMainWindow->units())
+    double change = m_xValues[Time]->value(dpEnd, mMainWindow->units())
             - m_xValues[Time]->value(dpStart, mMainWindow->units());
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
             .arg(m_xValues[Time]->title(mMainWindow->units()))
             .arg(m_xValues[Time]->value(dpEnd, mMainWindow->units()))
-            .arg(val < 0 ? "" : "+")
-            .arg(val);
+            .arg(change < 0 ? "" : "+")
+            .arg(change);
 
     if (m_xAxisType != Time)
     {
-        val = xValue()->value(dpEnd, mMainWindow->units())
+        change = xValue()->value(dpEnd, mMainWindow->units())
                 - xValue()->value(dpStart, mMainWindow->units());
         status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
                 .arg(xValue()->title(mMainWindow->units()))
                 .arg(xValue()->value(dpEnd, mMainWindow->units()))
-                .arg(val < 0 ? "" : "+")
-                .arg(val);
+                .arg(change < 0 ? "" : "+")
+                .arg(change);
     }
 
     for (int i = 0; i < yaLast; ++i)
     {
         if (yValue(i)->visible())
         {
-            const double val = yValue(i)->value(dpEnd, mMainWindow->units())
+            double sum = 0;
+            if (jStart > jEnd)
+            {
+                const double dx = xValue()->value(dpEnd, mMainWindow->units())
+                        - xValue()->value(dpStart, mMainWindow->units());
+                const double avg = (yValue(i)->value(dpEnd, mMainWindow->units())
+                        + yValue(i)->value(dpStart, mMainWindow->units())) / 2;
+
+                sum = avg * dx ;
+            }
+            else
+            {
+                const DataPoint &dp0 = mMainWindow->dataPoint(jStart);
+
+                double dx = xValue()->value(dp0, mMainWindow->units())
+                        - xValue()->value(dpStart, mMainWindow->units());
+                double avg = (yValue(i)->value(dp0, mMainWindow->units())
+                        + yValue(i)->value(dpStart, mMainWindow->units())) / 2;
+
+                sum = avg * dx ;
+
+                for (int j = jStart ; j < jEnd ; ++ j)
+                {
+                    const DataPoint &dp1 = mMainWindow->dataPoint(j);
+                    const DataPoint &dp2 = mMainWindow->dataPoint(j + 1);
+
+                    dx = xValue()->value(dp2, mMainWindow->units())
+                            - xValue()->value(dp1, mMainWindow->units());
+                    avg = (yValue(i)->value(dp2, mMainWindow->units())
+                            + yValue(i)->value(dp1, mMainWindow->units())) / 2;
+
+                    sum += avg * dx ;
+                }
+
+                const DataPoint &dpN = mMainWindow->dataPoint(jEnd);
+
+                dx = xValue()->value(dpEnd, mMainWindow->units())
+                        - xValue()->value(dpN, mMainWindow->units());
+                avg = (yValue(i)->value(dpEnd, mMainWindow->units())
+                        + yValue(i)->value(dpN, mMainWindow->units())) / 2;
+
+                sum += avg * dx ;
+            }
+
+            const double dx = xValue()->value(dpEnd, mMainWindow->units())
+                    - xValue()->value(dpStart, mMainWindow->units());
+
+            change = yValue(i)->value(dpEnd, mMainWindow->units())
                     - yValue(i)->value(dpStart, mMainWindow->units());
-            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td><td>[%6]</td></tr>")
                     .arg(yValue(i)->title(mMainWindow->units()))
                     .arg(yValue(i)->value(dpEnd, mMainWindow->units()))
-                    .arg(val < 0 ? "" : "+")
-                    .arg(val)
-                    .arg(yValue(i)->color().name());
+                    .arg(change < 0 ? "" : "+")
+                    .arg(change)
+                    .arg(yValue(i)->color().name())
+                    .arg(sum / dx);
         }
     }
 
@@ -304,10 +359,7 @@ void DataPlot::setMark(
     if (mMainWindow->dataSize() == 0) return;
 
     DataPoint dp = interpolateDataX(mark);
-
     mMainWindow->setMark(dp.t);
-
-    if (mMainWindow->dataSize() == 0) return;
 
     QString status;
     status = QString("<table width='200'>");
@@ -489,27 +541,37 @@ DataPoint DataPlot::interpolateDataX(
 int DataPlot::findIndexBelowX(
         double x)
 {
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    int below = -1;
+    int above = mMainWindow->dataSize();
+
+    while (below + 1 != above)
     {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (xValue()->value(dp, mMainWindow->units()) > x)
-            return i - 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = mMainWindow->dataPoint(mid);
+
+        if (xValue()->value(dp, mMainWindow->units()) < x) below = mid;
+        else                                               above = mid;
     }
 
-    return mMainWindow->dataSize() - 1;
+    return below;
 }
 
 int DataPlot::findIndexAboveX(
         double x)
 {
-    for (int i = mMainWindow->dataSize() - 1; i >= 0; --i)
+    int below = -1;
+    int above = mMainWindow->dataSize();
+
+    while (below + 1 != above)
     {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (xValue()->value(dp, mMainWindow->units()) <= x)
-            return i + 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = mMainWindow->dataPoint(mid);
+
+        if (xValue()->value(dp, mMainWindow->units()) > x) above = mid;
+        else                                               below = mid;
     }
 
-    return 0;
+    return above;
 }
 
 void DataPlot::togglePlot(

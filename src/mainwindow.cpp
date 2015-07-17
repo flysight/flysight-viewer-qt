@@ -9,10 +9,13 @@
 #include <QShortcut>
 #include <QTextStream>
 
+#include <math.h>
+
 #include "configdialog.h"
 #include "dataview.h"
 #include "mapview.h"
 #include "videoview.h"
+#include "windplot.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -21,7 +24,8 @@ MainWindow::MainWindow(
     m_ui(new Ui::MainWindow),
     mMarkActive(false),
     m_viewDataRotation(0),
-    m_units(PlotValue::Imperial)
+    m_units(PlotValue::Imperial),
+    m_dtWind(30)
 {
     m_ui->setupUi(this);
 
@@ -37,6 +41,9 @@ MainWindow::MainWindow(
 
     // Initialize map view
     initMapView();
+
+    // Initialize wind view
+    initWindView();
 
     // Restore window state
     readSettings();
@@ -76,6 +83,7 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
+    settings.setValue("dtWind", m_dtWind);
     settings.endGroup();
 }
 
@@ -87,6 +95,7 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
+    m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
     settings.endGroup();
 }
 
@@ -155,6 +164,28 @@ void MainWindow::initMapView()
             mapView, SLOT(updateView()));
 }
 
+void MainWindow::initWindView()
+{
+    WindPlot *windPlot = new WindPlot;
+    QDockWidget *dockWidget = new QDockWidget(tr("Wind View"));
+    dockWidget->setWidget(windPlot);
+    dockWidget->setObjectName("windView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    windPlot->setMainWindow(this);
+
+    connect(m_ui->actionShowWindView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowWindView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataLoaded()),
+            windPlot, SLOT(initPlot()));
+    connect(this, SIGNAL(dataChanged()),
+            windPlot, SLOT(updatePlot()));
+}
+
 void MainWindow::closeEvent(
         QCloseEvent *event)
 {
@@ -190,25 +221,37 @@ DataPoint MainWindow::interpolateDataT(
 int MainWindow::findIndexBelowT(
         double t)
 {
-    for (int i = 0; i < m_data.size(); ++i)
+    int below = -1;
+    int above = m_data.size();
+
+    while (below + 1 != above)
     {
-        DataPoint &dp = m_data[i];
-        if (dp.t > t) return i - 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = m_data[mid];
+
+        if (dp.t < t) below = mid;
+        else          above = mid;
     }
 
-    return m_data.size() - 1;
+    return below;
 }
 
 int MainWindow::findIndexAboveT(
         double t)
 {
-    for (int i = m_data.size() - 1; i >= 0; --i)
+    int below = -1;
+    int above = m_data.size();
+
+    while (below + 1 != above)
     {
-        DataPoint &dp = m_data[i];
-        if (dp.t <= t) return i + 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = m_data[mid];
+
+        if (dp.t > t) above = mid;
+        else          below = mid;
     }
 
-    return 0;
+    return above;
 }
 
 void MainWindow::on_actionImport_triggered()
@@ -348,6 +391,8 @@ void MainWindow::on_actionImport_triggered()
         dp.curv = getSlope(i, DataPoint::diveAngle);
     }
 
+    initWind();
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -361,6 +406,124 @@ void MainWindow::on_actionImport_triggered()
     initRange();
 
     emit dataLoaded();
+}
+
+void MainWindow::initWind()
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        getWind(i);
+    }
+}
+
+void MainWindow::getWind(
+        const int center)
+{
+    // Weighted least-squares circle fit based on this:
+    //   http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf
+
+    DataPoint &dp0 = m_data[center];
+
+    int start = findIndexBelowT(dp0.t - m_dtWind) + 1;
+    int end   = findIndexAboveT(dp0.t + m_dtWind);
+
+    double xbar = 0, ybar = 0, N = 0;
+    for (int i = start; i < end; ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        xbar += wi * xi;
+        ybar += wi * yi;
+
+        N += wi;
+    }
+
+    if (N == 0)
+    {
+        dp0.windE = 0;
+        dp0.windN = 0;
+        dp0.velAircraft = 0;
+        dp0.windErr = 0;
+        return;
+    }
+
+    xbar /= N;
+    ybar /= N;
+
+    double suu = 0, suv = 0, svv = 0;
+    double suuu = 0, suvv = 0, svuu = 0, svvv = 0;
+    for (int i = start; i < end; ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        const double ui = xi - xbar;
+        const double vi = yi - ybar;
+
+        suu += wi * ui * ui;
+        suv += wi * ui * vi;
+        svv += wi * vi * vi;
+
+        suuu += wi * ui * ui * ui;
+        suvv += wi * ui * vi * vi;
+        svuu += wi * vi * ui * ui;
+        svvv += wi * vi * vi * vi;
+    }
+
+    const double det = suu * svv - suv * suv;
+
+    if (det == 0)
+    {
+        dp0.windE = 0;
+        dp0.windN = 0;
+        dp0.velAircraft = 0;
+        dp0.windErr = 0;
+        return;
+    }
+
+    const double uc = 1 / det * (0.5 * svv * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
+    const double vc = 1 / det * (0.5 * suu * (svvv + svuu) - 0.5 * suv * (suuu + suvv));
+
+    const double xc = uc + xbar;
+    const double yc = vc + ybar;
+
+    const double alpha = uc * uc + vc * vc + (suu + svv) / N;
+    const double R = sqrt(alpha);
+
+    dp0.windE = xc;
+    dp0.windN = yc;
+    dp0.velAircraft = R;
+
+    double err = 0;
+    for (int i = start; i < end; ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        const double dt = dp.t - dp0.t;
+        const double wi = 0.5 * (1 + cos(M_PI * dt / m_dtWind));
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        const double dx = xi - xc;
+        const double dy = yi - yc;
+
+        const double term = sqrt(dx * dx + dy * dy) - R;
+        err += wi * term * term;
+    }
+
+    dp0.windErr = sqrt(err / N);
 }
 
 double MainWindow::getSlope(
@@ -555,6 +718,10 @@ void MainWindow::updateLeftActions()
     m_ui->actionVerticalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::VerticalAccuracy));
     m_ui->actionSpeedAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::SpeedAccuracy));
     m_ui->actionNumberOfSatellites->setChecked(m_ui->plotArea->plotVisible(DataPlot::NumberOfSatellites));
+    m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
+    m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
+    m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
+    m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -595,6 +762,26 @@ void MainWindow::on_actionSpeedAccuracy_triggered()
 void MainWindow::on_actionNumberOfSatellites_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::NumberOfSatellites);
+}
+
+void MainWindow::on_actionWindSpeed_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindSpeed);
+}
+
+void MainWindow::on_actionWindDirection_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindDirection);
+}
+
+void MainWindow::on_actionAircraftSpeed_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AircraftSpeed);
+}
+
+void MainWindow::on_actionWindError_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::WindError);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -679,6 +866,7 @@ void MainWindow::on_actionPreferences_triggered()
     ConfigDialog dlg;
 
     dlg.setUnits(m_units);
+    dlg.setDtWind(m_dtWind);
 
     dlg.exec();
 
@@ -686,6 +874,14 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_units = dlg.units();
         initRange();
+    }
+
+    if (m_dtWind != dlg.dtWind())
+    {
+        m_dtWind = dlg.dtWind();
+        initWind();
+
+        emit dataChanged();
     }
 }
 

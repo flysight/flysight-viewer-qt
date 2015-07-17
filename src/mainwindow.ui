@@ -75,6 +75,10 @@
     <addaction name="actionSpeedAccuracy"/>
     <addaction name="separator"/>
     <addaction name="actionNumberOfSatellites"/>
+    <addaction name="separator"/>
+    <addaction name="actionWindSpeed"/>
+    <addaction name="actionWindDirection"/>
+    <addaction name="actionAircraftSpeed"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -103,6 +107,7 @@
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
+    <addaction name="actionShowWindView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -427,6 +432,61 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionWindSpeed">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wind Speed</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+W</string>
+   </property>
+  </action>
+  <action name="actionWindDirection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wind Direction</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+D</string>
+   </property>
+  </action>
+  <action name="actionAircraftSpeed">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Aircraft Speed</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+A</string>
+   </property>
+  </action>
+  <action name="actionWindError">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wind Error</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+E</string>
+   </property>
+  </action>
+  <action name="actionShowWindView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Wind View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+5</string>
    </property>
   </action>
  </widget>

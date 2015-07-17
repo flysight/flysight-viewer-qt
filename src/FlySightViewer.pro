@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     configdialog.cpp \
     mapview.cpp \
     common.cpp \
-    videoview.cpp
+    videoview.cpp \
+    windplot.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -33,7 +34,8 @@ HEADERS  += mainwindow.h \
     configdialog.h \
     mapview.h \
     common.h \
-    videoview.h
+    videoview.h \
+    windplot.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

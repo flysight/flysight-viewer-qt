@@ -335,4 +335,80 @@ public:
     }
 };
 
+class PlotWindSpeed: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotWindSpeed() {}
+    const QString title(Units units) const
+    {
+        if (units == Metric) return tr("Wind Speed (km/h)");
+        else                 return tr("Wind Speed (mph)");
+    }
+    const QColor color() const { return Qt::darkRed; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        if (units == Metric) return DataPoint::windSpeed(dp) * MPS_TO_KMH;
+        else                 return DataPoint::windSpeed(dp) * MPS_TO_MPH;
+    }
+};
+
+class PlotWindDirection: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotWindDirection() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Wind Direction (deg)");
+    }
+    const QColor color() const { return Qt::darkGreen; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::windDirection(dp);
+    }
+};
+
+class PlotAircraftSpeed: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAircraftSpeed() {}
+    const QString title(Units units) const
+    {
+        if (units == Metric) return tr("Aircraft Speed (km/h)");
+        else                 return tr("Aircraft Speed (mph)");
+    }
+    const QColor color() const { return Qt::darkBlue; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        if (units == Metric) return DataPoint::aircraftSpeed(dp) * MPS_TO_KMH;
+        else                 return DataPoint::aircraftSpeed(dp) * MPS_TO_MPH;
+    }
+};
+
+class PlotWindError: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotWindError() {}
+    const QString title(Units units) const
+    {
+        if (units == Metric) return tr("Wind Error (km/h)");
+        else                 return tr("Wind Error (mph)");
+    }
+    const QColor color() const { return Qt::lightGray; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        if (units == Metric) return DataPoint::windError(dp) * MPS_TO_KMH;
+        else                 return DataPoint::windError(dp) * MPS_TO_MPH;
+    }
+};
+
 #endif // PLOTVALUE_H
