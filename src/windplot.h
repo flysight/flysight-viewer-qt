@@ -22,6 +22,7 @@ protected:
 private:
     MainWindow *mMainWindow;
 
+    void setMark(double mark);
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
 

@@ -359,10 +359,7 @@ void DataPlot::setMark(
     if (mMainWindow->dataSize() == 0) return;
 
     DataPoint dp = interpolateDataX(mark);
-
     mMainWindow->setMark(dp.t);
-
-    if (mMainWindow->dataSize() == 0) return;
 
     QString status;
     status = QString("<table width='200'>");

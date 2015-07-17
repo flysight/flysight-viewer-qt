@@ -51,13 +51,40 @@ void WindPlot::mouseMoveEvent(
 
         if (resultDistance < selectionTolerance())
         {
-            mMainWindow->setMark(resultTime);
+            setMark(resultTime);
         }
         else
         {
             mMainWindow->clearMark();
+            QToolTip::hideText();
         }
     }
+}
+
+void WindPlot::setMark(
+        double mark)
+{
+    if (mMainWindow->dataSize() == 0) return;
+
+    DataPoint dp = mMainWindow->interpolateDataT(mark);
+    mMainWindow->setMark(mark);
+
+    QString status;
+    status = QString("<table width='200'>");
+
+    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
+            .arg(PlotWindSpeed().title(mMainWindow->units()))
+            .arg(PlotWindSpeed().value(dp, mMainWindow->units()))
+            .arg(PlotWindSpeed().color().name());
+
+    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
+            .arg(PlotWindDirection().title(mMainWindow->units()))
+            .arg(PlotWindDirection().value(dp, mMainWindow->units()))
+            .arg(PlotWindDirection().color().name());
+
+    status += QString("</table>");
+
+    QToolTip::showText(QCursor::pos(), status);
 }
 
 void WindPlot::updatePlot()
@@ -167,6 +194,26 @@ void WindPlot::updatePlot()
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
         graph->setPen(QPen(Qt::black));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+
+        xMark.clear();
+        yMark.clear();
+
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            xMark.append(dpEnd.windE * MPS_TO_KMH);
+            yMark.append(dpEnd.windN * MPS_TO_KMH);
+        }
+        else
+        {
+            xMark.append(dpEnd.windE * MPS_TO_MPH);
+            yMark.append(dpEnd.windN * MPS_TO_MPH);
+        }
+
+        graph = addGraph();
+        graph->setData(xMark, yMark);
+        graph->setPen(QPen(Qt::red));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
 
