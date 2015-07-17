@@ -5,6 +5,8 @@
 
 #include <math.h>
 
+#define A_GRAVITY 9.80665   // Standard acceleration due to gravity
+
 class DataPoint
 {
 public:
@@ -34,6 +36,7 @@ public:
     double      dist3D;
 
     double      curv;
+    double      accel;
 
     double      windE;
     double      windN;
@@ -134,6 +137,22 @@ public:
     static double windError(const DataPoint &dp)
     {
         return dp.windErr;
+    }
+
+    static double acceleration(const DataPoint &dp)
+    {
+        return dp.accel;
+    }
+
+    static double totalEnergy(const DataPoint &dp)
+    {
+        const double v = totalSpeed(dp);
+        return v * v / 2 + A_GRAVITY * elevation(dp);
+    }
+
+    static double energyRate(const DataPoint &dp)
+    {
+        return totalSpeed(dp) * acceleration(dp) - A_GRAVITY * verticalSpeed(dp);
     }
 };
 

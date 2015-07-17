@@ -79,6 +79,10 @@
     <addaction name="actionWindSpeed"/>
     <addaction name="actionWindDirection"/>
     <addaction name="actionAircraftSpeed"/>
+    <addaction name="separator"/>
+    <addaction name="actionAcceleration"/>
+    <addaction name="actionTotalEnergy"/>
+    <addaction name="actionEnergyRate"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -487,6 +491,39 @@
    </property>
    <property name="shortcut">
     <string>Alt+5</string>
+   </property>
+  </action>
+  <action name="actionAcceleration">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+A</string>
+   </property>
+  </action>
+  <action name="actionTotalEnergy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Total Energy</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+E</string>
+   </property>
+  </action>
+  <action name="actionEnergyRate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Energy Rate</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+R</string>
    </property>
   </action>
  </widget>

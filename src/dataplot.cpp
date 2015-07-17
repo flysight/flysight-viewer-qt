@@ -69,6 +69,9 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotWindDirection);
     m_yValues.append(new PlotAircraftSpeed);
     m_yValues.append(new PlotWindError);
+    m_yValues.append(new PlotAcceleration);
+    m_yValues.append(new PlotTotalEnergy);
+    m_yValues.append(new PlotEnergyRate);
 
     foreach (PlotValue *v, m_yValues)
     {

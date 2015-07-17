@@ -411,4 +411,61 @@ public:
     }
 };
 
+class PlotAcceleration: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAcceleration() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Acceleration (m/s^2)");
+    }
+    const QColor color() const { return Qt::darkRed; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::acceleration(dp);
+    }
+};
+
+class PlotTotalEnergy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotTotalEnergy() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Total Energy (J/kg)");
+    }
+    const QColor color() const { return Qt::darkGreen; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::totalEnergy(dp);
+    }
+};
+
+class PlotEnergyRate: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotEnergyRate() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Energy Rate (J/kg/s)");
+    }
+    const QColor color() const { return Qt::darkBlue; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::energyRate(dp);
+    }
+};
+
 #endif // PLOTVALUE_H
