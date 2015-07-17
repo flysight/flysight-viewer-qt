@@ -72,41 +72,41 @@ void WindPlot::updatePlot()
     double xMin, xMax;
     double yMin, yMax;
 
+    int start = mMainWindow->findIndexBelowT(lower) + 1;
+    int end   = mMainWindow->findIndexAboveT(upper);
+
     bool first = true;
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    for (int i = start; i < end; ++i)
     {
         const DataPoint &dp = mMainWindow->dataPoint(i);
 
-        if (lower <= dp.t && dp.t <= upper)
+        t.append(dp.t);
+
+        if (mMainWindow->units() == PlotValue::Metric)
         {
-            t.append(dp.t);
+            x.append(dp.velE * MPS_TO_KMH);
+            y.append(dp.velN * MPS_TO_KMH);
+        }
+        else
+        {
+            x.append(dp.velE * MPS_TO_MPH);
+            y.append(dp.velN * MPS_TO_MPH);
+        }
 
-            if (mMainWindow->units() == PlotValue::Metric)
-            {
-                x.append(dp.velE * MPS_TO_KMH);
-                y.append(dp.velN * MPS_TO_KMH);
-            }
-            else
-            {
-                x.append(dp.velE * MPS_TO_MPH);
-                y.append(dp.velN * MPS_TO_MPH);
-            }
+        if (first)
+        {
+            xMin = xMax = x.back();
+            yMin = yMax = y.back();
 
-            if (first)
-            {
-                xMin = xMax = x.back();
-                yMin = yMax = y.back();
+            first = false;
+        }
+        else
+        {
+            if (x.back() < xMin) xMin = x.back();
+            if (x.back() > xMax) xMax = x.back();
 
-                first = false;
-            }
-            else
-            {
-                if (x.back() < xMin) xMin = x.back();
-                if (x.back() > xMax) xMax = x.back();
-
-                if (y.back() < yMin) yMin = y.back();
-                if (y.back() > yMax) yMax = y.back();
-            }
+            if (y.back() < yMin) yMin = y.back();
+            if (y.back() > yMax) yMax = y.back();
         }
     }
 
@@ -125,24 +125,24 @@ void WindPlot::updatePlot()
         x.clear();
         y.clear();
 
-        for (int i = 0; i < mMainWindow->dataSize(); ++i)
+        int start = mMainWindow->findIndexBelowT(dpEnd.t - mMainWindow->dtWind()) + 1;
+        int end   = mMainWindow->findIndexAboveT(dpEnd.t + mMainWindow->dtWind());
+
+        for (int i = start; i <= end; ++i)
         {
             const DataPoint &dp = mMainWindow->dataPoint(i);
 
-            if (dpEnd.t - mMainWindow->dtWind() <= dp.t && dp.t <= dpEnd.t + mMainWindow->dtWind())
-            {
-                t.append(dp.t);
+            t.append(dp.t);
 
-                if (mMainWindow->units() == PlotValue::Metric)
-                {
-                    x.append(dp.velE * MPS_TO_KMH);
-                    y.append(dp.velN * MPS_TO_KMH);
-                }
-                else
-                {
-                    x.append(dp.velE * MPS_TO_MPH);
-                    y.append(dp.velN * MPS_TO_MPH);
-                }
+            if (mMainWindow->units() == PlotValue::Metric)
+            {
+                x.append(dp.velE * MPS_TO_KMH);
+                y.append(dp.velN * MPS_TO_KMH);
+            }
+            else
+            {
+                x.append(dp.velE * MPS_TO_MPH);
+                y.append(dp.velN * MPS_TO_MPH);
             }
         }
 

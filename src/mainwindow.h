@@ -63,6 +63,9 @@ public:
 
     DataPoint interpolateDataT(double t);
 
+    int findIndexBelowT(double t);
+    int findIndexAboveT(double t);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -141,9 +144,6 @@ private:
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initRange();
-
-    int findIndexBelowT(double t);
-    int findIndexAboveT(double t);
 
     void updateBottomActions();
     void updateLeftActions();

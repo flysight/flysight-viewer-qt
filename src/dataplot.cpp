@@ -544,27 +544,37 @@ DataPoint DataPlot::interpolateDataX(
 int DataPlot::findIndexBelowX(
         double x)
 {
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    int below = -1;
+    int above = mMainWindow->dataSize();
+
+    while (below + 1 != above)
     {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (xValue()->value(dp, mMainWindow->units()) > x)
-            return i - 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = mMainWindow->dataPoint(mid);
+
+        if (xValue()->value(dp, mMainWindow->units()) < x) below = mid;
+        else                                               above = mid;
     }
 
-    return mMainWindow->dataSize() - 1;
+    return below;
 }
 
 int DataPlot::findIndexAboveX(
         double x)
 {
-    for (int i = mMainWindow->dataSize() - 1; i >= 0; --i)
+    int below = -1;
+    int above = mMainWindow->dataSize();
+
+    while (below + 1 != above)
     {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-        if (xValue()->value(dp, mMainWindow->units()) <= x)
-            return i + 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = mMainWindow->dataPoint(mid);
+
+        if (xValue()->value(dp, mMainWindow->units()) > x) above = mid;
+        else                                               below = mid;
     }
 
-    return 0;
+    return above;
 }
 
 void DataPlot::togglePlot(

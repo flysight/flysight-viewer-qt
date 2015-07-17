@@ -220,25 +220,37 @@ DataPoint MainWindow::interpolateDataT(
 int MainWindow::findIndexBelowT(
         double t)
 {
-    for (int i = 0; i < m_data.size(); ++i)
+    int below = -1;
+    int above = m_data.size();
+
+    while (below + 1 != above)
     {
-        DataPoint &dp = m_data[i];
-        if (dp.t > t) return i - 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = m_data[mid];
+
+        if (dp.t < t) below = mid;
+        else          above = mid;
     }
 
-    return m_data.size() - 1;
+    return below;
 }
 
 int MainWindow::findIndexAboveT(
         double t)
 {
-    for (int i = m_data.size() - 1; i >= 0; --i)
+    int below = -1;
+    int above = m_data.size();
+
+    while (below + 1 != above)
     {
-        DataPoint &dp = m_data[i];
-        if (dp.t <= t) return i + 1;
+        int mid = (below + above) / 2;
+        const DataPoint &dp = m_data[mid];
+
+        if (dp.t > t) above = mid;
+        else          below = mid;
     }
 
-    return 0;
+    return above;
 }
 
 void MainWindow::on_actionImport_triggered()
