@@ -72,6 +72,7 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);
     m_yValues.append(new PlotEnergyRate);
+    m_yValues.append(new PlotDynamicPressure);
 
     foreach (PlotValue *v, m_yValues)
     {

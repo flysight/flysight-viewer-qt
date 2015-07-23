@@ -37,6 +37,7 @@ public:
         Acceleration,
         TotalEnergy,
         EnergyRate,
+        DynamicPressure,
         yaLast
     } YAxisType;
 

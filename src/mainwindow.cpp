@@ -25,7 +25,8 @@ MainWindow::MainWindow(
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
-    m_dtWind(30)
+    m_dtWind(30),
+    m_temperature(288.15)
 {
     m_ui->setupUi(this);
 
@@ -84,6 +85,7 @@ void MainWindow::writeSettings()
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
     settings.setValue("dtWind", m_dtWind);
+    settings.setValue("temperature", m_temperature);
     settings.endGroup();
 }
 
@@ -96,6 +98,7 @@ void MainWindow::readSettings()
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
+    m_temperature = settings.value("temperature", m_temperature).toDouble();
     settings.endGroup();
 }
 
@@ -731,6 +734,7 @@ void MainWindow::updateLeftActions()
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
+    m_ui->actionDynamicPressure->setChecked(m_ui->plotArea->plotVisible(DataPlot::DynamicPressure));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -806,6 +810,11 @@ void MainWindow::on_actionTotalEnergy_triggered()
 void MainWindow::on_actionEnergyRate_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::EnergyRate);
+}
+
+void MainWindow::on_actionDynamicPressure_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::DynamicPressure);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -891,6 +900,7 @@ void MainWindow::on_actionPreferences_triggered()
 
     dlg.setUnits(m_units);
     dlg.setDtWind(m_dtWind);
+    dlg.setTemperature(m_temperature);
 
     dlg.exec();
 
@@ -904,6 +914,13 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_dtWind = dlg.dtWind();
         initWind();
+
+        emit dataChanged();
+    }
+
+    if (m_temperature != dlg.temperature())
+    {
+        m_temperature = dlg.temperature();
 
         emit dataChanged();
     }

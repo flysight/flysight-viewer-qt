@@ -468,4 +468,23 @@ public:
     }
 };
 
+class PlotDynamicPressure: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotDynamicPressure() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Dynamic Pressure (Pa)");
+    }
+    const QColor color() const { return Qt::darkRed; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::dynamicPressure(dp);
+    }
+};
+
 #endif // PLOTVALUE_H

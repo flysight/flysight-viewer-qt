@@ -83,6 +83,8 @@
     <addaction name="actionAcceleration"/>
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
+    <addaction name="separator"/>
+    <addaction name="actionDynamicPressure"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -524,6 +526,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+R</string>
+   </property>
+  </action>
+  <action name="actionDynamicPressure">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dynamic Pressure</string>
+   </property>
+   <property name="toolTip">
+    <string>Dynamic Pressure</string>
    </property>
   </action>
  </widget>

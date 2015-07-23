@@ -24,6 +24,9 @@ public:
     void setDtWind(double dtWind);
     double dtWind() const;
 
+    void setTemperature(double temperature);
+    double temperature() const;
+
 private:
     Ui::ConfigDialog *ui;
 

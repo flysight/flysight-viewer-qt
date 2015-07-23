@@ -12,6 +12,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
                 QStringList() << tr("General"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Wind"));
+    ui->contentsWidget->addItems(
+                QStringList() << tr("Aerodynamics"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -60,4 +62,15 @@ void ConfigDialog::setDtWind(
 double ConfigDialog::dtWind() const
 {
     return ui->dtWindEdit->text().toDouble();
+}
+
+void ConfigDialog::setTemperature(
+        double temperature)
+{
+    ui->temperatureEdit->setText(QString("%1").arg(temperature - 273.15));
+}
+
+double ConfigDialog::temperature() const
+{
+    return ui->temperatureEdit->text().toDouble() + 273.15;
 }

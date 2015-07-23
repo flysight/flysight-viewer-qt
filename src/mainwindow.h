@@ -90,6 +90,7 @@ private slots:
     void on_actionAcceleration_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
+    void on_actionDynamicPressure_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -130,6 +131,8 @@ private:
 
     double                mRangeLower;
     double                mRangeUpper;
+
+    double                m_temperature;
 
     void writeSettings();
     void readSettings();
