@@ -91,6 +91,8 @@ private slots:
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
     void on_actionDynamicPressure_triggered();
+    void on_actionLift_triggered();
+    void on_actionDrag_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -133,6 +135,7 @@ private:
     double                mRangeUpper;
 
     double                m_temperature;
+    double                m_mass;
 
     void writeSettings();
     void readSettings();
@@ -147,7 +150,7 @@ private:
     void initWind();
     void getWind(const int center);
 
-    void initTemperature();
+    void initAerodynamics();
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 

@@ -85,6 +85,8 @@
     <addaction name="actionEnergyRate"/>
     <addaction name="separator"/>
     <addaction name="actionDynamicPressure"/>
+    <addaction name="actionLift"/>
+    <addaction name="actionDrag"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -537,6 +539,22 @@
    </property>
    <property name="toolTip">
     <string>Dynamic Pressure</string>
+   </property>
+  </action>
+  <action name="actionLift">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lift Acceleration</string>
+   </property>
+  </action>
+  <action name="actionDrag">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Drag Acceleration</string>
    </property>
   </action>
  </widget>

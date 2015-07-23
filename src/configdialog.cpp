@@ -74,3 +74,14 @@ double ConfigDialog::temperature() const
 {
     return ui->temperatureEdit->text().toDouble() + 273.15;
 }
+
+void ConfigDialog::setMass(
+        double mass)
+{
+    ui->massEdit->setText(QString("%1").arg(mass));
+}
+
+double ConfigDialog::mass() const
+{
+    return ui->massEdit->text().toDouble();
+}

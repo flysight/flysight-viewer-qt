@@ -26,7 +26,8 @@ MainWindow::MainWindow(
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
     m_dtWind(30),
-    m_temperature(288.15)
+    m_temperature(288.15),
+    m_mass(70)
 {
     m_ui->setupUi(this);
 
@@ -402,7 +403,7 @@ void MainWindow::on_actionImport_triggered()
         dp.accel = getSlope(i, DataPoint::totalSpeed);
     }
 
-    initTemperature();
+    initAerodynamics();
 
     if (dt.size() > 0)
     {
@@ -537,11 +538,39 @@ void MainWindow::getWind(
     dp0.windErr = sqrt(err / N);
 }
 
-void MainWindow::initTemperature()
+void MainWindow::initAerodynamics()
 {
     for (int i = 0; i < m_data.size(); ++i)
     {
-        m_data[i].temp = m_temperature; // for now temperature is constant
+        DataPoint &dp = m_data[i];
+
+        // For now temperature is constant
+        dp.temp = m_temperature;
+
+        // Acceleration
+        double accelN = getSlope(i, DataPoint::northSpeed);
+        double accelE = getSlope(i, DataPoint::eastSpeed);
+        double accelD = getSlope(i, DataPoint::verticalSpeed);
+
+        // Subtract acceleration due to gravity
+        accelD -= A_GRAVITY;
+
+        // Calculate acceleration due to drag
+        const double vel = DataPoint::totalSpeed(dp);
+        const double proj = (accelN * dp.velN + accelE * dp.velE + accelD * dp.velD) / vel;
+
+        const double dragN = proj * dp.velN / vel;
+        const double dragE = proj * dp.velE / vel;
+        const double dragD = proj * dp.velD / vel;
+
+        dp.accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
+
+        // Calculate acceleration due to lift
+        const double liftN = accelN - dragN;
+        const double liftE = accelE - dragE;
+        const double liftD = accelD - dragD;
+
+        dp.accelLift = sqrt(liftN * liftN + liftE * liftE + liftD * liftD);
     }
 }
 
@@ -745,6 +774,8 @@ void MainWindow::updateLeftActions()
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
     m_ui->actionDynamicPressure->setChecked(m_ui->plotArea->plotVisible(DataPlot::DynamicPressure));
+    m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
+    m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -825,6 +856,16 @@ void MainWindow::on_actionEnergyRate_triggered()
 void MainWindow::on_actionDynamicPressure_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::DynamicPressure);
+}
+
+void MainWindow::on_actionLift_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Lift);
+}
+
+void MainWindow::on_actionDrag_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Drag);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -909,8 +950,11 @@ void MainWindow::on_actionPreferences_triggered()
     ConfigDialog dlg;
 
     dlg.setUnits(m_units);
+
     dlg.setDtWind(m_dtWind);
+
     dlg.setTemperature(m_temperature);
+    dlg.setMass(m_mass);
 
     dlg.exec();
 
@@ -928,10 +972,13 @@ void MainWindow::on_actionPreferences_triggered()
         emit dataChanged();
     }
 
-    if (m_temperature != dlg.temperature())
+    if (m_temperature != dlg.temperature() ||
+        m_mass != dlg.mass())
     {
         m_temperature = dlg.temperature();
-        initTemperature();
+        m_mass = dlg.mass();
+
+        initAerodynamics();
 
         emit dataChanged();
     }

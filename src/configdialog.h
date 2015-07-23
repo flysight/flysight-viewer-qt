@@ -27,6 +27,9 @@ public:
     void setTemperature(double temperature);
     double temperature() const;
 
+    void setMass(double mass);
+    double mass() const;
+
 private:
     Ui::ConfigDialog *ui;
 

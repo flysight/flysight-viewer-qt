@@ -49,6 +49,8 @@ public:
     double      windErr;
 
     double      temp;
+    double      accelLift;
+    double      accelDrag;
 
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
@@ -57,6 +59,16 @@ public:
     static double elevation(const DataPoint &dp)
     {
         return dp.alt;
+    }
+
+    static double northSpeed(const DataPoint &dp)
+    {
+        return dp.velN;
+    }
+
+    static double eastSpeed(const DataPoint &dp)
+    {
+        return dp.velE;
     }
 
     static double verticalSpeed(const DataPoint &dp)
@@ -184,6 +196,16 @@ public:
     static double temperature(const DataPoint &dp)
     {
         return dp.temp;
+    }
+
+    static double lift(const DataPoint &dp)
+    {
+        return dp.accelLift;
+    }
+
+    static double drag(const DataPoint &dp)
+    {
+        return dp.accelDrag;
     }
 };
 

@@ -38,6 +38,8 @@ public:
         TotalEnergy,
         EnergyRate,
         DynamicPressure,
+        Lift,
+        Drag,
         yaLast
     } YAxisType;
 
