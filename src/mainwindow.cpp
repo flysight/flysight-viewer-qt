@@ -402,6 +402,8 @@ void MainWindow::on_actionImport_triggered()
         dp.accel = getSlope(i, DataPoint::totalSpeed);
     }
 
+    initTemperature();
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -533,6 +535,14 @@ void MainWindow::getWind(
     }
 
     dp0.windErr = sqrt(err / N);
+}
+
+void MainWindow::initTemperature()
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        m_data[i].temp = m_temperature; // for now temperature is constant
+    }
 }
 
 double MainWindow::getSlope(
@@ -921,6 +931,7 @@ void MainWindow::on_actionPreferences_triggered()
     if (m_temperature != dlg.temperature())
     {
         m_temperature = dlg.temperature();
+        initTemperature();
 
         emit dataChanged();
     }

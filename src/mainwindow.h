@@ -147,6 +147,8 @@ private:
     void initWind();
     void getWind(const int center);
 
+    void initTemperature();
+
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
     void initRange();

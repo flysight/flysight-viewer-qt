@@ -48,6 +48,8 @@ public:
     double      velAircraft;
     double      windErr;
 
+    double      temp;
+
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
                                  double a);
@@ -169,7 +171,7 @@ public:
     static double airDensity(const DataPoint &dp)
     {
         // From https://en.wikipedia.org/wiki/Density_of_air
-        return airPressure(dp) / (GAS_CONST / MM_AIR) / 273.15; // TODO: Use actual temperature instead of 273.15
+        return airPressure(dp) / (GAS_CONST / MM_AIR) / temperature(dp);
     }
 
     static double dynamicPressure(const DataPoint &dp)
@@ -177,6 +179,11 @@ public:
         // From https://en.wikipedia.org/wiki/Dynamic_pressure
         const double v = totalSpeed(dp);
         return airDensity(dp) * v * v / 2;
+    }
+
+    static double temperature(const DataPoint &dp)
+    {
+        return dp.temp;
     }
 };
 
