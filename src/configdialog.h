@@ -30,6 +30,9 @@ public:
     void setMass(double mass);
     double mass() const;
 
+    void setPlanformArea(double area);
+    double planformArea() const;
+
 private:
     Ui::ConfigDialog *ui;
 

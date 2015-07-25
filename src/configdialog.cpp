@@ -85,3 +85,14 @@ double ConfigDialog::mass() const
 {
     return ui->massEdit->text().toDouble();
 }
+
+void ConfigDialog::setPlanformArea(
+        double area)
+{
+    ui->areaEdit->setText(QString("%1").arg(area));
+}
+
+double ConfigDialog::planformArea() const
+{
+    return ui->areaEdit->text().toDouble();
+}

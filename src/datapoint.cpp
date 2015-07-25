@@ -45,6 +45,9 @@ DataPoint DataPoint::interpolate(
     ret.windErr = p1.windErr + a * (p2.windErr - p1.windErr);
 
     ret.temp = p1.temp + a * (p2.temp - p1.temp);
+    ret.mass = p1.mass + a * (p2.mass - p1.mass);
+    ret.area = p1.area + a * (p2.area - p1.area);
+
     ret.accelLift = p1.accelLift + a * (p2.accelLift - p1.accelLift);
     ret.accelDrag = p1.accelDrag + a * (p2.accelDrag - p1.accelDrag);
 

@@ -27,7 +27,8 @@ MainWindow::MainWindow(
     m_units(PlotValue::Imperial),
     m_dtWind(30),
     m_temperature(288.15),
-    m_mass(70)
+    m_mass(70),
+    m_planformArea(2)
 {
     m_ui->setupUi(this);
 
@@ -87,6 +88,8 @@ void MainWindow::writeSettings()
     settings.setValue("units", m_units);
     settings.setValue("dtWind", m_dtWind);
     settings.setValue("temperature", m_temperature);
+    settings.setValue("mass", m_mass);
+    settings.setValue("planformArea", m_planformArea);
     settings.endGroup();
 }
 
@@ -100,6 +103,8 @@ void MainWindow::readSettings()
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
     m_temperature = settings.value("temperature", m_temperature).toDouble();
+    m_mass = settings.value("temperature", m_mass).toDouble();
+    m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
     settings.endGroup();
 }
 
@@ -544,8 +549,10 @@ void MainWindow::initAerodynamics()
     {
         DataPoint &dp = m_data[i];
 
-        // For now temperature is constant
+        // Temperature, mass and planform area are constant
         dp.temp = m_temperature;
+        dp.mass = m_mass;
+        dp.area = m_planformArea;
 
         // Acceleration
         double accelN = getSlope(i, DataPoint::northSpeed);
@@ -955,6 +962,7 @@ void MainWindow::on_actionPreferences_triggered()
 
     dlg.setTemperature(m_temperature);
     dlg.setMass(m_mass);
+    dlg.setPlanformArea(m_planformArea);
 
     dlg.exec();
 
@@ -973,10 +981,12 @@ void MainWindow::on_actionPreferences_triggered()
     }
 
     if (m_temperature != dlg.temperature() ||
-        m_mass != dlg.mass())
+        m_mass != dlg.mass() ||
+        m_planformArea != dlg.planformArea())
     {
         m_temperature = dlg.temperature();
         m_mass = dlg.mass();
+        m_planformArea = dlg.planformArea();
 
         initAerodynamics();
 

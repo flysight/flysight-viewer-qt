@@ -49,6 +49,9 @@ public:
     double      windErr;
 
     double      temp;
+    double      mass;
+    double      area;
+
     double      accelLift;
     double      accelDrag;
 
@@ -200,12 +203,12 @@ public:
 
     static double lift(const DataPoint &dp)
     {
-        return dp.accelLift;
+        return dp.mass * dp.accelLift / dynamicPressure(dp) / dp.area;
     }
 
     static double drag(const DataPoint &dp)
     {
-        return dp.accelDrag;
+        return dp.mass * dp.accelDrag / dynamicPressure(dp) / dp.area;
     }
 };
 

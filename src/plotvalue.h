@@ -496,7 +496,7 @@ public:
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Lift Acceleration (m/s^2)");
+        return tr("Lift Coefficient");
     }
     const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
@@ -515,7 +515,7 @@ public:
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Drag Acceleration (m/s^2)");
+        return tr("Drag Coefficient");
     }
     const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const

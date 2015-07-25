@@ -136,6 +136,7 @@ private:
 
     double                m_temperature;
     double                m_mass;
+    double                m_planformArea;
 
     void writeSettings();
     void readSettings();
