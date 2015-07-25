@@ -11,6 +11,7 @@
 
 #include <math.h>
 
+#include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
 #include "mapview.h"
@@ -549,11 +550,6 @@ void MainWindow::initAerodynamics()
     {
         DataPoint &dp = m_data[i];
 
-        // Temperature, mass and planform area are constant
-        dp.temp = m_temperature;
-        dp.mass = m_mass;
-        dp.area = m_planformArea;
-
         // Acceleration
         double accelN = getSlope(i, DataPoint::northSpeed);
         double accelE = getSlope(i, DataPoint::eastSpeed);
@@ -570,14 +566,27 @@ void MainWindow::initAerodynamics()
         const double dragE = proj * dp.velE / vel;
         const double dragD = proj * dp.velD / vel;
 
-        dp.accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
+        const double accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
 
         // Calculate acceleration due to lift
         const double liftN = accelN - dragN;
         const double liftE = accelE - dragE;
         const double liftD = accelD - dragD;
 
-        dp.accelLift = sqrt(liftN * liftN + liftE * liftE + liftD * liftD);
+        const double accelLift = sqrt(liftN * liftN + liftE * liftE + liftD * liftD);
+
+        // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+        const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * dp.hMSL / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+        // From https://en.wikipedia.org/wiki/Density_of_air
+        const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+        // From https://en.wikipedia.org/wiki/Dynamic_pressure
+        const double dynamicPressure = airDensity * vel * vel / 2;
+
+        // Calculate lift and drag coefficients
+        dp.lift = m_mass * accelLift / dynamicPressure / m_planformArea;
+        dp.drag = m_mass * accelDrag / dynamicPressure / m_planformArea;
     }
 }
 
@@ -780,7 +789,6 @@ void MainWindow::updateLeftActions()
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
-    m_ui->actionDynamicPressure->setChecked(m_ui->plotArea->plotVisible(DataPlot::DynamicPressure));
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
     m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
 }
@@ -858,11 +866,6 @@ void MainWindow::on_actionTotalEnergy_triggered()
 void MainWindow::on_actionEnergyRate_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::EnergyRate);
-}
-
-void MainWindow::on_actionDynamicPressure_triggered()
-{
-    m_ui->plotArea->togglePlot(DataPlot::DynamicPressure);
 }
 
 void MainWindow::on_actionLift_triggered()

@@ -72,7 +72,6 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);
     m_yValues.append(new PlotEnergyRate);
-    m_yValues.append(new PlotDynamicPressure);
     m_yValues.append(new PlotLift);
     m_yValues.append(new PlotDrag);
 

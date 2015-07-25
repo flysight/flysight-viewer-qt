@@ -5,12 +5,7 @@
 
 #include <math.h>
 
-#define A_GRAVITY   9.80665     // Standard acceleration due to gravity (m/s^2)
-#define SL_PRESSURE 101325      // Sea level pessure (Pa)
-#define LAPSE_RATE  0.0065      // Temperature lapse rate (K/m)
-#define SL_TEMP     288.15      // Sea level temperature (K)
-#define MM_AIR      0.0289644   // Molar mass of dry air (kg/mol)
-#define GAS_CONST   8.31447     // Universal gas constant (J/mol/K)
+#include "common.h"
 
 class DataPoint
 {
@@ -48,12 +43,8 @@ public:
     double      velAircraft;
     double      windErr;
 
-    double      temp;
-    double      mass;
-    double      area;
-
-    double      accelLift;
-    double      accelDrag;
+    double      lift;
+    double      drag;
 
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
@@ -177,38 +168,14 @@ public:
         return totalSpeed(dp) * acceleration(dp) - A_GRAVITY * verticalSpeed(dp);
     }
 
-    static double airPressure(const DataPoint &dp)
+    static double liftCoefficient(const DataPoint &dp)
     {
-        // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
-        return SL_PRESSURE * pow(1 - LAPSE_RATE * dp.hMSL / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+        return dp.lift;
     }
 
-    static double airDensity(const DataPoint &dp)
+    static double dragCoefficient(const DataPoint &dp)
     {
-        // From https://en.wikipedia.org/wiki/Density_of_air
-        return airPressure(dp) / (GAS_CONST / MM_AIR) / temperature(dp);
-    }
-
-    static double dynamicPressure(const DataPoint &dp)
-    {
-        // From https://en.wikipedia.org/wiki/Dynamic_pressure
-        const double v = totalSpeed(dp);
-        return airDensity(dp) * v * v / 2;
-    }
-
-    static double temperature(const DataPoint &dp)
-    {
-        return dp.temp;
-    }
-
-    static double lift(const DataPoint &dp)
-    {
-        return dp.mass * dp.accelLift / dynamicPressure(dp) / dp.area;
-    }
-
-    static double drag(const DataPoint &dp)
-    {
-        return dp.mass * dp.accelDrag / dynamicPressure(dp) / dp.area;
+        return dp.drag;
     }
 };
 

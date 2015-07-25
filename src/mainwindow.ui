@@ -84,7 +84,6 @@
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
     <addaction name="separator"/>
-    <addaction name="actionDynamicPressure"/>
     <addaction name="actionLift"/>
     <addaction name="actionDrag"/>
    </widget>
@@ -530,23 +529,12 @@
     <string>Shift+R</string>
    </property>
   </action>
-  <action name="actionDynamicPressure">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Dynamic Pressure</string>
-   </property>
-   <property name="toolTip">
-    <string>Dynamic Pressure</string>
-   </property>
-  </action>
   <action name="actionLift">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Lift Acceleration</string>
+    <string>Lift Coefficient</string>
    </property>
   </action>
   <action name="actionDrag">
@@ -554,7 +542,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Drag Acceleration</string>
+    <string>Drag Coefficient</string>
    </property>
   </action>
  </widget>

@@ -90,7 +90,6 @@ private slots:
     void on_actionAcceleration_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
-    void on_actionDynamicPressure_triggered();
     void on_actionLift_triggered();
     void on_actionDrag_triggered();
 

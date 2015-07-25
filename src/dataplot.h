@@ -37,7 +37,6 @@ public:
         Acceleration,
         TotalEnergy,
         EnergyRate,
-        DynamicPressure,
         Lift,
         Drag,
         yaLast
