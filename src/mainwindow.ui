@@ -460,7 +460,7 @@
     <string>Wind Direction</string>
    </property>
    <property name="shortcut">
-    <string>Shift+D</string>
+    <string>Shift+T</string>
    </property>
   </action>
   <action name="actionAircraftSpeed">
@@ -472,17 +472,6 @@
    </property>
    <property name="shortcut">
     <string>Shift+A</string>
-   </property>
-  </action>
-  <action name="actionWindError">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Wind Error</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+E</string>
    </property>
   </action>
   <action name="actionShowWindView">
@@ -504,7 +493,7 @@
     <string>Acceleration</string>
    </property>
    <property name="shortcut">
-    <string>Shift+A</string>
+    <string>Shift+C</string>
    </property>
   </action>
   <action name="actionTotalEnergy">
@@ -536,6 +525,9 @@
    <property name="text">
     <string>Lift Coefficient</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+L</string>
+   </property>
   </action>
   <action name="actionDrag">
    <property name="checkable">
@@ -543,6 +535,9 @@
    </property>
    <property name="text">
     <string>Drag Coefficient</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+D</string>
    </property>
   </action>
  </widget>
