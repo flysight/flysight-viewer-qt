@@ -14,6 +14,7 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "liftdragplot.h"
 #include "mapview.h"
 #include "videoview.h"
 #include "windplot.h"
@@ -48,6 +49,9 @@ MainWindow::MainWindow(
 
     // Initialize wind view
     initWindView();
+
+    // Initialize lift/drag view
+    initLiftDragView();
 
     // Restore window state
     readSettings();
@@ -190,10 +194,28 @@ void MainWindow::initWindView()
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
-    connect(this, SIGNAL(dataLoaded()),
-            windPlot, SLOT(initPlot()));
     connect(this, SIGNAL(dataChanged()),
             windPlot, SLOT(updatePlot()));
+}
+
+void MainWindow::initLiftDragView()
+{
+    LiftDragPlot *liftDragPlot = new LiftDragPlot;
+    QDockWidget *dockWidget = new QDockWidget(tr("Lift/Drag View"));
+    dockWidget->setWidget(liftDragPlot);
+    dockWidget->setObjectName("liftDragView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    liftDragPlot->setMainWindow(this);
+
+    connect(m_ui->actionShowLiftDragView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLiftDragView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            liftDragPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::closeEvent(
@@ -785,7 +807,6 @@ void MainWindow::updateLeftActions()
     m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
     m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
     m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
-    m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));

@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     mapview.cpp \
     common.cpp \
     videoview.cpp \
-    windplot.cpp
+    windplot.cpp \
+    liftdragplot.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -35,7 +36,8 @@ HEADERS  += mainwindow.h \
     mapview.h \
     common.h \
     videoview.h \
-    windplot.h
+    windplot.h \
+    liftdragplot.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

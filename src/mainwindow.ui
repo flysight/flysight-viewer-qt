@@ -115,6 +115,7 @@
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
     <addaction name="actionShowWindView"/>
+    <addaction name="actionShowLiftDragView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -222,7 +223,7 @@
     <string>&amp;Dive Angle</string>
    </property>
    <property name="shortcut">
-    <string>D</string>
+    <string>A</string>
    </property>
   </action>
   <action name="actionDistance3D">
@@ -526,7 +527,7 @@
     <string>Lift Coefficient</string>
    </property>
    <property name="shortcut">
-    <string>Shift+L</string>
+    <string>L</string>
    </property>
   </action>
   <action name="actionDrag">
@@ -537,7 +538,18 @@
     <string>Drag Coefficient</string>
    </property>
    <property name="shortcut">
-    <string>Shift+D</string>
+    <string>D</string>
+   </property>
+  </action>
+  <action name="actionShowLiftDragView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lift/Drag View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+6</string>
    </property>
   </action>
  </widget>
