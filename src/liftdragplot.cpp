@@ -186,6 +186,44 @@ void LiftDragPlot::updatePlot()
         textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
         textLabel->position->setCoords(0.5, 0);
         textLabel->setText(QString("y = %1 x² %4 %2 x %5 %3").arg(a).arg(fabs(b)).arg(fabs(c)).arg((b < 0) ? '-' : '+').arg((c < 0) ? '-' : '+'));
+
+        if (a != 0)
+        {
+            t.clear();
+            x.clear();
+            y.clear();
+
+            // Find tangent line
+            const double xt = sqrt(c / a);
+            const double m = 2 * a * xt + b;
+
+            // Add tangent line
+            for (int i = 0; i < 101; ++i)
+            {
+                const double xx = xMin + (xMax - xMin) / 100 * i;
+
+                t.append(xx);
+                x.append(xx);
+                y.append(m * xx);
+            }
+
+            curve = new QCPCurve(xAxis, yAxis);
+            curve->setData(t, x, y);
+            curve->setPen(QPen(Qt::blue, 0, Qt::DashLine));
+            addPlottable(curve);
+
+            x.clear();
+            y.clear();
+
+            x.append(xt);
+            y.append(a * xt * xt + b * xt + c);
+
+            QCPGraph *graph = addGraph();
+            graph->setData(x, y);
+            graph->setPen(QPen(Qt::blue));
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPScatterStyle::ssDisc);
+        }
     }
 
     if (mMainWindow->markActive())
