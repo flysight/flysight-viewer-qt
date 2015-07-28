@@ -108,7 +108,7 @@ void MainWindow::readSettings()
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
     m_temperature = settings.value("temperature", m_temperature).toDouble();
-    m_mass = settings.value("temperature", m_mass).toDouble();
+    m_mass = settings.value("mass", m_mass).toDouble();
     m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
     settings.endGroup();
 }

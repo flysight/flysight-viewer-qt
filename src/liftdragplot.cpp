@@ -145,16 +145,13 @@ void LiftDragPlot::updatePlot()
     setViewRange(xMin, xMax, yMin, yMax);
 
     const double s00 = end - start + 1;
+    const double det = s00 * s40 - s20 * s20;
 
-    if (end > start)
+    if (det != 0)
     {
-        // y = ax^2 + bx + c
-        const double a = (s21 * (s20 * s00 - s10 * s10) - s11 * (s30 * s00 - s10 * s20) + s01 * (s30 * s10 - s20 * s20)) /
-                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
-        const double b = (s40 * (s11 * s00 - s01 * s10) - s30 * (s21 * s00 - s01 * s20) + s20 * (s21 * s10 - s11 * s20)) /
-                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
-        const double c = (s40 * (s20 * s01 - s10 * s11) - s30 * (s30 * s01 - s10 * s21) + s20 * (s30 * s11 - s20 * s21)) /
-                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
+        // y = ax^2 + c
+        const double a = (-s20 * s01 + s00 * s21) / det;
+        const double c = ( s40 * s01 - s20 * s21) / det;
 
         t.clear();
         x.clear();
@@ -170,7 +167,7 @@ void LiftDragPlot::updatePlot()
 
             t.append(xx);
             x.append(xx);
-            y.append(a * xx * xx + b * xx + c);
+            y.append(a * xx * xx + c);
         }
 
         curve = new QCPCurve(xAxis, yAxis);
@@ -185,7 +182,7 @@ void LiftDragPlot::updatePlot()
         textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
         textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
         textLabel->position->setCoords(0.5, 0);
-        textLabel->setText(QString("y = %1 x² %4 %2 x %5 %3").arg(a).arg(fabs(b)).arg(fabs(c)).arg((b < 0) ? '-' : '+').arg((c < 0) ? '-' : '+'));
+        textLabel->setText(QString("y = %1 x² %2 %3").arg(a).arg((c < 0) ? '-' : '+').arg(fabs(c)));
 
         if (a != 0)
         {
@@ -195,7 +192,7 @@ void LiftDragPlot::updatePlot()
 
             // Find tangent line
             const double xt = sqrt(c / a);
-            const double m = 2 * a * xt + b;
+            const double m = 2 * a * xt;
 
             // Add tangent line
             for (int i = 0; i < 101; ++i)
@@ -216,7 +213,7 @@ void LiftDragPlot::updatePlot()
             y.clear();
 
             x.append(xt);
-            y.append(a * xt * xt + b * xt + c);
+            y.append(a * xt * xt + c);
 
             QCPGraph *graph = addGraph();
             graph->setData(x, y);
