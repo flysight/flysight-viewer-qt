@@ -85,6 +85,7 @@ void LiftDragPlot::setMark(
 void LiftDragPlot::updatePlot()
 {
     clearPlottables();
+    clearItems();
 
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
@@ -96,6 +97,9 @@ void LiftDragPlot::updatePlot()
 
     int start = mMainWindow->findIndexBelowT(lower) + 1;
     int end   = mMainWindow->findIndexAboveT(upper);
+
+    double s10 = 0, s01 = 0, s20 = 0, s11 = 0;
+    double s21 = 0, s30 = 0, s40 = 0;
 
     bool first = true;
     for (int i = start; i < end; ++i)
@@ -121,6 +125,14 @@ void LiftDragPlot::updatePlot()
             if (y.back() < yMin) yMin = y.back();
             if (y.back() > yMax) yMax = y.back();
         }
+
+        s10 += dp.lift;
+        s01 += dp.drag;
+        s20 += dp.lift * dp.lift;
+        s11 += dp.lift * dp.drag;
+        s21 += dp.lift * dp.lift * dp.drag;
+        s30 += dp.lift * dp.lift * dp.lift;
+        s40 += dp.lift * dp.lift * dp.lift * dp.lift;
     }
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
@@ -131,6 +143,50 @@ void LiftDragPlot::updatePlot()
     addPlottable(curve);
 
     setViewRange(xMin, xMax, yMin, yMax);
+
+    const double s00 = end - start + 1;
+
+    if (end > start)
+    {
+        // y = ax^2 + bx + c
+        const double a = (s21 * (s20 * s00 - s10 * s10) - s11 * (s30 * s00 - s10 * s20) + s01 * (s30 * s10 - s20 * s20)) /
+                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
+        const double b = (s40 * (s11 * s00 - s01 * s10) - s30 * (s21 * s00 - s01 * s20) + s20 * (s21 * s10 - s11 * s20)) /
+                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
+        const double c = (s40 * (s20 * s01 - s10 * s11) - s30 * (s30 * s01 - s10 * s21) + s20 * (s30 * s11 - s20 * s21)) /
+                (s40 * (s20 * s00 - s10 * s10) - s30 * (s30 * s00 - s10 * s20) + s20 * (s30 * s10 - s20 * s20));
+
+        t.clear();
+        x.clear();
+        y.clear();
+
+        xMin = xAxis->range().lower;
+        xMax = xAxis->range().upper;
+
+        // Add best fit curve
+        for (int i = 0; i < 101; ++i)
+        {
+            const double xx = xMin + (xMax - xMin) / 100 * i;
+
+            t.append(xx);
+            x.append(xx);
+            y.append(a * xx * xx + b * xx + c);
+        }
+
+        curve = new QCPCurve(xAxis, yAxis);
+        curve->setData(t, x, y);
+        curve->setPen(QPen(Qt::red));
+        addPlottable(curve);
+
+        // Add label to show equation for fit
+        QCPItemText *textLabel = new QCPItemText(this);
+        addItem(textLabel);
+
+        textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+        textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+        textLabel->position->setCoords(0.5, 0);
+        textLabel->setText(QString("y = %1 x² %4 %2 x %5 %3").arg(a).arg(fabs(b)).arg(fabs(c)).arg((b < 0) ? '-' : '+').arg((c < 0) ? '-' : '+'));
+    }
 
     if (mMainWindow->markActive())
     {
