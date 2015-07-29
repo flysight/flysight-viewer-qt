@@ -96,3 +96,14 @@ double ConfigDialog::planformArea() const
 {
     return ui->areaEdit->text().toDouble();
 }
+
+void ConfigDialog::setWingSpan(
+        double span)
+{
+    ui->spanEdit->setText(QString("%1").arg(span));
+}
+
+double ConfigDialog::wingSpan() const
+{
+    return ui->spanEdit->text().toDouble();
+}

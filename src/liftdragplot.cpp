@@ -87,6 +87,9 @@ void LiftDragPlot::updatePlot()
     clearPlottables();
     clearItems();
 
+    xAxis->setLabel(tr("Lift Coefficient"));
+    yAxis->setLabel(tr("Drag Coefficient"));
+
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
@@ -179,10 +182,14 @@ void LiftDragPlot::updatePlot()
         QCPItemText *textLabel = new QCPItemText(this);
         addItem(textLabel);
 
+        const double bb = mMainWindow->wingSpan();
+        const double ss = mMainWindow->planformArea();
+        const double ar = bb * bb / ss;
+
         textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
         textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
         textLabel->position->setCoords(0.5, 0);
-        textLabel->setText(QString("y = %1 x² %2 %3").arg(a).arg((c < 0) ? '-' : '+').arg(fabs(c)));
+        textLabel->setText(QString("Minimum drag = %1\nOswald efficiency = %2\n").arg(fabs(c)).arg(1 / (a * M_PI * ar)));
 
         if (a != 0)
         {

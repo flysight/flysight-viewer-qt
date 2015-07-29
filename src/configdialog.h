@@ -33,6 +33,9 @@ public:
     void setPlanformArea(double area);
     double planformArea() const;
 
+    void setWingSpan(double span);
+    double wingSpan() const;
+
 private:
     Ui::ConfigDialog *ui;
 

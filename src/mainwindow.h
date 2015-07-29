@@ -66,6 +66,9 @@ public:
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
+    double planformArea() const { return m_planformArea; }
+    double wingSpan() const { return m_wingSpan; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -136,6 +139,7 @@ private:
     double                m_temperature;
     double                m_mass;
     double                m_planformArea;
+    double                m_wingSpan;
 
     void writeSettings();
     void readSettings();

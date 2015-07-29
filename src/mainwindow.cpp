@@ -30,7 +30,8 @@ MainWindow::MainWindow(
     m_dtWind(30),
     m_temperature(288.15),
     m_mass(70),
-    m_planformArea(2)
+    m_planformArea(2),
+    m_wingSpan(1.4)
 {
     m_ui->setupUi(this);
 
@@ -95,6 +96,7 @@ void MainWindow::writeSettings()
     settings.setValue("temperature", m_temperature);
     settings.setValue("mass", m_mass);
     settings.setValue("planformArea", m_planformArea);
+    settings.setValue("wingSpan", m_wingSpan);
     settings.endGroup();
 }
 
@@ -110,6 +112,7 @@ void MainWindow::readSettings()
     m_temperature = settings.value("temperature", m_temperature).toDouble();
     m_mass = settings.value("mass", m_mass).toDouble();
     m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
+    m_wingSpan = settings.value("wingSpan", m_wingSpan).toDouble();
     settings.endGroup();
 }
 
@@ -987,6 +990,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setTemperature(m_temperature);
     dlg.setMass(m_mass);
     dlg.setPlanformArea(m_planformArea);
+    dlg.setWingSpan(m_wingSpan);
 
     dlg.exec();
 
@@ -1006,11 +1010,13 @@ void MainWindow::on_actionPreferences_triggered()
 
     if (m_temperature != dlg.temperature() ||
         m_mass != dlg.mass() ||
-        m_planformArea != dlg.planformArea())
+        m_planformArea != dlg.planformArea() ||
+        m_wingSpan != dlg.wingSpan())
     {
         m_temperature = dlg.temperature();
         m_mass = dlg.mass();
         m_planformArea = dlg.planformArea();
+        m_wingSpan = dlg.wingSpan();
 
         initAerodynamics();
 
