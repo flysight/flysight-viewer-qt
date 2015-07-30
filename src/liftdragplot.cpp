@@ -186,20 +186,20 @@ void LiftDragPlot::updatePlot()
         const double ss = mMainWindow->planformArea();
         const double ar = bb * bb / ss;
 
+        // Find tangent line
+        const double xt = sqrt(c / a);
+        const double m = 2 * a * xt;
+
         textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
         textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
         textLabel->position->setCoords(0.5, 0);
-        textLabel->setText(QString("Minimum drag = %1\nOswald efficiency = %2\n").arg(fabs(c)).arg(1 / (a * M_PI * ar)));
+        textLabel->setText(QString("Minimum drag = %1\nOswald efficiency = %2\nMaximum L/D = %3").arg(fabs(c)).arg(1 / (a * M_PI * ar)).arg(1 / m));
 
         if (a != 0)
         {
             t.clear();
             x.clear();
             y.clear();
-
-            // Find tangent line
-            const double xt = sqrt(c / a);
-            const double m = 2 * a * xt;
 
             // Add tangent line
             for (int i = 0; i < 101; ++i)
