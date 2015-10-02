@@ -30,10 +30,10 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit"/>
+         <widget class="QLineEdit" name="topEdit"/>
         </item>
         <item row="0" column="2">
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="topUnits">
           <property name="text">
            <string>m</string>
           </property>
@@ -47,10 +47,10 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEdit_2"/>
+         <widget class="QLineEdit" name="bottomEdit"/>
         </item>
         <item row="1" column="2">
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="bottomUnits">
           <property name="text">
            <string>m</string>
           </property>
@@ -74,14 +74,14 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="faiButton">
           <property name="text">
            <string>FAI</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="applyButton">
           <property name="text">
            <string>Apply</string>
           </property>
@@ -119,10 +119,10 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEdit_3"/>
+       <widget class="QLineEdit" name="timeEdit"/>
       </item>
       <item row="0" column="2">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="timeUnits">
         <property name="text">
          <string>s</string>
         </property>
@@ -136,10 +136,10 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_4"/>
+       <widget class="QLineEdit" name="distanceEdit"/>
       </item>
       <item row="1" column="2">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="distanceEdits">
         <property name="text">
          <string>km</string>
         </property>
@@ -153,10 +153,10 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit_5"/>
+       <widget class="QLineEdit" name="speedEdit"/>
       </item>
       <item row="2" column="2">
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="speedEdits">
         <property name="text">
          <string>km/h</string>
         </property>
