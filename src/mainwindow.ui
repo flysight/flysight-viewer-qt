@@ -112,6 +112,7 @@
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
     <addaction name="actionShowWindView"/>
+    <addaction name="actionShowWingsuitView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -524,6 +525,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+R</string>
+   </property>
+  </action>
+  <action name="actionShowWingsuitView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wingsuit View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+6</string>
    </property>
   </action>
  </widget>

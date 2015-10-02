@@ -16,6 +16,7 @@
 #include "mapview.h"
 #include "videoview.h"
 #include "windplot.h"
+#include "wingsuitview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -44,6 +45,9 @@ MainWindow::MainWindow(
 
     // Initialize wind view
     initWindView();
+
+    // Initialize wingsuit view
+    initWingsuitView();
 
     // Restore window state
     readSettings();
@@ -184,6 +188,27 @@ void MainWindow::initWindView()
             windPlot, SLOT(initPlot()));
     connect(this, SIGNAL(dataChanged()),
             windPlot, SLOT(updatePlot()));
+}
+
+void MainWindow::initWingsuitView()
+{
+    WingsuitView *wingsuitView = new WingsuitView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Wingsuit View"));
+    dockWidget->setWidget(wingsuitView);
+    dockWidget->setObjectName("wingsuitView");
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    wingsuitView->setMainWindow(this);
+
+    connect(m_ui->actionShowWingsuitView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowWingsuitView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataLoaded()),
+            wingsuitView, SLOT(initView()));
+    connect(this, SIGNAL(dataChanged()),
+            wingsuitView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
