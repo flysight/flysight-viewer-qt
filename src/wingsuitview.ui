@@ -85,6 +85,12 @@
           <property name="text">
            <string>Apply</string>
           </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -119,7 +125,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="timeEdit"/>
+       <widget class="QLineEdit" name="timeEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="timeUnits">
@@ -136,10 +146,14 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="distanceEdit"/>
+       <widget class="QLineEdit" name="distanceEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLabel" name="distanceEdits">
+       <widget class="QLabel" name="distanceUnits">
         <property name="text">
          <string>km</string>
         </property>
@@ -153,10 +167,14 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="speedEdit"/>
+       <widget class="QLineEdit" name="speedEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QLabel" name="speedEdits">
+       <widget class="QLabel" name="speedUnits">
         <property name="text">
          <string>km/h</string>
         </property>
@@ -181,5 +199,38 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>topEdit</sender>
+   <signal>returnPressed()</signal>
+   <receiver>applyButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>240</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bottomEdit</sender>
+   <signal>returnPressed()</signal>
+   <receiver>applyButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>240</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
