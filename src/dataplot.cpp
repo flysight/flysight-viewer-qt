@@ -455,10 +455,15 @@ void DataPlot::updatePlot()
     }
 
     clearPlottables();
+    clearItems();
+
     while (axisRect()->axisCount(QCPAxis::atLeft) > 0)
     {
         axisRect()->removeAxis(axisRect()->axis(QCPAxis::atLeft, 0));
     }
+
+    QCPAxis *elevAxis = 0;
+    QCPGraph *elevGraph = 0;
 
     for (int j = 0; j < yaLast; ++j)
     {
@@ -471,11 +476,42 @@ void DataPlot::updatePlot()
             y.append(yValue(j)->value(dp, mMainWindow->units()));
         }
 
+
+        QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
         QCPGraph *graph = addGraph(
                     axisRect()->axis(QCPAxis::atBottom),
-                    yValue(j)->addAxis(this, mMainWindow->units()));
+                    axis);
         graph->setData(x, y);
         graph->setPen(QPen(yValue(j)->color()));
+
+        if (QString(yValue(j)->metaObject()->className()) == "PlotElevation")
+        {
+            elevAxis = axis;
+            elevGraph = graph;
+        }
+    }
+
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
+    double xMin = xValue()->value(dpLower, mMainWindow->units());
+    double xMax = xValue()->value(dpUpper, mMainWindow->units());
+
+    if (elevAxis)
+    {
+        QCPItemRect *rect = new QCPItemRect(this);
+        addItem(rect);
+
+        rect->setPen(Qt::NoPen);
+        rect->setBrush(QColor(255, 255, 0, 64));
+
+        rect->topLeft->setType(QCPItemPosition::ptPlotCoords);
+        rect->topLeft->setAxes(xAxis, elevAxis);
+        rect->topLeft->setCoords(xMin, mMainWindow->windowTop());
+
+        rect->bottomRight->setType(QCPItemPosition::ptPlotCoords);
+        rect->bottomRight->setAxes(xAxis, elevAxis);
+        rect->bottomRight->setCoords(xMax, mMainWindow->windowBottom());
     }
 
     if (mMainWindow->markActive())
@@ -507,11 +543,7 @@ void DataPlot::updatePlot()
 
     if (mMainWindow->dataSize() > 0)
     {
-        DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
-        DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
-
-        xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
-                                 xValue()->value(dpUpper, mMainWindow->units())));
+        xAxis->setRange(QCPRange(xMin, xMax));
     }
 
     updateYRanges();
