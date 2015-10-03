@@ -26,7 +26,9 @@ MainWindow::MainWindow(
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
-    m_dtWind(30)
+    m_dtWind(30),
+    mWindowBottom(2000),
+    mWindowTop(3000)
 {
     m_ui->setupUi(this);
 
@@ -205,8 +207,6 @@ void MainWindow::initWingsuitView()
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowWingsuitView, SLOT(setChecked(bool)));
 
-    connect(this, SIGNAL(dataLoaded()),
-            wingsuitView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             wingsuitView, SLOT(updateView()));
 }
@@ -1164,6 +1164,16 @@ void MainWindow::setGround(
 
     setRange(mRangeLower, mRangeUpper);
     setTool(mPrevTool);
+}
+
+void MainWindow::setWindow(
+        double windowBottom,
+        double windowTop)
+{
+    mWindowBottom = windowBottom;
+    mWindowTop = windowTop;
+
+    emit dataChanged();
 }
 
 void MainWindow::setTool(

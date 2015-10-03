@@ -66,6 +66,10 @@ public:
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
+    void setWindow(double windowBottom, double windowTop);
+    double windowTop(void) const { return mWindowTop; }
+    double windowBottom(void) const { return mWindowBottom; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -130,6 +134,9 @@ private:
 
     double                mRangeLower;
     double                mRangeUpper;
+
+    double                mWindowBottom;
+    double                mWindowTop;
 
     void writeSettings();
     void readSettings();

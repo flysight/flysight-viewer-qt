@@ -24,6 +24,13 @@ public:
 private:
     Ui::WingsuitView *ui;
     MainWindow       *mMainWindow;
+
+public slots:
+    void updateView();
+
+private slots:
+    void onFAIButtonClicked();
+    void onApplyButtonClicked();
 };
 
 #endif // WINGSUITVIEW_H
