@@ -503,7 +503,7 @@ void DataPlot::updatePlot()
         addItem(rect);
 
         rect->setPen(Qt::NoPen);
-        rect->setBrush(QColor(255, 255, 0, 64));
+        rect->setBrush(QColor(255, 255, 0, 16));
 
         rect->topLeft->setType(QCPItemPosition::ptPlotCoords);
         rect->topLeft->setAxes(xAxis, elevAxis);
