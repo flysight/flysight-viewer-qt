@@ -21,6 +21,9 @@ public:
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *);
+
 private:
     Ui::WingsuitView *ui;
     MainWindow       *mMainWindow;

@@ -139,3 +139,21 @@ void WingsuitView::onDownButtonClicked()
                 mMainWindow->windowBottom() - 10,
                 mMainWindow->windowTop() - 10);
 }
+
+void WingsuitView::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        const double bottom = mMainWindow->windowBottom();
+        const double top = mMainWindow->windowTop();
+
+        // Update window bounds
+        ui->bottomEdit->setText(QString("%1").arg(bottom));
+        ui->topEdit->setText(QString("%1").arg(top));
+
+        // Release focus
+        mMainWindow->setFocus();
+    }
+
+    QWidget::keyPressEvent(event);
+}
