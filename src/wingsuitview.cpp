@@ -16,7 +16,11 @@ WingsuitView::WingsuitView(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->faiButton, SIGNAL(clicked()), this, SLOT(onFAIButtonClicked()));
-    connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->upButton, SIGNAL(clicked()), this, SLOT(onUpButtonClicked()));
+    connect(ui->downButton, SIGNAL(clicked()), this, SLOT(onDownButtonClicked()));
+
+    connect(ui->topEdit, SIGNAL(returnPressed()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->bottomEdit, SIGNAL(returnPressed()), this, SLOT(onApplyButtonClicked()));
 }
 
 WingsuitView::~WingsuitView()
@@ -119,4 +123,18 @@ void WingsuitView::onApplyButtonClicked()
     double top = ui->topEdit->text().toDouble();
 
     mMainWindow->setWindow(bottom, top);
+}
+
+void WingsuitView::onUpButtonClicked()
+{
+    mMainWindow->setWindow(
+                mMainWindow->windowBottom() + 10,
+                mMainWindow->windowTop() + 10);
+}
+
+void WingsuitView::onDownButtonClicked()
+{
+    mMainWindow->setWindow(
+                mMainWindow->windowBottom() - 10,
+                mMainWindow->windowTop() - 10);
 }
