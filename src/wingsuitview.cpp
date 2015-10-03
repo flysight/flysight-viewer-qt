@@ -19,8 +19,8 @@ WingsuitView::WingsuitView(QWidget *parent) :
     connect(ui->upButton, SIGNAL(clicked()), this, SLOT(onUpButtonClicked()));
     connect(ui->downButton, SIGNAL(clicked()), this, SLOT(onDownButtonClicked()));
 
-    connect(ui->topEdit, SIGNAL(returnPressed()), this, SLOT(onApplyButtonClicked()));
-    connect(ui->bottomEdit, SIGNAL(returnPressed()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
 }
 
 WingsuitView::~WingsuitView()
@@ -123,6 +123,7 @@ void WingsuitView::onApplyButtonClicked()
     double top = ui->topEdit->text().toDouble();
 
     mMainWindow->setWindow(bottom, top);
+    mMainWindow->setFocus();
 }
 
 void WingsuitView::onUpButtonClicked()
