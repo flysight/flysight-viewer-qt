@@ -499,6 +499,20 @@ void DataPlot::updatePlot()
 
     if (elevAxis)
     {
+        double bottom;
+        double top;
+
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            bottom = mMainWindow->windowBottom();
+            top = mMainWindow->windowTop();
+        }
+        else
+        {
+            bottom = mMainWindow->windowBottom() * METERS_TO_FEET;
+            top = mMainWindow->windowTop() * METERS_TO_FEET;
+        }
+
         QCPItemRect *rect = new QCPItemRect(this);
         addItem(rect);
 
@@ -507,11 +521,11 @@ void DataPlot::updatePlot()
 
         rect->topLeft->setType(QCPItemPosition::ptPlotCoords);
         rect->topLeft->setAxes(xAxis, elevAxis);
-        rect->topLeft->setCoords(xMin, mMainWindow->windowTop());
+        rect->topLeft->setCoords(xMin, top);
 
         rect->bottomRight->setType(QCPItemPosition::ptPlotCoords);
         rect->bottomRight->setAxes(xAxis, elevAxis);
-        rect->bottomRight->setCoords(xMax, mMainWindow->windowBottom());
+        rect->bottomRight->setCoords(xMax, bottom);
     }
 
     if (mMainWindow->markActive())
