@@ -151,10 +151,10 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_6">
+      <item row="1" column="2">
+       <widget class="QLabel" name="distanceUnits">
         <property name="text">
-         <string>Distance:</string>
+         <string>km</string>
         </property>
        </widget>
       </item>
@@ -165,29 +165,46 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="distanceUnits">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>km</string>
+         <string>Distance:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Speed:</string>
+         <string>H. Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="horizontalSpeedUnits">
+        <property name="text">
+         <string>km/h</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="speedEdit">
+       <widget class="QLineEdit" name="horizontalSpeedEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QLabel" name="speedUnits">
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="verticalSpeedEdit"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>V. Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="verticalSpeedUnits">
         <property name="text">
          <string>km/h</string>
         </property>

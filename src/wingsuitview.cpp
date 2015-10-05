@@ -83,7 +83,8 @@ void WingsuitView::updateView()
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
         const double distance = mMainWindow->getDistance(dpBottom, dpTop) ;
-        const double speed = distance / time;
+        const double horizontalSpeed = distance / time;
+        const double verticalSpeed = (top - bottom) / time;
 
         // Update display
         if (mMainWindow->units() == PlotValue::Metric)
@@ -91,16 +92,20 @@ void WingsuitView::updateView()
             ui->timeEdit->setText(QString("%1").arg(time));
             ui->distanceEdit->setText(QString("%1").arg(distance / 1000));
             ui->distanceUnits->setText(tr("km"));
-            ui->speedEdit->setText(QString("%1").arg(speed * MPS_TO_KMH));
-            ui->speedUnits->setText(tr("km/h"));
+            ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_KMH));
+            ui->horizontalSpeedUnits->setText(tr("km/h"));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_KMH));
+            ui->verticalSpeedUnits->setText(tr("km/h"));
         }
         else
         {
             ui->timeEdit->setText(QString("%1").arg(time));
             ui->distanceEdit->setText(QString("%1").arg(distance * METERS_TO_FEET / 5280));
             ui->distanceUnits->setText(tr("mi"));
-            ui->speedEdit->setText(QString("%1").arg(speed * MPS_TO_MPH));
-            ui->speedUnits->setText(tr("mph"));
+            ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
+            ui->horizontalSpeedUnits->setText(tr("mph"));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH));
+            ui->verticalSpeedUnits->setText(tr("mph"));
         }
     }
     else
@@ -108,7 +113,8 @@ void WingsuitView::updateView()
         // Update display
         ui->timeEdit->setText(tr("n/a"));
         ui->distanceEdit->setText(tr("n/a"));
-        ui->speedEdit->setText(tr("n/a"));
+        ui->horizontalSpeedEdit->setText(tr("n/a"));
+        ui->verticalSpeedEdit->setText(tr("n/a"));
     }
 }
 
