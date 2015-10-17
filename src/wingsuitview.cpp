@@ -43,42 +43,11 @@ void WingsuitView::updateView()
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->topEdit->setText(QString("%1").arg(top));
 
-    int iBottom, iTop;
-    bool armed = false;
-
-    // Find end of window
-    for (int i = mMainWindow->dataSize() - 1; i >= 0; --i)
+    if (mMainWindow->isWindowValid())
     {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-
-        if (dp.alt < bottom)
-        {
-            iBottom = i;
-        }
-
-        if (dp.alt < top)
-        {
-            iTop = i;
-        }
-        else
-        {
-            armed = true;
-        }
-
-        if (armed && DataPoint::energyRate(dp) > 0) break;
-    }
-
-    if (armed)
-    {
-        // Calculate bottom of window
-        const DataPoint &dp1 = mMainWindow->dataPoint(iBottom - 1);
-        const DataPoint &dp2 = mMainWindow->dataPoint(iBottom);
-        DataPoint dpBottom = DataPoint::interpolate(dp1, dp2, (bottom - dp1.alt) / (dp2.alt - dp1.alt));
-
-        // Calculate top of window
-        const DataPoint &dp3 = mMainWindow->dataPoint(iTop - 1);
-        const DataPoint &dp4 = mMainWindow->dataPoint(iTop);
-        DataPoint dpTop = DataPoint::interpolate(dp3, dp4, (top - dp3.alt) / (dp4.alt - dp3.alt));
+        // Get window bounds
+        const DataPoint &dpBottom = mMainWindow->windowBottomDP();
+        const DataPoint &dpTop = mMainWindow->windowTopDP();
 
         // Calculate results
         const double time = dpBottom.t - dpTop.t;

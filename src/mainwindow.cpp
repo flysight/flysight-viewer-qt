@@ -28,13 +28,18 @@ MainWindow::MainWindow(
     m_units(PlotValue::Imperial),
     m_dtWind(30),
     mWindowBottom(2000),
-    mWindowTop(3000)
+    mWindowTop(3000),
+    mIsWindowValid(false)
 {
     m_ui->setupUi(this);
 
     // Ensure that closeEvent is called
-    QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
-                     this, SLOT(close()));
+    connect(m_ui->actionExit, SIGNAL(triggered()),
+            this, SLOT(close()));
+
+    // Respond to data changed signal
+    connect(this, SIGNAL(dataChanged()),
+            this, SLOT(updateWindow()));
 
     // Intitialize plot area
     initPlot();
@@ -1174,6 +1179,48 @@ void MainWindow::setWindow(
     mWindowTop = windowTop;
 
     emit dataChanged();
+}
+
+void MainWindow::updateWindow(void)
+{
+    mIsWindowValid = false;
+
+    int iBottom, iTop;
+
+    // Find end of window
+    for (int i = dataSize() - 1; i >= 0; --i)
+    {
+        const DataPoint &dp = dataPoint(i);
+
+        if (dp.alt < mWindowBottom)
+        {
+            iBottom = i;
+        }
+
+        if (dp.alt < mWindowTop)
+        {
+            iTop = i;
+        }
+        else
+        {
+            mIsWindowValid = true;
+        }
+
+        if (mIsWindowValid && DataPoint::energyRate(dp) > 0) break;
+    }
+
+    if (mIsWindowValid)
+    {
+        // Calculate bottom of window
+        const DataPoint &dp1 = dataPoint(iBottom - 1);
+        const DataPoint &dp2 = dataPoint(iBottom);
+        mWindowBottomDP = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
+
+        // Calculate top of window
+        const DataPoint &dp3 = dataPoint(iTop - 1);
+        const DataPoint &dp4 = dataPoint(iTop);
+        mWindowTopDP = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
+    }
 }
 
 void MainWindow::setTool(

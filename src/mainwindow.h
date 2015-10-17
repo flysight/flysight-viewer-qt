@@ -70,6 +70,10 @@ public:
     double windowTop(void) const { return mWindowTop; }
     double windowBottom(void) const { return mWindowBottom; }
 
+    bool isWindowValid(void) const { return mIsWindowValid; }
+    const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
+    const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -138,6 +142,11 @@ private:
     double                mWindowBottom;
     double                mWindowTop;
 
+    bool                  mIsWindowValid;
+
+    DataPoint             mWindowBottomDP;
+    DataPoint             mWindowTopDP;
+
     void writeSettings();
     void readSettings();
 
@@ -163,6 +172,9 @@ signals:
     void dataLoaded();
     void dataChanged();
     void rotationChanged(double rotation);
+
+private slots:
+    void updateWindow();
 };
 
 #endif // MAINWINDOW_H
