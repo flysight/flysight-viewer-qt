@@ -1234,9 +1234,7 @@ void MainWindow::updateWindow(void)
 
 bool MainWindow::isWindowValid() const
 {
-    bool valid = mIsWindowValid && mWingsuitView && m_ui->actionShowWingsuitView->isChecked();
-    qDebug() << valid;
-    return valid;
+    return mIsWindowValid && mWingsuitView && m_ui->actionShowWingsuitView->isChecked();
 }
 
 void MainWindow::setTool(
