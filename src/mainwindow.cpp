@@ -204,6 +204,7 @@ void MainWindow::initWingsuitView()
     QDockWidget *dockWidget = new QDockWidget(tr("Wingsuit View"));
     dockWidget->setWidget(mWingsuitView);
     dockWidget->setObjectName("wingsuitView");
+    dockWidget->setVisible(false);
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
     mWingsuitView->setMainWindow(this);
