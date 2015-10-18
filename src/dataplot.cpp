@@ -477,7 +477,6 @@ void DataPlot::updatePlot()
             y.append(yValue(j)->value(dp, mMainWindow->units()));
         }
 
-
         QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
         QCPGraph *graph = addGraph(
                     axisRect()->axis(QCPAxis::atBottom),
@@ -503,6 +502,28 @@ void DataPlot::updatePlot()
     {
         const DataPoint &dpTop = mMainWindow->windowTopDP();
         const DataPoint &dpBottom = mMainWindow->windowBottomDP();
+
+        QVector< double > xElev, yElev;
+
+        xElev << xMin << xMax;
+        yElev << yValue(elevIndex)->value(dpTop, mMainWindow->units())
+              << yValue(elevIndex)->value(dpTop, mMainWindow->units());
+
+        QCPGraph *graph = addGraph(
+                    axisRect()->axis(QCPAxis::atBottom),
+                    elevAxis);
+        graph->setData(xElev, yElev);
+        graph->setPen(QPen(QBrush(yValue(elevIndex)->color()), 0, Qt::DashLine));
+
+        yElev.clear();
+        yElev << yValue(elevIndex)->value(dpBottom, mMainWindow->units())
+              << yValue(elevIndex)->value(dpBottom, mMainWindow->units());
+
+        graph = addGraph(
+                    axisRect()->axis(QCPAxis::atBottom),
+                    elevAxis);
+        graph->setData(xElev, yElev);
+        graph->setPen(QPen(QBrush(yValue(elevIndex)->color()), 0, Qt::DashLine));
 
         QCPItemRect *rect = new QCPItemRect(this);
         addItem(rect);
