@@ -29,7 +29,8 @@ MainWindow::MainWindow(
     m_dtWind(30),
     mWindowBottom(2000),
     mWindowTop(3000),
-    mIsWindowValid(false)
+    mIsWindowValid(false),
+    mWingsuitView(0)
 {
     m_ui->setupUi(this);
 
@@ -199,21 +200,23 @@ void MainWindow::initWindView()
 
 void MainWindow::initWingsuitView()
 {
-    WingsuitView *wingsuitView = new WingsuitView;
+    mWingsuitView = new WingsuitView;
     QDockWidget *dockWidget = new QDockWidget(tr("Wingsuit View"));
-    dockWidget->setWidget(wingsuitView);
+    dockWidget->setWidget(mWingsuitView);
     dockWidget->setObjectName("wingsuitView");
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
-    wingsuitView->setMainWindow(this);
+    mWingsuitView->setMainWindow(this);
 
     connect(m_ui->actionShowWingsuitView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
+    connect(m_ui->actionShowWingsuitView, SIGNAL(toggled(bool)),
+            this, SLOT(setWingsuitVisible(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowWingsuitView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
-            wingsuitView, SLOT(updateView()));
+            mWingsuitView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -1181,6 +1184,14 @@ void MainWindow::setWindow(
     emit dataChanged();
 }
 
+void MainWindow::setWingsuitVisible(
+        bool visible)
+{
+    qDebug() << "setWingsuitVisible";
+
+    emit dataChanged();
+}
+
 void MainWindow::updateWindow(void)
 {
     mIsWindowValid = false;
@@ -1221,6 +1232,13 @@ void MainWindow::updateWindow(void)
         const DataPoint &dp4 = dataPoint(iTop);
         mWindowTopDP = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
     }
+}
+
+bool MainWindow::isWindowValid() const
+{
+    bool valid = mIsWindowValid && mWingsuitView && m_ui->actionShowWingsuitView->isChecked();
+    qDebug() << valid;
+    return valid;
 }
 
 void MainWindow::setTool(

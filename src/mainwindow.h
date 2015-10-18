@@ -11,6 +11,7 @@
 
 class QCPRange;
 class QCustomPlot;
+class WingsuitView;
 
 namespace Ui {
 class MainWindow;
@@ -70,7 +71,7 @@ public:
     double windowTop(void) const { return mWindowTop; }
     double windowBottom(void) const { return mWindowBottom; }
 
-    bool isWindowValid(void) const { return mIsWindowValid; }
+    bool isWindowValid(void) const;
     const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
     const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
 
@@ -147,6 +148,8 @@ private:
     DataPoint             mWindowBottomDP;
     DataPoint             mWindowTopDP;
 
+    WingsuitView         *mWingsuitView;
+
     void writeSettings();
     void readSettings();
 
@@ -175,6 +178,7 @@ signals:
 
 private slots:
     void updateWindow();
+    void setWingsuitVisible(bool visible);
 };
 
 #endif // MAINWINDOW_H
