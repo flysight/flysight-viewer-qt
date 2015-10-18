@@ -1187,8 +1187,6 @@ void MainWindow::setWindow(
 void MainWindow::setWingsuitVisible(
         bool visible)
 {
-    qDebug() << "setWingsuitVisible";
-
     emit dataChanged();
 }
 

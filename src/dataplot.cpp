@@ -499,8 +499,6 @@ void DataPlot::updatePlot()
     double xMin = xValue()->value(dpLower, mMainWindow->units());
     double xMax = xValue()->value(dpUpper, mMainWindow->units());
 
-    qDebug() << "updatePlot";
-
     if (elevAxis && mMainWindow->isWindowValid())
     {
         const DataPoint &dpTop = mMainWindow->windowTopDP();
