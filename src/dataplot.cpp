@@ -464,6 +464,7 @@ void DataPlot::updatePlot()
 
     QCPAxis *elevAxis = 0;
     QCPGraph *elevGraph = 0;
+    int elevIndex = 0;
 
     for (int j = 0; j < yaLast; ++j)
     {
@@ -488,6 +489,7 @@ void DataPlot::updatePlot()
         {
             elevAxis = axis;
             elevGraph = graph;
+            elevIndex = j;
         }
     }
 
@@ -497,35 +499,42 @@ void DataPlot::updatePlot()
     double xMin = xValue()->value(dpLower, mMainWindow->units());
     double xMax = xValue()->value(dpUpper, mMainWindow->units());
 
-    if (elevAxis)
+    if (elevAxis && mMainWindow->isWindowValid())
     {
-        double bottom;
-        double top;
-
-        if (mMainWindow->units() == PlotValue::Metric)
-        {
-            bottom = mMainWindow->windowBottom();
-            top = mMainWindow->windowTop();
-        }
-        else
-        {
-            bottom = mMainWindow->windowBottom() * METERS_TO_FEET;
-            top = mMainWindow->windowTop() * METERS_TO_FEET;
-        }
+        const DataPoint &dpTop = mMainWindow->windowTopDP();
+        const DataPoint &dpBottom = mMainWindow->windowBottomDP();
 
         QCPItemRect *rect = new QCPItemRect(this);
         addItem(rect);
 
-        rect->setPen(Qt::NoPen);
-        rect->setBrush(QColor(255, 255, 0, 16));
+        rect->setPen(QPen(QColor(0, 0, 0, 16)));
+        rect->setBrush(QColor(0, 0, 0, 8));
 
-        rect->topLeft->setType(QCPItemPosition::ptPlotCoords);
+        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
         rect->topLeft->setAxes(xAxis, elevAxis);
-        rect->topLeft->setCoords(xMin, top);
+        rect->topLeft->setCoords(-0.1, -0.1);
 
-        rect->bottomRight->setType(QCPItemPosition::ptPlotCoords);
+        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
         rect->bottomRight->setAxes(xAxis, elevAxis);
-        rect->bottomRight->setCoords(xMax, bottom);
+        rect->bottomRight->setCoords(
+                    (xValue()->value(dpTop, mMainWindow->units()) - xMin) / (xMax - xMin),
+                    1.1);
+
+        rect = new QCPItemRect(this);
+        addItem(rect);
+
+        rect->setPen(QPen(QColor(0, 0, 0, 16)));
+        rect->setBrush(QColor(0, 0, 0, 8));
+
+        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
+        rect->topLeft->setAxes(xAxis, elevAxis);
+        rect->topLeft->setCoords(
+                    (xValue()->value(dpBottom, mMainWindow->units()) - xMin) / (xMax - xMin),
+                    -0.1);
+
+        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
+        rect->bottomRight->setAxes(xAxis, elevAxis);
+        rect->bottomRight->setCoords(1.1, 1.1);
     }
 
     if (mMainWindow->markActive())
