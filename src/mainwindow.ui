@@ -105,6 +105,8 @@
     <addaction name="separator"/>
     <addaction name="actionZero"/>
     <addaction name="actionGround"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptimize"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -550,6 +552,14 @@
    </property>
    <property name="shortcut">
     <string>Alt+6</string>
+   </property>
+  </action>
+  <action name="actionOptimize">
+   <property name="text">
+    <string>Optimize</string>
+   </property>
+   <property name="shortcut">
+    <string>O</string>
    </property>
   </action>
  </widget>

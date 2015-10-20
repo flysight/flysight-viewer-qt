@@ -113,6 +113,8 @@ private slots:
     void on_actionExportKML_triggered();
     void on_actionExportPlot_triggered();
 
+    void on_actionOptimize();
+
 private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
@@ -164,6 +166,13 @@ private:
 
     void updateBottomActions();
     void updateLeftActions();
+
+    void initialize(int start, int end, double cl, double cd);
+    void simulate(int start, int end);
+    double dtheta(double t, double theta, double v, double x, double y, double lift);
+    double dv(double t, double theta, double v, double x, double y, double drag);
+    double dx(double t, double theta, double v, double x, double y);
+    double dy(double t, double theta, double v, double x, double y);
 
 signals:
     void dataLoaded();

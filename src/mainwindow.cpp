@@ -1271,3 +1271,176 @@ void MainWindow::setTool(
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
 }
+
+void MainWindow::on_actionOptimize()
+{
+    int start = findIndexBelowT(mRangeLower) + 1;
+    int end   = findIndexAboveT(mRangeUpper);
+
+    double s10 = 0, s01 = 0, s20 = 0, s11 = 0;
+    double s21 = 0, s30 = 0, s40 = 0;
+
+    for (int i = start; i < end; ++i)
+    {
+        const DataPoint &dp = m_data[i];
+
+        s10 += dp.lift;
+        s01 += dp.drag;
+        s20 += dp.lift * dp.lift;
+        s11 += dp.lift * dp.drag;
+        s21 += dp.lift * dp.lift * dp.drag;
+        s30 += dp.lift * dp.lift * dp.lift;
+        s40 += dp.lift * dp.lift * dp.lift * dp.lift;
+    }
+
+    const double s00 = end - start + 1;
+    const double det = s00 * s40 - s20 * s20;
+
+    if (det == 0) return;
+
+    // y = ax^2 + c
+    const double a = (-s20 * s01 + s00 * s21) / det;
+    const double c = ( s40 * s01 - s20 * s21) / det;
+
+    initialize(start, end, s10, a * s10 * s10 + c);
+    simulate(start, end);
+}
+
+void MainWindow::initialize(
+        int start,
+        int end,
+        double cl,
+        double cd)
+{
+    for (int i = start; i < end; ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.optimal_lift = cl;
+        dp.optimal_drag = cd;
+    }
+}
+
+void MainWindow::simulate(
+        int start,
+        int end)
+{
+    const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
+    double theta = atan2(-m_data[start].velD, velH);
+    double v = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
+    double x = 0;
+    double y = m_data[start].hMSL;
+
+    const double y0 = m_data[start].hMSL;
+    const double h0 = m_data[start].alt;
+
+    for (int i = start; i < end - 1; ++i)
+    {
+        double t = m_data[i].t;
+        const double h = m_data[i + 1].t - m_data[i].t;
+
+        const double lift_prev = m_data[i].optimal_lift;
+        const double drag_prev = m_data[i].optimal_drag;
+
+        const double lift_next = m_data[i + 1].optimal_lift;
+        const double drag_next = m_data[i + 1].optimal_drag;
+
+        // Runge-Kutta integration
+        // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+        const double k0 = h * dtheta(t, theta, v, x, y, lift_prev);
+        const double l0 = h *     dv(t, theta, v, x, y, drag_prev);
+        const double m0 = h *     dx(t, theta, v, x, y);
+        const double n0 = h *     dy(t, theta, v, x, y);
+
+        const double k1 = h * dtheta(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
+        const double l1 = h *     dv(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
+        const double m1 = h *     dx(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double n1 = h *     dy(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+
+        const double k2 = h * dtheta(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
+        const double l2 = h *     dv(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
+        const double m2 = h *     dx(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double n2 = h *     dy(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+
+        const double k3 = h * dtheta(t + h, theta + k2, v + l2, x + m2, y + n2, lift_next);
+        const double l3 = h *     dv(t + h, theta + k2, v + l2, x + m2, y + n2, drag_next);
+        const double m3 = h *     dx(t + h, theta + k2, v + l2, x + m2, y + n2);
+        const double n3 = h *     dy(t + h, theta + k2, v + l2, x + m2, y + n2);
+
+        theta += (k0 + 2 * k1 + 2 * k2 + k3) / 6;
+        v     += (l0 + 2 * l1 + 2 * l2 + l3) / 6;
+        x     += (m0 + 2 * m1 + 2 * m2 + m3) / 6;
+        y     += (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+
+        // Update data
+        m_data[i + 1].optimal_velH =  v * cos(theta);
+        m_data[i + 1].optimal_velD = -v * sin(theta);
+        m_data[i + 1].optimal_hMSL = y;
+        m_data[i + 1].optimal_alt  = y - y0 + h0;
+    }
+}
+
+double MainWindow::dtheta(
+        double t,
+        double theta,
+        double v,
+        double x,
+        double y,
+        double lift)
+{
+    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+    // From https://en.wikipedia.org/wiki/Density_of_air
+    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+    // From https://en.wikipedia.org/wiki/Dynamic_pressure
+    const double dynamicPressure = airDensity * v * v / 2;
+
+    // Calculate acceleration due to drag and lift
+    const double accelLift = dynamicPressure * m_planformArea * lift / m_mass;
+
+    return (accelLift - A_GRAVITY * cos(theta)) / v;
+}
+
+double MainWindow::dv(
+        double t,
+        double theta,
+        double v,
+        double x,
+        double y,
+        double drag)
+{
+    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+    // From https://en.wikipedia.org/wiki/Density_of_air
+    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+    // From https://en.wikipedia.org/wiki/Dynamic_pressure
+    const double dynamicPressure = airDensity * v * v / 2;
+
+    // Calculate acceleration due to drag and lift
+    const double accelDrag = dynamicPressure * m_planformArea * drag / m_mass;
+
+    return -accelDrag - A_GRAVITY * sin(theta);
+}
+
+double MainWindow::dx(
+        double t,
+        double theta,
+        double v,
+        double x,
+        double y)
+{
+    return v * cos(theta);
+}
+
+double MainWindow::dy(
+        double t,
+        double theta,
+        double v,
+        double x,
+        double y)
+{
+    return v * sin(theta);
+}

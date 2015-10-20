@@ -46,6 +46,14 @@ public:
     double      lift;
     double      drag;
 
+    double      optimal_lift;
+    double      optimal_drag;
+
+    double      optimal_velH;
+    double      optimal_velD;
+    double      optimal_hMSL;
+    double      optimal_alt;
+
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
                                  double a);
