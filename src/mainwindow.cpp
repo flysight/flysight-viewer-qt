@@ -1302,7 +1302,9 @@ void MainWindow::on_actionOptimize()
     const double a = (-s20 * s01 + s00 * s21) / det;
     const double c = ( s40 * s01 - s20 * s21) / det;
 
-    initialize(start, end, s10, a * s10 * s10 + c);
+    const double cl = s10 / s00;
+
+    initialize(start, end, cl, a * cl * cl + c);
     simulate(start, end);
 }
 
