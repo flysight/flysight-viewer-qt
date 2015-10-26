@@ -1316,23 +1316,37 @@ void MainWindow::on_actionOptimize_triggered()
 
     qsrand(0);  // TODO: Use a different seed value
 
-    for (int i = 0; i < 10; ++i)
+    double tMax = t;
+    QVector< double > clMax = cl;
+
+    for (int j = 0; j < 100; ++j)
     {
-        QVector< double > clTemp;
+        for (int i = 0; i < 100; ++i)
+        {
+            QVector< double > clTemp = cl;
 
-        iterate(cl, clTemp, 2);
-        t = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0);
+            iterate(clTemp, 2);
+            t = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0);
 
-        QMessageBox::information(this, QString("Result %1").arg(i + 1), QString("%1").arg(t));
+            if (t > tMax)
+            {
+                tMax = t;
+                clMax = clTemp;
+            }
+        }
+
+        t = tMax;
+        cl = clMax;
     }
+
+    QMessageBox::information(this, QString("Best result"), QString("%1").arg(tMax));
 
     // Next: - Start simulation at exit and proceed to bottom of competition window.
     //       - No need to store complete profile for hypothetical jumps. Just calculate score.
 }
 
 void MainWindow::iterate(
-        const QVector< double > &clIn,
-        QVector< double > &clOut,
+        QVector< double > &cl,
         int parts)
 {
     const double minRatio = 0.9, maxRatio = 1.1;
@@ -1340,17 +1354,15 @@ void MainWindow::iterate(
     double jPrev = 0;
     double rPrev = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
-    clOut.resize(clIn.size());
-
     for (int i = 0; i < parts; ++i)
     {
-        int j, jNext = clOut.size() * (i + 1) / parts;
+        int j, jNext = cl.size() * (i + 1) / parts;
         double rNext = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
         for (j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            clOut[j] = clIn[j] * r;
+            cl[j] *= r;
         }
 
         jPrev = jNext;
