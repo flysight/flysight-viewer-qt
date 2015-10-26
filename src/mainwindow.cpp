@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QSettings>
 #include <QShortcut>
 #include <QTextStream>
@@ -398,6 +399,11 @@ void MainWindow::on_actionImport_triggered()
         dp.y = distance * cos(bearing);
         dp.z = dp.alt = dp.hMSL - dp0.hMSL;
 
+        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
+        qint64 end = dp.dateTime.toMSecsSinceEpoch();
+
+        dp.t = (double) (end - start) / 1000;
+
         if (i > 0)
         {
             const DataPoint &dpPrev = m_data[i - 1];
@@ -413,11 +419,6 @@ void MainWindow::on_actionImport_triggered()
 
         dp.dist2D = dist2D;
         dp.dist3D = dist3D;
-
-        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
-        qint64 end = dp.dateTime.toMSecsSinceEpoch();
-
-        dp.t = (double) (end - start) / 1000;
     }
 
     for (int i = 0; i < m_data.size(); ++i)
@@ -1272,7 +1273,7 @@ void MainWindow::setTool(
     m_ui->actionGround->setChecked(tool == Ground);
 }
 
-void MainWindow::on_actionOptimize()
+void MainWindow::on_actionOptimize_triggered()
 {
     int start = findIndexBelowT(mRangeLower) + 1;
     int end   = findIndexAboveT(mRangeUpper);
@@ -1302,87 +1303,108 @@ void MainWindow::on_actionOptimize()
     const double a = (-s20 * s01 + s00 * s21) / det;
     const double c = ( s40 * s01 - s20 * s21) / det;
 
-    const double cl = s10 / s00;
+    QVector< double > cl (end - start, s10 / s00);
 
-    initialize(start, end, cl, a * cl * cl + c);
-    simulate(start, end);
-}
-
-void MainWindow::initialize(
-        int start,
-        int end,
-        double cl,
-        double cd)
-{
-    for (int i = start; i < end; ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.optimal_lift = cl;
-        dp.optimal_drag = cd;
-    }
-}
-
-void MainWindow::simulate(
-        int start,
-        int end)
-{
     const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
-    double theta = atan2(-m_data[start].velD, velH);
-    double v = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
-    double x = 0;
-    double y = m_data[start].hMSL;
+    const double theta0 = atan2(-m_data[start].velD, velH);
+    const double v0 = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
+    const double x0 = 0;
+    const double y0 = m_data[start].alt;
 
-    const double y0 = m_data[start].hMSL;
-    const double h0 = m_data[start].alt;
+    double t = simulate(cl, m_timeStep, a, c, theta0, v0, x0, y0);
 
-    for (int i = start; i < end - 1; ++i)
+    // Next: - Start simulation at exit and proceed to bottom of competition window.
+    //       - No need to store complete profile for hypothetical jumps. Just calculate score.
+}
+
+double MainWindow::simulate(
+        const QVector< double > &cl,
+        double h,
+        double a,
+        double c,
+        double theta0,
+        double v0,
+        double x0,
+        double y0)
+{
+    double theta = theta0;
+    double v = v0;
+    double x = x0;
+    double y = y0;
+
+    double t = 0, tStart, tEnd;
+    int armed = 0;
+
+    int k = 0;
+
+    QVector< double >::ConstIterator i;
+    for (i = cl.constBegin();
+         i != cl.constEnd() && i + 1 != cl.constEnd();
+         ++i)
     {
-        double t = m_data[i].t;
-        const double h = m_data[i + 1].t - m_data[i].t;
+        const double lift_prev = *i;
+        const double drag_prev = a * lift_prev * lift_prev + c;
 
-        const double lift_prev = m_data[i].optimal_lift;
-        const double drag_prev = m_data[i].optimal_drag;
-
-        const double lift_next = m_data[i + 1].optimal_lift;
-        const double drag_next = m_data[i + 1].optimal_drag;
+        const double lift_next = *(i + 1);
+        const double drag_next = a * lift_next * lift_next + c;
 
         // Runge-Kutta integration
         // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
-        const double k0 = h * dtheta(t, theta, v, x, y, lift_prev);
-        const double l0 = h *     dv(t, theta, v, x, y, drag_prev);
-        const double m0 = h *     dx(t, theta, v, x, y);
-        const double n0 = h *     dy(t, theta, v, x, y);
+        const double k0 = h * dtheta(theta, v, x, y, lift_prev);
+        const double l0 = h *     dv(theta, v, x, y, drag_prev);
+        const double m0 = h *     dx(theta, v, x, y);
+        const double n0 = h *     dy(theta, v, x, y);
 
-        const double k1 = h * dtheta(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
-        const double l1 = h *     dv(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
-        const double m1 = h *     dx(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
-        const double n1 = h *     dy(t + h/2, theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double k1 = h * dtheta(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
+        const double l1 = h *     dv(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
+        const double m1 = h *     dx(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double n1 = h *     dy(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
 
-        const double k2 = h * dtheta(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
-        const double l2 = h *     dv(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
-        const double m2 = h *     dx(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
-        const double n2 = h *     dy(t + h/2, theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double k2 = h * dtheta(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
+        const double l2 = h *     dv(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
+        const double m2 = h *     dx(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double n2 = h *     dy(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
 
-        const double k3 = h * dtheta(t + h, theta + k2, v + l2, x + m2, y + n2, lift_next);
-        const double l3 = h *     dv(t + h, theta + k2, v + l2, x + m2, y + n2, drag_next);
-        const double m3 = h *     dx(t + h, theta + k2, v + l2, x + m2, y + n2);
-        const double n3 = h *     dy(t + h, theta + k2, v + l2, x + m2, y + n2);
+        const double k3 = h * dtheta(theta + k2, v + l2, x + m2, y + n2, lift_next);
+        const double l3 = h *     dv(theta + k2, v + l2, x + m2, y + n2, drag_next);
+        const double m3 = h *     dx(theta + k2, v + l2, x + m2, y + n2);
+        const double n3 = h *     dy(theta + k2, v + l2, x + m2, y + n2);
 
+        const double y_next = y + (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+
+        if (y >= 3000 && y_next < 3000)
+        {
+            tStart = t + (3000 - y) / (y_next - y) * h;
+            ++armed;
+        }
+        if (y >= 2000 && y_next < 2000)
+        {
+            tEnd = t + (2000 - y) / (y_next - y) * h;
+            ++armed;
+            break;
+        }
+
+        t     += h;
         theta += (k0 + 2 * k1 + 2 * k2 + k3) / 6;
         v     += (l0 + 2 * l1 + 2 * l2 + l3) / 6;
         x     += (m0 + 2 * m1 + 2 * m2 + m3) / 6;
-        y     += (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+        y      = y_next;
 
         // Update data
-        m_data[i + 1].optimal_velH =  v * cos(theta);
-        m_data[i + 1].optimal_velD = -v * sin(theta);
-        m_data[i + 1].optimal_hMSL = y;
-        m_data[i + 1].optimal_alt  = y - y0 + h0;
+        m_data[k++].alt = y;
+    }
+
+    if (armed == 2)
+    {
+        return tEnd - tStart;
+    }
+    else
+    {
+        return 0;
     }
 }
 
 double MainWindow::dtheta(
-        double t,
         double theta,
         double v,
         double x,
@@ -1405,7 +1427,6 @@ double MainWindow::dtheta(
 }
 
 double MainWindow::dv(
-        double t,
         double theta,
         double v,
         double x,
@@ -1428,7 +1449,6 @@ double MainWindow::dv(
 }
 
 double MainWindow::dx(
-        double t,
         double theta,
         double v,
         double x,
@@ -1438,7 +1458,6 @@ double MainWindow::dx(
 }
 
 double MainWindow::dy(
-        double t,
         double theta,
         double v,
         double x,

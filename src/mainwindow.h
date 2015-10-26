@@ -113,7 +113,7 @@ private slots:
     void on_actionExportKML_triggered();
     void on_actionExportPlot_triggered();
 
-    void on_actionOptimize();
+    void on_actionOptimize_triggered();
 
 private:
     Ui::MainWindow       *m_ui;
@@ -167,12 +167,12 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
-    void initialize(int start, int end, double cl, double cd);
-    void simulate(int start, int end);
-    double dtheta(double t, double theta, double v, double x, double y, double lift);
-    double dv(double t, double theta, double v, double x, double y, double drag);
-    double dx(double t, double theta, double v, double x, double y);
-    double dy(double t, double theta, double v, double x, double y);
+    double simulate(const QVector< double > &cl, double h, double a, double c,
+                    double theta0, double v0, double x0, double y0);
+    double dtheta(double theta, double v, double x, double y, double lift);
+    double dv(double theta, double v, double x, double y, double drag);
+    double dx(double theta, double v, double x, double y);
+    double dy(double theta, double v, double x, double y);
 
 signals:
     void dataLoaded();
