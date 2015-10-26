@@ -167,6 +167,7 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
+    void iterate(const QVector< double > &clIn, QVector< double > &clOut, int parts);
     double simulate(const QVector< double > &cl, double h, double a, double c,
                     double theta0, double v0, double x0, double y0);
     double dtheta(double theta, double v, double x, double y, double lift);
