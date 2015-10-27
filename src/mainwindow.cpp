@@ -1485,7 +1485,8 @@ double MainWindow::simulate(
 
     if (armed == 2)
     {
-        return (xEnd - xStart) / (tEnd - tStart);
+//        return (xEnd - xStart) / (tEnd - tStart);
+        return xEnd - xStart;
     }
     else
     {
