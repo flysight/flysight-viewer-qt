@@ -438,6 +438,30 @@ void DataPlot::updateYRanges()
             }
         }
 
+        if (yValue(j)->hasOptimal())
+        {
+            for (int i = 0; i < mMainWindow->optimalSize(); ++i)
+            {
+                const DataPoint &dp = mMainWindow->optimalPoint(i);
+
+                if (range.contains(xValue()->value(dp, mMainWindow->units())))
+                {
+                    double y = yValue(j)->value(dp, mMainWindow->units());
+
+                    if (first)
+                    {
+                        yMin = yMax = y;
+                        first = false;
+                    }
+                    else
+                    {
+                        if (y < yMin) yMin = y;
+                        if (y > yMax) yMax = y;
+                    }
+                }
+            }
+        }
+
         if (!first)
             axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
     }
