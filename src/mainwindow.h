@@ -171,13 +171,16 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
-    void iterate(QVector< double > &clOut, int parts);
-    double simulate(const QVector< double > &cl, double h, double a, double c,
+    void iterate(QVector< double > &aoa, int parts);
+    double simulate(const QVector< double > &aoa, double h, double a, double c,
                     double t0, double theta0, double v0, double x0, double y0, int start);
     double dtheta(double theta, double v, double x, double y, double lift);
     double dv(double theta, double v, double x, double y, double drag);
     double dx(double theta, double v, double x, double y);
     double dy(double theta, double v, double x, double y);
+
+    double lift(double aoa);
+    double drag(double aoa, double a, double c);
 
 signals:
     void dataLoaded();

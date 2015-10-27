@@ -1317,8 +1317,8 @@ void MainWindow::on_actionOptimize_triggered()
 
     double sMax = 0;
 
-    QVector< double > cl (end - start, s10 / s00);
-    QVector< double > clMax = cl;
+    QVector< double > aoa (end - start, s10 / s00 / (2 * M_PI));
+    QVector< double > aoaMax = aoa;
 
     for (int k = 0; k < 10; ++k)
     {
@@ -1328,19 +1328,19 @@ void MainWindow::on_actionOptimize_triggered()
         {
             for (int i = 0; i < 100; ++i)
             {
-                QVector< double > clTemp = cl;
+                QVector< double > aoaTemp = aoa;
 
-                iterate(clTemp, parts);
-                double s = simulate(clTemp, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+                iterate(aoaTemp, parts);
+                double s = simulate(aoaTemp, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
 
                 if (s > sMax)
                 {
                     sMax = s;
-                    clMax = clTemp;
+                    aoaMax = aoaTemp;
                 }
             }
 
-            cl = clMax;
+            aoa = aoaMax;
         }
     }
 
@@ -1349,7 +1349,7 @@ void MainWindow::on_actionOptimize_triggered()
 
     if (sMax > 0)
     {
-        simulate(clMax, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
+        simulate(aoaMax, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
     }
 
     emit dataChanged();
@@ -1358,7 +1358,7 @@ void MainWindow::on_actionOptimize_triggered()
 }
 
 void MainWindow::iterate(
-        QVector< double > &cl,
+        QVector< double > &aoa,
         int parts)
 {
     const double minRatio = 0.9, maxRatio = 1.1;
@@ -1368,13 +1368,13 @@ void MainWindow::iterate(
 
     for (int i = 0; i < parts; ++i)
     {
-        int j, jNext = cl.size() * (i + 1) / parts;
+        int j, jNext = aoa.size() * (i + 1) / parts;
         double rNext = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
         for (j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            cl[j] *= r;
+            aoa[j] *= r;
         }
 
         jPrev = jNext;
@@ -1383,7 +1383,7 @@ void MainWindow::iterate(
 }
 
 double MainWindow::simulate(
-        const QVector< double > &cl,
+        const QVector< double > &aoa,
         double h,
         double a,
         double c,
@@ -1407,15 +1407,15 @@ double MainWindow::simulate(
     int k = start;
 
     QVector< double >::ConstIterator i;
-    for (i = cl.constBegin();
-         i != cl.constEnd() && i + 1 != cl.constEnd();
+    for (i = aoa.constBegin();
+         i != aoa.constEnd() && i + 1 != aoa.constEnd();
          ++i, ++k)
     {
-        const double lift_prev = *i;
-        const double drag_prev = a * lift_prev * lift_prev + c;
+        const double lift_prev = lift(*i);
+        const double drag_prev = drag(*i, a, c);
 
-        const double lift_next = *(i + 1);
-        const double drag_next = a * lift_next * lift_next + c;
+        const double lift_next = lift(*(i + 1));
+        const double drag_next = drag(*(i + 1), a, c);
 
         // Runge-Kutta integration
         // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
@@ -1500,7 +1500,8 @@ double MainWindow::simulate(
     if (armed == 2)
     {
 //        return (xEnd - xStart) / (tEnd - tStart);
-        return xEnd - xStart;
+//        return xEnd - xStart;
+        return tEnd - tStart;
     }
     else
     {
@@ -1568,4 +1569,33 @@ double MainWindow::dy(
         double y)
 {
     return v * sin(theta);
+}
+
+double MainWindow::lift(
+        double aoa)
+{
+    if (aoa < 0.5 / 2 / M_PI)
+    {
+        return 2 * M_PI * aoa;
+    }
+    else
+    {
+        return 2 * sin(aoa) * sin(2 * aoa);
+    }
+}
+
+double MainWindow::drag(
+        double aoa,
+        double a,
+        double c)
+{
+    if (aoa < 0.5 / 2 / M_PI)
+    {
+        const double cl = lift(aoa);
+        return a * cl * cl + c;
+    }
+    else
+    {
+        return 2 * sin(aoa) * (1 - cos(2 * aoa));
+    }
 }
