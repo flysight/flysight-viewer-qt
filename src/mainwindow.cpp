@@ -1325,7 +1325,7 @@ void MainWindow::on_actionOptimize_triggered()
         {
             QVector< double > clTemp = cl;
 
-            iterate(clTemp, 2);
+            iterate(clTemp, 1);
             t = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0);
 
             if (t > tMax)
@@ -1380,12 +1380,13 @@ double MainWindow::simulate(
         double x0,
         double y0)
 {
+    double t = 0;
     double theta = theta0;
     double v = v0;
     double x = x0;
     double y = y0;
 
-    double t = 0, tStart, tEnd;
+    double xStart, xEnd;
     int armed = 0;
 
     int k = 0;
@@ -1423,25 +1424,29 @@ double MainWindow::simulate(
         const double m3 = h *     dx(theta + k2, v + l2, x + m2, y + n2);
         const double n3 = h *     dy(theta + k2, v + l2, x + m2, y + n2);
 
-        const double y_next = y + (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+        const double tNext     = t + h;
+        const double thetaNext = theta + (k0 + 2 * k1 + 2 * k2 + k3) / 6;
+        const double vNext     = v + (l0 + 2 * l1 + 2 * l2 + l3) / 6;
+        const double xNext     = x + (m0 + 2 * m1 + 2 * m2 + m3) / 6;
+        const double yNext     = y + (n0 + 2 * n1 + 2 * n2 + n3) / 6;
 
-        if (y >= 3000 && y_next < 3000)
+        if (armed == 0 && y >= 3000 && yNext < 3000)
         {
-            tStart = t + (3000 - y) / (y_next - y) * h;
+            xStart = x + (3000 - y) / (yNext - y) * (xNext - x);
             ++armed;
         }
-        if (y >= 2000 && y_next < 2000)
+        if (armed == 1 && y >= 2000 && yNext < 2000)
         {
-            tEnd = t + (2000 - y) / (y_next - y) * h;
+            xEnd = x + (2000 - y) / (yNext - y) * (xNext - x);
             ++armed;
             break;
         }
 
-        t     += h;
-        theta += (k0 + 2 * k1 + 2 * k2 + k3) / 6;
-        v     += (l0 + 2 * l1 + 2 * l2 + l3) / 6;
-        x     += (m0 + 2 * m1 + 2 * m2 + m3) / 6;
-        y      = y_next;
+        t      = tNext;
+        theta  = thetaNext;
+        v      = vNext;
+        x      = xNext;
+        y      = yNext;
 
         // Update data
         m_data[k++].alt = y;
@@ -1449,7 +1454,7 @@ double MainWindow::simulate(
 
     if (armed == 2)
     {
-        return tEnd - tStart;
+        return xEnd - xStart;
     }
     else
     {
