@@ -483,13 +483,11 @@ void DataPlot::updatePlot()
         if (yValue(j)->hasOptimal())
         {
             QVector< double > xOptimal, yOptimal;
-            for (int i = 0; i < mMainWindow->dataSize(); ++i)
+            for (int i = 0; i < mMainWindow->optimalSize(); ++i)
             {
-                const DataPoint &dp = mMainWindow->dataPoint(i);
-                if (!dp.optimal.valid) continue;
-
+                const DataPoint &dp = mMainWindow->optimalPoint(i);
                 xOptimal.append(xValue()->value(dp, mMainWindow->units()));
-                yOptimal.append(yValue(j)->optimalValue(dp, mMainWindow->units()));
+                yOptimal.append(yValue(j)->value(dp, mMainWindow->units()));
             }
 
             QCPGraph *graph = addGraph(

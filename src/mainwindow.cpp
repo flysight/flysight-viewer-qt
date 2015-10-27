@@ -448,10 +448,7 @@ void MainWindow::on_actionImport_triggered()
     }
 
     // Clear optimum
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        m_data[i].optimal.valid = false;
-    }
+    m_optimal.clear();
 
     initRange();
 
@@ -1309,6 +1306,7 @@ void MainWindow::on_actionOptimize_triggered()
     const double a = (-s20 * s01 + s00 * s21) / det;
     const double c = ( s40 * s01 - s20 * s21) / det;
 
+    const double t0 = m_data[start].t;
     const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
     const double theta0 = atan2(-m_data[start].velD, velH);
     const double v0 = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
@@ -1333,7 +1331,7 @@ void MainWindow::on_actionOptimize_triggered()
                 QVector< double > clTemp = cl;
 
                 iterate(clTemp, parts);
-                double s = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0, -1);
+                double s = simulate(clTemp, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
 
                 if (s > sMax)
                 {
@@ -1347,15 +1345,14 @@ void MainWindow::on_actionOptimize_triggered()
     }
 
     // Clear optimum
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        m_data[i].optimal.valid = false;
-    }
+    m_optimal.clear();
 
     if (sMax > 0)
     {
-        simulate(clMax, m_timeStep, a, c, theta0, v0, x0, y0, start);
+        simulate(clMax, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
     }
+
+    emit dataChanged();
 
     // Next: - Start simulation at exit and proceed to bottom of competition window.
 }
@@ -1390,13 +1387,14 @@ double MainWindow::simulate(
         double h,
         double a,
         double c,
+        double t0,
         double theta0,
         double v0,
         double x0,
         double y0,
         int start)
 {
-    double t = 0;
+    double t = t0;
     double theta = theta0;
     double v = v0;
     double x = x0;
@@ -1473,13 +1471,22 @@ double MainWindow::simulate(
         // Update data
         if (start >= 0)
         {
-            m_data[k].optimal.valid = true;
-            m_data[k].optimal.lift = lift_next;
-            m_data[k].optimal.drag = drag_next;
-            m_data[k].optimal.velH = v * cos(theta);
-            m_data[k].optimal.velD = v * sin(theta);
-            m_data[k].optimal.hMSL = yNext;
-            m_data[k].optimal.alt  = altNext;
+            DataPoint pt;
+
+            pt.hMSL  = yNext;
+
+            pt.velE  = v * cos(theta);
+            pt.velD  = -v * sin(theta);
+
+            pt.t = tNext;
+            pt.x = xNext;
+            pt.y = 0;
+            pt.z = pt.alt = altNext;
+
+            pt.lift = lift_next;
+            pt.drag = drag_next;
+
+            m_optimal.append(pt);
         }
     }
 

@@ -7,21 +7,6 @@
 
 #include "common.h"
 
-class Optimal
-{
-public:
-    bool        valid;
-
-    double      lift;
-    double      drag;
-
-    double      velH;
-    double      velD;
-    double      hMSL;
-
-    double      alt;
-};
-
 class DataPoint
 {
 public:
@@ -60,8 +45,6 @@ public:
 
     double      lift;
     double      drag;
-
-    Optimal     optimal;
 
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,

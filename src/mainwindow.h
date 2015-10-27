@@ -69,6 +69,9 @@ public:
     double planformArea() const { return m_planformArea; }
     double wingSpan() const { return m_wingSpan; }
 
+    int optimalSize() const { return m_optimal.size(); }
+    const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -118,6 +121,7 @@ private slots:
 private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
+    QVector< DataPoint >  m_optimal;
 
     double                mMarkStart;
     double                mMarkEnd;
@@ -169,7 +173,7 @@ private:
 
     void iterate(QVector< double > &clOut, int parts);
     double simulate(const QVector< double > &cl, double h, double a, double c,
-                    double theta0, double v0, double x0, double y0, int start);
+                    double t0, double theta0, double v0, double x0, double y0, int start);
     double dtheta(double theta, double v, double x, double y, double lift);
     double dv(double theta, double v, double x, double y, double drag);
     double dx(double theta, double v, double x, double y);

@@ -61,7 +61,6 @@ public:
     }
 
     virtual bool hasOptimal() const { return false; }
-    virtual double optimalValue(const DataPoint &dp, Units units) const { return 0; }
 
 private:
     bool mVisible;
@@ -91,11 +90,6 @@ public:
     }
 
     bool hasOptimal() const { return true; }
-    double optimalValue(const DataPoint &dp, Units units) const
-    {
-        if (units == Metric) return dp.optimal.alt;
-        else                 return dp.optimal.alt * METERS_TO_FEET;
-    }
 };
 
 class PlotVerticalSpeed: public PlotValue
