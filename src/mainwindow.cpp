@@ -1475,6 +1475,7 @@ double MainWindow::simulate(
 
             pt.hMSL  = yNext;
 
+            pt.velN  = 0;
             pt.velE  = v * cos(theta);
             pt.velD  = -v * sin(theta);
 
@@ -1482,6 +1483,12 @@ double MainWindow::simulate(
             pt.x = xNext;
             pt.y = 0;
             pt.z = pt.alt = altNext;
+
+            // dist2D
+            // dist3D
+
+            // curv
+            // accel
 
             pt.lift = lift_next;
             pt.drag = drag_next;

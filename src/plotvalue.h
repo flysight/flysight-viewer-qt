@@ -109,6 +109,8 @@ public:
         if (units == Metric) return DataPoint::verticalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::verticalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotHorizontalSpeed: public PlotValue
@@ -128,6 +130,8 @@ public:
         if (units == Metric) return DataPoint::horizontalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::horizontalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotTotalSpeed: public PlotValue
@@ -147,6 +151,8 @@ public:
         if (units == Metric) return DataPoint::totalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::totalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDiveAngle: public PlotValue
@@ -166,6 +172,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::diveAngle(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotCurvature: public PlotValue
@@ -185,6 +193,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::curvature(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotGlideRatio: public PlotValue
@@ -204,6 +214,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::glideRatio(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotHorizontalAccuracy: public PlotValue
@@ -299,6 +311,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::time(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDistance2D: public PlotValue
@@ -318,6 +332,8 @@ public:
         if (units == Metric) return DataPoint::distance2D(dp);
         else                 return DataPoint::distance2D(dp) * METERS_TO_FEET;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDistance3D: public PlotValue
@@ -337,6 +353,8 @@ public:
         if (units == Metric) return DataPoint::distance3D(dp);
         else                 return DataPoint::distance3D(dp) * METERS_TO_FEET;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotWindSpeed: public PlotValue
@@ -432,6 +450,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::acceleration(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotTotalEnergy: public PlotValue
@@ -451,6 +471,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::totalEnergy(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotEnergyRate: public PlotValue
@@ -470,6 +492,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::energyRate(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotLift: public PlotValue
@@ -489,6 +513,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::liftCoefficient(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDrag: public PlotValue
@@ -508,6 +534,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::dragCoefficient(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 #endif // PLOTVALUE_H
