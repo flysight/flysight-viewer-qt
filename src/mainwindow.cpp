@@ -447,6 +447,12 @@ void MainWindow::on_actionImport_triggered()
         m_timeStep = 1.0;
     }
 
+    // Clear optimum
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        m_data[i].optimal.valid = false;
+    }
+
     initRange();
 
     emit dataLoaded();
@@ -1303,46 +1309,55 @@ void MainWindow::on_actionOptimize_triggered()
     const double a = (-s20 * s01 + s00 * s21) / det;
     const double c = ( s40 * s01 - s20 * s21) / det;
 
-    QVector< double > cl (end - start, s10 / s00);
-
     const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
     const double theta0 = atan2(-m_data[start].velD, velH);
     const double v0 = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
     const double x0 = 0;
-    const double y0 = m_data[start].alt;
-
-    double t = simulate(cl, m_timeStep, a, c, theta0, v0, x0, y0);
-    QMessageBox::information(this, "Result 0", QString("%1").arg(t));
+    const double y0 = m_data[start].hMSL;
 
     qsrand(0);  // TODO: Use a different seed value
 
-    double tMax = t;
+    double sMax = 0;
+
+    QVector< double > cl (end - start, s10 / s00);
     QVector< double > clMax = cl;
 
-    for (int j = 0; j < 100; ++j)
+    for (int k = 0; k < 10; ++k)
     {
-        for (int i = 0; i < 100; ++i)
+        const int parts = (1 << k);
+
+        for (int j = 0; j < 10; ++j)
         {
-            QVector< double > clTemp = cl;
-
-            iterate(clTemp, 1);
-            t = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0);
-
-            if (t > tMax)
+            for (int i = 0; i < 100; ++i)
             {
-                tMax = t;
-                clMax = clTemp;
-            }
-        }
+                QVector< double > clTemp = cl;
 
-        t = tMax;
-        cl = clMax;
+                iterate(clTemp, parts);
+                double s = simulate(clTemp, m_timeStep, a, c, theta0, v0, x0, y0, -1);
+
+                if (s > sMax)
+                {
+                    sMax = s;
+                    clMax = clTemp;
+                }
+            }
+
+            cl = clMax;
+        }
     }
 
-    QMessageBox::information(this, QString("Best result"), QString("%1").arg(tMax));
+    // Clear optimum
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        m_data[i].optimal.valid = false;
+    }
+
+    if (sMax > 0)
+    {
+        simulate(clMax, m_timeStep, a, c, theta0, v0, x0, y0, start);
+    }
 
     // Next: - Start simulation at exit and proceed to bottom of competition window.
-    //       - No need to store complete profile for hypothetical jumps. Just calculate score.
 }
 
 void MainWindow::iterate(
@@ -1378,7 +1393,8 @@ double MainWindow::simulate(
         double theta0,
         double v0,
         double x0,
-        double y0)
+        double y0,
+        int start)
 {
     double t = 0;
     double theta = theta0;
@@ -1386,15 +1402,16 @@ double MainWindow::simulate(
     double x = x0;
     double y = y0;
 
+    double tStart, tEnd;
     double xStart, xEnd;
     int armed = 0;
 
-    int k = 0;
+    int k = start;
 
     QVector< double >::ConstIterator i;
     for (i = cl.constBegin();
          i != cl.constEnd() && i + 1 != cl.constEnd();
-         ++i)
+         ++i, ++k)
     {
         const double lift_prev = *i;
         const double drag_prev = a * lift_prev * lift_prev + c;
@@ -1430,14 +1447,19 @@ double MainWindow::simulate(
         const double xNext     = x + (m0 + 2 * m1 + 2 * m2 + m3) / 6;
         const double yNext     = y + (n0 + 2 * n1 + 2 * n2 + n3) / 6;
 
-        if (armed == 0 && y >= 3000 && yNext < 3000)
+        const double alt = y + m_data[0].alt - m_data[0].hMSL;
+        const double altNext = yNext + m_data[0].alt - m_data[0].hMSL;
+
+        if (armed == 0 && alt >= 3000 && altNext < 3000)
         {
-            xStart = x + (3000 - y) / (yNext - y) * (xNext - x);
+            tStart = t + (3000 - alt) / (altNext - alt) * (tNext - t);
+            xStart = x + (3000 - alt) / (altNext - alt) * (xNext - x);
             ++armed;
         }
-        if (armed == 1 && y >= 2000 && yNext < 2000)
+        if (armed == 1 && alt >= 2000 && altNext < 2000)
         {
-            xEnd = x + (2000 - y) / (yNext - y) * (xNext - x);
+            tEnd = t + (2000 - alt) / (altNext - alt) * (tNext - t);
+            xEnd = x + (2000 - alt) / (altNext - alt) * (xNext - x);
             ++armed;
             break;
         }
@@ -1449,12 +1471,21 @@ double MainWindow::simulate(
         y      = yNext;
 
         // Update data
-        m_data[k++].alt = y;
+        if (start >= 0)
+        {
+            m_data[k].optimal.valid = true;
+            m_data[k].optimal.lift = lift_next;
+            m_data[k].optimal.drag = drag_next;
+            m_data[k].optimal.velH = v * cos(theta);
+            m_data[k].optimal.velD = v * sin(theta);
+            m_data[k].optimal.hMSL = yNext;
+            m_data[k].optimal.alt  = altNext;
+        }
     }
 
     if (armed == 2)
     {
-        return xEnd - xStart;
+        return (xEnd - xStart) / (tEnd - tStart);
     }
     else
     {

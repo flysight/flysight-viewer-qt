@@ -473,11 +473,31 @@ void DataPlot::updatePlot()
             y.append(yValue(j)->value(dp, mMainWindow->units()));
         }
 
+        QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
         QCPGraph *graph = addGraph(
                     axisRect()->axis(QCPAxis::atBottom),
-                    yValue(j)->addAxis(this, mMainWindow->units()));
+                    axis);
         graph->setData(x, y);
         graph->setPen(QPen(yValue(j)->color()));
+
+        if (yValue(j)->hasOptimal())
+        {
+            QVector< double > xOptimal, yOptimal;
+            for (int i = 0; i < mMainWindow->dataSize(); ++i)
+            {
+                const DataPoint &dp = mMainWindow->dataPoint(i);
+                if (!dp.optimal.valid) continue;
+
+                xOptimal.append(xValue()->value(dp, mMainWindow->units()));
+                yOptimal.append(yValue(j)->optimalValue(dp, mMainWindow->units()));
+            }
+
+            QCPGraph *graph = addGraph(
+                        axisRect()->axis(QCPAxis::atBottom),
+                        axis);
+            graph->setData(xOptimal, yOptimal);
+            graph->setPen(QPen(QBrush(yValue(j)->color()), 0, Qt::DotLine));
+        }
     }
 
     if (mMainWindow->markActive())

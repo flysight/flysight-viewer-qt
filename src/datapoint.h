@@ -10,12 +10,16 @@
 class Optimal
 {
 public:
+    bool        valid;
+
     double      lift;
     double      drag;
 
     double      velH;
     double      velD;
     double      hMSL;
+
+    double      alt;
 };
 
 class DataPoint

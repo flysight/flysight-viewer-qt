@@ -60,6 +60,9 @@ public:
         settings.endGroup();
     }
 
+    virtual bool hasOptimal() const { return false; }
+    virtual double optimalValue(const DataPoint &dp, Units units) const { return 0; }
+
 private:
     bool mVisible;
 
@@ -85,6 +88,13 @@ public:
     {
         if (units == Metric) return DataPoint::elevation(dp);
         else                 return DataPoint::elevation(dp) * METERS_TO_FEET;
+    }
+
+    bool hasOptimal() const { return true; }
+    double optimalValue(const DataPoint &dp, Units units) const
+    {
+        if (units == Metric) return dp.optimal.alt;
+        else                 return dp.optimal.alt * METERS_TO_FEET;
     }
 };
 

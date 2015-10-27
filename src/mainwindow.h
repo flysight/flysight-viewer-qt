@@ -169,7 +169,7 @@ private:
 
     void iterate(QVector< double > &clOut, int parts);
     double simulate(const QVector< double > &cl, double h, double a, double c,
-                    double theta0, double v0, double x0, double y0);
+                    double theta0, double v0, double x0, double y0, int start);
     double dtheta(double theta, double v, double x, double y, double lift);
     double dv(double theta, double v, double x, double y, double drag);
     double dx(double theta, double v, double x, double y);
