@@ -1317,16 +1317,23 @@ void MainWindow::on_actionOptimize_triggered()
 
     double sMax = 0;
 
-    QVector< double > aoa (end - start, s10 / s00 / (2 * M_PI));
+    int aoaSize = 1, kMax = 0;
+    while (aoaSize < end - start)
+    {
+        aoaSize *= 2;
+        ++kMax;
+    }
+
+    QVector< double > aoa (aoaSize, s10 / s00 / (2 * M_PI));
     QVector< double > aoaMax = aoa;
 
-    for (int k = 0; k < 10; ++k)
+    for (int k = 0; k < kMax; ++k)
     {
         const int parts = (1 << k);
 
-        for (int j = 0; j < 10; ++j)
+        for (int j = 0; j < 100; ++j)
         {
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 10; ++i)
             {
                 QVector< double > aoaTemp = aoa;
 
@@ -1361,17 +1368,17 @@ void MainWindow::iterate(
         QVector< double > &aoa,
         int parts)
 {
-    const double minRatio = 0.9, maxRatio = 1.1;
+    const double minRatio = 1.0 - (0.1 / parts), maxRatio = 1.0 + (0.1 / parts);
 
     double jPrev = 0;
     double rPrev = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
     for (int i = 0; i < parts; ++i)
     {
-        int j, jNext = aoa.size() * (i + 1) / parts;
+        int jNext = aoa.size() * (i + 1) / parts;
         double rNext = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
-        for (j = jPrev; j < jNext; ++j)
+        for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
             aoa[j] *= r;
