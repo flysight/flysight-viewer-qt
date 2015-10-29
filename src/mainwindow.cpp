@@ -1315,8 +1315,6 @@ void MainWindow::on_actionOptimize_triggered()
 
     qsrand(0);  // TODO: Use a different seed value
 
-    double sMax = 0;
-
     int aoaSize = 1, kMax = 0;
     while (aoaSize < end - start)
     {
@@ -1325,6 +1323,7 @@ void MainWindow::on_actionOptimize_triggered()
     }
 
     QVector< double > aoa (aoaSize, s10 / s00 / (2 * M_PI));
+    double sMax = simulate(aoa, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
     QVector< double > aoaMax = aoa;
 
     for (int k = 0; k < kMax; ++k)
@@ -1507,8 +1506,8 @@ double MainWindow::simulate(
     if (armed == 2)
     {
 //        return (xEnd - xStart) / (tEnd - tStart);
-//        return xEnd - xStart;
-        return tEnd - tStart;
+        return xEnd - xStart;
+//        return tEnd - tStart;
     }
     else
     {
@@ -1581,14 +1580,10 @@ double MainWindow::dy(
 double MainWindow::lift(
         double aoa)
 {
-    if (aoa < 0.5 / 2 / M_PI)
-    {
-        return 2 * M_PI * aoa;
-    }
-    else
-    {
-        return 2 * sin(aoa) * sin(2 * aoa);
-    }
+    const double max_aoa = 0.05;
+    const double width = 0.001;
+    const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
+    return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
 }
 
 double MainWindow::drag(
@@ -1596,13 +1591,6 @@ double MainWindow::drag(
         double a,
         double c)
 {
-    if (aoa < 0.5 / 2 / M_PI)
-    {
-        const double cl = lift(aoa);
-        return a * cl * cl + c;
-    }
-    else
-    {
-        return 2 * sin(aoa) * (1 - cos(2 * aoa));
-    }
+    const double cl = lift(aoa);
+    return a * cl * cl + c;
 }
