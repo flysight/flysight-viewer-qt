@@ -1313,7 +1313,7 @@ void MainWindow::on_actionOptimize_triggered()
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
-    qsrand(0);  // TODO: Use a different seed value
+    qsrand(QTime::currentTime().msec());  // TODO: Use a different seed value
 
     int aoaSize = 1, kMax = 0;
     while (aoaSize < end - start)
@@ -1367,24 +1367,38 @@ void MainWindow::iterate(
         QVector< double > &aoa,
         int parts)
 {
-    const double minRatio = 1.0 - (0.1 / parts), maxRatio = 1.0 + (0.1 / parts);
+    const int i = qrand() % (parts + 1);
+    const double minRatio = 1.0 - (0.5 / parts), maxRatio = 1.0 + (0.5 / parts);
+    const double r = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
 
-    double jPrev = 0;
-    double rPrev = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
-
-    for (int i = 0; i < parts; ++i)
+    if (i > 0)
     {
-        int jNext = aoa.size() * (i + 1) / parts;
-        double rNext = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
+        const int jPrev = aoa.size() * (i - 1) / parts;
+        const int jNext = aoa.size() * i / parts;
+
+        const double rPrev = 1.0;
+        const double rNext = r;
 
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
             aoa[j] *= r;
         }
+    }
 
-        jPrev = jNext;
-        rPrev = rNext;
+    if (i < parts)
+    {
+        const int jPrev = aoa.size() * i / parts;
+        const int jNext = aoa.size() * (i + 1) / parts;
+
+        const double rPrev = r;
+        const double rNext = 1.0;
+
+        for (int j = jPrev; j < jNext; ++j)
+        {
+            const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
+            aoa[j] *= r;
+        }
     }
 }
 
@@ -1592,7 +1606,7 @@ double MainWindow::dy(
 double MainWindow::lift(
         double aoa)
 {
-    const double max_aoa = 0.076;
+    const double max_aoa = 0.057;
     const double width = 0.001;
     const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
     return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
