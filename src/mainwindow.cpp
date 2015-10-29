@@ -1410,12 +1410,18 @@ double MainWindow::simulate(
     double xStart, xEnd;
     int armed = 0;
 
-    int k = start;
+    double dist2D, dist3D;
+
+    if (start >= 0)
+    {
+        dist2D = m_data[start].dist2D;
+        dist3D = m_data[start].dist3D;
+    }
 
     QVector< double >::ConstIterator i;
     for (i = aoa.constBegin();
          i != aoa.constEnd() && i + 1 != aoa.constEnd();
-         ++i, ++k)
+         ++i)
     {
         const double lift_prev = lift(*i);
         const double drag_prev = drag(*i, a, c);
@@ -1445,11 +1451,14 @@ double MainWindow::simulate(
         const double m3 = h *     dx(theta + k2, v + l2, x + m2, y + n2);
         const double n3 = h *     dy(theta + k2, v + l2, x + m2, y + n2);
 
+        const double dx = (m0 + 2 * m1 + 2 * m2 + m3) / 6;
+        const double dy = (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+
         const double tNext     = t + h;
         const double thetaNext = theta + (k0 + 2 * k1 + 2 * k2 + k3) / 6;
         const double vNext     = v + (l0 + 2 * l1 + 2 * l2 + l3) / 6;
-        const double xNext     = x + (m0 + 2 * m1 + 2 * m2 + m3) / 6;
-        const double yNext     = y + (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+        const double xNext     = x + dx;
+        const double yNext     = y + dy;
 
         const double alt = y + m_data[0].alt - m_data[0].hMSL;
         const double altNext = yNext + m_data[0].alt - m_data[0].hMSL;
@@ -1477,6 +1486,9 @@ double MainWindow::simulate(
         // Update data
         if (start >= 0)
         {
+            dist2D += dx;
+            dist3D += sqrt(dx * dx + dy * dy);
+
             DataPoint pt;
 
             pt.hMSL  = yNext;
@@ -1490,8 +1502,8 @@ double MainWindow::simulate(
             pt.y = 0;
             pt.z = pt.alt = altNext;
 
-            // dist2D
-            // dist3D
+            pt.dist2D = dist2D;
+            pt.dist3D = dist3D;
 
             // curv
             // accel
@@ -1506,8 +1518,8 @@ double MainWindow::simulate(
     if (armed == 2)
     {
 //        return (xEnd - xStart) / (tEnd - tStart);
-        return xEnd - xStart;
-//        return tEnd - tStart;
+//        return xEnd - xStart;
+        return tEnd - tStart;
     }
     else
     {
@@ -1580,7 +1592,7 @@ double MainWindow::dy(
 double MainWindow::lift(
         double aoa)
 {
-    const double max_aoa = 0.05;
+    const double max_aoa = 0.076;
     const double width = 0.001;
     const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
     return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
