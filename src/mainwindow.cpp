@@ -1445,32 +1445,34 @@ double MainWindow::simulate(
 
         // Runge-Kutta integration
         // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
-        const double k0 = h * dtheta(theta, v, x, y, lift_prev);
-        const double l0 = h *     dv(theta, v, x, y, drag_prev);
-        const double m0 = h *     dx(theta, v, x, y);
-        const double n0 = h *     dy(theta, v, x, y);
+        const double k0 = h * dtheta_dt(theta, v, x, y, lift_prev);
+        const double l0 = h *     dv_dt(theta, v, x, y, drag_prev);
+        const double m0 = h *     dx_dt(theta, v, x, y);
+        const double n0 = h *     dy_dt(theta, v, x, y);
 
-        const double k1 = h * dtheta(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
-        const double l1 = h *     dv(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
-        const double m1 = h *     dx(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
-        const double n1 = h *     dy(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double k1 = h * dtheta_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
+        const double l1 = h *     dv_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
+        const double m1 = h *     dx_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double n1 = h *     dy_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
 
-        const double k2 = h * dtheta(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
-        const double l2 = h *     dv(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
-        const double m2 = h *     dx(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
-        const double n2 = h *     dy(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double k2 = h * dtheta_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
+        const double l2 = h *     dv_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
+        const double m2 = h *     dx_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double n2 = h *     dy_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
 
-        const double k3 = h * dtheta(theta + k2, v + l2, x + m2, y + n2, lift_next);
-        const double l3 = h *     dv(theta + k2, v + l2, x + m2, y + n2, drag_next);
-        const double m3 = h *     dx(theta + k2, v + l2, x + m2, y + n2);
-        const double n3 = h *     dy(theta + k2, v + l2, x + m2, y + n2);
+        const double k3 = h * dtheta_dt(theta + k2, v + l2, x + m2, y + n2, lift_next);
+        const double l3 = h *     dv_dt(theta + k2, v + l2, x + m2, y + n2, drag_next);
+        const double m3 = h *     dx_dt(theta + k2, v + l2, x + m2, y + n2);
+        const double n3 = h *     dy_dt(theta + k2, v + l2, x + m2, y + n2);
 
-        const double dx = (m0 + 2 * m1 + 2 * m2 + m3) / 6;
-        const double dy = (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+        const double dtheta = (k0 + 2 * k1 + 2 * k2 + k3) / 6;
+        const double dv     = (l0 + 2 * l1 + 2 * l2 + l3) / 6;
+        const double dx     = (m0 + 2 * m1 + 2 * m2 + m3) / 6;
+        const double dy     = (n0 + 2 * n1 + 2 * n2 + n3) / 6;
 
         const double tNext     = t + h;
-        const double thetaNext = theta + (k0 + 2 * k1 + 2 * k2 + k3) / 6;
-        const double vNext     = v + (l0 + 2 * l1 + 2 * l2 + l3) / 6;
+        const double thetaNext = theta + dtheta;
+        const double vNext     = v + dv;
         const double xNext     = x + dx;
         const double yNext     = y + dy;
 
@@ -1500,9 +1502,6 @@ double MainWindow::simulate(
         // Update data
         if (start >= 0)
         {
-            dist2D += dx;
-            dist3D += sqrt(dx * dx + dy * dy);
-
             DataPoint pt;
 
             pt.hMSL  = yNext;
@@ -1515,6 +1514,9 @@ double MainWindow::simulate(
             pt.x = xNext;
             pt.y = 0;
             pt.z = pt.alt = altNext;
+
+            dist2D += dx;
+            dist3D += sqrt(dx * dx + dy * dy);
 
             pt.dist2D = dist2D;
             pt.dist3D = dist3D;
@@ -1541,7 +1543,7 @@ double MainWindow::simulate(
     }
 }
 
-double MainWindow::dtheta(
+double MainWindow::dtheta_dt(
         double theta,
         double v,
         double x,
@@ -1563,7 +1565,7 @@ double MainWindow::dtheta(
     return (accelLift - A_GRAVITY * cos(theta)) / v;
 }
 
-double MainWindow::dv(
+double MainWindow::dv_dt(
         double theta,
         double v,
         double x,
@@ -1585,7 +1587,7 @@ double MainWindow::dv(
     return -accelDrag - A_GRAVITY * sin(theta);
 }
 
-double MainWindow::dx(
+double MainWindow::dx_dt(
         double theta,
         double v,
         double x,
@@ -1594,7 +1596,7 @@ double MainWindow::dx(
     return v * cos(theta);
 }
 
-double MainWindow::dy(
+double MainWindow::dy_dt(
         double theta,
         double v,
         double x,
@@ -1617,6 +1619,6 @@ double MainWindow::drag(
         double a,
         double c)
 {
-    const double cl = lift(aoa);
+    const double cl = 2 * M_PI * aoa;
     return a * cl * cl + c;
 }
