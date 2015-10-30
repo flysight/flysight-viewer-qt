@@ -32,7 +32,10 @@ MainWindow::MainWindow(
     m_temperature(288.15),
     m_mass(70),
     m_planformArea(2),
-    m_wingSpan(1.4)
+    m_wingSpan(1.4),
+    m_minDrag(0.041),
+    m_maxLift(0.52),
+    m_efficiency(0.53)
 {
     m_ui->setupUi(this);
 
@@ -98,6 +101,9 @@ void MainWindow::writeSettings()
     settings.setValue("mass", m_mass);
     settings.setValue("planformArea", m_planformArea);
     settings.setValue("wingSpan", m_wingSpan);
+    settings.setValue("minDrag", m_minDrag);
+    settings.setValue("maxLift", m_maxLift);
+    settings.setValue("efficiency", m_efficiency);
     settings.endGroup();
 }
 
@@ -114,6 +120,9 @@ void MainWindow::readSettings()
     m_mass = settings.value("mass", m_mass).toDouble();
     m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
     m_wingSpan = settings.value("wingSpan", m_wingSpan).toDouble();
+    m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+    m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
+    m_efficiency = settings.value("efficiency", m_efficiency).toDouble();
     settings.endGroup();
 }
 
@@ -1281,30 +1290,13 @@ void MainWindow::on_actionOptimize_triggered()
     int start = findIndexBelowT(mRangeLower) + 1;
     int end   = findIndexAboveT(mRangeUpper);
 
-    double s10 = 0, s01 = 0, s20 = 0, s11 = 0;
-    double s21 = 0, s30 = 0, s40 = 0;
-
-    for (int i = start; i < end; ++i)
-    {
-        const DataPoint &dp = m_data[i];
-
-        s10 += dp.lift;
-        s01 += dp.drag;
-        s20 += dp.lift * dp.lift;
-        s11 += dp.lift * dp.drag;
-        s21 += dp.lift * dp.lift * dp.drag;
-        s30 += dp.lift * dp.lift * dp.lift;
-        s40 += dp.lift * dp.lift * dp.lift * dp.lift;
-    }
-
-    const double s00 = end - start + 1;
-    const double det = s00 * s40 - s20 * s20;
-
-    if (det == 0) return;
+    const double bb = m_wingSpan;
+    const double ss = m_planformArea;
+    const double ar = bb * bb / ss;
 
     // y = ax^2 + c
-    const double a = (-s20 * s01 + s00 * s21) / det;
-    const double c = ( s40 * s01 - s20 * s21) / det;
+    const double a = 1 / (M_PI * m_efficiency * ar);
+    const double c = m_minDrag;
 
     const double t0 = m_data[start].t;
     const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
@@ -1322,7 +1314,8 @@ void MainWindow::on_actionOptimize_triggered()
         ++kMax;
     }
 
-    QVector< double > aoa (aoaSize, s10 / s00 / (2 * M_PI));
+    const double max_aoa = m_maxLift / (2 * M_PI);
+    QVector< double > aoa (aoaSize, max_aoa / 2);
     double sMax = simulate(aoa, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
     QVector< double > aoaMax = aoa;
 
@@ -1608,7 +1601,7 @@ double MainWindow::dy_dt(
 double MainWindow::lift(
         double aoa)
 {
-    const double max_aoa = 0.057;
+    const double max_aoa = m_maxLift / (2 * M_PI);
     const double width = 0.001;
     const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
     return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);

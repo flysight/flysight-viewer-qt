@@ -69,6 +69,10 @@ public:
     double planformArea() const { return m_planformArea; }
     double wingSpan() const { return m_wingSpan; }
 
+    double minDrag() const { return m_minDrag; }
+    double maxLift() const { return m_maxLift; }
+    double efficiency() const { return m_efficiency; }
+
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
 
@@ -146,6 +150,10 @@ private:
     double                m_mass;
     double                m_planformArea;
     double                m_wingSpan;
+
+    double                m_minDrag;
+    double                m_maxLift;
+    double                m_efficiency;
 
     void writeSettings();
     void readSettings();

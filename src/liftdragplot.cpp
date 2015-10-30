@@ -150,6 +150,35 @@ void LiftDragPlot::updatePlot()
     const double s00 = end - start + 1;
     const double det = s00 * s40 - s20 * s20;
 
+    const double bb = mMainWindow->wingSpan();
+    const double ss = mMainWindow->planformArea();
+    const double ar = bb * bb / ss;
+
+    // Draw saved curve
+    const double a = 1 / (M_PI * mMainWindow->efficiency() * ar);
+    const double c = mMainWindow->minDrag();
+
+    t.clear();
+    x.clear();
+    y.clear();
+
+    xMin = xAxis->range().lower;
+    xMax = xAxis->range().upper;
+
+    for (int i = 0; i < 101; ++i)
+    {
+        const double xx = xMin + (xMax - xMin) / 100 * i;
+
+        t.append(xx);
+        x.append(xx);
+        y.append(a * xx * xx + c);
+    }
+
+    curve = new QCPCurve(xAxis, yAxis);
+    curve->setData(t, x, y);
+    curve->setPen(QPen(QBrush(Qt::red), 0, Qt::DotLine));
+    addPlottable(curve);
+
     if (det != 0)
     {
         // y = ax^2 + c
@@ -159,9 +188,6 @@ void LiftDragPlot::updatePlot()
         t.clear();
         x.clear();
         y.clear();
-
-        xMin = xAxis->range().lower;
-        xMax = xAxis->range().upper;
 
         // Add best fit curve
         for (int i = 0; i < 101; ++i)
@@ -181,10 +207,6 @@ void LiftDragPlot::updatePlot()
         // Add label to show equation for fit
         QCPItemText *textLabel = new QCPItemText(this);
         addItem(textLabel);
-
-        const double bb = mMainWindow->wingSpan();
-        const double ss = mMainWindow->planformArea();
-        const double ar = bb * bb / ss;
 
         // Find tangent line
         const double xt = sqrt(c / a);
