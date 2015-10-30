@@ -1004,6 +1004,9 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMass(m_mass);
     dlg.setPlanformArea(m_planformArea);
     dlg.setWingSpan(m_wingSpan);
+    dlg.setMinDrag(m_minDrag);
+    dlg.setMaxLift(m_maxLift);
+    dlg.setEfficiency(m_efficiency);
 
     dlg.exec();
 
@@ -1032,6 +1035,17 @@ void MainWindow::on_actionPreferences_triggered()
         m_wingSpan = dlg.wingSpan();
 
         initAerodynamics();
+
+        emit dataChanged();
+    }
+
+    if (m_minDrag != dlg.minDrag() ||
+        m_maxLift != dlg.maxLift() ||
+        m_efficiency != dlg.efficiency())
+    {
+        m_minDrag = dlg.minDrag();
+        m_maxLift = dlg.maxLift();
+        m_efficiency = dlg.efficiency();
 
         emit dataChanged();
     }

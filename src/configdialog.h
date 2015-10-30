@@ -36,6 +36,15 @@ public:
     void setWingSpan(double span);
     double wingSpan() const;
 
+    void setMinDrag(double minDrag);
+    double minDrag() const;
+
+    void setMaxLift(double maxLift);
+    double maxLift() const;
+
+    void setEfficiency(double efficiency);
+    double efficiency() const;
+
 private:
     Ui::ConfigDialog *ui;
 
