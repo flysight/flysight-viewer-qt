@@ -21,6 +21,9 @@ WingsuitView::WingsuitView(QWidget *parent) :
 
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
+    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
 }
 
 WingsuitView::~WingsuitView()
@@ -36,6 +39,9 @@ QSize WingsuitView::sizeHint() const
 
 void WingsuitView::updateView()
 {
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+
     const double bottom = mMainWindow->windowBottom();
     const double top = mMainWindow->windowTop();
 
@@ -131,4 +137,14 @@ void WingsuitView::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+void WingsuitView::onActualButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Actual);
+}
+
+void WingsuitView::onOptimalButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

@@ -26,6 +26,10 @@ public:
         Pan, Zoom, Measure, Zero, Ground
     } Tool;
 
+    typedef enum {
+        Actual, Optimal
+    } WindowMode;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -74,6 +78,9 @@ public:
     bool isWindowValid(void) const;
     const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
     const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
+
+    void setWindowMode(WindowMode mode);
+    WindowMode windowMode() const { return mWindowMode; }
 
     double planformArea() const { return m_planformArea; }
     double wingSpan() const { return m_wingSpan; }
@@ -162,6 +169,8 @@ private:
 
     DataPoint             mWindowBottomDP;
     DataPoint             mWindowTopDP;
+
+    WindowMode            mWindowMode;
 
     WingsuitView         *mWingsuitView;
 

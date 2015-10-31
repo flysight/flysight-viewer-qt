@@ -36,6 +36,8 @@ private slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
     void onApplyButtonClicked();
+    void onActualButtonClicked();
+    void onOptimalButtonClicked();
 };
 
 #endif // WINGSUITVIEW_H

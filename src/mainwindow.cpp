@@ -33,6 +33,7 @@ MainWindow::MainWindow(
     mWindowBottom(2000),
     mWindowTop(3000),
     mIsWindowValid(false),
+    mWindowMode(Actual),
     mWingsuitView(0),
     m_temperature(288.15),
     m_mass(70),
@@ -1335,14 +1336,17 @@ void MainWindow::setWingsuitVisible(
 
 void MainWindow::updateWindow(void)
 {
+    const QVector< DataPoint > &data =
+            (mWindowMode == Actual) ? m_data : m_optimal;
+
     mIsWindowValid = false;
 
-    int iBottom, iTop;
+    int iBottom = data.size() - 1, iTop = data.size() - 1;
 
     // Find end of window
-    for (int i = dataSize() - 1; i >= 0; --i)
+    for (int i = data.size() - 1; i >= 0; --i)
     {
-        const DataPoint &dp = dataPoint(i);
+        const DataPoint &dp = data[i];
 
         if (dp.alt < mWindowBottom)
         {
@@ -1358,19 +1362,19 @@ void MainWindow::updateWindow(void)
             mIsWindowValid = true;
         }
 
-        if (mIsWindowValid && DataPoint::energyRate(dp) > 0) break;
+        if (mIsWindowValid && dp.t < 0) break;
     }
 
     if (mIsWindowValid)
     {
         // Calculate bottom of window
-        const DataPoint &dp1 = dataPoint(iBottom - 1);
-        const DataPoint &dp2 = dataPoint(iBottom);
+        const DataPoint &dp1 = data[iBottom - 1];
+        const DataPoint &dp2 = data[iBottom];
         mWindowBottomDP = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
 
         // Calculate top of window
-        const DataPoint &dp3 = dataPoint(iTop - 1);
-        const DataPoint &dp4 = dataPoint(iTop);
+        const DataPoint &dp3 = data[iTop - 1];
+        const DataPoint &dp4 = data[iTop];
         mWindowTopDP = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
     }
 }
@@ -1378,6 +1382,14 @@ void MainWindow::updateWindow(void)
 bool MainWindow::isWindowValid() const
 {
     return mIsWindowValid && mWingsuitView && m_ui->actionShowWingsuitView->isChecked();
+}
+
+void MainWindow::setWindowMode(
+        WindowMode mode)
+{
+    mWindowMode = mode;
+
+    emit dataChanged();
 }
 
 void MainWindow::setTool(
