@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     common.cpp \
     videoview.cpp \
     windplot.cpp \
-    wingsuitview.cpp
+    wingsuitview.cpp\
+    liftdragplot.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -37,7 +38,8 @@ HEADERS  += mainwindow.h \
     common.h \
     videoview.h \
     windplot.h \
-    wingsuitview.h
+    wingsuitview.h \
+    liftdragplot.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

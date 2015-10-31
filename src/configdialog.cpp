@@ -12,6 +12,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
                 QStringList() << tr("General"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Wind"));
+    ui->contentsWidget->addItems(
+                QStringList() << tr("Aerodynamics"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -60,4 +62,81 @@ void ConfigDialog::setDtWind(
 double ConfigDialog::dtWind() const
 {
     return ui->dtWindEdit->text().toDouble();
+}
+
+void ConfigDialog::setTemperature(
+        double temperature)
+{
+    ui->temperatureEdit->setText(QString("%1").arg(temperature - 273.15));
+}
+
+double ConfigDialog::temperature() const
+{
+    return ui->temperatureEdit->text().toDouble() + 273.15;
+}
+
+void ConfigDialog::setMass(
+        double mass)
+{
+    ui->massEdit->setText(QString("%1").arg(mass));
+}
+
+double ConfigDialog::mass() const
+{
+    return ui->massEdit->text().toDouble();
+}
+
+void ConfigDialog::setPlanformArea(
+        double area)
+{
+    ui->areaEdit->setText(QString("%1").arg(area));
+}
+
+double ConfigDialog::planformArea() const
+{
+    return ui->areaEdit->text().toDouble();
+}
+
+void ConfigDialog::setWingSpan(
+        double span)
+{
+    ui->spanEdit->setText(QString("%1").arg(span));
+}
+
+double ConfigDialog::wingSpan() const
+{
+    return ui->spanEdit->text().toDouble();
+}
+
+void ConfigDialog::setMinDrag(
+        double minDrag)
+{
+    ui->minDragEdit->setText(QString("%1").arg(minDrag));
+}
+
+double ConfigDialog::minDrag() const
+{
+    return ui->minDragEdit->text().toDouble();
+}
+
+void ConfigDialog::setMaxLift(
+        double maxLift)
+{
+    ui->maxLiftEdit->setText(QString("%1").arg(maxLift));
+}
+
+double ConfigDialog::maxLift() const
+{
+    return ui->maxLiftEdit->text().toDouble();
+}
+
+void ConfigDialog::setEfficiency(
+        double efficiency)
+{
+    ui->efficiencyEdit->setText(QString("%1").arg(efficiency));
+}
+
+double ConfigDialog::efficiency() const
+{
+    return ui->efficiencyEdit->text().toDouble();
 }

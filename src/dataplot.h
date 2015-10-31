@@ -37,6 +37,8 @@ public:
         Acceleration,
         TotalEnergy,
         EnergyRate,
+        Lift,
+        Drag,
         yaLast
     } YAxisType;
 

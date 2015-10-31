@@ -5,7 +5,7 @@
 
 #include <math.h>
 
-#define A_GRAVITY 9.80665   // Standard acceleration due to gravity
+#include "common.h"
 
 class DataPoint
 {
@@ -43,6 +43,9 @@ public:
     double      velAircraft;
     double      windErr;
 
+    double      lift;
+    double      drag;
+
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
                                  double a);
@@ -50,6 +53,16 @@ public:
     static double elevation(const DataPoint &dp)
     {
         return dp.alt;
+    }
+
+    static double northSpeed(const DataPoint &dp)
+    {
+        return dp.velN;
+    }
+
+    static double eastSpeed(const DataPoint &dp)
+    {
+        return dp.velE;
     }
 
     static double verticalSpeed(const DataPoint &dp)
@@ -153,6 +166,16 @@ public:
     static double energyRate(const DataPoint &dp)
     {
         return totalSpeed(dp) * acceleration(dp) - A_GRAVITY * verticalSpeed(dp);
+    }
+
+    static double liftCoefficient(const DataPoint &dp)
+    {
+        return dp.lift;
+    }
+
+    static double dragCoefficient(const DataPoint &dp)
+    {
+        return dp.drag;
     }
 };
 

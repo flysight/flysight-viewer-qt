@@ -75,6 +75,16 @@ public:
     const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
     const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
 
+    double planformArea() const { return m_planformArea; }
+    double wingSpan() const { return m_wingSpan; }
+
+    double minDrag() const { return m_minDrag; }
+    double maxLift() const { return m_maxLift; }
+    double efficiency() const { return m_efficiency; }
+
+    int optimalSize() const { return m_optimal.size(); }
+    const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -99,6 +109,8 @@ private slots:
     void on_actionAcceleration_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
+    void on_actionLift_triggered();
+    void on_actionDrag_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -117,9 +129,12 @@ private slots:
     void on_actionExportKML_triggered();
     void on_actionExportPlot_triggered();
 
+    void on_actionOptimize_triggered();
+
 private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
+    QVector< DataPoint >  m_optimal;
 
     double                mMarkStart;
     double                mMarkEnd;
@@ -150,6 +165,15 @@ private:
 
     WingsuitView         *mWingsuitView;
 
+    double                m_temperature;
+    double                m_mass;
+    double                m_planformArea;
+    double                m_wingSpan;
+
+    double                m_minDrag;
+    double                m_maxLift;
+    double                m_efficiency;
+
     void writeSettings();
     void readSettings();
 
@@ -158,11 +182,15 @@ private:
     void initMapView();
     void initWindView();
     void initWingsuitView();
+    void initLiftDragView();
+
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
     void initWind();
     void getWind(const int center);
+
+    void initAerodynamics();
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
@@ -170,6 +198,18 @@ private:
 
     void updateBottomActions();
     void updateLeftActions();
+
+    void iterate(QVector< double > &aoa, int parts);
+    double simulate(const QVector< double > &aoa, double h, double a, double c,
+                    double t0, double theta0, double v0, double x0, double y0, int start);
+
+    double dtheta_dt(double theta, double v, double x, double y, double lift);
+    double dv_dt(double theta, double v, double x, double y, double drag);
+    double dx_dt(double theta, double v, double x, double y);
+    double dy_dt(double theta, double v, double x, double y);
+
+    double lift(double aoa);
+    double drag(double aoa, double a, double c);
 
 signals:
     void dataLoaded();

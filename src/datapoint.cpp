@@ -44,5 +44,8 @@ DataPoint DataPoint::interpolate(
     ret.velAircraft = p1.velAircraft + a * (p2.velAircraft - p1.velAircraft);
     ret.windErr = p1.windErr + a * (p2.windErr - p1.windErr);
 
+    ret.lift = p1.lift + a * (p2.lift - p1.lift);
+    ret.drag = p1.drag + a * (p2.drag - p1.drag);
+
     return ret;
 }

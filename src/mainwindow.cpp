@@ -5,14 +5,17 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QSettings>
 #include <QShortcut>
 #include <QTextStream>
 
 #include <math.h>
 
+#include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "liftdragplot.h"
 #include "mapview.h"
 #include "videoview.h"
 #include "windplot.h"
@@ -30,7 +33,14 @@ MainWindow::MainWindow(
     mWindowBottom(2000),
     mWindowTop(3000),
     mIsWindowValid(false),
-    mWingsuitView(0)
+    mWingsuitView(0),
+    m_temperature(288.15),
+    m_mass(70),
+    m_planformArea(2),
+    m_wingSpan(1.4),
+    m_minDrag(0.041),
+    m_maxLift(0.52),
+    m_efficiency(0.53)
 {
     m_ui->setupUi(this);
 
@@ -56,6 +66,9 @@ MainWindow::MainWindow(
 
     // Initialize wingsuit view
     initWingsuitView();
+
+    // Initialize lift/drag view
+    initLiftDragView();
 
     // Restore window state
     readSettings();
@@ -96,6 +109,13 @@ void MainWindow::writeSettings()
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
     settings.setValue("dtWind", m_dtWind);
+    settings.setValue("temperature", m_temperature);
+    settings.setValue("mass", m_mass);
+    settings.setValue("planformArea", m_planformArea);
+    settings.setValue("wingSpan", m_wingSpan);
+    settings.setValue("minDrag", m_minDrag);
+    settings.setValue("maxLift", m_maxLift);
+    settings.setValue("efficiency", m_efficiency);
     settings.endGroup();
 }
 
@@ -108,6 +128,13 @@ void MainWindow::readSettings()
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
+    m_temperature = settings.value("temperature", m_temperature).toDouble();
+    m_mass = settings.value("mass", m_mass).toDouble();
+    m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
+    m_wingSpan = settings.value("wingSpan", m_wingSpan).toDouble();
+    m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+    m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
+    m_efficiency = settings.value("efficiency", m_efficiency).toDouble();
     settings.endGroup();
 }
 
@@ -192,8 +219,6 @@ void MainWindow::initWindView()
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
-    connect(this, SIGNAL(dataLoaded()),
-            windPlot, SLOT(initPlot()));
     connect(this, SIGNAL(dataChanged()),
             windPlot, SLOT(updatePlot()));
 }
@@ -218,6 +243,26 @@ void MainWindow::initWingsuitView()
 
     connect(this, SIGNAL(dataChanged()),
             mWingsuitView, SLOT(updateView()));
+}
+
+void MainWindow::initLiftDragView()
+{
+    LiftDragPlot *liftDragPlot = new LiftDragPlot;
+    QDockWidget *dockWidget = new QDockWidget(tr("Lift/Drag View"));
+    dockWidget->setWidget(liftDragPlot);
+    dockWidget->setObjectName("liftDragView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    liftDragPlot->setMainWindow(this);
+
+    connect(m_ui->actionShowLiftDragView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLiftDragView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            liftDragPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::closeEvent(
@@ -397,6 +442,11 @@ void MainWindow::on_actionImport_triggered()
         dp.y = distance * cos(bearing);
         dp.z = dp.alt = dp.hMSL - dp0.hMSL;
 
+        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
+        qint64 end = dp.dateTime.toMSecsSinceEpoch();
+
+        dp.t = (double) (end - start) / 1000;
+
         if (i > 0)
         {
             const DataPoint &dpPrev = m_data[i - 1];
@@ -412,11 +462,6 @@ void MainWindow::on_actionImport_triggered()
 
         dp.dist2D = dist2D;
         dp.dist3D = dist3D;
-
-        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
-        qint64 end = dp.dateTime.toMSecsSinceEpoch();
-
-        dp.t = (double) (end - start) / 1000;
     }
 
     for (int i = 0; i < m_data.size(); ++i)
@@ -433,6 +478,8 @@ void MainWindow::on_actionImport_triggered()
         dp.accel = getSlope(i, DataPoint::totalSpeed);
     }
 
+    initAerodynamics();
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -442,6 +489,9 @@ void MainWindow::on_actionImport_triggered()
     {
         m_timeStep = 1.0;
     }
+
+    // Clear optimum
+    m_optimal.clear();
 
     initRange();
 
@@ -564,6 +614,52 @@ void MainWindow::getWind(
     }
 
     dp0.windErr = sqrt(err / N);
+}
+
+void MainWindow::initAerodynamics()
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        // Acceleration
+        double accelN = getSlope(i, DataPoint::northSpeed);
+        double accelE = getSlope(i, DataPoint::eastSpeed);
+        double accelD = getSlope(i, DataPoint::verticalSpeed);
+
+        // Subtract acceleration due to gravity
+        accelD -= A_GRAVITY;
+
+        // Calculate acceleration due to drag
+        const double vel = DataPoint::totalSpeed(dp);
+        const double proj = (accelN * dp.velN + accelE * dp.velE + accelD * dp.velD) / vel;
+
+        const double dragN = proj * dp.velN / vel;
+        const double dragE = proj * dp.velE / vel;
+        const double dragD = proj * dp.velD / vel;
+
+        const double accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
+
+        // Calculate acceleration due to lift
+        const double liftN = accelN - dragN;
+        const double liftE = accelE - dragE;
+        const double liftD = accelD - dragD;
+
+        const double accelLift = sqrt(liftN * liftN + liftE * liftE + liftD * liftD);
+
+        // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+        const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * dp.hMSL / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+        // From https://en.wikipedia.org/wiki/Density_of_air
+        const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+        // From https://en.wikipedia.org/wiki/Dynamic_pressure
+        const double dynamicPressure = airDensity * vel * vel / 2;
+
+        // Calculate lift and drag coefficients
+        dp.lift = m_mass * accelLift / dynamicPressure / m_planformArea;
+        dp.drag = m_mass * accelDrag / dynamicPressure / m_planformArea;
+    }
 }
 
 double MainWindow::getSlope(
@@ -761,10 +857,11 @@ void MainWindow::updateLeftActions()
     m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
     m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
     m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
-    m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
+    m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
+    m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -840,6 +937,16 @@ void MainWindow::on_actionTotalEnergy_triggered()
 void MainWindow::on_actionEnergyRate_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::EnergyRate);
+}
+
+void MainWindow::on_actionLift_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Lift);
+}
+
+void MainWindow::on_actionDrag_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Drag);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -924,7 +1031,16 @@ void MainWindow::on_actionPreferences_triggered()
     ConfigDialog dlg;
 
     dlg.setUnits(m_units);
+
     dlg.setDtWind(m_dtWind);
+
+    dlg.setTemperature(m_temperature);
+    dlg.setMass(m_mass);
+    dlg.setPlanformArea(m_planformArea);
+    dlg.setWingSpan(m_wingSpan);
+    dlg.setMinDrag(m_minDrag);
+    dlg.setMaxLift(m_maxLift);
+    dlg.setEfficiency(m_efficiency);
 
     dlg.exec();
 
@@ -938,6 +1054,32 @@ void MainWindow::on_actionPreferences_triggered()
     {
         m_dtWind = dlg.dtWind();
         initWind();
+
+        emit dataChanged();
+    }
+
+    if (m_temperature != dlg.temperature() ||
+        m_mass != dlg.mass() ||
+        m_planformArea != dlg.planformArea() ||
+        m_wingSpan != dlg.wingSpan())
+    {
+        m_temperature = dlg.temperature();
+        m_mass = dlg.mass();
+        m_planformArea = dlg.planformArea();
+        m_wingSpan = dlg.wingSpan();
+
+        initAerodynamics();
+
+        emit dataChanged();
+    }
+
+    if (m_minDrag != dlg.minDrag() ||
+        m_maxLift != dlg.maxLift() ||
+        m_efficiency != dlg.efficiency())
+    {
+        m_minDrag = dlg.minDrag();
+        m_maxLift = dlg.maxLift();
+        m_efficiency = dlg.efficiency();
 
         emit dataChanged();
     }
@@ -1252,4 +1394,335 @@ void MainWindow::setTool(
     m_ui->actionMeasure->setChecked(tool == Measure);
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
+}
+
+void MainWindow::on_actionOptimize_triggered()
+{
+    int start = findIndexBelowT(mRangeLower) + 1;
+    int end   = findIndexAboveT(mRangeUpper);
+
+    const double bb = m_wingSpan;
+    const double ss = m_planformArea;
+    const double ar = bb * bb / ss;
+
+    // y = ax^2 + c
+    const double a = 1 / (M_PI * m_efficiency * ar);
+    const double c = m_minDrag;
+
+    const double t0 = m_data[start].t;
+    const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
+    const double theta0 = atan2(-m_data[start].velD, velH);
+    const double v0 = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
+    const double x0 = 0;
+    const double y0 = m_data[start].hMSL;
+
+    qsrand(QTime::currentTime().msec());  // TODO: Use a different seed value
+
+    int aoaSize = 1, kMax = 0;
+    while (aoaSize < end - start)
+    {
+        aoaSize *= 2;
+        ++kMax;
+    }
+
+    const double max_aoa = m_maxLift / (2 * M_PI);
+    QVector< double > aoa (aoaSize, max_aoa / 2);
+    double sMax = simulate(aoa, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+    QVector< double > aoaMax = aoa;
+
+    for (int k = 0; k < kMax; ++k)
+    {
+        const int parts = (1 << k);
+
+        for (int j = 0; j < 100; ++j)
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                QVector< double > aoaTemp = aoa;
+
+                iterate(aoaTemp, parts);
+                double s = simulate(aoaTemp, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+
+                if (s > sMax)
+                {
+                    sMax = s;
+                    aoaMax = aoaTemp;
+                }
+            }
+
+            aoa = aoaMax;
+        }
+    }
+
+    // Clear optimum
+    m_optimal.clear();
+
+    if (sMax > 0)
+    {
+        simulate(aoaMax, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
+    }
+
+    emit dataChanged();
+
+    // Next: - Start simulation at exit and proceed to bottom of competition window.
+}
+
+void MainWindow::iterate(
+        QVector< double > &aoa,
+        int parts)
+{
+    const int i = qrand() % (parts + 1);
+    const double minRatio = 1.0 - (0.5 / parts), maxRatio = 1.0 + (0.5 / parts);
+    const double r = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
+
+    if (i > 0)
+    {
+        const int jPrev = aoa.size() * (i - 1) / parts;
+        const int jNext = aoa.size() * i / parts;
+
+        const double rPrev = 1.0;
+        const double rNext = r;
+
+        for (int j = jPrev; j < jNext; ++j)
+        {
+            const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
+            aoa[j] *= r;
+        }
+    }
+
+    if (i < parts)
+    {
+        const int jPrev = aoa.size() * i / parts;
+        const int jNext = aoa.size() * (i + 1) / parts;
+
+        const double rPrev = r;
+        const double rNext = 1.0;
+
+        for (int j = jPrev; j < jNext; ++j)
+        {
+            const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
+            aoa[j] *= r;
+        }
+    }
+}
+
+double MainWindow::simulate(
+        const QVector< double > &aoa,
+        double h,
+        double a,
+        double c,
+        double t0,
+        double theta0,
+        double v0,
+        double x0,
+        double y0,
+        int start)
+{
+    double t = t0;
+    double theta = theta0;
+    double v = v0;
+    double x = x0;
+    double y = y0;
+
+    double tStart, tEnd;
+    double xStart, xEnd;
+    int armed = 0;
+
+    double dist2D, dist3D;
+
+    if (start >= 0)
+    {
+        dist2D = m_data[start].dist2D;
+        dist3D = m_data[start].dist3D;
+    }
+
+    QVector< double >::ConstIterator i;
+    for (i = aoa.constBegin();
+         i != aoa.constEnd() && i + 1 != aoa.constEnd();
+         ++i)
+    {
+        const double lift_prev = lift(*i);
+        const double drag_prev = drag(*i, a, c);
+
+        const double lift_next = lift(*(i + 1));
+        const double drag_next = drag(*(i + 1), a, c);
+
+        // Runge-Kutta integration
+        // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+        const double k0 = h * dtheta_dt(theta, v, x, y, lift_prev);
+        const double l0 = h *     dv_dt(theta, v, x, y, drag_prev);
+        const double m0 = h *     dx_dt(theta, v, x, y);
+        const double n0 = h *     dy_dt(theta, v, x, y);
+
+        const double k1 = h * dtheta_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
+        const double l1 = h *     dv_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
+        const double m1 = h *     dx_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+        const double n1 = h *     dy_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
+
+        const double k2 = h * dtheta_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
+        const double l2 = h *     dv_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
+        const double m2 = h *     dx_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+        const double n2 = h *     dy_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
+
+        const double k3 = h * dtheta_dt(theta + k2, v + l2, x + m2, y + n2, lift_next);
+        const double l3 = h *     dv_dt(theta + k2, v + l2, x + m2, y + n2, drag_next);
+        const double m3 = h *     dx_dt(theta + k2, v + l2, x + m2, y + n2);
+        const double n3 = h *     dy_dt(theta + k2, v + l2, x + m2, y + n2);
+
+        const double dtheta = (k0 + 2 * k1 + 2 * k2 + k3) / 6;
+        const double dv     = (l0 + 2 * l1 + 2 * l2 + l3) / 6;
+        const double dx     = (m0 + 2 * m1 + 2 * m2 + m3) / 6;
+        const double dy     = (n0 + 2 * n1 + 2 * n2 + n3) / 6;
+
+        const double tNext     = t + h;
+        const double thetaNext = theta + dtheta;
+        const double vNext     = v + dv;
+        const double xNext     = x + dx;
+        const double yNext     = y + dy;
+
+        const double alt = y + m_data[0].alt - m_data[0].hMSL;
+        const double altNext = yNext + m_data[0].alt - m_data[0].hMSL;
+
+        if (armed == 0 && alt >= 3000 && altNext < 3000)
+        {
+            tStart = t + (3000 - alt) / (altNext - alt) * (tNext - t);
+            xStart = x + (3000 - alt) / (altNext - alt) * (xNext - x);
+            ++armed;
+        }
+        if (armed == 1 && alt >= 2000 && altNext < 2000)
+        {
+            tEnd = t + (2000 - alt) / (altNext - alt) * (tNext - t);
+            xEnd = x + (2000 - alt) / (altNext - alt) * (xNext - x);
+            ++armed;
+            break;
+        }
+
+        t      = tNext;
+        theta  = thetaNext;
+        v      = vNext;
+        x      = xNext;
+        y      = yNext;
+
+        // Update data
+        if (start >= 0)
+        {
+            DataPoint pt;
+
+            pt.hMSL  = yNext;
+
+            pt.velN  = 0;
+            pt.velE  = v * cos(theta);
+            pt.velD  = -v * sin(theta);
+
+            pt.t = tNext;
+            pt.x = xNext;
+            pt.y = 0;
+            pt.z = pt.alt = altNext;
+
+            dist2D += dx;
+            dist3D += sqrt(dx * dx + dy * dy);
+
+            pt.dist2D = dist2D;
+            pt.dist3D = dist3D;
+
+            // curv
+            // accel
+
+            pt.lift = lift_next;
+            pt.drag = drag_next;
+
+            m_optimal.append(pt);
+        }
+    }
+
+    if (armed == 2)
+    {
+//        return (xEnd - xStart) / (tEnd - tStart);
+//        return xEnd - xStart;
+        return tEnd - tStart;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+double MainWindow::dtheta_dt(
+        double theta,
+        double v,
+        double x,
+        double y,
+        double lift)
+{
+    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+    // From https://en.wikipedia.org/wiki/Density_of_air
+    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+    // From https://en.wikipedia.org/wiki/Dynamic_pressure
+    const double dynamicPressure = airDensity * v * v / 2;
+
+    // Calculate acceleration due to drag and lift
+    const double accelLift = dynamicPressure * m_planformArea * lift / m_mass;
+
+    return (accelLift - A_GRAVITY * cos(theta)) / v;
+}
+
+double MainWindow::dv_dt(
+        double theta,
+        double v,
+        double x,
+        double y,
+        double drag)
+{
+    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+    // From https://en.wikipedia.org/wiki/Density_of_air
+    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+
+    // From https://en.wikipedia.org/wiki/Dynamic_pressure
+    const double dynamicPressure = airDensity * v * v / 2;
+
+    // Calculate acceleration due to drag and lift
+    const double accelDrag = dynamicPressure * m_planformArea * drag / m_mass;
+
+    return -accelDrag - A_GRAVITY * sin(theta);
+}
+
+double MainWindow::dx_dt(
+        double theta,
+        double v,
+        double x,
+        double y)
+{
+    return v * cos(theta);
+}
+
+double MainWindow::dy_dt(
+        double theta,
+        double v,
+        double x,
+        double y)
+{
+    return v * sin(theta);
+}
+
+double MainWindow::lift(
+        double aoa)
+{
+    const double max_aoa = m_maxLift / (2 * M_PI);
+    const double width = 0.001;
+    const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
+    return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
+}
+
+double MainWindow::drag(
+        double aoa,
+        double a,
+        double c)
+{
+    const double cl = 2 * M_PI * aoa;
+    return a * cl * cl + c;
 }

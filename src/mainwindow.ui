@@ -83,6 +83,9 @@
     <addaction name="actionAcceleration"/>
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
+    <addaction name="separator"/>
+    <addaction name="actionLift"/>
+    <addaction name="actionDrag"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -102,6 +105,8 @@
     <addaction name="separator"/>
     <addaction name="actionZero"/>
     <addaction name="actionGround"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptimize"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -113,6 +118,7 @@
     <addaction name="actionShowMapView"/>
     <addaction name="actionShowWindView"/>
     <addaction name="actionShowWingsuitView"/>
+    <addaction name="actionShowLiftDragView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -220,7 +226,7 @@
     <string>&amp;Dive Angle</string>
    </property>
    <property name="shortcut">
-    <string>D</string>
+    <string>A</string>
    </property>
   </action>
   <action name="actionDistance3D">
@@ -458,7 +464,7 @@
     <string>Wind Direction</string>
    </property>
    <property name="shortcut">
-    <string>Shift+D</string>
+    <string>Shift+T</string>
    </property>
   </action>
   <action name="actionAircraftSpeed">
@@ -470,17 +476,6 @@
    </property>
    <property name="shortcut">
     <string>Shift+A</string>
-   </property>
-  </action>
-  <action name="actionWindError">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Wind Error</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+E</string>
    </property>
   </action>
   <action name="actionShowWindView">
@@ -502,7 +497,7 @@
     <string>Acceleration</string>
    </property>
    <property name="shortcut">
-    <string>Shift+A</string>
+    <string>Shift+C</string>
    </property>
   </action>
   <action name="actionTotalEnergy">
@@ -527,6 +522,39 @@
     <string>Shift+R</string>
    </property>
   </action>
+  <action name="actionLift">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lift Coefficient</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+  </action>
+  <action name="actionDrag">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Drag Coefficient</string>
+   </property>
+   <property name="shortcut">
+    <string>D</string>
+   </property>
+  </action>
+  <action name="actionShowLiftDragView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lift/Drag View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+6</string>
+   </property>
+  </action>
   <action name="actionShowWingsuitView">
    <property name="checkable">
     <bool>true</bool>
@@ -535,7 +563,15 @@
     <string>Wingsuit View</string>
    </property>
    <property name="shortcut">
-    <string>Alt+6</string>
+    <string>Alt+7</string>
+   </property>
+  </action>
+  <action name="actionOptimize">
+   <property name="text">
+    <string>Optimize</string>
+   </property>
+   <property name="shortcut">
+    <string>O</string>
    </property>
   </action>
  </widget>

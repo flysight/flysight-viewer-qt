@@ -72,6 +72,8 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);
     m_yValues.append(new PlotEnergyRate);
+    m_yValues.append(new PlotLift);
+    m_yValues.append(new PlotDrag);
 
     foreach (PlotValue *v, m_yValues)
     {
@@ -436,6 +438,30 @@ void DataPlot::updateYRanges()
             }
         }
 
+        if (yValue(j)->hasOptimal())
+        {
+            for (int i = 0; i < mMainWindow->optimalSize(); ++i)
+            {
+                const DataPoint &dp = mMainWindow->optimalPoint(i);
+
+                if (range.contains(xValue()->value(dp, mMainWindow->units())))
+                {
+                    double y = yValue(j)->value(dp, mMainWindow->units());
+
+                    if (first)
+                    {
+                        yMin = yMax = y;
+                        first = false;
+                    }
+                    else
+                    {
+                        if (y < yMin) yMin = y;
+                        if (y > yMax) yMax = y;
+                    }
+                }
+            }
+        }
+
         if (!first)
             axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
     }
@@ -483,6 +509,23 @@ void DataPlot::updatePlot()
                     axis);
         graph->setData(x, y);
         graph->setPen(QPen(yValue(j)->color()));
+
+        if (yValue(j)->hasOptimal())
+        {
+            QVector< double > xOptimal, yOptimal;
+            for (int i = 0; i < mMainWindow->optimalSize(); ++i)
+            {
+                const DataPoint &dp = mMainWindow->optimalPoint(i);
+                xOptimal.append(xValue()->value(dp, mMainWindow->units()));
+                yOptimal.append(yValue(j)->value(dp, mMainWindow->units()));
+            }
+
+            QCPGraph *graph = addGraph(
+                        axisRect()->axis(QCPAxis::atBottom),
+                        axis);
+            graph->setData(xOptimal, yOptimal);
+            graph->setPen(QPen(QBrush(yValue(j)->color()), 0, Qt::DotLine));
+        }
 
         if (QString(yValue(j)->metaObject()->className()) == "PlotElevation")
         {
