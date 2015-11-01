@@ -17,10 +17,15 @@ public:
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
 protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
 private:
     MainWindow *mMainWindow;
+
+    QPoint      m_beginPos;
+    bool        m_dragging;
 
     void setMark(double mark);
     void setViewRange(double xMin, double xMax,

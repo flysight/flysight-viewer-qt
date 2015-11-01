@@ -1334,6 +1334,22 @@ void MainWindow::setWingsuitVisible(
     emit dataChanged();
 }
 
+void MainWindow::setMinDrag(
+        double minDrag)
+{
+    m_minDrag = minDrag;
+
+    emit dataChanged();
+}
+
+void MainWindow::setEfficiency(
+        double efficiency)
+{
+    m_efficiency = efficiency;
+
+    emit dataChanged();
+}
+
 void MainWindow::updateWindow(void)
 {
     const QVector< DataPoint > &data =
@@ -1650,8 +1666,8 @@ double MainWindow::simulate(
     if (armed == 2)
     {
 //        return (xEnd - xStart) / (tEnd - tStart);
-//        return xEnd - xStart;
-        return tEnd - tStart;
+        return xEnd - xStart;
+//        return tEnd - tStart;
     }
     else
     {

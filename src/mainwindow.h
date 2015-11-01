@@ -89,6 +89,9 @@ public:
     double maxLift() const { return m_maxLift; }
     double efficiency() const { return m_efficiency; }
 
+    void setMinDrag(double minDrag);
+    void setEfficiency(double efficiency);
+
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
 
