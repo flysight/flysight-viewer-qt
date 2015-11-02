@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
 #include <QTextStream>
@@ -1471,6 +1472,9 @@ void MainWindow::on_actionOptimize_triggered()
         maxScore = qMax(maxScore, s);
     }
 
+    QProgressDialog progress("Optimizing...", "Abort", 0, kMax * 100, this);
+    progress.setWindowModality(Qt::WindowModal);
+
     // Increasing levels of detail
     for (int k = 0; k < kMax; ++k)
     {
@@ -1479,6 +1483,13 @@ void MainWindow::on_actionOptimize_triggered()
         // Generations
         for (int j = 0; j < 100; ++j)
         {
+            progress.setValue(k * 100 + j);
+            if (progress.wasCanceled())
+            {
+                k = kMax;
+                break;
+            }
+
             // Sort gene pool by score
             qSort(genePool);
 
@@ -1502,6 +1513,8 @@ void MainWindow::on_actionOptimize_triggered()
             if (smoothedChange < 1e-6) break;
         }
     }
+
+    progress.setValue(kMax * 100);
 
     // Keep most fit individual
     simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
