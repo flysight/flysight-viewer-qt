@@ -18,14 +18,7 @@ class MainWindow;
 }
 
 typedef QVector< double > Genome;
-class Score: public QPair< double, Genome >
-{
-public:
-    Score():
-        QPair< double, Genome>() {}
-    Score(double s, Genome g):
-        QPair< double, Genome>(s, g) {}
-};
+typedef QPair< double, Genome > Score;
 typedef QVector< Score > GenePool;
 
 static bool operator<(const Score &s1, const Score &s2)

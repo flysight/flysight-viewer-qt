@@ -1444,7 +1444,7 @@ void MainWindow::on_actionOptimize_triggered()
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
-    qsrand(QTime::currentTime().msec());  // TODO: Use a different seed value
+    qsrand(QTime::currentTime().msec());
 
     int aoaSize = 1, kMax = 0;
     while (aoaSize < end - start)
@@ -1463,6 +1463,8 @@ void MainWindow::on_actionOptimize_triggered()
         genePool.append(Score(0, Genome(aoaSize, a)));
     }
 
+    double maxScore = 0;
+
     // Increasing levels of detail
     for (int k = 0; k < kMax; ++k)
     {
@@ -1471,13 +1473,19 @@ void MainWindow::on_actionOptimize_triggered()
         // Generations
         for (int j = 0; j < 100; ++j)
         {
+            const double maxScorePrev = maxScore;
+
             // Score the gene pool
             for (int i = 0; i < 100; ++i)
             {
                 const Genome &g = genePool[i].second;
                 const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
                 genePool[i].first = s;
+                maxScore = qMax(maxScore, s);
             }
+
+            // Stop if we aren't seeing enough change
+            if ((maxScore - maxScorePrev) / maxScorePrev < 1e-6) break;
 
             // Sort gene pool by score
             qSort(genePool);
@@ -1520,21 +1528,22 @@ void MainWindow::iterate(
         int parts)
 {
     const int i = qrand() % (parts + 1);
-    const double minRatio = 1.0 - (0.5 / parts), maxRatio = 1.0 + (0.5 / parts);
-    const double r = minRatio + (double) qrand() / RAND_MAX * (maxRatio - minRatio);
+    const double max_aoa = m_maxLift / (2 * M_PI);
+    const double minr = -max_aoa / parts, maxr = max_aoa / parts;
+    const double r = minr + (double) qrand() / RAND_MAX * (maxr - minr);
 
     if (i > 0)
     {
         const int jPrev = aoa.size() * (i - 1) / parts;
         const int jNext = aoa.size() * i / parts;
 
-        const double rPrev = 1.0;
+        const double rPrev = 0.0;
         const double rNext = r;
 
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            aoa[j] *= r;
+            aoa[j] += r;
         }
     }
 
@@ -1544,12 +1553,12 @@ void MainWindow::iterate(
         const int jNext = aoa.size() * (i + 1) / parts;
 
         const double rPrev = r;
-        const double rNext = 1.0;
+        const double rNext = 0.0;
 
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            aoa[j] *= r;
+            aoa[j] += r;
         }
     }
 }
