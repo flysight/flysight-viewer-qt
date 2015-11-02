@@ -1472,24 +1472,18 @@ void MainWindow::on_actionOptimize_triggered()
         maxScore = qMax(maxScore, s);
     }
 
-    QProgressDialog progress("Optimizing...", "Abort", 0, kMax * 100, this);
+    QProgressDialog progress("Optimizing...", "Abort", 0, kMax * 9000, this);
     progress.setWindowModality(Qt::WindowModal);
+    bool abort = false;
 
     // Increasing levels of detail
-    for (int k = 0; k < kMax; ++k)
+    for (int k = 0; k < kMax && !abort; ++k)
     {
         const int parts = (1 << k);
 
         // Generations
-        for (int j = 0; j < 100; ++j)
+        for (int j = 0; j < 100 && !abort; ++j)
         {
-            progress.setValue(k * 100 + j);
-            if (progress.wasCanceled())
-            {
-                k = kMax;
-                break;
-            }
-
             // Sort gene pool by score
             qSort(genePool);
 
@@ -1498,6 +1492,13 @@ void MainWindow::on_actionOptimize_triggered()
             // Replace unfit individuals
             for (int i = 10; i < 100; ++i)
             {
+                progress.setValue(k * 9000 + j * 90 + i - 10);
+                if (progress.wasCanceled())
+                {
+                    abort = true;
+                    break;
+                }
+
                 const int iParent = i / 10 - 1;
                 Genome g = genePool[iParent].second;
                 iterate(g, parts);
@@ -1514,7 +1515,7 @@ void MainWindow::on_actionOptimize_triggered()
         }
     }
 
-    progress.setValue(kMax * 100);
+    progress.setValue(kMax * 9000);
 
     // Keep most fit individual
     m_optimal.clear();
