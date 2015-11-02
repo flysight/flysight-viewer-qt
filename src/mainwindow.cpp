@@ -1495,7 +1495,7 @@ void MainWindow::on_actionOptimize_triggered()
                 genePool[i] = Score(s, g);
                 maxScore = qMax(maxScore, s);
             }
-s
+
             // Stop if we aren't seeing enough change
             const double change = (maxScore - prevScore) / maxScore;
             smoothedChange = (9 * smoothedChange + change) / 10;
