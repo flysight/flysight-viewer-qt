@@ -1455,15 +1455,21 @@ void MainWindow::on_actionOptimize_triggered()
 
     GenePool genePool;
 
+    double smoothedChange = 1;
+    double maxScore = 0;
+
     const double max_aoa = m_maxLift / (2 * M_PI);
 
+    // Initialize the gene pool
     for (int i = 0; i < 100; ++i)
     {
-        double a = (double) qrand() / RAND_MAX * max_aoa;
-        genePool.append(Score(0, Genome(aoaSize, a)));
-    }
+        double aoa = (double) qrand() / RAND_MAX * max_aoa;
+        Genome g(aoaSize, aoa);
 
-    double maxScore = 0;
+        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+        genePool.append(Score(s, g));
+        maxScore = qMax(maxScore, s);
+    }
 
     // Increasing levels of detail
     for (int k = 0; k < kMax; ++k)
@@ -1473,47 +1479,29 @@ void MainWindow::on_actionOptimize_triggered()
         // Generations
         for (int j = 0; j < 100; ++j)
         {
-            const double maxScorePrev = maxScore;
-
-            // Score the gene pool
-            for (int i = 0; i < 100; ++i)
-            {
-                const Genome &g = genePool[i].second;
-                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
-                genePool[i].first = s;
-                maxScore = qMax(maxScore, s);
-            }
-
-            // Stop if we aren't seeing enough change
-            if ((maxScore - maxScorePrev) / maxScorePrev < 1e-6) break;
-
             // Sort gene pool by score
             qSort(genePool);
+
+            const double prevScore = maxScore;
 
             // Replace unfit individuals
             for (int i = 10; i < 100; ++i)
             {
                 const int iParent = i / 10 - 1;
-                const Genome &gParent = genePool[iParent].second;
+                Genome g = genePool[iParent].second;
+                iterate(g, parts);
 
-                Genome gChild = gParent;
-                iterate(gChild, parts);
-
-                genePool[i] = Score(0, gChild);
+                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+                genePool[i] = Score(s, g);
+                maxScore = qMax(maxScore, s);
             }
+s
+            // Stop if we aren't seeing enough change
+            const double change = (maxScore - prevScore) / maxScore;
+            smoothedChange = (9 * smoothedChange + change) / 10;
+            if (smoothedChange < 1e-6) break;
         }
     }
-
-    // Score the gene pool
-    for (int i = 0; i < 100; ++i)
-    {
-        const Genome &g = genePool[i].second;
-        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
-        genePool[i].first = s;
-    }
-
-    // Sort gene pool by score
-    qSort(genePool);
 
     // Keep most fit individual
     simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
