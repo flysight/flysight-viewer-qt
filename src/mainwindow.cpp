@@ -1453,42 +1453,62 @@ void MainWindow::on_actionOptimize_triggered()
         ++kMax;
     }
 
-    const double max_aoa = m_maxLift / (2 * M_PI);
-    QVector< double > aoa (aoaSize, max_aoa / 2);
-    double sMax = simulate(aoa, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
-    QVector< double > aoaMax = aoa;
+    GenePool genePool;
 
+    const double max_aoa = m_maxLift / (2 * M_PI);
+
+    for (int i = 0; i < 100; ++i)
+    {
+        double a = (double) qrand() / RAND_MAX * max_aoa;
+        genePool.append(Score(0, Genome(aoaSize, a)));
+    }
+
+    // Increasing levels of detail
     for (int k = 0; k < kMax; ++k)
     {
         const int parts = (1 << k);
 
+        // Generations
         for (int j = 0; j < 100; ++j)
         {
-            for (int i = 0; i < 10; ++i)
+            // Score the gene pool
+            for (int i = 0; i < 100; ++i)
             {
-                QVector< double > aoaTemp = aoa;
-
-                iterate(aoaTemp, parts);
-                double s = simulate(aoaTemp, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
-
-                if (s > sMax)
-                {
-                    sMax = s;
-                    aoaMax = aoaTemp;
-                }
+                const Genome &g = genePool[i].second;
+                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+                genePool[i].first = s;
             }
 
-            aoa = aoaMax;
+            // Sort gene pool by score
+            qSort(genePool);
+
+            // Replace unfit individuals
+            for (int i = 10; i < 100; ++i)
+            {
+                const int iParent = i / 10 - 1;
+                const Genome &gParent = genePool[iParent].second;
+
+                Genome gChild = gParent;
+                iterate(gChild, parts);
+
+                genePool[i] = Score(0, gChild);
+            }
         }
     }
 
-    // Clear optimum
-    m_optimal.clear();
-
-    if (sMax > 0)
+    // Score the gene pool
+    for (int i = 0; i < 100; ++i)
     {
-        simulate(aoaMax, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
+        const Genome &g = genePool[i].second;
+        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+        genePool[i].first = s;
     }
+
+    // Sort gene pool by score
+    qSort(genePool);
+
+    // Keep most fit individual
+    simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
 
     emit dataChanged();
 

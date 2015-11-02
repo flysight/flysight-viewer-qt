@@ -17,6 +17,22 @@ namespace Ui {
 class MainWindow;
 }
 
+typedef QVector< double > Genome;
+class Score: public QPair< double, Genome >
+{
+public:
+    Score():
+        QPair< double, Genome>() {}
+    Score(double s, Genome g):
+        QPair< double, Genome>(s, g) {}
+};
+typedef QVector< Score > GenePool;
+
+static bool operator<(const Score &s1, const Score &s2)
+{
+    return s1.first > s2.first;
+}
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
