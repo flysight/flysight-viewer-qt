@@ -1517,6 +1517,7 @@ void MainWindow::on_actionOptimize_triggered()
     progress.setValue(kMax * 100);
 
     // Keep most fit individual
+    m_optimal.clear();
     simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
 
     emit dataChanged();
