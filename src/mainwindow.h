@@ -39,6 +39,10 @@ public:
         Actual, Optimal
     } WindowMode;
 
+    typedef enum {
+        Time, Distance, HorizontalSpeed, VerticalSpeed
+    } OptimizationMode;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -104,6 +108,8 @@ public:
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
 
+    void optimize(OptimizationMode mode);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -147,8 +153,6 @@ private slots:
     void on_actionImportVideo_triggered();
     void on_actionExportKML_triggered();
     void on_actionExportPlot_triggered();
-
-    void on_actionOptimize_triggered();
 
 private:
     Ui::MainWindow       *m_ui;
@@ -222,7 +226,8 @@ private:
 
     void iterate(QVector< double > &aoa, int parts);
     double simulate(const QVector< double > &aoa, double h, double a, double c,
-                    double t0, double theta0, double v0, double x0, double y0, int start);
+                    double t0, double theta0, double v0, double x0, double y0, int start,
+                    OptimizationMode mode);
 
     double dtheta_dt(double theta, double v, double x, double y, double lift);
     double dv_dt(double theta, double v, double x, double y, double drag);

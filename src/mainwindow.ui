@@ -105,8 +105,6 @@
     <addaction name="separator"/>
     <addaction name="actionZero"/>
     <addaction name="actionGround"/>
-    <addaction name="separator"/>
-    <addaction name="actionOptimize"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">

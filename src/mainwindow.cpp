@@ -1425,7 +1425,8 @@ void MainWindow::setTool(
     m_ui->actionGround->setChecked(tool == Ground);
 }
 
-void MainWindow::on_actionOptimize_triggered()
+void MainWindow::optimize(
+        OptimizationMode mode)
 {
     int start = findIndexBelowT(mRangeLower) + 1;
     int end   = findIndexAboveT(mRangeUpper);
@@ -1467,7 +1468,7 @@ void MainWindow::on_actionOptimize_triggered()
         double aoa = (double) qrand() / RAND_MAX * max_aoa;
         Genome g(aoaSize, aoa);
 
-        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
         genePool.append(Score(s, g));
         maxScore = qMax(maxScore, s);
     }
@@ -1503,7 +1504,7 @@ void MainWindow::on_actionOptimize_triggered()
                 Genome g = genePool[iParent].second;
                 iterate(g, parts);
 
-                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1);
+                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 genePool[i] = Score(s, g);
                 maxScore = qMax(maxScore, s);
             }
@@ -1519,7 +1520,7 @@ void MainWindow::on_actionOptimize_triggered()
 
     // Keep most fit individual
     m_optimal.clear();
-    simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start);
+    simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start, mode);
 
     emit dataChanged();
 
@@ -1576,7 +1577,8 @@ double MainWindow::simulate(
         double v0,
         double x0,
         double y0,
-        int start)
+        int start,
+        OptimizationMode mode)
 {
     double t = t0;
     double theta = theta0;
@@ -1643,16 +1645,16 @@ double MainWindow::simulate(
         const double alt = y + m_data[0].alt - m_data[0].hMSL;
         const double altNext = yNext + m_data[0].alt - m_data[0].hMSL;
 
-        if (armed == 0 && alt >= 3000 && altNext < 3000)
+        if (armed == 0 && alt >= mWindowTop && altNext < mWindowTop)
         {
-            tStart = t + (3000 - alt) / (altNext - alt) * (tNext - t);
-            xStart = x + (3000 - alt) / (altNext - alt) * (xNext - x);
+            tStart = t + (mWindowTop - alt) / (altNext - alt) * (tNext - t);
+            xStart = x + (mWindowTop - alt) / (altNext - alt) * (xNext - x);
             ++armed;
         }
-        if (armed == 1 && alt >= 2000 && altNext < 2000)
+        if (armed == 1 && alt >= mWindowBottom && altNext < mWindowBottom)
         {
-            tEnd = t + (2000 - alt) / (altNext - alt) * (tNext - t);
-            xEnd = x + (2000 - alt) / (altNext - alt) * (xNext - x);
+            tEnd = t + (mWindowBottom - alt) / (altNext - alt) * (tNext - t);
+            xEnd = x + (mWindowBottom - alt) / (altNext - alt) * (xNext - x);
             ++armed;
             break;
         }
@@ -1697,9 +1699,17 @@ double MainWindow::simulate(
 
     if (armed == 2)
     {
-//        return (xEnd - xStart) / (tEnd - tStart);
-        return xEnd - xStart;
-//        return tEnd - tStart;
+        switch (mode)
+        {
+        case Time:
+            return tEnd - tStart;
+        case Distance:
+            return xEnd - xStart;
+        case HorizontalSpeed:
+            return (xEnd - xStart) / (tEnd - tStart);
+        case VerticalSpeed:
+            return 1 / (tEnd - tStart);
+        }
     }
     else
     {

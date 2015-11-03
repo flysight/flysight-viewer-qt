@@ -24,6 +24,7 @@ WingsuitView::WingsuitView(QWidget *parent) :
 
     connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
     connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
+    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 WingsuitView::~WingsuitView()
@@ -147,4 +148,24 @@ void WingsuitView::onActualButtonClicked()
 void WingsuitView::onOptimalButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void WingsuitView::onOptimizeButtonClicked()
+{
+    if (ui->timeButton->isChecked())
+    {
+        mMainWindow->optimize(MainWindow::Time);
+    }
+    else if (ui->distanceButton->isChecked())
+    {
+        mMainWindow->optimize(MainWindow::Distance);
+    }
+    else if (ui->hSpeedButton->isChecked())
+    {
+        mMainWindow->optimize(MainWindow::HorizontalSpeed);
+    }
+    else if (ui->vSpeedButton->isChecked())
+    {
+        mMainWindow->optimize(MainWindow::VerticalSpeed);
+    }
 }
