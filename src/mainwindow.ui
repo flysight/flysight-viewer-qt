@@ -115,7 +115,7 @@
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
     <addaction name="actionShowWindView"/>
-    <addaction name="actionShowWingsuitView"/>
+    <addaction name="actionShowScoringView"/>
     <addaction name="actionShowLiftDragView"/>
    </widget>
    <addaction name="menu_File"/>
@@ -553,12 +553,12 @@
     <string>Alt+6</string>
    </property>
   </action>
-  <action name="actionShowWingsuitView">
+  <action name="actionShowScoringView">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Wingsuit View</string>
+    <string>S&amp;coring View</string>
    </property>
    <property name="shortcut">
     <string>Alt+7</string>

@@ -23,8 +23,8 @@ SOURCES += main.cpp \
     common.cpp \
     videoview.cpp \
     windplot.cpp \
-    wingsuitview.cpp\
-    liftdragplot.cpp
+    liftdragplot.cpp \
+    scoringview.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -38,13 +38,13 @@ HEADERS  += mainwindow.h \
     common.h \
     videoview.h \
     windplot.h \
-    wingsuitview.h \
-    liftdragplot.h
+    liftdragplot.h \
+    scoringview.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
     videoview.ui \
-    wingsuitview.ui
+    scoringview.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico

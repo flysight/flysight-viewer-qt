@@ -20,7 +20,7 @@
 #include "mapview.h"
 #include "videoview.h"
 #include "windplot.h"
-#include "wingsuitview.h"
+#include "scoringview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -35,7 +35,7 @@ MainWindow::MainWindow(
     mWindowTop(3000),
     mIsWindowValid(false),
     mWindowMode(Actual),
-    mWingsuitView(0),
+    mScoringView(0),
     m_temperature(288.15),
     m_mass(70),
     m_planformArea(2),
@@ -66,8 +66,8 @@ MainWindow::MainWindow(
     // Initialize wind view
     initWindView();
 
-    // Initialize wingsuit view
-    initWingsuitView();
+    // Initialize scoring view
+    initScoringView();
 
     // Initialize lift/drag view
     initLiftDragView();
@@ -225,26 +225,26 @@ void MainWindow::initWindView()
             windPlot, SLOT(updatePlot()));
 }
 
-void MainWindow::initWingsuitView()
+void MainWindow::initScoringView()
 {
-    mWingsuitView = new WingsuitView;
-    QDockWidget *dockWidget = new QDockWidget(tr("Wingsuit View"));
-    dockWidget->setWidget(mWingsuitView);
-    dockWidget->setObjectName("wingsuitView");
+    mScoringView = new ScoringView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Scoring View"));
+    dockWidget->setWidget(mScoringView);
+    dockWidget->setObjectName("scoringView");
     dockWidget->setVisible(false);
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
-    mWingsuitView->setMainWindow(this);
+    mScoringView->setMainWindow(this);
 
-    connect(m_ui->actionShowWingsuitView, SIGNAL(toggled(bool)),
+    connect(m_ui->actionShowScoringView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
-    connect(m_ui->actionShowWingsuitView, SIGNAL(toggled(bool)),
-            this, SLOT(setWingsuitVisible(bool)));
+    connect(m_ui->actionShowScoringView, SIGNAL(toggled(bool)),
+            this, SLOT(setScoringVisible(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
-            m_ui->actionShowWingsuitView, SLOT(setChecked(bool)));
+            m_ui->actionShowScoringView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
-            mWingsuitView, SLOT(updateView()));
+            mScoringView, SLOT(updateView()));
 }
 
 void MainWindow::initLiftDragView()
@@ -1329,7 +1329,7 @@ void MainWindow::setWindow(
     emit dataChanged();
 }
 
-void MainWindow::setWingsuitVisible(
+void MainWindow::setScoringVisible(
         bool visible)
 {
     emit dataChanged();
@@ -1398,7 +1398,7 @@ void MainWindow::updateWindow(void)
 
 bool MainWindow::isWindowValid() const
 {
-    return mIsWindowValid && mWingsuitView && m_ui->actionShowWingsuitView->isChecked();
+    return mIsWindowValid && mScoringView && m_ui->actionShowScoringView->isChecked();
 }
 
 void MainWindow::setWindowMode(

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WingsuitView</class>
- <widget class="QWidget" name="WingsuitView">
+ <class>ScoringView</class>
+ <widget class="QWidget" name="ScoringView">
   <property name="geometry">
    <rect>
     <x>0</x>

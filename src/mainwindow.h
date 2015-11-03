@@ -11,7 +11,7 @@
 
 class QCPRange;
 class QCustomPlot;
-class WingsuitView;
+class ScoringView;
 
 namespace Ui {
 class MainWindow;
@@ -188,7 +188,7 @@ private:
 
     WindowMode            mWindowMode;
 
-    WingsuitView         *mWingsuitView;
+    ScoringView          *mScoringView;
 
     double                m_temperature;
     double                m_mass;
@@ -206,7 +206,7 @@ private:
     void initViews();
     void initMapView();
     void initWindView();
-    void initWingsuitView();
+    void initScoringView();
     void initLiftDragView();
 
     void initSingleView(const QString &title, const QString &objectName,
@@ -244,7 +244,7 @@ signals:
 
 private slots:
     void updateWindow();
-    void setWingsuitVisible(bool visible);
+    void setScoringVisible(bool visible);
 };
 
 #endif // MAINWINDOW_H

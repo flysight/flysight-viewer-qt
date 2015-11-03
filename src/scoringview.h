@@ -1,21 +1,21 @@
-#ifndef WINGSUITVIEW_H
-#define WINGSUITVIEW_H
+#ifndef SCORINGVIEW_H
+#define SCORINGVIEW_H
 
 #include <QWidget>
 
 namespace Ui {
-    class WingsuitView;
+    class ScoringView;
 }
 
 class MainWindow;
 
-class WingsuitView : public QWidget
+class ScoringView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit WingsuitView(QWidget *parent = 0);
-    ~WingsuitView();
+    explicit ScoringView(QWidget *parent = 0);
+    ~ScoringView();
 
     virtual QSize sizeHint() const;
 
@@ -25,8 +25,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent *);
 
 private:
-    Ui::WingsuitView *ui;
-    MainWindow       *mMainWindow;
+    Ui::ScoringView *ui;
+    MainWindow      *mMainWindow;
 
 public slots:
     void updateView();
@@ -41,4 +41,4 @@ private slots:
     void onOptimizeButtonClicked();
 };
 
-#endif // WINGSUITVIEW_H
+#endif // SCORINGVIEW_H

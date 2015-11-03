@@ -1,5 +1,5 @@
-#include "wingsuitview.h"
-#include "ui_wingsuitview.h"
+#include "scoringview.h"
+#include "ui_scoringview.h"
 
 #include <QPushButton>
 
@@ -8,9 +8,9 @@
 #include "mainwindow.h"
 #include "plotvalue.h"
 
-WingsuitView::WingsuitView(QWidget *parent) :
+ScoringView::ScoringView(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::WingsuitView),
+    ui(new Ui::ScoringView),
     mMainWindow(0)
 {
     ui->setupUi(this);
@@ -27,18 +27,18 @@ WingsuitView::WingsuitView(QWidget *parent) :
     connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
-WingsuitView::~WingsuitView()
+ScoringView::~ScoringView()
 {
     delete ui;
 }
 
-QSize WingsuitView::sizeHint() const
+QSize ScoringView::sizeHint() const
 {
     // Keeps windows from being intialized as very short
     return QSize(175, 175);
 }
 
-void WingsuitView::updateView()
+void ScoringView::updateView()
 {
     ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
     ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
@@ -94,12 +94,12 @@ void WingsuitView::updateView()
     }
 }
 
-void WingsuitView::onFAIButtonClicked()
+void ScoringView::onFAIButtonClicked()
 {
     mMainWindow->setWindow(2000, 3000);
 }
 
-void WingsuitView::onApplyButtonClicked()
+void ScoringView::onApplyButtonClicked()
 {
     double bottom = ui->bottomEdit->text().toDouble();
     double top = ui->topEdit->text().toDouble();
@@ -108,21 +108,21 @@ void WingsuitView::onApplyButtonClicked()
     mMainWindow->setFocus();
 }
 
-void WingsuitView::onUpButtonClicked()
+void ScoringView::onUpButtonClicked()
 {
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() + 10,
                 mMainWindow->windowTop() + 10);
 }
 
-void WingsuitView::onDownButtonClicked()
+void ScoringView::onDownButtonClicked()
 {
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() - 10,
                 mMainWindow->windowTop() - 10);
 }
 
-void WingsuitView::keyPressEvent(QKeyEvent *event)
+void ScoringView::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
@@ -140,17 +140,17 @@ void WingsuitView::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void WingsuitView::onActualButtonClicked()
+void ScoringView::onActualButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Actual);
 }
 
-void WingsuitView::onOptimalButtonClicked()
+void ScoringView::onOptimalButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
 
-void WingsuitView::onOptimizeButtonClicked()
+void ScoringView::onOptimizeButtonClicked()
 {
     if (ui->timeButton->isChecked())
     {
