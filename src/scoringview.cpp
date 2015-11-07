@@ -168,4 +168,7 @@ void ScoringView::onOptimizeButtonClicked()
     {
         mMainWindow->optimize(MainWindow::VerticalSpeed);
     }
+
+    // Switch to optimal view
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }
