@@ -1487,11 +1487,10 @@ void MainWindow::optimize(
         // Generations
         for (int j = 0; j < 100 && !abort; ++j)
         {
-            // Sort gene pool by score
-            qSort(genePool);
+            GenePool newGenePool;
 
-            // Replace unfit individuals
-            for (int i = 10; i < 100; ++i)
+            // Tournament selection
+            for (int i = 0; i < 100; ++i)
             {
                 progress.setValue((k - kMin) * 10000 + j * 100 + i + 100);
                 if (progress.wasCanceled())
@@ -1500,17 +1499,20 @@ void MainWindow::optimize(
                     break;
                 }
 
-                const int iParent = i / 10 - 1;
-                Genome g = genePool[iParent].second;
-                iterate(g, parts);
-
+                Genome g = selectGenome(genePool);
+                mutateGenome(g, parts);
                 const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
-                genePool[i] = Score(s, g);
+                newGenePool.append(Score(s, g));
             }
+
+            genePool = newGenePool;
         }
     }
 
     progress.setValue((kMax - kMin) * 10000 + 100);
+
+    // Sort gene pool by score
+    qSort(genePool);
 
     // Keep most fit individual
     m_optimal.clear();
@@ -1519,6 +1521,27 @@ void MainWindow::optimize(
     emit dataChanged();
 
     // Next: - Start simulation at exit and proceed to bottom of competition window.
+}
+
+const Genome &MainWindow::selectGenome(
+        const GenePool &genePool)
+{
+    const int tournamentSize = 3;
+
+    double jMax;
+    double sMax = 0;
+
+    for (int i = 0; i < tournamentSize; ++i)
+    {
+        const int j = qrand() % genePool.size();
+        if (genePool[j].first > sMax)
+        {
+            jMax = j;
+            sMax = genePool[j].first;
+        }
+    }
+
+    return genePool[jMax].second;
 }
 
 Genome MainWindow::createGenome(
@@ -1544,8 +1567,8 @@ Genome MainWindow::createGenome(
     return g;
 }
 
-void MainWindow::iterate(
-        QVector< double > &aoa,
+void MainWindow::mutateGenome(
+        Genome &g,
         int parts)
 {
     const int i = qrand() % (parts + 1);
@@ -1555,8 +1578,8 @@ void MainWindow::iterate(
 
     if (i > 0)
     {
-        const int jPrev = aoa.size() * (i - 1) / parts;
-        const int jNext = aoa.size() * i / parts;
+        const int jPrev = g.size() * (i - 1) / parts;
+        const int jNext = g.size() * i / parts;
 
         const double rPrev = 0.0;
         const double rNext = r;
@@ -1564,14 +1587,14 @@ void MainWindow::iterate(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            aoa[j] += r;
+            g[j] += r;
         }
     }
 
     if (i < parts)
     {
-        const int jPrev = aoa.size() * i / parts;
-        const int jNext = aoa.size() * (i + 1) / parts;
+        const int jPrev = g.size() * i / parts;
+        const int jNext = g.size() * (i + 1) / parts;
 
         const double rPrev = r;
         const double rNext = 0.0;
@@ -1579,7 +1602,7 @@ void MainWindow::iterate(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            aoa[j] += r;
+            g[j] += r;
         }
     }
 }

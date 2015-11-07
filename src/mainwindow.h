@@ -225,7 +225,9 @@ private:
     void updateLeftActions();
 
     Genome createGenome(int genomeSize, int parts, double maxAoa);
-    void iterate(QVector< double > &aoa, int parts);
+    const Genome &selectGenome(const GenePool &genePool);
+    void mutateGenome(Genome &g, int parts);
+
     double simulate(const QVector< double > &aoa, double h, double a, double c,
                     double t0, double theta0, double v0, double x0, double y0, int start,
                     OptimizationMode mode);
