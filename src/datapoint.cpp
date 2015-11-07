@@ -12,6 +12,8 @@ DataPoint DataPoint::interpolate(
     ret.dateTime.fromMSecsSinceEpoch(
                 ms1 + (qint64) (a * (ms2 - ms1)));
 
+    ret.hasGeodetic = p1.hasGeodetic && p2.hasGeodetic;
+
     ret.lat = p1.lat + a * (p2.lat - p1.lat);
     ret.lon = p1.lon + a * (p2.lon - p1.lon);
     ret.hMSL = p1.hMSL + a * (p2.hMSL - p1.hMSL);

@@ -12,6 +12,8 @@ class DataPoint
 public:
     QDateTime   dateTime;
 
+    bool        hasGeodetic;
+
     double      lat;
     double      lon;
     double      hMSL;

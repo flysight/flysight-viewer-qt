@@ -411,6 +411,8 @@ void MainWindow::on_actionImport_triggered()
 
         pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
 
+        pt.hasGeodetic = true;
+
         pt.lat   = cols[colMap[Lat]].toDouble();
         pt.lon   = cols[colMap[Lon]].toDouble();
         pt.hMSL  = cols[colMap[HMSL]].toDouble();
@@ -692,23 +694,33 @@ double MainWindow::getDistance(
         const DataPoint &dp1,
         const DataPoint &dp2) const
 {
-    const double R = 6371009;
-    const double pi = 3.14159265359;
+    if (dp1.hasGeodetic && dp2.hasGeodetic)
+    {
+        const double R = 6371009;
+        const double pi = 3.14159265359;
 
-    double lat1 = dp1.lat / 180 * pi;
-    double lon1 = dp1.lon / 180 * pi;
+        double lat1 = dp1.lat / 180 * pi;
+        double lon1 = dp1.lon / 180 * pi;
 
-    double lat2 = dp2.lat / 180 * pi;
-    double lon2 = dp2.lon / 180 * pi;
+        double lat2 = dp2.lat / 180 * pi;
+        double lon2 = dp2.lon / 180 * pi;
 
-    double dLat = lat2 - lat1;
-    double dLon = lon2 - lon1;
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
 
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-            sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+        double a = sin(dLat / 2) * sin(dLat / 2) +
+                sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
+        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    return R * c;
+        return R * c;
+    }
+    else
+    {
+        const double dx = dp2.x - dp1.x;
+        const double dy = dp2.y - dp1.y;
+
+        return sqrt(dx * dx + dy * dy);
+    }
 }
 
 double MainWindow::getBearing(
@@ -1766,6 +1778,8 @@ double MainWindow::simulate(
         {
             DataPoint pt;
 
+            pt.hasGeodetic = false;
+
             pt.hMSL  = yNext;
 
             pt.velN  = 0;
@@ -1804,7 +1818,7 @@ double MainWindow::simulate(
         case HorizontalSpeed:
             return (xEnd - xStart) / (tEnd - tStart);
         case VerticalSpeed:
-            return 1 / (tEnd - tStart);
+            return (mWindowTop - mWindowBottom) / (tEnd - tStart);
         }
     }
     else
