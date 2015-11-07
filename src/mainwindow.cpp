@@ -1458,84 +1458,82 @@ void MainWindow::optimize(
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
+    const int initialSize = 200;
+    const int workingSize = 200;
+    const int numGenerations = 50;
+
     qsrand(QTime::currentTime().msec());
 
     const int kMin = 4;
-    int aoaSize = 1 << kMin, kMax = kMin;
-    while (aoaSize < end - start)
+    int kMax = kMin;
+    while ((1 << kMax) < end - start)
     {
-        aoaSize *= 2;
         ++kMax;
     }
 
+    const double genomeSize = (1 << kMax) + 1;
     GenePool genePool;
 
-    const double max_aoa = m_maxLift / (2 * M_PI);
-
-    QProgressDialog progress("Initializing...", "Abort", 0, (kMax - kMin + 1) * 10000, this);
+    QProgressDialog progress("Initializing...",
+                             "Abort",
+                             0,
+                             (kMax - kMin + 1) * numGenerations * workingSize + initialSize,
+                             this);
     progress.setWindowModality(Qt::WindowModal);
+
+    double maxScore = 0;
     bool abort = false;
 
-    // Initialize the gene pool
-    for (int j = 0; j < 100 && !abort; ++j)
+    // Add new individuals
+    for (int i = 0; i < initialSize; ++i)
     {
-        // Add new individuals
-        for (int i = 0; i < 100; ++i)
+        progress.setValue(progress.value() + 1);
+        if (progress.wasCanceled())
         {
-            progress.setValue(progress.value() + 1);
-            if (progress.wasCanceled())
+            abort = true;
+            break;
+        }
+
+        Genome g = createGenome(genomeSize, 1 << kMin);
+        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+        genePool.append(Score(s, g));
+
+        maxScore = qMax(maxScore, s);
+
+        if (i % workingSize == 0)
+        {
+            // Show best score in progress dialog
+            QString labelText;
+            switch (mode)
             {
-                abort = true;
+            case Time:
+                labelText = QString::number(maxScore) + QString(" s");
+                break;
+            case Distance:
+                labelText = QString::number(maxScore / 1000) + QString(" km");
+                break;
+            case HorizontalSpeed:
+            case VerticalSpeed:
+                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
                 break;
             }
-
-            Genome g = createGenome(aoaSize, 1 << kMin, max_aoa);
-            const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
-            genePool.append(Score(s, g));
+            progress.setLabelText(QString("Initializing (best score is ") +
+                                  labelText +
+                                  QString(")..."));
         }
-
-        // Sort the gene pool
-        qSort(genePool);
-
-        // Remove unfit individuals
-        genePool.resize(100);
-
-        // Get maximum score
-        const double maxScore = genePool[0].first;
-
-        // Show best score in progress dialog
-        QString labelText;
-        switch (mode)
-        {
-        case Time:
-            labelText = QString::number(maxScore) + QString(" s");
-            break;
-        case Distance:
-            labelText = QString::number(maxScore / 1000) + QString(" km");
-            break;
-        case HorizontalSpeed:
-        case VerticalSpeed:
-            labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
-            break;
-        }
-        progress.setLabelText(QString("Initializing (best score is ") +
-                              labelText +
-                              QString(")..."));
     }
 
     // Increasing levels of detail
-    for (int k = kMin; k < kMax && !abort; ++k)
+    for (int k = kMin; k <= kMax && !abort; ++k)
     {
-        const int parts = (1 << k);
-
         // Generations
-        for (int j = 0; j < 100 && !abort; ++j)
+        for (int j = 0; j < numGenerations && !abort; ++j)
         {
             GenePool newGenePool;
-            double maxScore = 0;
+            maxScore = 0;
 
             // Tournament selection
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < workingSize; ++i)
             {
                 progress.setValue(progress.value() + 1);
                 if (progress.wasCanceled())
@@ -1545,7 +1543,7 @@ void MainWindow::optimize(
                 }
 
                 Genome g = selectGenome(genePool);
-                mutateGenome(g, parts);
+                mutateGenome(g, k, kMin);
                 const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
 
@@ -1569,15 +1567,13 @@ void MainWindow::optimize(
                 labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
                 break;
             }
-            progress.setLabelText(QString("Optimizing (level ") +
-                                  QString::number(k) +
-                                  QString("; best score is ") +
+            progress.setLabelText(QString("Optimizing (best score is ") +
                                   labelText +
                                   QString(")..."));
         }
     }
 
-    progress.setValue((kMax - kMin + 1) * 10000);
+    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + initialSize);
 
     // Sort gene pool by score
     qSort(genePool);
@@ -1614,10 +1610,10 @@ const Genome &MainWindow::selectGenome(
 
 Genome MainWindow::createGenome(
         int genomeSize,
-        int parts,
-        double maxAoa)
+        int parts)
 {
-    const double partSize = genomeSize / parts;
+    const double maxAoa = m_maxLift / (2 * M_PI);
+    const int partSize = (genomeSize - 1) / parts;
 
     Genome g;
 
@@ -1625,7 +1621,7 @@ Genome MainWindow::createGenome(
     for (int i = 0; i < parts; ++i)
     {
         double nextAoa = (double) qrand() / RAND_MAX * maxAoa;
-        for (int j = 0; j < partSize; ++j)
+        for (int j = 0; j <= partSize; ++j)
         {
             g.append(prevAoa + (double) j / partSize * (nextAoa - prevAoa));
         }
@@ -1637,17 +1633,21 @@ Genome MainWindow::createGenome(
 
 void MainWindow::mutateGenome(
         Genome &g,
-        int parts)
+        const int k,
+        const int kMin)
 {
+    const int parts = 1 << k;
+    const int div = 1 << (k - kMin);
+    const int partSize = (g.size() - 1) / parts;
     const int i = qrand() % (parts + 1);
-    const double max_aoa = m_maxLift / (2 * M_PI);
-    const double minr = -max_aoa / parts, maxr = max_aoa / parts;
+    const double maxAoa = m_maxLift / (2 * M_PI);
+    const double minr = -maxAoa / div, maxr = maxAoa / div;
     const double r = minr + (double) qrand() / RAND_MAX * (maxr - minr);
 
     if (i > 0)
     {
-        const int jPrev = g.size() * (i - 1) / parts;
-        const int jNext = g.size() * i / parts;
+        const int jPrev = (i - 1) * partSize;
+        const int jNext = i * partSize;
 
         const double rPrev = 0.0;
         const double rNext = r;
@@ -1661,8 +1661,8 @@ void MainWindow::mutateGenome(
 
     if (i < parts)
     {
-        const int jPrev = g.size() * i / parts;
-        const int jNext = g.size() * (i + 1) / parts;
+        const int jPrev = i * partSize;
+        const int jNext = (i + 1) * partSize;
 
         const double rPrev = r;
         const double rNext = 0.0;
@@ -1892,9 +1892,9 @@ double MainWindow::dy_dt(
 double MainWindow::lift(
         double aoa)
 {
-    const double max_aoa = m_maxLift / (2 * M_PI);
+    const double maxAoa = m_maxLift / (2 * M_PI);
     const double width = 0.001;
-    const double w = 1 / (1 + exp(-(aoa - max_aoa) / width));
+    const double w = 1 / (1 + exp(-(aoa - maxAoa) / width));
     return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
 }
 
