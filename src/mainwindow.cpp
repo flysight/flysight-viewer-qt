@@ -1458,9 +1458,10 @@ void MainWindow::optimize(
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
-    const int initialSize = 200;
-    const int workingSize = 200;
-    const int numGenerations = 50;
+    const int initialSize    = 200;     // Initial population
+    const int workingSize    = 200;     // Working population
+    const int keepSize       = 20;      // Number of elites to keep
+    const int numGenerations = 50;      // Generations per level of detail
 
     qsrand(QTime::currentTime().msec());
 
@@ -1529,11 +1530,21 @@ void MainWindow::optimize(
         // Generations
         for (int j = 0; j < numGenerations && !abort; ++j)
         {
-            GenePool newGenePool;
+            // Sort gene pool by score
+            qSort(genePool);
+
+            // Elitism
+            GenePool newGenePool = genePool.mid(0, keepSize);
+
+            // Initialize score
             maxScore = 0;
+            for (int i = 0; i < keepSize; ++i)
+            {
+                maxScore = qMax(maxScore, newGenePool[i].first);
+            }
 
             // Tournament selection
-            for (int i = 0; i < workingSize; ++i)
+            for (int i = 0; i < workingSize - keepSize; ++i)
             {
                 progress.setValue(progress.value() + 1);
                 if (progress.wasCanceled())
