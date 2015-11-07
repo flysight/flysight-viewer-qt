@@ -1488,6 +1488,7 @@ void MainWindow::optimize(
         for (int j = 0; j < 100 && !abort; ++j)
         {
             GenePool newGenePool;
+            double maxScore = 0;
 
             // Tournament selection
             for (int i = 0; i < 100; ++i)
@@ -1503,9 +1504,30 @@ void MainWindow::optimize(
                 mutateGenome(g, parts);
                 const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
+
+                maxScore = qMax(maxScore, s);
             }
 
             genePool = newGenePool;
+
+            // Show best score in progress dialog
+            QString labelText;
+            switch (mode)
+            {
+            case Time:
+                labelText = QString::number(maxScore) + QString(" s");
+                break;
+            case Distance:
+                labelText = QString::number(maxScore / 1000) + QString(" km");
+                break;
+            case HorizontalSpeed:
+            case VerticalSpeed:
+                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
+                break;
+            }
+            progress.setLabelText(QString("Optimizing (best score ") +
+                                  labelText +
+                                  QString(")..."));
         }
     }
 
