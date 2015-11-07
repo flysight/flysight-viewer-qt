@@ -1460,23 +1460,55 @@ void MainWindow::optimize(
 
     const double max_aoa = m_maxLift / (2 * M_PI);
 
-    QProgressDialog progress("Optimizing...", "Abort", 0, (kMax - kMin) * 10000 + 100, this);
+    QProgressDialog progress("Initializing...", "Abort", 0, (kMax - kMin + 1) * 10000, this);
     progress.setWindowModality(Qt::WindowModal);
     bool abort = false;
 
     // Initialize the gene pool
-    for (int i = 0; i < 100 && !abort; ++i)
+    for (int j = 0; j < 100 && !abort; ++j)
     {
-        progress.setValue(i);
-        if (progress.wasCanceled())
+        // Add new individuals
+        for (int i = 0; i < 100; ++i)
         {
-            abort = true;
-            break;
+            progress.setValue(progress.value() + 1);
+            if (progress.wasCanceled())
+            {
+                abort = true;
+                break;
+            }
+
+            Genome g = createGenome(aoaSize, 1 << kMin, max_aoa);
+            const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+            genePool.append(Score(s, g));
         }
 
-        Genome g = createGenome(aoaSize, 1 << kMin, max_aoa);
-        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
-        genePool.append(Score(s, g));
+        // Sort the gene pool
+        qSort(genePool);
+
+        // Remove unfit individuals
+        genePool.resize(100);
+
+        // Get maximum score
+        const double maxScore = genePool[0].first;
+
+        // Show best score in progress dialog
+        QString labelText;
+        switch (mode)
+        {
+        case Time:
+            labelText = QString::number(maxScore) + QString(" s");
+            break;
+        case Distance:
+            labelText = QString::number(maxScore / 1000) + QString(" km");
+            break;
+        case HorizontalSpeed:
+        case VerticalSpeed:
+            labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
+            break;
+        }
+        progress.setLabelText(QString("Initializing (best score is ") +
+                              labelText +
+                              QString(")..."));
     }
 
     // Increasing levels of detail
@@ -1493,7 +1525,7 @@ void MainWindow::optimize(
             // Tournament selection
             for (int i = 0; i < 100; ++i)
             {
-                progress.setValue((k - kMin) * 10000 + j * 100 + i + 100);
+                progress.setValue(progress.value() + 1);
                 if (progress.wasCanceled())
                 {
                     abort = true;
@@ -1525,13 +1557,15 @@ void MainWindow::optimize(
                 labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
                 break;
             }
-            progress.setLabelText(QString("Optimizing (best score ") +
+            progress.setLabelText(QString("Optimizing (level ") +
+                                  QString::number(k) +
+                                  QString("; best score is ") +
                                   labelText +
                                   QString(")..."));
         }
     }
 
-    progress.setValue((kMax - kMin) * 10000 + 100);
+    progress.setValue((kMax - kMin + 1) * 10000);
 
     // Sort gene pool by score
     qSort(genePool);
