@@ -1629,20 +1629,19 @@ Genome MainWindow::createGenome(
         int genomeSize,
         int parts)
 {
-    const double maxAoa = m_maxLift / (2 * M_PI);
     const int partSize = (genomeSize - 1) / parts;
 
     Genome g;
 
-    double prevAoa = (double) qrand() / RAND_MAX * maxAoa;
+    double prevLift = (double) qrand() / RAND_MAX * 2 * m_maxLift - m_maxLift;
     for (int i = 0; i < parts; ++i)
     {
-        double nextAoa = (double) qrand() / RAND_MAX * maxAoa;
+        double nextLift = (double) qrand() / RAND_MAX * 2 * m_maxLift - m_maxLift;
         for (int j = 0; j <= partSize; ++j)
         {
-            g.append(prevAoa + (double) j / partSize * (nextAoa - prevAoa));
+            g.append(prevLift + (double) j / partSize * (nextLift - prevLift));
         }
-        prevAoa = nextAoa;
+        prevLift = nextLift;
     }
 
     return g;
@@ -1657,8 +1656,7 @@ void MainWindow::mutateGenome(
     const int div = 1 << (k - kMin);
     const int partSize = (g.size() - 1) / parts;
     const int i = qrand() % (parts + 1);
-    const double maxAoa = m_maxLift / (2 * M_PI);
-    const double minr = -maxAoa / div, maxr = maxAoa / div;
+    const double minr = -m_maxLift / div, maxr = m_maxLift / div;
     const double r = minr + (double) qrand() / RAND_MAX * (maxr - minr);
 
     if (i > 0)
@@ -1672,7 +1670,7 @@ void MainWindow::mutateGenome(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] += r;
+            g[j] = qMax(-m_maxLift, qMin(m_maxLift, g[j] + r));
         }
     }
 
@@ -1687,13 +1685,13 @@ void MainWindow::mutateGenome(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] += r;
+            g[j] = qMax(-m_maxLift, qMin(m_maxLift, g[j] + r));
         }
     }
 }
 
 double MainWindow::simulate(
-        const QVector< double > &aoa,
+        const Genome &g,
         double h,
         double a,
         double c,
@@ -1723,9 +1721,9 @@ double MainWindow::simulate(
         dist3D = m_data[start].dist3D;
     }
 
-    QVector< double >::ConstIterator i;
-    for (i = aoa.constBegin();
-         i != aoa.constEnd() && i + 1 != aoa.constEnd();
+    Genome::ConstIterator i;
+    for (i = g.constBegin();
+         i != g.constEnd() && i + 1 != g.constEnd();
          ++i)
     {
         const double lift_prev = lift(*i);
@@ -1907,19 +1905,15 @@ double MainWindow::dy_dt(
 }
 
 double MainWindow::lift(
-        double aoa)
+        double cl)
 {
-    const double maxAoa = m_maxLift / (2 * M_PI);
-    const double width = 0.001;
-    const double w = 1 / (1 + exp(-(aoa - maxAoa) / width));
-    return w * (2 * sin(aoa) * sin(2 * aoa)) + (1 - w) * (2 * M_PI * aoa);
+    return cl;
 }
 
 double MainWindow::drag(
-        double aoa,
+        double cl,
         double a,
         double c)
 {
-    const double cl = 2 * M_PI * aoa;
     return a * cl * cl + c;
 }
