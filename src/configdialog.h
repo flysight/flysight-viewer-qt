@@ -39,6 +39,9 @@ public:
     void setMinDrag(double minDrag);
     double minDrag() const;
 
+    void setMinLift(double minLift);
+    double minLift() const;
+
     void setMaxLift(double maxLift);
     double maxLift() const;
 

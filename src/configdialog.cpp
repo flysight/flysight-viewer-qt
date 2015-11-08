@@ -119,6 +119,17 @@ double ConfigDialog::minDrag() const
     return ui->minDragEdit->text().toDouble();
 }
 
+void ConfigDialog::setMinLift(
+        double minLift)
+{
+    ui->minLiftEdit->setText(QString("%1").arg(minLift));
+}
+
+double ConfigDialog::minLift() const
+{
+    return ui->minLiftEdit->text().toDouble();
+}
+
 void ConfigDialog::setMaxLift(
         double maxLift)
 {

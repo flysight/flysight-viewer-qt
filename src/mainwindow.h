@@ -197,6 +197,7 @@ private:
     double                m_wingSpan;
 
     double                m_minDrag;
+    double                m_minLift;
     double                m_maxLift;
     double                m_efficiency;
 

@@ -40,9 +40,10 @@ MainWindow::MainWindow(
     m_mass(70),
     m_planformArea(2),
     m_wingSpan(1.4),
-    m_minDrag(0.041),
-    m_maxLift(0.52),
-    m_efficiency(0.53)
+    m_minDrag(0.05),
+    m_minLift(-0.1),
+    m_maxLift(0.5),
+    m_efficiency(0.5)
 {
     m_ui->setupUi(this);
 
@@ -116,6 +117,7 @@ void MainWindow::writeSettings()
     settings.setValue("planformArea", m_planformArea);
     settings.setValue("wingSpan", m_wingSpan);
     settings.setValue("minDrag", m_minDrag);
+    settings.setValue("minLift", m_minLift);
     settings.setValue("maxLift", m_maxLift);
     settings.setValue("efficiency", m_efficiency);
     settings.endGroup();
@@ -135,6 +137,7 @@ void MainWindow::readSettings()
     m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
     m_wingSpan = settings.value("wingSpan", m_wingSpan).toDouble();
     m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+    m_minLift = settings.value("minLift", m_minLift).toDouble();
     m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
     m_efficiency = settings.value("efficiency", m_efficiency).toDouble();
     settings.endGroup();
@@ -1053,6 +1056,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setPlanformArea(m_planformArea);
     dlg.setWingSpan(m_wingSpan);
     dlg.setMinDrag(m_minDrag);
+    dlg.setMinLift(m_minLift);
     dlg.setMaxLift(m_maxLift);
     dlg.setEfficiency(m_efficiency);
 
@@ -1088,10 +1092,12 @@ void MainWindow::on_actionPreferences_triggered()
     }
 
     if (m_minDrag != dlg.minDrag() ||
+        m_minLift != dlg.minLift() ||
         m_maxLift != dlg.maxLift() ||
         m_efficiency != dlg.efficiency())
     {
         m_minDrag = dlg.minDrag();
+        m_minLift = dlg.minLift();
         m_maxLift = dlg.maxLift();
         m_efficiency = dlg.efficiency();
 
@@ -1633,10 +1639,10 @@ Genome MainWindow::createGenome(
 
     Genome g;
 
-    double prevLift = (double) qrand() / RAND_MAX * 2 * m_maxLift - m_maxLift;
+    double prevLift = m_minLift + (double) qrand() / RAND_MAX * (m_maxLift - m_minLift);
     for (int i = 0; i < parts; ++i)
     {
-        double nextLift = (double) qrand() / RAND_MAX * 2 * m_maxLift - m_maxLift;
+        double nextLift = m_minLift + (double) qrand() / RAND_MAX * (m_maxLift - m_minLift);
         for (int j = 0; j <= partSize; ++j)
         {
             g.append(prevLift + (double) j / partSize * (nextLift - prevLift));
@@ -1670,7 +1676,7 @@ void MainWindow::mutateGenome(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] = qMax(-m_maxLift, qMin(m_maxLift, g[j] + r));
+            g[j] = qMax(m_minLift, qMin(m_maxLift, g[j] + r));
         }
     }
 
@@ -1685,7 +1691,7 @@ void MainWindow::mutateGenome(
         for (int j = jPrev; j < jNext; ++j)
         {
             const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] = qMax(-m_maxLift, qMin(m_maxLift, g[j] + r));
+            g[j] = qMax(m_minLift, qMin(m_maxLift, g[j] + r));
         }
     }
 }
