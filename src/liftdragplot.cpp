@@ -147,8 +147,7 @@ void LiftDragPlot::updatePlot()
 
     QVector< double > t, x, y;
 
-    double xMin, xMax;
-    double yMin, yMax;
+    double xMax, yMax;
 
     int start = mMainWindow->findIndexBelowT(lower) + 1;
     int end   = mMainWindow->findIndexAboveT(upper);
@@ -167,17 +166,14 @@ void LiftDragPlot::updatePlot()
 
         if (first)
         {
-            xMin = xMax = x.back();
-            yMin = yMax = y.back();
+            xMax = x.back();
+            yMax = y.back();
 
             first = false;
         }
         else
         {
-            if (x.back() < xMin) xMin = x.back();
             if (x.back() > xMax) xMax = x.back();
-
-            if (y.back() < yMin) yMin = y.back();
             if (y.back() > yMax) yMax = y.back();
         }
 
@@ -199,9 +195,6 @@ void LiftDragPlot::updatePlot()
 
     setViewRange(xMax, yMax);
 
-    const double s00 = end - start + 1;
-    const double det = s00 * s40 - s20 * s20;
-
     const double bb = mMainWindow->wingSpan();
     const double ss = mMainWindow->planformArea();
     const double ar = bb * bb / ss;
@@ -214,10 +207,10 @@ void LiftDragPlot::updatePlot()
     x.clear();
     y.clear();
 
-    xMin = xAxis->range().lower;
+    double xMin = xAxis->range().lower;
     xMax = xAxis->range().upper;
 
-    for (int i = 0; i < 101; ++i)
+    for (int i = 0; i <= 100; ++i)
     {
         const double xx = xMin + (xMax - xMin) / 100 * i;
 
@@ -228,8 +221,58 @@ void LiftDragPlot::updatePlot()
 
     curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(QBrush(Qt::red), 0, Qt::DotLine));
+    curve->setPen(QPen(Qt::red));
     addPlottable(curve);
+
+    // Add label to show equation for saved curve
+    QCPItemText *textLabel = new QCPItemText(this);
+    addItem(textLabel);
+
+    // Draw tangent line
+    const double xt = sqrt(c / a);
+    const double m = 2 * a * xt;
+
+    textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+    textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+    textLabel->position->setCoords(0.5, 0);
+    textLabel->setText(QString("Minimum drag = %1\nOswald efficiency = %2\nMaximum L/D = %3").arg(fabs(c)).arg(1 / (a * M_PI * ar)).arg(1 / m));
+
+    if (a != 0)
+    {
+        t.clear();
+        x.clear();
+        y.clear();
+
+        for (int i = 0; i < 101; ++i)
+        {
+            const double xx = xMin + (xMax - xMin) / 100 * i;
+
+            t.append(xx);
+            x.append(xx);
+            y.append(m * xx);
+        }
+
+        curve = new QCPCurve(xAxis, yAxis);
+        curve->setData(t, x, y);
+        curve->setPen(QPen(Qt::blue, 0, Qt::DashLine));
+        addPlottable(curve);
+
+        x.clear();
+        y.clear();
+
+        x.append(xt);
+        y.append(a * xt * xt + c);
+
+        QCPGraph *graph = addGraph();
+        graph->setData(x, y);
+        graph->setPen(QPen(Qt::blue));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
+
+    // Draw best fit
+    const double s00 = end - start + 1;
+    const double det = s00 * s40 - s20 * s20;
 
     if (det != 0)
     {
@@ -253,55 +296,8 @@ void LiftDragPlot::updatePlot()
 
         curve = new QCPCurve(xAxis, yAxis);
         curve->setData(t, x, y);
-        curve->setPen(QPen(Qt::red));
+        curve->setPen(QPen(QBrush(Qt::red), 0, Qt::DotLine));
         addPlottable(curve);
-
-        // Add label to show equation for fit
-        QCPItemText *textLabel = new QCPItemText(this);
-        addItem(textLabel);
-
-        // Find tangent line
-        const double xt = sqrt(c / a);
-        const double m = 2 * a * xt;
-
-        textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-        textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-        textLabel->position->setCoords(0.5, 0);
-        textLabel->setText(QString("Minimum drag = %1\nOswald efficiency = %2\nMaximum L/D = %3").arg(fabs(c)).arg(1 / (a * M_PI * ar)).arg(1 / m));
-
-        if (a != 0)
-        {
-            t.clear();
-            x.clear();
-            y.clear();
-
-            // Add tangent line
-            for (int i = 0; i < 101; ++i)
-            {
-                const double xx = xMin + (xMax - xMin) / 100 * i;
-
-                t.append(xx);
-                x.append(xx);
-                y.append(m * xx);
-            }
-
-            curve = new QCPCurve(xAxis, yAxis);
-            curve->setData(t, x, y);
-            curve->setPen(QPen(Qt::blue, 0, Qt::DashLine));
-            addPlottable(curve);
-
-            x.clear();
-            y.clear();
-
-            x.append(xt);
-            y.append(a * xt * xt + c);
-
-            QCPGraph *graph = addGraph();
-            graph->setData(x, y);
-            graph->setPen(QPen(Qt::blue));
-            graph->setLineStyle(QCPGraph::lsNone);
-            graph->setScatterStyle(QCPScatterStyle::ssDisc);
-        }
     }
 
     if (mMainWindow->markActive())
