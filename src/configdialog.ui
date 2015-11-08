@@ -219,12 +219,12 @@
            <item row="8" column="0">
             <widget class="QLabel" name="label_14">
              <property name="text">
-              <string>Oswald efficiency:</string>
+              <string>Maximum L/D:</string>
              </property>
             </widget>
            </item>
            <item row="8" column="1">
-            <widget class="QLineEdit" name="efficiencyEdit"/>
+            <widget class="QLineEdit" name="maxLDEdit"/>
            </item>
            <item row="9" column="1">
             <spacer name="verticalSpacer_3">

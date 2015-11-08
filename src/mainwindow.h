@@ -100,11 +100,11 @@ public:
 
     double minDrag() const { return m_minDrag; }
     double maxLift() const { return m_maxLift; }
-    double efficiency() const { return m_efficiency; }
+    double maxLD() const { return m_maxLD; }
 
     void setMinDrag(double minDrag);
     void setMaxLift(double maxLift);
-    void setEfficiency(double efficiency);
+    void setMaxLD(double maxLD);
 
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
@@ -199,7 +199,7 @@ private:
     double                m_minDrag;
     double                m_minLift;
     double                m_maxLift;
-    double                m_efficiency;
+    double                m_maxLD;
 
     void writeSettings();
     void readSettings();

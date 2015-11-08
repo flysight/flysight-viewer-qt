@@ -141,13 +141,13 @@ double ConfigDialog::maxLift() const
     return ui->maxLiftEdit->text().toDouble();
 }
 
-void ConfigDialog::setEfficiency(
-        double efficiency)
+void ConfigDialog::setMaxLD(
+        double maxLD)
 {
-    ui->efficiencyEdit->setText(QString("%1").arg(efficiency));
+    ui->maxLDEdit->setText(QString("%1").arg(maxLD));
 }
 
-double ConfigDialog::efficiency() const
+double ConfigDialog::maxLD() const
 {
-    return ui->efficiencyEdit->text().toDouble();
+    return ui->maxLDEdit->text().toDouble();
 }

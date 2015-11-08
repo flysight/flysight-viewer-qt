@@ -73,7 +73,7 @@ void LiftDragPlot::mouseMoveEvent(
             const double ar = bb * bb / ss;
 
             mMainWindow->setMinDrag(c);
-            mMainWindow->setEfficiency(1 / (M_PI * a * ar));
+            mMainWindow->setMaxLD(1 / sqrt(4 * a * c));
         }
     }
     else if (QCPCurve *graph = qobject_cast<QCPCurve *>(plottable(0)))
@@ -238,12 +238,13 @@ void LiftDragPlot::updatePlot()
     const double ss = mMainWindow->planformArea();
     const double ar = bb * bb / ss;
 
-    const double a = 1 / (M_PI * mMainWindow->efficiency() * ar);
+    // y = ax^2 + c
+    const double m = 1 / mMainWindow->maxLD();
     const double c = mMainWindow->minDrag();
+    const double a = m * m / (4 * c);
 
     // Draw tangent line
     const double xt = sqrt(c / a);
-    const double m = 2 * a * xt;
 
     if (a != 0)
     {
@@ -326,7 +327,7 @@ void LiftDragPlot::updatePlot()
                 QString("Minimum drag = %1\nMaximum lift = %2\nMaximum L/D = %3")
                     .arg(fabs(c))
                     .arg(mMainWindow->maxLift())
-                    .arg(1 / m));
+                    .arg(1/ m));
 
     replot();
 }

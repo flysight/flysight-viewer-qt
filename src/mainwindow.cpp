@@ -43,7 +43,7 @@ MainWindow::MainWindow(
     m_minDrag(0.05),
     m_minLift(-0.1),
     m_maxLift(0.5),
-    m_efficiency(0.5)
+    m_maxLD(3.0)
 {
     m_ui->setupUi(this);
 
@@ -119,7 +119,7 @@ void MainWindow::writeSettings()
     settings.setValue("minDrag", m_minDrag);
     settings.setValue("minLift", m_minLift);
     settings.setValue("maxLift", m_maxLift);
-    settings.setValue("efficiency", m_efficiency);
+    settings.setValue("maxLD", m_maxLD);
     settings.endGroup();
 }
 
@@ -139,7 +139,7 @@ void MainWindow::readSettings()
     m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
     m_minLift = settings.value("minLift", m_minLift).toDouble();
     m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
-    m_efficiency = settings.value("efficiency", m_efficiency).toDouble();
+    m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
     settings.endGroup();
 }
 
@@ -1058,7 +1058,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMinDrag(m_minDrag);
     dlg.setMinLift(m_minLift);
     dlg.setMaxLift(m_maxLift);
-    dlg.setEfficiency(m_efficiency);
+    dlg.setMaxLD(m_maxLD);
 
     dlg.exec();
 
@@ -1094,12 +1094,12 @@ void MainWindow::on_actionPreferences_triggered()
     if (m_minDrag != dlg.minDrag() ||
         m_minLift != dlg.minLift() ||
         m_maxLift != dlg.maxLift() ||
-        m_efficiency != dlg.efficiency())
+        m_maxLD != dlg.maxLD())
     {
         m_minDrag = dlg.minDrag();
         m_minLift = dlg.minLift();
         m_maxLift = dlg.maxLift();
-        m_efficiency = dlg.efficiency();
+        m_maxLD = dlg.maxLD();
 
         emit dataChanged();
     }
@@ -1369,10 +1369,10 @@ void MainWindow::setMaxLift(
     emit dataChanged();
 }
 
-void MainWindow::setEfficiency(
-        double efficiency)
+void MainWindow::setMaxLD(
+        double maxLD)
 {
-    m_efficiency = efficiency;
+    m_maxLD = maxLD;
 
     emit dataChanged();
 }
@@ -1462,8 +1462,9 @@ void MainWindow::optimize(
     const double ar = bb * bb / ss;
 
     // y = ax^2 + c
-    const double a = 1 / (M_PI * m_efficiency * ar);
+    const double m = 1 / m_maxLD;
     const double c = m_minDrag;
+    const double a = m * m / (4 * c);
 
     const double t0 = m_data[start].t;
     const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);

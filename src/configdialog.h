@@ -45,8 +45,8 @@ public:
     void setMaxLift(double maxLift);
     double maxLift() const;
 
-    void setEfficiency(double efficiency);
-    double efficiency() const;
+    void setMaxLD(double maxLD);
+    double maxLD() const;
 
 private:
     Ui::ConfigDialog *ui;
