@@ -28,8 +28,7 @@ private:
     bool        m_dragging;
 
     void setMark(double mark);
-    void setViewRange(double xMin, double xMax,
-                      double yMin, double yMax);
+    void setViewRange(double xMax, double yMax);
 
 public slots:
     void updatePlot();

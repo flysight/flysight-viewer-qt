@@ -197,7 +197,7 @@ void LiftDragPlot::updatePlot()
     curve->setScatterStyle(QCPScatterStyle::ssDisc);
     addPlottable(curve);
 
-    setViewRange(xMin, xMax, yMin, yMax);
+    setViewRange(xMax, yMax);
 
     const double s00 = end - start + 1;
     const double det = s00 * s40 - s20 * s20;
@@ -336,35 +336,9 @@ void LiftDragPlot::updatePlot()
 }
 
 void LiftDragPlot::setViewRange(
-        double xMin,
         double xMax,
-        double yMin,
         double yMax)
 {
-    QPainter painter(this);
-
-    double xMMperPix = (double) painter.device()->widthMM() / painter.device()->width();
-    double yMMperPix = (double) painter.device()->heightMM() / painter.device()->height();
-
-    QRect rect = axisRect()->rect();
-
-    double xSpan = (xMax - xMin) * 1.2;
-    double ySpan = (yMax - yMin) * 1.2;
-
-    double xScale = xSpan / rect.width() / xMMperPix;
-    double yScale = ySpan / rect.height() / yMMperPix;
-
-    double scale = qMax(xScale, yScale);
-
-    double xMid = (xMin + xMax) / 2;
-    double yMid = (yMin + yMax) / 2;
-
-    xMin = xMid - rect.width() * xMMperPix * scale / 2;
-    xMax = xMid + rect.width() * xMMperPix * scale / 2;
-
-    yMin = yMid - rect.height() * yMMperPix * scale / 2;
-    yMax = yMid + rect.height() * yMMperPix * scale / 2;
-
-    xAxis->setRange(xMin, xMax);
-    yAxis->setRange(yMin, yMax);
+    xAxis->setRange(0, xMax * 1.1);
+    yAxis->setRange(0, yMax * 1.1);
 }
