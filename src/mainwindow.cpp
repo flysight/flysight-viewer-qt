@@ -1458,7 +1458,6 @@ void MainWindow::optimize(
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
-    const int initialSize    = 200;     // Initial population
     const int workingSize    = 200;     // Working population
     const int keepSize       = 20;      // Number of elites to keep
     const int numGenerations = 50;      // Generations per level of detail
@@ -1478,7 +1477,7 @@ void MainWindow::optimize(
     QProgressDialog progress("Initializing...",
                              "Abort",
                              0,
-                             (kMax - kMin + 1) * numGenerations * workingSize + initialSize,
+                             (kMax - kMin + 1) * numGenerations * workingSize + workingSize,
                              this);
     progress.setWindowModality(Qt::WindowModal);
 
@@ -1486,7 +1485,7 @@ void MainWindow::optimize(
     bool abort = false;
 
     // Add new individuals
-    for (int i = 0; i < initialSize; ++i)
+    for (int i = 0; i < workingSize; ++i)
     {
         progress.setValue(progress.value() + 1);
         if (progress.wasCanceled())
@@ -1500,28 +1499,6 @@ void MainWindow::optimize(
         genePool.append(Score(s, g));
 
         maxScore = qMax(maxScore, s);
-
-        if (i % workingSize == 0)
-        {
-            // Show best score in progress dialog
-            QString labelText;
-            switch (mode)
-            {
-            case Time:
-                labelText = QString::number(maxScore) + QString(" s");
-                break;
-            case Distance:
-                labelText = QString::number(maxScore / 1000) + QString(" km");
-                break;
-            case HorizontalSpeed:
-            case VerticalSpeed:
-                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
-                break;
-            }
-            progress.setLabelText(QString("Initializing (best score is ") +
-                                  labelText +
-                                  QString(")..."));
-        }
     }
 
     // Increasing levels of detail
@@ -1584,7 +1561,7 @@ void MainWindow::optimize(
         }
     }
 
-    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + initialSize);
+    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + workingSize);
 
     // Sort gene pool by score
     qSort(genePool);
