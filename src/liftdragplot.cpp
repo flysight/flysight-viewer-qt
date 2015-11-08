@@ -8,7 +8,7 @@
 LiftDragPlot::LiftDragPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
-    m_dragging(false)
+    mDragging(false)
 {
 
 }
@@ -24,8 +24,7 @@ void LiftDragPlot::mousePressEvent(
 {
     if (axisRect()->rect().contains(event->pos()))
     {
-        m_beginPos = event->pos();
-        m_dragging = true;
+        mBeginPos = event->pos();
     }
 
     QCustomPlot::mousePressEvent(event);
@@ -34,46 +33,50 @@ void LiftDragPlot::mousePressEvent(
 void LiftDragPlot::mouseReleaseEvent(
         QMouseEvent *event)
 {
-    m_dragging = false;
+    if (!mDragging)
+    {
+        mMainWindow->setMaxLift(xAxis->pixelToCoord(mBeginPos.x()));
+        mMainWindow->clearMark();
+        QToolTip::hideText();
+    }
+    else
+    {
+        mDragging = false;
+    }
+
     QCustomPlot::mouseReleaseEvent(event);
 }
 
 void LiftDragPlot::mouseMoveEvent(
         QMouseEvent *event)
 {
-    if (m_dragging)
+    if (event->buttons() & Qt::LeftButton)
     {
-        const QPoint &endPos = event->pos();
+        QPoint pos = event->pos();
+        QVector2D diff = QVector2D(pos - mBeginPos);
 
-        const double cdBegin = yAxis->pixelToCoord(m_beginPos.y());
-        const double cdEnd = yAxis->pixelToCoord(endPos.y());
+        if (diff.length() > selectionTolerance())
+        {
+            mDragging = true;
+        }
 
-        const double minDragBegin = mMainWindow->minDrag();
-        const double minDragEnd = minDragBegin - cdBegin + cdEnd;
+        if (mDragging)
+        {
+            const double cl = xAxis->pixelToCoord(pos.x());
+            const double cd = yAxis->pixelToCoord(pos.y());
 
-        const double bb = mMainWindow->wingSpan();
-        const double ss = mMainWindow->planformArea();
-        const double ar = bb * bb / ss;
+            const double c = cd / 2;
+            const double a = c / cl / cl;
 
-        // y = a * x * x + c
-        // a = (y - c) / (x * x)
-        // 1 / (M_PI * e * ar) = (cd - minDrag) / (cl * cl)
-        // M_PI * e * ar = (cl * cl) / (cd - minDrag)
-        // e = (cl * cl) / [M_PI * ar * (cd - minDrag)]
+            const double bb = mMainWindow->wingSpan();
+            const double ss = mMainWindow->planformArea();
+            const double ar = bb * bb / ss;
 
-        const double clBegin = yAxis->pixelToCoord(m_beginPos.x());
-        const double clEnd = yAxis->pixelToCoord(endPos.x());
-
-        const double eBegin = clBegin * clBegin / (M_PI * ar * (cdBegin - minDragBegin));
-        const double eEnd = clEnd * clEnd / (M_PI * ar * (cdEnd - minDragEnd));
-
-        mMainWindow->setMinDrag(minDragEnd);
-        mMainWindow->setEfficiency(mMainWindow->efficiency() / eBegin * eEnd);
-
-        m_beginPos = endPos;
+            mMainWindow->setMinDrag(c);
+            mMainWindow->setEfficiency(1 / (M_PI * a * ar));
+        }
     }
-
-    if (QCPCurve *graph = qobject_cast<QCPCurve *>(plottable(0)))
+    else if (QCPCurve *graph = qobject_cast<QCPCurve *>(plottable(0)))
     {
         const QCPCurveDataMap *data = graph->data();
 

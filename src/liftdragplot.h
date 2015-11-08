@@ -24,8 +24,8 @@ protected:
 private:
     MainWindow *mMainWindow;
 
-    QPoint      m_beginPos;
-    bool        m_dragging;
+    QPoint      mBeginPos;
+    bool        mDragging;
 
     void setMark(double mark);
     void setViewRange(double xMax, double yMax);

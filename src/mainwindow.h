@@ -103,6 +103,7 @@ public:
     double efficiency() const { return m_efficiency; }
 
     void setMinDrag(double minDrag);
+    void setMaxLift(double maxLift);
     void setEfficiency(double efficiency);
 
     int optimalSize() const { return m_optimal.size(); }

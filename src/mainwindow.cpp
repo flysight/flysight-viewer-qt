@@ -1355,6 +1355,14 @@ void MainWindow::setMinDrag(
     emit dataChanged();
 }
 
+void MainWindow::setMaxLift(
+        double maxLift)
+{
+    m_maxLift = maxLift;
+
+    emit dataChanged();
+}
+
 void MainWindow::setEfficiency(
         double efficiency)
 {
