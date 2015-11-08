@@ -29,17 +29,18 @@ public:
     virtual const QColor color() const = 0;
     virtual double value(const DataPoint &dp, Units units) const = 0;
 
-    QCPAxis *addAxis(QCustomPlot *plot, Units units) const
+    QCPAxis *addAxis(QCustomPlot *plot, Units units)
     {
-        QCPAxis *axis = plot->axisRect()->addAxis(QCPAxis::atLeft);
-        axis->setLabelColor(color());
-        axis->setTickLabelColor(color());
-        axis->setBasePen(QPen(color()));
-        axis->setTickPen(QPen(color()));
-        axis->setSubTickPen(QPen(color()));
-        axis->setLabel(title(units));
-        return axis;
+        mAxis = plot->axisRect()->addAxis(QCPAxis::atLeft);
+        mAxis->setLabelColor(color());
+        mAxis->setTickLabelColor(color());
+        mAxis->setBasePen(QPen(color()));
+        mAxis->setTickPen(QPen(color()));
+        mAxis->setSubTickPen(QPen(color()));
+        mAxis->setLabel(title(units));
+        return mAxis;
     }
+    QCPAxis *axis() const { return mAxis; }
 
     bool visible() const { return mVisible; }
     void setVisible(bool visible) { mVisible = visible; }
@@ -64,6 +65,7 @@ public:
 
 private:
     bool mVisible;
+    QCPAxis *mAxis;
 
     const QString key() const
     {
