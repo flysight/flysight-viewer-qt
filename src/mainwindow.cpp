@@ -1523,6 +1523,13 @@ void MainWindow::optimize(
         // Generations
         for (int j = 0; j < numGenerations && !abort; ++j)
         {
+            progress.setValue(progress.value() + keepSize);
+            if (progress.wasCanceled())
+            {
+                abort = true;
+                break;
+            }
+
             // Sort gene pool by score
             qSort(genePool);
 
@@ -1536,24 +1543,21 @@ void MainWindow::optimize(
                 maxScore = qMax(maxScore, newGenePool[i].first);
             }
 
-            if (k == kMin)
+            // Add new individuals in first level
+            for (int i = 0; k == kMin && i < newSize; ++i)
             {
-                // Add new individuals in first level
-                for (int i = 0; i < workingSize; ++i)
+                progress.setValue(progress.value() + 1);
+                if (progress.wasCanceled())
                 {
-                    progress.setValue(progress.value() + 1);
-                    if (progress.wasCanceled())
-                    {
-                        abort = true;
-                        break;
-                    }
-
-                    Genome g = createGenome(genomeSize, 1 << kMin);
-                    const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
-                    newGenePool.append(Score(s, g));
-
-                    maxScore = qMax(maxScore, s);
+                    abort = true;
+                    break;
                 }
+
+                Genome g = createGenome(genomeSize, 1 << kMin);
+                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+                newGenePool.append(Score(s, g));
+
+                maxScore = qMax(maxScore, s);
             }
 
             // Tournament selection
