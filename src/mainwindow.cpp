@@ -1476,18 +1476,22 @@ void MainWindow::optimize(
     const int workingSize    = 200;     // Working population
     const int keepSize       = 20;      // Number of elites to keep
     const int newSize        = 20;      // New genomes in first level
-    const int numGenerations = 50;      // Generations per level of detail
+    const int numGenerations = 100;     // Generations per level of detail
 
     qsrand(QTime::currentTime().msec());
 
-    const int kMin = 4;
-    int kMax = kMin;
-    while ((1 << kMax) < end - start)
+    const double dt = 0.25; // Time step (s)
+
+    int kLim = 0;
+    while (dt * (1 << kLim) < mRangeUpper - mRangeLower)
     {
-        ++kMax;
+        ++kLim;
     }
 
-    const double genomeSize = (1 << kMax) + 1;
+    const int genomeSize = (1 << kLim) + 1;
+    const int kMin = kLim - 4;
+    const int kMax = kLim - 2;
+
     GenePool genePool;
 
     QProgressDialog progress("Initializing...",
@@ -1511,7 +1515,7 @@ void MainWindow::optimize(
         }
 
         Genome g = createGenome(genomeSize, 1 << kMin);
-        const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+        const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
         genePool.append(Score(s, g));
 
         maxScore = qMax(maxScore, s);
@@ -1554,7 +1558,7 @@ void MainWindow::optimize(
                 }
 
                 Genome g = createGenome(genomeSize, 1 << kMin);
-                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+                const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1572,7 +1576,7 @@ void MainWindow::optimize(
 
                 Genome g = selectGenome(genePool);
                 mutateGenome(g, k, kMin);
-                const double s = simulate(g, m_timeStep, a, c, t0, theta0, v0, x0, y0, -1, mode);
+                const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1608,7 +1612,7 @@ void MainWindow::optimize(
 
     // Keep most fit individual
     m_optimal.clear();
-    simulate(genePool[0].second, m_timeStep, a, c, t0, theta0, v0, x0, y0, start, mode);
+    simulate(genePool[0].second, dt, a, c, t0, theta0, v0, x0, y0, start, mode);
 
     emit dataChanged();
 
