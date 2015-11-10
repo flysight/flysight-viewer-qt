@@ -228,7 +228,7 @@ private:
 
     Genome crossoverGenome(const Genome &p1, const Genome &p2, const int k);
     Genome createGenome(int genomeSize, int parts);
-    const Genome &selectGenome(const GenePool &genePool);
+    const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
     void mutateGenome(Genome &g, const int k, const int kMin);
 
     double simulate(const Genome &aoa, double h, double a, double c,

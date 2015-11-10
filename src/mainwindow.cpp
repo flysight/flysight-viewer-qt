@@ -1477,6 +1477,7 @@ void MainWindow::optimize(
     const int keepSize       = 10;      // Number of elites to keep
     const int newSize        = 10;      // New genomes in first level
     const int numGenerations = 250;     // Generations per level of detail
+    const int tournamentSize = 3;       // Number of individuals in a tournament
 
     qsrand(QTime::currentTime().msec());
 
@@ -1574,8 +1575,8 @@ void MainWindow::optimize(
                     break;
                 }
 
-                const Genome &p1 = selectGenome(genePool);
-                const Genome &p2 = selectGenome(genePool);
+                const Genome &p1 = selectGenome(genePool, tournamentSize);
+                const Genome &p2 = selectGenome(genePool, tournamentSize);
                 Genome g = crossoverGenome(p1, p2, k);
                 mutateGenome(g, k, kMin);
                 const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
@@ -1648,10 +1649,9 @@ Genome MainWindow::crossoverGenome(
 }
 
 const Genome &MainWindow::selectGenome(
-        const GenePool &genePool)
+        const GenePool &genePool,
+        const int tournamentSize)
 {
-    const int tournamentSize = 3;
-
     double jMax;
     double sMax = 0;
 
