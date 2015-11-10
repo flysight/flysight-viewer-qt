@@ -1652,16 +1652,18 @@ const Genome &MainWindow::selectGenome(
         const GenePool &genePool,
         const int tournamentSize)
 {
-    double jMax;
-    double sMax = 0;
+    int jMax;
+    double sMax;
+    bool first = true;
 
     for (int i = 0; i < tournamentSize; ++i)
     {
         const int j = qrand() % genePool.size();
-        if (genePool[j].first > sMax)
+        if (first || genePool[j].first > sMax)
         {
             jMax = j;
             sMax = genePool[j].first;
+            first = false;
         }
     }
 
