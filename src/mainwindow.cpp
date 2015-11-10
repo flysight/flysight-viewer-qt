@@ -1380,46 +1380,14 @@ void MainWindow::setMaxLD(
 
 void MainWindow::updateWindow(void)
 {
-    const QVector< DataPoint > &data =
-            (mWindowMode == Actual) ? m_data : m_optimal;
-
-    mIsWindowValid = false;
-
-    int iBottom = data.size() - 1, iTop = data.size() - 1;
-
-    // Find end of window
-    for (int i = data.size() - 1; i >= 0; --i)
+    switch (mWindowMode)
     {
-        const DataPoint &dp = data[i];
-
-        if (dp.alt < mWindowBottom)
-        {
-            iBottom = i;
-        }
-
-        if (dp.alt < mWindowTop)
-        {
-            iTop = i;
-        }
-        else
-        {
-            mIsWindowValid = true;
-        }
-
-        if (mIsWindowValid && dp.t < 0) break;
-    }
-
-    if (mIsWindowValid)
-    {
-        // Calculate bottom of window
-        const DataPoint &dp1 = data[iBottom - 1];
-        const DataPoint &dp2 = data[iBottom];
-        mWindowBottomDP = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
-
-        // Calculate top of window
-        const DataPoint &dp3 = data[iTop - 1];
-        const DataPoint &dp4 = data[iTop];
-        mWindowTopDP = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
+    case Actual:
+        mIsWindowValid = getWindowBounds(m_data, mWindowBottomDP, mWindowTopDP);
+        break;
+    case Optimal:
+        mIsWindowValid = getWindowBounds(m_optimal, mWindowBottomDP, mWindowTopDP);
+        break;
     }
 }
 
@@ -1659,46 +1627,68 @@ const Genome &MainWindow::selectGenome(
     return genePool[jMax].second;
 }
 
+bool MainWindow::getWindowBounds(
+        const QVector< DataPoint > result,
+        DataPoint &dpBottom,
+        DataPoint &dpTop)
+{
+    bool valid = false;
+    int bottom, top;
+
+    for (int i = result.size() - 1; i >= 0; --i)
+    {
+        const DataPoint &dp = result[i];
+
+        if (dp.alt < mWindowBottom)
+        {
+            bottom = i;
+        }
+
+        if (dp.alt < mWindowTop)
+        {
+            top = i;
+        }
+        else
+        {
+            valid = true;
+        }
+
+        if (valid && dp.t < 0) break;
+    }
+
+    if (valid)
+    {
+        // Calculate bottom of window
+        const DataPoint &dp1 = result[bottom - 1];
+        const DataPoint &dp2 = result[bottom];
+        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
+
+        // Calculate top of window
+        const DataPoint &dp3 = result[top - 1];
+        const DataPoint &dp4 = result[top];
+        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
+    }
+
+    return valid;
+}
+
 double MainWindow::score(
         const QVector< DataPoint > &result,
         OptimizationMode mode)
 {
-    double tStart, tEnd;
-    double xStart, xEnd;
-    int armed = 0;
-
-    const DataPoint dpPrev = result[0];
-    for (int i = 1; i < result.size(); ++i)
-    {
-        const DataPoint &dp = result[i];
-
-        if (armed == 0 && dpPrev.alt >= mWindowTop && dp.alt < mWindowTop)
-        {
-            tStart = dpPrev.t + (mWindowTop - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.t - dpPrev.t);
-            xStart = dpPrev.x + (mWindowTop - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.x - dpPrev.x);
-            ++armed;
-        }
-        if (armed == 1 && dpPrev.alt >= mWindowBottom && dp.alt < mWindowBottom)
-        {
-            tEnd = dpPrev.t + (mWindowBottom - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.t - dpPrev.t);
-            xEnd = dpPrev.x + (mWindowBottom - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.x - dpPrev.x);
-            ++armed;
-            break;
-        }
-    }
-
-    if (armed == 2)
+    DataPoint dpBottom, dpTop;
+    if (getWindowBounds(result, dpBottom, dpTop))
     {
         switch (mode)
         {
         case Time:
-            return tEnd - tStart;
+            return dpBottom.t - dpTop.t;
         case Distance:
-            return xEnd - xStart;
+            return dpBottom.x - dpTop.x;
         case HorizontalSpeed:
-            return (xEnd - xStart) / (tEnd - tStart);
+            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
         case VerticalSpeed:
-            return (mWindowTop - mWindowBottom) / (tEnd - tStart);
+            return (mWindowTop - mWindowBottom) / (dpBottom.t - dpTop.t);
         }
     }
     else

@@ -228,6 +228,7 @@ private:
 
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
     double score(const QVector< DataPoint > &result, OptimizationMode mode);
+    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
 signals:
     void dataLoaded();
