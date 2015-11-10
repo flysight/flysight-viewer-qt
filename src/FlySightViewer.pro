@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     videoview.cpp \
     windplot.cpp \
     liftdragplot.cpp \
-    scoringview.cpp
+    scoringview.cpp \
+    genome.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     videoview.h \
     windplot.h \
     liftdragplot.h \
-    scoringview.h
+    scoringview.h \
+    genome.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

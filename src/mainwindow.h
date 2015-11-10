@@ -8,6 +8,7 @@
 #include "dataplot.h"
 #include "datapoint.h"
 #include "dataview.h"
+#include "genome.h"
 
 class QCPRange;
 class QCustomPlot;
@@ -17,7 +18,6 @@ namespace Ui {
 class MainWindow;
 }
 
-typedef QVector< double > Genome;
 typedef QPair< double, Genome > Score;
 typedef QVector< Score > GenePool;
 
@@ -226,11 +226,7 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
-    Genome crossoverGenome(const Genome &p1, const Genome &p2, const int k);
-    Genome createGenome(int genomeSize, int parts);
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
-    void mutateGenome(Genome &g, const int k, const int kMin);
-    void truncateGenome(Genome &g, const int k);
 
     double simulate(const Genome &aoa, double h, double a, double c,
                     double t0, double theta0, double v0, double x0, double y0, int start,

@@ -16,6 +16,7 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "genome.h"
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "videoview.h"
@@ -1517,7 +1518,7 @@ void MainWindow::optimize(
             break;
         }
 
-        Genome g = createGenome(genomeSize, 1 << kMin);
+        Genome g(genomeSize, kMin, m_minLift, m_maxLift);
         const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
         genePool.append(Score(s, g));
 
@@ -1560,7 +1561,7 @@ void MainWindow::optimize(
                     break;
                 }
 
-                Genome g = createGenome(genomeSize, 1 << kMin);
+                Genome g(genomeSize, kMin, m_minLift, m_maxLift);
                 const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
 
@@ -1579,15 +1580,15 @@ void MainWindow::optimize(
 
                 const Genome &p1 = selectGenome(genePool, tournamentSize);
                 const Genome &p2 = selectGenome(genePool, tournamentSize);
-                Genome g = crossoverGenome(p1, p2, k);
+                Genome g(p1, p2, k);
 
                 if (qrand() % 100 < truncationRate)
                 {
-                    truncateGenome(g, k);
+                    g.truncate(k);
                 }
                 if (qrand() % 100 < mutationRate)
                 {
-                    mutateGenome(g, k, kMin);
+                    g.mutate(k, kMin, m_minLift, m_maxLift);
                 }
 
                 const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
@@ -1633,32 +1634,6 @@ void MainWindow::optimize(
     // Next: - Start simulation at exit and proceed to bottom of competition window.
 }
 
-Genome MainWindow::crossoverGenome(
-        const Genome &p1,
-        const Genome &p2,
-        const int k)
-{
-    const int parts = 1 << k;
-    const int partSize = (p1.size() - 1) / parts;
-
-    const int pivot = qrand() % parts;
-
-    const int j1 = pivot * partSize;
-    const int j2 = (pivot + 1) * partSize;
-
-    const double cl1 = p1[j1];
-    const double cl2 = p2[j2];
-
-    Genome g = p1.mid(0, j1);
-    for (int i = 0; i < partSize; ++i)
-    {
-        g.append(cl1 + (double) i / partSize * (cl2 - cl1));
-    }
-    g.append(p2.mid(j2, p2.size() - j2));
-
-    return g;
-}
-
 const Genome &MainWindow::selectGenome(
         const GenePool &genePool,
         const int tournamentSize)
@@ -1679,87 +1654,6 @@ const Genome &MainWindow::selectGenome(
     }
 
     return genePool[jMax].second;
-}
-
-Genome MainWindow::createGenome(
-        int genomeSize,
-        int parts)
-{
-    const int partSize = (genomeSize - 1) / parts;
-
-    Genome g;
-
-    double prevLift = m_minLift + (double) qrand() / RAND_MAX * (m_maxLift - m_minLift);
-    for (int i = 0; i < parts; ++i)
-    {
-        double nextLift = m_minLift + (double) qrand() / RAND_MAX * (m_maxLift - m_minLift);
-        for (int j = 0; j < partSize; ++j)
-        {
-            g.append(prevLift + (double) j / partSize * (nextLift - prevLift));
-        }
-        prevLift = nextLift;
-    }
-    g.append(prevLift);
-
-    return g;
-}
-
-void MainWindow::mutateGenome(
-        Genome &g,
-        const int k,
-        const int kMin)
-{
-    const int parts = 1 << k;
-    const int partSize = (g.size() - 1) / parts;
-
-    const int i = qrand() % (parts + 1);
-    const double cl = g[i * partSize];
-
-    const double range = m_maxLift / (1 << (k - kMin));
-    const double minr = qMax(m_minLift - cl, -range);
-    const double maxr = qMin(m_maxLift - cl,  range);
-    const double r = minr + (double) qrand() / RAND_MAX * (maxr - minr);
-
-    if (i > 0)
-    {
-        const int jPrev = (i - 1) * partSize;
-        const int jNext = i * partSize;
-
-        const double rPrev = 0.0;
-        const double rNext = r;
-
-        for (int j = jPrev; j < jNext; ++j)
-        {
-            const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] = qMax(m_minLift, qMin(m_maxLift, g[j] + r));
-        }
-    }
-
-    if (i < parts)
-    {
-        const int jPrev = i * partSize;
-        const int jNext = (i + 1) * partSize;
-
-        const double rPrev = r;
-        const double rNext = 0.0;
-
-        for (int j = jPrev; j < jNext; ++j)
-        {
-            const double r = rPrev + (rNext - rPrev) * (j - jPrev) / (jNext - jPrev);
-            g[j] = qMax(m_minLift, qMin(m_maxLift, g[j] + r));
-        }
-    }
-}
-
-void MainWindow::truncateGenome(
-        Genome &g,
-        const int k)
-{
-    const int parts = 1 << k;
-    const int partSize = (g.size() - 1) / parts;
-
-    g = g.mid(partSize, g.size() - partSize);
-    g.append(Genome(g.back(), partSize));
 }
 
 double MainWindow::simulate(
