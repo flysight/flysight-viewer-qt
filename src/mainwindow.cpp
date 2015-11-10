@@ -1473,10 +1473,10 @@ void MainWindow::optimize(
     const double x0 = 0;
     const double y0 = m_data[start].hMSL;
 
-    const int workingSize    = 200;     // Working population
-    const int keepSize       = 20;      // Number of elites to keep
-    const int newSize        = 20;      // New genomes in first level
-    const int numGenerations = 100;     // Generations per level of detail
+    const int workingSize    = 100;     // Working population
+    const int keepSize       = 10;      // Number of elites to keep
+    const int newSize        = 10;      // New genomes in first level
+    const int numGenerations = 250;     // Generations per level of detail
 
     qsrand(QTime::currentTime().msec());
 
@@ -1577,7 +1577,6 @@ void MainWindow::optimize(
                 const Genome &p1 = selectGenome(genePool);
                 const Genome &p2 = selectGenome(genePool);
                 Genome g = crossoverGenome(p1, p2, k);
-                //Genome g = selectGenome(genePool);
                 mutateGenome(g, k, kMin);
                 const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
