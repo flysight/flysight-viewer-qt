@@ -112,7 +112,7 @@ void Genome::truncate(
     const int partSize = (size() - 1) / parts;
 
     erase(begin(), begin() + partSize);
-    append(QVector< double >(back(), partSize));
+    append(QVector< double >(partSize, last()));
 }
 
 QVector< DataPoint > Genome::simulate(
