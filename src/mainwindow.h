@@ -227,18 +227,7 @@ private:
     void updateLeftActions();
 
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
-
-    double simulate(const Genome &aoa, double h, double a, double c,
-                    double t0, double theta0, double v0, double x0, double y0, int start,
-                    OptimizationMode mode);
-
-    double dtheta_dt(double theta, double v, double x, double y, double lift);
-    double dv_dt(double theta, double v, double x, double y, double drag);
-    double dx_dt(double theta, double v, double x, double y);
-    double dy_dt(double theta, double v, double x, double y);
-
-    double lift(double cl);
-    double drag(double cl, double a, double c);
+    double score(const QVector< DataPoint > &result, OptimizationMode mode);
 
 signals:
     void dataLoaded();

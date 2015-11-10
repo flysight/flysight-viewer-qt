@@ -1519,7 +1519,8 @@ void MainWindow::optimize(
         }
 
         Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-        const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
+        const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+        const double s = score(result, mode);
         genePool.append(Score(s, g));
 
         maxScore = qMax(maxScore, s);
@@ -1562,7 +1563,8 @@ void MainWindow::optimize(
                 }
 
                 Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-                const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
+                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+                const double s = score(result, mode);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1591,7 +1593,8 @@ void MainWindow::optimize(
                     g.mutate(k, kMin, m_minLift, m_maxLift);
                 }
 
-                const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
+                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+                const double s = score(result, mode);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1627,7 +1630,7 @@ void MainWindow::optimize(
 
     // Keep most fit individual
     m_optimal.clear();
-    simulate(genePool[0].second, dt, a, c, t0, theta0, v0, x0, y0, start, mode);
+    m_optimal = genePool[0].second.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
 
     emit dataChanged();
 
@@ -1656,135 +1659,31 @@ const Genome &MainWindow::selectGenome(
     return genePool[jMax].second;
 }
 
-double MainWindow::simulate(
-        const Genome &g,
-        double h,
-        double a,
-        double c,
-        double t0,
-        double theta0,
-        double v0,
-        double x0,
-        double y0,
-        int start,
+double MainWindow::score(
+        const QVector< DataPoint > &result,
         OptimizationMode mode)
 {
-    double t = t0;
-    double theta = theta0;
-    double v = v0;
-    double x = x0;
-    double y = y0;
-
     double tStart, tEnd;
     double xStart, xEnd;
     int armed = 0;
 
-    double dist2D, dist3D;
-
-    if (start >= 0)
+    const DataPoint dpPrev = result[0];
+    for (int i = 1; i < result.size(); ++i)
     {
-        dist2D = m_data[start].dist2D;
-        dist3D = m_data[start].dist3D;
-    }
+        const DataPoint &dp = result[i];
 
-    Genome::ConstIterator i;
-    for (i = g.constBegin();
-         i != g.constEnd() && i + 1 != g.constEnd();
-         ++i)
-    {
-        const double lift_prev = lift(*i);
-        const double drag_prev = drag(*i, a, c);
-
-        const double lift_next = lift(*(i + 1));
-        const double drag_next = drag(*(i + 1), a, c);
-
-        // Runge-Kutta integration
-        // See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
-        const double k0 = h * dtheta_dt(theta, v, x, y, lift_prev);
-        const double l0 = h *     dv_dt(theta, v, x, y, drag_prev);
-        const double m0 = h *     dx_dt(theta, v, x, y);
-        const double n0 = h *     dy_dt(theta, v, x, y);
-
-        const double k1 = h * dtheta_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (lift_prev + lift_next) / 2);
-        const double l1 = h *     dv_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2, (drag_prev + drag_next) / 2);
-        const double m1 = h *     dx_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
-        const double n1 = h *     dy_dt(theta + k0/2, v + l0/2, x + m0/2, y + n0/2);
-
-        const double k2 = h * dtheta_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (lift_prev + lift_next) / 2);
-        const double l2 = h *     dv_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2, (drag_prev + drag_next) / 2);
-        const double m2 = h *     dx_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
-        const double n2 = h *     dy_dt(theta + k1/2, v + l1/2, x + m1/2, y + n1/2);
-
-        const double k3 = h * dtheta_dt(theta + k2, v + l2, x + m2, y + n2, lift_next);
-        const double l3 = h *     dv_dt(theta + k2, v + l2, x + m2, y + n2, drag_next);
-        const double m3 = h *     dx_dt(theta + k2, v + l2, x + m2, y + n2);
-        const double n3 = h *     dy_dt(theta + k2, v + l2, x + m2, y + n2);
-
-        const double dtheta = (k0 + 2 * k1 + 2 * k2 + k3) / 6;
-        const double dv     = (l0 + 2 * l1 + 2 * l2 + l3) / 6;
-        const double dx     = (m0 + 2 * m1 + 2 * m2 + m3) / 6;
-        const double dy     = (n0 + 2 * n1 + 2 * n2 + n3) / 6;
-
-        const double tNext     = t + h;
-        const double thetaNext = theta + dtheta;
-        const double vNext     = v + dv;
-        const double xNext     = x + dx;
-        const double yNext     = y + dy;
-
-        const double alt = y + m_data[0].alt - m_data[0].hMSL;
-        const double altNext = yNext + m_data[0].alt - m_data[0].hMSL;
-
-        if (armed == 0 && alt >= mWindowTop && altNext < mWindowTop)
+        if (armed == 0 && dpPrev.alt >= mWindowTop && dp.alt < mWindowTop)
         {
-            tStart = t + (mWindowTop - alt) / (altNext - alt) * (tNext - t);
-            xStart = x + (mWindowTop - alt) / (altNext - alt) * (xNext - x);
+            tStart = dpPrev.t + (mWindowTop - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.t - dpPrev.t);
+            xStart = dpPrev.x + (mWindowTop - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.x - dpPrev.x);
             ++armed;
         }
-        if (armed == 1 && alt >= mWindowBottom && altNext < mWindowBottom)
+        if (armed == 1 && dpPrev.alt >= mWindowBottom && dp.alt < mWindowBottom)
         {
-            tEnd = t + (mWindowBottom - alt) / (altNext - alt) * (tNext - t);
-            xEnd = x + (mWindowBottom - alt) / (altNext - alt) * (xNext - x);
+            tEnd = dpPrev.t + (mWindowBottom - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.t - dpPrev.t);
+            xEnd = dpPrev.x + (mWindowBottom - dpPrev.alt) / (dp.alt - dpPrev.alt) * (dp.x - dpPrev.x);
             ++armed;
             break;
-        }
-
-        t      = tNext;
-        theta  = thetaNext;
-        v      = vNext;
-        x      = xNext;
-        y      = yNext;
-
-        // Update data
-        if (start >= 0)
-        {
-            DataPoint pt;
-
-            pt.hasGeodetic = false;
-
-            pt.hMSL  = yNext;
-
-            pt.velN  = 0;
-            pt.velE  = v * cos(theta);
-            pt.velD  = -v * sin(theta);
-
-            pt.t = tNext;
-            pt.x = xNext;
-            pt.y = 0;
-            pt.z = pt.alt = altNext;
-
-            dist2D += dx;
-            dist3D += sqrt(dx * dx + dy * dy);
-
-            pt.dist2D = dist2D;
-            pt.dist3D = dist3D;
-
-            // curv
-            // accel
-
-            pt.lift = lift_next;
-            pt.drag = drag_next;
-
-            m_optimal.append(pt);
         }
     }
 
@@ -1806,80 +1705,4 @@ double MainWindow::simulate(
     {
         return 0;
     }
-}
-
-double MainWindow::dtheta_dt(
-        double theta,
-        double v,
-        double x,
-        double y,
-        double lift)
-{
-    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
-    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
-
-    // From https://en.wikipedia.org/wiki/Density_of_air
-    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
-
-    // From https://en.wikipedia.org/wiki/Dynamic_pressure
-    const double dynamicPressure = airDensity * v * v / 2;
-
-    // Calculate acceleration due to drag and lift
-    const double accelLift = dynamicPressure * m_planformArea * lift / m_mass;
-
-    return (accelLift - A_GRAVITY * cos(theta)) / v;
-}
-
-double MainWindow::dv_dt(
-        double theta,
-        double v,
-        double x,
-        double y,
-        double drag)
-{
-    // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
-    const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * y / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
-
-    // From https://en.wikipedia.org/wiki/Density_of_air
-    const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
-
-    // From https://en.wikipedia.org/wiki/Dynamic_pressure
-    const double dynamicPressure = airDensity * v * v / 2;
-
-    // Calculate acceleration due to drag and lift
-    const double accelDrag = dynamicPressure * m_planformArea * drag / m_mass;
-
-    return -accelDrag - A_GRAVITY * sin(theta);
-}
-
-double MainWindow::dx_dt(
-        double theta,
-        double v,
-        double x,
-        double y)
-{
-    return v * cos(theta);
-}
-
-double MainWindow::dy_dt(
-        double theta,
-        double v,
-        double x,
-        double y)
-{
-    return v * sin(theta);
-}
-
-double MainWindow::lift(
-        double cl)
-{
-    return cl;
-}
-
-double MainWindow::drag(
-        double cl,
-        double a,
-        double c)
-{
-    return a * cl * cl + c;
 }
