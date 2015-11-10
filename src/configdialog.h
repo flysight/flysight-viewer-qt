@@ -24,17 +24,11 @@ public:
     void setDtWind(double dtWind);
     double dtWind() const;
 
-    void setTemperature(double temperature);
-    double temperature() const;
-
     void setMass(double mass);
     double mass() const;
 
     void setPlanformArea(double area);
     double planformArea() const;
-
-    void setWingSpan(double span);
-    double wingSpan() const;
 
     void setMinDrag(double minDrag);
     double minDrag() const;

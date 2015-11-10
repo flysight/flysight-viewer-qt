@@ -64,17 +64,6 @@ double ConfigDialog::dtWind() const
     return ui->dtWindEdit->text().toDouble();
 }
 
-void ConfigDialog::setTemperature(
-        double temperature)
-{
-    ui->temperatureEdit->setText(QString("%1").arg(temperature - 273.15));
-}
-
-double ConfigDialog::temperature() const
-{
-    return ui->temperatureEdit->text().toDouble() + 273.15;
-}
-
 void ConfigDialog::setMass(
         double mass)
 {
@@ -95,17 +84,6 @@ void ConfigDialog::setPlanformArea(
 double ConfigDialog::planformArea() const
 {
     return ui->areaEdit->text().toDouble();
-}
-
-void ConfigDialog::setWingSpan(
-        double span)
-{
-    ui->spanEdit->setText(QString("%1").arg(span));
-}
-
-double ConfigDialog::wingSpan() const
-{
-    return ui->spanEdit->text().toDouble();
 }
 
 void ConfigDialog::setMinDrag(

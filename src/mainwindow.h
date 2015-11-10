@@ -96,7 +96,6 @@ public:
     WindowMode windowMode() const { return mWindowMode; }
 
     double planformArea() const { return m_planformArea; }
-    double wingSpan() const { return m_wingSpan; }
 
     double minDrag() const { return m_minDrag; }
     double maxLift() const { return m_maxLift; }
@@ -191,10 +190,8 @@ private:
 
     ScoringView          *mScoringView;
 
-    double                m_temperature;
     double                m_mass;
     double                m_planformArea;
-    double                m_wingSpan;
 
     double                m_minDrag;
     double                m_minLift;

@@ -68,10 +68,6 @@ void LiftDragPlot::mouseMoveEvent(
             const double c = cd / 2;
             const double a = c / cl / cl;
 
-            const double bb = mMainWindow->wingSpan();
-            const double ss = mMainWindow->planformArea();
-            const double ar = bb * bb / ss;
-
             mMainWindow->setMinDrag(c);
             mMainWindow->setMaxLD(1 / sqrt(4 * a * c));
         }
@@ -233,10 +229,6 @@ void LiftDragPlot::updatePlot()
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
-
-    const double bb = mMainWindow->wingSpan();
-    const double ss = mMainWindow->planformArea();
-    const double ar = bb * bb / ss;
 
     // y = ax^2 + c
     const double m = 1 / mMainWindow->maxLD();

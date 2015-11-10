@@ -37,10 +37,8 @@ MainWindow::MainWindow(
     mIsWindowValid(false),
     mWindowMode(Actual),
     mScoringView(0),
-    m_temperature(288.15),
     m_mass(70),
     m_planformArea(2),
-    m_wingSpan(1.4),
     m_minDrag(0.05),
     m_minLift(-0.1),
     m_maxLift(0.5),
@@ -113,10 +111,8 @@ void MainWindow::writeSettings()
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
     settings.setValue("dtWind", m_dtWind);
-    settings.setValue("temperature", m_temperature);
     settings.setValue("mass", m_mass);
     settings.setValue("planformArea", m_planformArea);
-    settings.setValue("wingSpan", m_wingSpan);
     settings.setValue("minDrag", m_minDrag);
     settings.setValue("minLift", m_minLift);
     settings.setValue("maxLift", m_maxLift);
@@ -133,10 +129,8 @@ void MainWindow::readSettings()
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
-    m_temperature = settings.value("temperature", m_temperature).toDouble();
     m_mass = settings.value("mass", m_mass).toDouble();
     m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
-    m_wingSpan = settings.value("wingSpan", m_wingSpan).toDouble();
     m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
     m_minLift = settings.value("minLift", m_minLift).toDouble();
     m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
@@ -658,8 +652,11 @@ void MainWindow::initAerodynamics()
         // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
         const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * dp.hMSL / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
 
+        // From https://en.wikipedia.org/wiki/Lapse_rate
+        const double temperature = SL_TEMP - LAPSE_RATE * dp.hMSL;
+
         // From https://en.wikipedia.org/wiki/Density_of_air
-        const double airDensity = airPressure / (GAS_CONST / MM_AIR) / m_temperature;
+        const double airDensity = airPressure / (GAS_CONST / MM_AIR) / temperature;
 
         // From https://en.wikipedia.org/wiki/Dynamic_pressure
         const double dynamicPressure = airDensity * vel * vel / 2;
@@ -1052,10 +1049,8 @@ void MainWindow::on_actionPreferences_triggered()
 
     dlg.setDtWind(m_dtWind);
 
-    dlg.setTemperature(m_temperature);
     dlg.setMass(m_mass);
     dlg.setPlanformArea(m_planformArea);
-    dlg.setWingSpan(m_wingSpan);
     dlg.setMinDrag(m_minDrag);
     dlg.setMinLift(m_minLift);
     dlg.setMaxLift(m_maxLift);
@@ -1077,15 +1072,11 @@ void MainWindow::on_actionPreferences_triggered()
         emit dataChanged();
     }
 
-    if (m_temperature != dlg.temperature() ||
-        m_mass != dlg.mass() ||
-        m_planformArea != dlg.planformArea() ||
-        m_wingSpan != dlg.wingSpan())
+    if (m_mass != dlg.mass() ||
+        m_planformArea != dlg.planformArea())
     {
-        m_temperature = dlg.temperature();
         m_mass = dlg.mass();
         m_planformArea = dlg.planformArea();
-        m_wingSpan = dlg.wingSpan();
 
         initAerodynamics();
 
@@ -1425,10 +1416,6 @@ void MainWindow::optimize(
 {
     int start = findIndexBelowT(mRangeLower) + 1;
     int end   = findIndexAboveT(mRangeUpper);
-
-    const double bb = m_wingSpan;
-    const double ss = m_planformArea;
-    const double ar = bb * bb / ss;
 
     // y = ax^2 + c
     const double m = 1 / m_maxLD;
