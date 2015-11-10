@@ -1478,6 +1478,8 @@ void MainWindow::optimize(
     const int newSize        = 10;      // New genomes in first level
     const int numGenerations = 250;     // Generations per level of detail
     const int tournamentSize = 3;       // Number of individuals in a tournament
+    const int mutationRate   = 100;     // Frequency of mutations
+    const int truncationRate = 10;      // Frequency of truncations
 
     qsrand(QTime::currentTime().msec());
 
@@ -1578,7 +1580,16 @@ void MainWindow::optimize(
                 const Genome &p1 = selectGenome(genePool, tournamentSize);
                 const Genome &p2 = selectGenome(genePool, tournamentSize);
                 Genome g = crossoverGenome(p1, p2, k);
-                mutateGenome(g, k, kMin);
+
+                if (qrand() % 100 < truncationRate)
+                {
+                    truncateGenome(g, k);
+                }
+                if (qrand() % 100 < mutationRate)
+                {
+                    mutateGenome(g, k, kMin);
+                }
+
                 const double s = simulate(g, dt, a, c, t0, theta0, v0, x0, y0, -1, mode);
                 newGenePool.append(Score(s, g));
 
@@ -1738,6 +1749,17 @@ void MainWindow::mutateGenome(
             g[j] = qMax(m_minLift, qMin(m_maxLift, g[j] + r));
         }
     }
+}
+
+void MainWindow::truncateGenome(
+        Genome &g,
+        const int k)
+{
+    const int parts = 1 << k;
+    const int partSize = (g.size() - 1) / parts;
+
+    g = g.mid(partSize, g.size() - partSize);
+    g.append(Genome(g.back(), partSize));
 }
 
 double MainWindow::simulate(

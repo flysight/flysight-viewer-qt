@@ -230,6 +230,7 @@ private:
     Genome createGenome(int genomeSize, int parts);
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
     void mutateGenome(Genome &g, const int k, const int kMin);
+    void truncateGenome(Genome &g, const int k);
 
     double simulate(const Genome &aoa, double h, double a, double c,
                     double t0, double theta0, double v0, double x0, double y0, int start,
