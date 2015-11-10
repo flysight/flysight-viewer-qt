@@ -38,10 +38,10 @@ QSize ScoringView::sizeHint() const
     return QSize(175, 175);
 }
 
-void ScoringView::updateView()
+void ScoringView::setMainWindow(
+        MainWindow *mainWindow)
 {
-    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
-    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+    mMainWindow = mainWindow;
 
     const double bottom = mMainWindow->windowBottom();
     const double top = mMainWindow->windowTop();
@@ -49,6 +49,15 @@ void ScoringView::updateView()
     // Update window bounds
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->topEdit->setText(QString("%1").arg(top));
+}
+
+void ScoringView::updateView()
+{
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+
+    const double bottom = mMainWindow->windowBottom();
+    const double top = mMainWindow->windowTop();
 
     if (mMainWindow->isWindowValid())
     {
@@ -97,6 +106,13 @@ void ScoringView::updateView()
 void ScoringView::onFAIButtonClicked()
 {
     mMainWindow->setWindow(2000, 3000);
+
+    const double bottom = mMainWindow->windowBottom();
+    const double top = mMainWindow->windowTop();
+
+    // Update window bounds
+    ui->bottomEdit->setText(QString("%1").arg(bottom));
+    ui->topEdit->setText(QString("%1").arg(top));
 }
 
 void ScoringView::onApplyButtonClicked()
@@ -113,6 +129,13 @@ void ScoringView::onUpButtonClicked()
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() + 10,
                 mMainWindow->windowTop() + 10);
+
+    const double bottom = mMainWindow->windowBottom();
+    const double top = mMainWindow->windowTop();
+
+    // Update window bounds
+    ui->bottomEdit->setText(QString("%1").arg(bottom));
+    ui->topEdit->setText(QString("%1").arg(top));
 }
 
 void ScoringView::onDownButtonClicked()
@@ -120,6 +143,13 @@ void ScoringView::onDownButtonClicked()
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() - 10,
                 mMainWindow->windowTop() - 10);
+
+    const double bottom = mMainWindow->windowBottom();
+    const double top = mMainWindow->windowTop();
+
+    // Update window bounds
+    ui->bottomEdit->setText(QString("%1").arg(bottom));
+    ui->topEdit->setText(QString("%1").arg(top));
 }
 
 void ScoringView::keyPressEvent(QKeyEvent *event)

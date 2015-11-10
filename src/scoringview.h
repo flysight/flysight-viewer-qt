@@ -19,7 +19,7 @@ public:
 
     virtual QSize sizeHint() const;
 
-    void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
+    void setMainWindow(MainWindow *mainWindow);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
