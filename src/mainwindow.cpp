@@ -1601,8 +1601,6 @@ void MainWindow::optimize(
     m_optimal = genePool[0].second.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
 
     emit dataChanged();
-
-    // Next: - Start simulation at exit and proceed to bottom of competition window.
 }
 
 const Genome &MainWindow::selectGenome(
