@@ -40,7 +40,7 @@ MainWindow::MainWindow(
     m_mass(70),
     m_planformArea(2),
     m_minDrag(0.05),
-    m_minLift(-0.1),
+    m_minLift(0.0),
     m_maxLift(0.5),
     m_maxLD(3.0)
 {
