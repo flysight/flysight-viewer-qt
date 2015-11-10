@@ -1477,7 +1477,7 @@ void MainWindow::optimize(
     const int keepSize       = 10;      // Number of elites to keep
     const int newSize        = 10;      // New genomes in first level
     const int numGenerations = 250;     // Generations per level of detail
-    const int tournamentSize = 3;       // Number of individuals in a tournament
+    const int tournamentSize = 5;       // Number of individuals in a tournament
     const int mutationRate   = 100;     // Frequency of mutations
     const int truncationRate = 10;      // Frequency of truncations
 
