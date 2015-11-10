@@ -1489,7 +1489,7 @@ void MainWindow::optimize(
         ++kLim;
     }
 
-    const int genomeSize = 1 << kLim;
+    const int genomeSize = (1 << kLim) + 1;
     const int kMin = kLim - 4;
     const int kMax = kLim - 2;
 
@@ -1628,7 +1628,7 @@ Genome MainWindow::crossoverGenome(
         const int k)
 {
     const int parts = 1 << k;
-    const int partSize = p1.size() / parts;
+    const int partSize = (p1.size() - 1) / parts;
 
     const int pivot = qrand() % parts;
 
@@ -1672,7 +1672,7 @@ Genome MainWindow::createGenome(
         int genomeSize,
         int parts)
 {
-    const int partSize = genomeSize / parts;
+    const int partSize = (genomeSize - 1) / parts;
 
     Genome g;
 
@@ -1686,6 +1686,7 @@ Genome MainWindow::createGenome(
         }
         prevLift = nextLift;
     }
+    g.append(prevLift);
 
     return g;
 }
@@ -1696,7 +1697,7 @@ void MainWindow::mutateGenome(
         const int kMin)
 {
     const int parts = 1 << k;
-    const int partSize = g.size() / parts;
+    const int partSize = (g.size() - 1) / parts;
 
     const int i = qrand() % (parts + 1);
     const double cl = g[i * partSize];
