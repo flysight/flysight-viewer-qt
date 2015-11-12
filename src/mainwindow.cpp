@@ -1617,7 +1617,8 @@ bool MainWindow::getWindowBounds(
         DataPoint &dpBottom,
         DataPoint &dpTop)
 {
-    bool valid = false;
+    bool foundBottom = false;
+    bool foundTop = false;
     int bottom, top;
 
     for (int i = result.size() - 1; i >= 0; --i)
@@ -1627,21 +1628,24 @@ bool MainWindow::getWindowBounds(
         if (dp.alt < mWindowBottom)
         {
             bottom = i;
+            foundBottom = true;
         }
 
         if (dp.alt < mWindowTop)
         {
             top = i;
-        }
-        else
-        {
-            valid = true;
+            foundTop = false;
         }
 
-        if (valid && dp.t < 0) break;
+        if (dp.alt > mWindowTop)
+        {
+            foundTop = true;
+        }
+
+        if (dp.t < 0) break;
     }
 
-    if (valid)
+    if (foundBottom && foundTop)
     {
         // Calculate bottom of window
         const DataPoint &dp1 = result[bottom - 1];
@@ -1652,9 +1656,13 @@ bool MainWindow::getWindowBounds(
         const DataPoint &dp3 = result[top - 1];
         const DataPoint &dp4 = result[top];
         dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
-    }
 
-    return valid;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 double MainWindow::score(
