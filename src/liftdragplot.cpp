@@ -35,7 +35,7 @@ void LiftDragPlot::mouseReleaseEvent(
 {
     if (!mDragging)
     {
-        mMainWindow->setMaxLift(xAxis->pixelToCoord(mBeginPos.x()));
+        mMainWindow->setMaxLift(yAxis->pixelToCoord(mBeginPos.y()));
         mMainWindow->clearMark();
         QToolTip::hideText();
     }
@@ -62,8 +62,8 @@ void LiftDragPlot::mouseMoveEvent(
 
         if (mDragging)
         {
-            const double cl = xAxis->pixelToCoord(pos.x());
-            const double cd = yAxis->pixelToCoord(pos.y());
+            const double cd = xAxis->pixelToCoord(pos.x());
+            const double cl = yAxis->pixelToCoord(pos.y());
 
             const double c = cd / 2;
             const double a = c / cl / cl;
@@ -138,8 +138,8 @@ void LiftDragPlot::updatePlot()
     clearPlottables();
     clearItems();
 
-    xAxis->setLabel(tr("Lift Coefficient"));
-    yAxis->setLabel(tr("Drag Coefficient"));
+    xAxis->setLabel(tr("Drag Coefficient"));
+    yAxis->setLabel(tr("Lift Coefficient"));
 
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
@@ -161,8 +161,8 @@ void LiftDragPlot::updatePlot()
         const DataPoint &dp = mMainWindow->dataPoint(i);
 
         t.append(dp.t);
-        x.append(dp.lift);
-        y.append(dp.drag);
+        x.append(dp.drag);
+        y.append(dp.lift);
 
         if (first)
         {
@@ -214,13 +214,13 @@ void LiftDragPlot::updatePlot()
 
         if (mMainWindow->markEnd() - dp1.t < dp2.t - mMainWindow->markEnd())
         {
-            xMark.append(dp1.lift);
-            yMark.append(dp1.drag);
+            xMark.append(dp1.drag);
+            yMark.append(dp1.lift);
         }
         else
         {
-            xMark.append(dp2.lift);
-            yMark.append(dp2.drag);
+            xMark.append(dp2.drag);
+            yMark.append(dp2.lift);
         }
 
         QCPGraph *graph = addGraph();
@@ -230,21 +230,21 @@ void LiftDragPlot::updatePlot()
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
 
-    // y = ax^2 + c
+    // x = ay^2 + c
     const double m = 1 / mMainWindow->maxLD();
     const double c = mMainWindow->minDrag();
     const double a = m * m / (4 * c);
 
     // Draw tangent line
-    const double xt = sqrt(c / a);
+    const double yt = sqrt(c / a);
 
     if (a != 0)
     {
         x.clear();
         y.clear();
 
-        x << xMin << xMax;
-        y << m * xMin << m * xMax;
+        x << m * yMin << m * yMax;
+        y << yMin << yMax;
 
         QCPGraph *graph = addGraph();
         graph->setData(x, y);
@@ -255,8 +255,8 @@ void LiftDragPlot::updatePlot()
     x.clear();
     y.clear();
 
-    x << xMin << xMax;
-    y << mMainWindow->minDrag() << mMainWindow->minDrag();
+    x << mMainWindow->minDrag() << mMainWindow->minDrag();
+    y << yMin << yMax;
 
     QCPGraph *graph = addGraph();
     graph->setData(x, y);
@@ -266,8 +266,8 @@ void LiftDragPlot::updatePlot()
     x.clear();
     y.clear();
 
-    x << mMainWindow->maxLift() << mMainWindow->maxLift();
-    y << yMin << yMax;
+    x << xMin << xMax;
+    y << mMainWindow->maxLift() << mMainWindow->maxLift();
 
     graph = addGraph();
     graph->setData(x, y);
@@ -280,11 +280,11 @@ void LiftDragPlot::updatePlot()
 
     for (int i = 0; i <= 100; ++i)
     {
-        const double xx = xMin + (xMax - xMin) / 100 * i;
+        const double yy = yMin + (yMax - yMin) / 100 * i;
 
-        t.append(xx);
-        x.append(xx);
-        y.append(a * xx * xx + c);
+        t.append(yy);
+        x.append(a * yy * yy + c);
+        y.append(yy);
     }
 
     curve = new QCPCurve(xAxis, yAxis);
@@ -293,28 +293,25 @@ void LiftDragPlot::updatePlot()
     addPlottable(curve);
 
     // Draw dot at maximum L/D
-    if (a != 0)
-    {
-        x.clear();
-        y.clear();
+    x.clear();
+    y.clear();
 
-        x << xt;
-        y << a * xt * xt + c;
+    x << a * yt * yt + c;
+    y << yt;
 
-        QCPGraph *graph = addGraph();
-        graph->setData(x, y);
-        graph->setPen(QPen(Qt::red));
-        graph->setLineStyle(QCPGraph::lsNone);
-        graph->setScatterStyle(QCPScatterStyle::ssDisc);
-    }
+    graph = addGraph();
+    graph->setData(x, y);
+    graph->setPen(QPen(Qt::red));
+    graph->setLineStyle(QCPGraph::lsNone);
+    graph->setScatterStyle(QCPScatterStyle::ssDisc);
 
     // Add label to show equation for saved curve
     QCPItemText *textLabel = new QCPItemText(this);
     addItem(textLabel);
 
-    textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignHCenter);
     textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel->position->setCoords(0.5, 0);
+    textLabel->position->setCoords(0.75, 0.9);
     textLabel->setText(
                 QString("Minimum drag = %1\nMaximum lift = %2\nMaximum L/D = %3")
                     .arg(fabs(c))
