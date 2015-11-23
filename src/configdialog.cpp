@@ -129,3 +129,14 @@ double ConfigDialog::maxLD() const
 {
     return ui->maxLDEdit->text().toDouble();
 }
+
+void ConfigDialog::setSimulationTime(
+        int simulationTime)
+{
+    ui->simTimeSpinBox->setValue(simulationTime);
+}
+
+int ConfigDialog::simulationTime() const
+{
+    return ui->simTimeSpinBox->value();
+}

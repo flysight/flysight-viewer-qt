@@ -118,9 +118,6 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="massEdit"/>
-           </item>
            <item row="0" column="2">
             <widget class="QLabel" name="label_7">
              <property name="text">
@@ -135,15 +132,15 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="areaEdit"/>
-           </item>
            <item row="1" column="2">
             <widget class="QLabel" name="label_9">
              <property name="text">
               <string>m^2</string>
              </property>
             </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="areaEdit"/>
            </item>
            <item row="2" column="0" colspan="3">
             <widget class="Line" name="line">
@@ -152,35 +149,38 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Minimum Drag:</string>
-             </property>
-            </widget>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="massEdit"/>
            </item>
            <item row="3" column="1">
             <widget class="QLineEdit" name="minDragEdit"/>
            </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="minLiftEdit"/>
+           </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_15">
              <property name="text">
-              <string>Minimum Lift:</string>
+              <string>Minimum lift:</string>
              </property>
             </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="minLiftEdit"/>
            </item>
            <item row="5" column="0">
             <widget class="QLabel" name="label_13">
              <property name="text">
-              <string>Maximum Lift:</string>
+              <string>Maximum lift:</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="1">
-            <widget class="QLineEdit" name="maxLiftEdit"/>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Minimum drag:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="maxLDEdit"/>
            </item>
            <item row="6" column="0">
             <widget class="QLabel" name="label_14">
@@ -189,10 +189,7 @@
              </property>
             </widget>
            </item>
-           <item row="6" column="1">
-            <widget class="QLineEdit" name="maxLDEdit"/>
-           </item>
-           <item row="7" column="1">
+           <item row="10" column="1">
             <spacer name="verticalSpacer_3">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -204,6 +201,43 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="maxLiftEdit"/>
+           </item>
+           <item row="7" column="0" colspan="3">
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Simulation time:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="2">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>s</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QSpinBox" name="simTimeSpinBox">
+             <property name="maximum">
+              <number>10000</number>
+             </property>
+             <property name="singleStep">
+              <number>4</number>
+             </property>
+             <property name="value">
+              <number>120</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

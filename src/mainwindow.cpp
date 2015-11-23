@@ -42,7 +42,8 @@ MainWindow::MainWindow(
     m_minDrag(0.05),
     m_minLift(0.0),
     m_maxLift(0.5),
-    m_maxLD(3.0)
+    m_maxLD(3.0),
+    m_simulationTime(120)
 {
     m_ui->setupUi(this);
 
@@ -117,6 +118,7 @@ void MainWindow::writeSettings()
     settings.setValue("minLift", m_minLift);
     settings.setValue("maxLift", m_maxLift);
     settings.setValue("maxLD", m_maxLD);
+    settings.setValue("simulationTime", m_simulationTime);
     settings.endGroup();
 }
 
@@ -135,6 +137,7 @@ void MainWindow::readSettings()
     m_minLift = settings.value("minLift", m_minLift).toDouble();
     m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
     m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
+    m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
     settings.endGroup();
 }
 
@@ -1055,6 +1058,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMinLift(m_minLift);
     dlg.setMaxLift(m_maxLift);
     dlg.setMaxLD(m_maxLD);
+    dlg.setSimulationTime(m_simulationTime);
 
     dlg.exec();
 
@@ -1095,6 +1099,8 @@ void MainWindow::on_actionPreferences_triggered()
 
         emit dataChanged();
     }
+
+    m_simulationTime = dlg.simulationTime();
 }
 
 void MainWindow::on_actionImportVideo_triggered()
@@ -1414,20 +1420,12 @@ void MainWindow::setTool(
 void MainWindow::optimize(
         OptimizationMode mode)
 {
-    int start = findIndexBelowT(mRangeLower) + 1;
-    int end   = findIndexAboveT(mRangeUpper);
+    const int start = findIndexBelowT(0) + 1;
 
     // y = ax^2 + c
     const double m = 1 / m_maxLD;
     const double c = m_minDrag;
     const double a = m * m / (4 * c);
-
-    const double t0 = m_data[start].t;
-    const double velH = sqrt(m_data[start].velE * m_data[start].velE + m_data[start].velN * m_data[start].velN);
-    const double theta0 = atan2(-m_data[start].velD, velH);
-    const double v0 = sqrt(m_data[start].velD * m_data[start].velD + velH * velH);
-    const double x0 = 0;
-    const double y0 = m_data[start].hMSL;
 
     const int workingSize    = 100;     // Working population
     const int keepSize       = 10;      // Number of elites to keep
@@ -1442,7 +1440,7 @@ void MainWindow::optimize(
     const double dt = 0.25; // Time step (s)
 
     int kLim = 0;
-    while (dt * (1 << kLim) < mRangeUpper - mRangeLower)
+    while (dt * (1 << kLim) < m_simulationTime)
     {
         ++kLim;
     }

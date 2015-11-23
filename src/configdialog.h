@@ -42,6 +42,9 @@ public:
     void setMaxLD(double maxLD);
     double maxLD() const;
 
+    void setSimulationTime(int simulationTime);
+    int simulationTime() const;
+
 private:
     Ui::ConfigDialog *ui;
 

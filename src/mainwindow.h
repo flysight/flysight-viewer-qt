@@ -198,6 +198,8 @@ private:
     double                m_maxLift;
     double                m_maxLD;
 
+    int                   m_simulationTime;
+
     void writeSettings();
     void readSettings();
 
