@@ -1060,47 +1060,48 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMaxLD(m_maxLD);
     dlg.setSimulationTime(m_simulationTime);
 
-    dlg.exec();
-
-    if (m_units != dlg.units())
+    if (dlg.exec() == QDialog::Accepted)
     {
-        m_units = dlg.units();
-        initRange();
+        if (m_units != dlg.units())
+        {
+            m_units = dlg.units();
+            initRange();
+        }
+
+        if (m_dtWind != dlg.dtWind())
+        {
+            m_dtWind = dlg.dtWind();
+            initWind();
+
+            emit dataChanged();
+        }
+
+        if (m_mass != dlg.mass() ||
+            m_planformArea != dlg.planformArea())
+        {
+            m_mass = dlg.mass();
+            m_planformArea = dlg.planformArea();
+
+            initAerodynamics();
+
+            emit dataChanged();
+        }
+
+        if (m_minDrag != dlg.minDrag() ||
+            m_minLift != dlg.minLift() ||
+            m_maxLift != dlg.maxLift() ||
+            m_maxLD != dlg.maxLD())
+        {
+            m_minDrag = dlg.minDrag();
+            m_minLift = dlg.minLift();
+            m_maxLift = dlg.maxLift();
+            m_maxLD = dlg.maxLD();
+
+            emit dataChanged();
+        }
+
+        m_simulationTime = dlg.simulationTime();
     }
-
-    if (m_dtWind != dlg.dtWind())
-    {
-        m_dtWind = dlg.dtWind();
-        initWind();
-
-        emit dataChanged();
-    }
-
-    if (m_mass != dlg.mass() ||
-        m_planformArea != dlg.planformArea())
-    {
-        m_mass = dlg.mass();
-        m_planformArea = dlg.planformArea();
-
-        initAerodynamics();
-
-        emit dataChanged();
-    }
-
-    if (m_minDrag != dlg.minDrag() ||
-        m_minLift != dlg.minLift() ||
-        m_maxLift != dlg.maxLift() ||
-        m_maxLD != dlg.maxLD())
-    {
-        m_minDrag = dlg.minDrag();
-        m_minLift = dlg.minLift();
-        m_maxLift = dlg.maxLift();
-        m_maxLD = dlg.maxLD();
-
-        emit dataChanged();
-    }
-
-    m_simulationTime = dlg.simulationTime();
 }
 
 void MainWindow::on_actionImportVideo_triggered()
