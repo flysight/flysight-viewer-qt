@@ -22,7 +22,10 @@ SOURCES += main.cpp \
     mapview.cpp \
     common.cpp \
     videoview.cpp \
-    windplot.cpp
+    windplot.cpp \
+    liftdragplot.cpp \
+    scoringview.cpp \
+    genome.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -35,11 +38,15 @@ HEADERS  += mainwindow.h \
     mapview.h \
     common.h \
     videoview.h \
-    windplot.h
+    windplot.h \
+    liftdragplot.h \
+    scoringview.h \
+    genome.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
-    videoview.ui
+    videoview.ui \
+    scoringview.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico

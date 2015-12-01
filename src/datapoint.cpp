@@ -12,6 +12,8 @@ DataPoint DataPoint::interpolate(
     ret.dateTime.fromMSecsSinceEpoch(
                 ms1 + (qint64) (a * (ms2 - ms1)));
 
+    ret.hasGeodetic = p1.hasGeodetic && p2.hasGeodetic;
+
     ret.lat = p1.lat + a * (p2.lat - p1.lat);
     ret.lon = p1.lon + a * (p2.lon - p1.lon);
     ret.hMSL = p1.hMSL + a * (p2.hMSL - p1.hMSL);
@@ -43,6 +45,9 @@ DataPoint DataPoint::interpolate(
     ret.windN = p1.windN + a * (p2.windN - p1.windN);
     ret.velAircraft = p1.velAircraft + a * (p2.velAircraft - p1.velAircraft);
     ret.windErr = p1.windErr + a * (p2.windErr - p1.windErr);
+
+    ret.lift = p1.lift + a * (p2.lift - p1.lift);
+    ret.drag = p1.drag + a * (p2.drag - p1.drag);
 
     return ret;
 }

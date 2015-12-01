@@ -5,17 +5,23 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
+#include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
 #include <QTextStream>
 
 #include <math.h>
 
+#include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "genome.h"
+#include "liftdragplot.h"
 #include "mapview.h"
 #include "videoview.h"
 #include "windplot.h"
+#include "scoringview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -25,13 +31,29 @@ MainWindow::MainWindow(
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
-    m_dtWind(30)
+    m_dtWind(30),
+    mWindowBottom(2000),
+    mWindowTop(3000),
+    mIsWindowValid(false),
+    mWindowMode(Actual),
+    mScoringView(0),
+    m_mass(70),
+    m_planformArea(2),
+    m_minDrag(0.05),
+    m_minLift(0.0),
+    m_maxLift(0.5),
+    m_maxLD(3.0),
+    m_simulationTime(120)
 {
     m_ui->setupUi(this);
 
     // Ensure that closeEvent is called
-    QObject::connect(m_ui->actionExit, SIGNAL(triggered()),
-                     this, SLOT(close()));
+    connect(m_ui->actionExit, SIGNAL(triggered()),
+            this, SLOT(close()));
+
+    // Respond to data changed signal
+    connect(this, SIGNAL(dataChanged()),
+            this, SLOT(updateWindow()));
 
     // Intitialize plot area
     initPlot();
@@ -44,6 +66,12 @@ MainWindow::MainWindow(
 
     // Initialize wind view
     initWindView();
+
+    // Initialize scoring view
+    initScoringView();
+
+    // Initialize lift/drag view
+    initLiftDragView();
 
     // Restore window state
     readSettings();
@@ -84,6 +112,13 @@ void MainWindow::writeSettings()
     settings.setValue("state", saveState());
     settings.setValue("units", m_units);
     settings.setValue("dtWind", m_dtWind);
+    settings.setValue("mass", m_mass);
+    settings.setValue("planformArea", m_planformArea);
+    settings.setValue("minDrag", m_minDrag);
+    settings.setValue("minLift", m_minLift);
+    settings.setValue("maxLift", m_maxLift);
+    settings.setValue("maxLD", m_maxLD);
+    settings.setValue("simulationTime", m_simulationTime);
     settings.endGroup();
 }
 
@@ -96,6 +131,13 @@ void MainWindow::readSettings()
     restoreState(settings.value("state").toByteArray());
     m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
     m_dtWind = settings.value("dtWind", m_dtWind).toDouble();
+    m_mass = settings.value("mass", m_mass).toDouble();
+    m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
+    m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+    m_minLift = settings.value("minLift", m_minLift).toDouble();
+    m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
+    m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
+    m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
     settings.endGroup();
 }
 
@@ -180,10 +222,50 @@ void MainWindow::initWindView()
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
-    connect(this, SIGNAL(dataLoaded()),
-            windPlot, SLOT(initPlot()));
     connect(this, SIGNAL(dataChanged()),
             windPlot, SLOT(updatePlot()));
+}
+
+void MainWindow::initScoringView()
+{
+    mScoringView = new ScoringView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Scoring View"));
+    dockWidget->setWidget(mScoringView);
+    dockWidget->setObjectName("scoringView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    mScoringView->setMainWindow(this);
+
+    connect(m_ui->actionShowScoringView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(m_ui->actionShowScoringView, SIGNAL(toggled(bool)),
+            this, SLOT(setScoringVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowScoringView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            mScoringView, SLOT(updateView()));
+}
+
+void MainWindow::initLiftDragView()
+{
+    LiftDragPlot *liftDragPlot = new LiftDragPlot;
+    QDockWidget *dockWidget = new QDockWidget(tr("Lift/Drag View"));
+    dockWidget->setWidget(liftDragPlot);
+    dockWidget->setObjectName("liftDragView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    liftDragPlot->setMainWindow(this);
+
+    connect(m_ui->actionShowLiftDragView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLiftDragView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            liftDragPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::closeEvent(
@@ -330,6 +412,8 @@ void MainWindow::on_actionImport_triggered()
 
         pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
 
+        pt.hasGeodetic = true;
+
         pt.lat   = cols[colMap[Lat]].toDouble();
         pt.lon   = cols[colMap[Lon]].toDouble();
         pt.hMSL  = cols[colMap[HMSL]].toDouble();
@@ -363,6 +447,11 @@ void MainWindow::on_actionImport_triggered()
         dp.y = distance * cos(bearing);
         dp.z = dp.alt = dp.hMSL - dp0.hMSL;
 
+        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
+        qint64 end = dp.dateTime.toMSecsSinceEpoch();
+
+        dp.t = (double) (end - start) / 1000;
+
         if (i > 0)
         {
             const DataPoint &dpPrev = m_data[i - 1];
@@ -378,11 +467,6 @@ void MainWindow::on_actionImport_triggered()
 
         dp.dist2D = dist2D;
         dp.dist3D = dist3D;
-
-        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
-        qint64 end = dp.dateTime.toMSecsSinceEpoch();
-
-        dp.t = (double) (end - start) / 1000;
     }
 
     for (int i = 0; i < m_data.size(); ++i)
@@ -399,6 +483,8 @@ void MainWindow::on_actionImport_triggered()
         dp.accel = getSlope(i, DataPoint::totalSpeed);
     }
 
+    initAerodynamics();
+
     if (dt.size() > 0)
     {
         qSort(dt.begin(), dt.end());
@@ -408,6 +494,9 @@ void MainWindow::on_actionImport_triggered()
     {
         m_timeStep = 1.0;
     }
+
+    // Clear optimum
+    m_optimal.clear();
 
     initRange();
 
@@ -532,6 +621,55 @@ void MainWindow::getWind(
     dp0.windErr = sqrt(err / N);
 }
 
+void MainWindow::initAerodynamics()
+{
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        // Acceleration
+        double accelN = getSlope(i, DataPoint::northSpeed);
+        double accelE = getSlope(i, DataPoint::eastSpeed);
+        double accelD = getSlope(i, DataPoint::verticalSpeed);
+
+        // Subtract acceleration due to gravity
+        accelD -= A_GRAVITY;
+
+        // Calculate acceleration due to drag
+        const double vel = DataPoint::totalSpeed(dp);
+        const double proj = (accelN * dp.velN + accelE * dp.velE + accelD * dp.velD) / vel;
+
+        const double dragN = proj * dp.velN / vel;
+        const double dragE = proj * dp.velE / vel;
+        const double dragD = proj * dp.velD / vel;
+
+        const double accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
+
+        // Calculate acceleration due to lift
+        const double liftN = accelN - dragN;
+        const double liftE = accelE - dragE;
+        const double liftD = accelD - dragD;
+
+        const double accelLift = sqrt(liftN * liftN + liftE * liftE + liftD * liftD);
+
+        // From https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation
+        const double airPressure = SL_PRESSURE * pow(1 - LAPSE_RATE * dp.hMSL / SL_TEMP, A_GRAVITY * MM_AIR / GAS_CONST / LAPSE_RATE);
+
+        // From https://en.wikipedia.org/wiki/Lapse_rate
+        const double temperature = SL_TEMP - LAPSE_RATE * dp.hMSL;
+
+        // From https://en.wikipedia.org/wiki/Density_of_air
+        const double airDensity = airPressure / (GAS_CONST / MM_AIR) / temperature;
+
+        // From https://en.wikipedia.org/wiki/Dynamic_pressure
+        const double dynamicPressure = airDensity * vel * vel / 2;
+
+        // Calculate lift and drag coefficients
+        dp.lift = m_mass * accelLift / dynamicPressure / m_planformArea;
+        dp.drag = m_mass * accelDrag / dynamicPressure / m_planformArea;
+    }
+}
+
 double MainWindow::getSlope(
         const int center,
         double (*value)(const DataPoint &)) const
@@ -560,23 +698,33 @@ double MainWindow::getDistance(
         const DataPoint &dp1,
         const DataPoint &dp2) const
 {
-    const double R = 6371009;
-    const double pi = 3.14159265359;
+    if (dp1.hasGeodetic && dp2.hasGeodetic)
+    {
+        const double R = 6371009;
+        const double pi = 3.14159265359;
 
-    double lat1 = dp1.lat / 180 * pi;
-    double lon1 = dp1.lon / 180 * pi;
+        double lat1 = dp1.lat / 180 * pi;
+        double lon1 = dp1.lon / 180 * pi;
 
-    double lat2 = dp2.lat / 180 * pi;
-    double lon2 = dp2.lon / 180 * pi;
+        double lat2 = dp2.lat / 180 * pi;
+        double lon2 = dp2.lon / 180 * pi;
 
-    double dLat = lat2 - lat1;
-    double dLon = lon2 - lon1;
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
 
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-            sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+        double a = sin(dLat / 2) * sin(dLat / 2) +
+                sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
+        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    return R * c;
+        return R * c;
+    }
+    else
+    {
+        const double dx = dp2.x - dp1.x;
+        const double dy = dp2.y - dp1.y;
+
+        return sqrt(dx * dx + dy * dy);
+    }
 }
 
 double MainWindow::getBearing(
@@ -727,10 +875,11 @@ void MainWindow::updateLeftActions()
     m_ui->actionWindSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindSpeed));
     m_ui->actionWindDirection->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindDirection));
     m_ui->actionAircraftSpeed->setChecked(m_ui->plotArea->plotVisible(DataPlot::AircraftSpeed));
-    m_ui->actionWindError->setChecked(m_ui->plotArea->plotVisible(DataPlot::WindError));
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
+    m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
+    m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -806,6 +955,16 @@ void MainWindow::on_actionTotalEnergy_triggered()
 void MainWindow::on_actionEnergyRate_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::EnergyRate);
+}
+
+void MainWindow::on_actionLift_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Lift);
+}
+
+void MainWindow::on_actionDrag_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Drag);
 }
 
 void MainWindow::on_actionPan_triggered()
@@ -890,22 +1049,58 @@ void MainWindow::on_actionPreferences_triggered()
     ConfigDialog dlg;
 
     dlg.setUnits(m_units);
+
     dlg.setDtWind(m_dtWind);
 
-    dlg.exec();
+    dlg.setMass(m_mass);
+    dlg.setPlanformArea(m_planformArea);
+    dlg.setMinDrag(m_minDrag);
+    dlg.setMinLift(m_minLift);
+    dlg.setMaxLift(m_maxLift);
+    dlg.setMaxLD(m_maxLD);
+    dlg.setSimulationTime(m_simulationTime);
 
-    if (m_units != dlg.units())
+    if (dlg.exec() == QDialog::Accepted)
     {
-        m_units = dlg.units();
-        initRange();
-    }
+        if (m_units != dlg.units())
+        {
+            m_units = dlg.units();
+            initRange();
+        }
 
-    if (m_dtWind != dlg.dtWind())
-    {
-        m_dtWind = dlg.dtWind();
-        initWind();
+        if (m_dtWind != dlg.dtWind())
+        {
+            m_dtWind = dlg.dtWind();
+            initWind();
 
-        emit dataChanged();
+            emit dataChanged();
+        }
+
+        if (m_mass != dlg.mass() ||
+            m_planformArea != dlg.planformArea())
+        {
+            m_mass = dlg.mass();
+            m_planformArea = dlg.planformArea();
+
+            initAerodynamics();
+
+            emit dataChanged();
+        }
+
+        if (m_minDrag != dlg.minDrag() ||
+            m_minLift != dlg.minLift() ||
+            m_maxLift != dlg.maxLift() ||
+            m_maxLD != dlg.maxLD())
+        {
+            m_minDrag = dlg.minDrag();
+            m_minLift = dlg.minLift();
+            m_maxLift = dlg.maxLift();
+            m_maxLD = dlg.maxLD();
+
+            emit dataChanged();
+        }
+
+        m_simulationTime = dlg.simulationTime();
     }
 }
 
@@ -1141,6 +1336,72 @@ void MainWindow::setGround(
     setTool(mPrevTool);
 }
 
+void MainWindow::setWindow(
+        double windowBottom,
+        double windowTop)
+{
+    mWindowBottom = windowBottom;
+    mWindowTop = windowTop;
+
+    emit dataChanged();
+}
+
+void MainWindow::setScoringVisible(
+        bool visible)
+{
+    emit dataChanged();
+}
+
+void MainWindow::setMinDrag(
+        double minDrag)
+{
+    m_minDrag = minDrag;
+
+    emit dataChanged();
+}
+
+void MainWindow::setMaxLift(
+        double maxLift)
+{
+    m_maxLift = maxLift;
+
+    emit dataChanged();
+}
+
+void MainWindow::setMaxLD(
+        double maxLD)
+{
+    m_maxLD = maxLD;
+
+    emit dataChanged();
+}
+
+void MainWindow::updateWindow(void)
+{
+    switch (mWindowMode)
+    {
+    case Actual:
+        mIsWindowValid = getWindowBounds(m_data, mWindowBottomDP, mWindowTopDP);
+        break;
+    case Optimal:
+        mIsWindowValid = getWindowBounds(m_optimal, mWindowBottomDP, mWindowTopDP);
+        break;
+    }
+}
+
+bool MainWindow::isWindowValid() const
+{
+    return mIsWindowValid && mScoringView && m_ui->actionShowScoringView->isChecked();
+}
+
+void MainWindow::setWindowMode(
+        WindowMode mode)
+{
+    mWindowMode = mode;
+
+    emit dataChanged();
+}
+
 void MainWindow::setTool(
         Tool tool)
 {
@@ -1155,4 +1416,275 @@ void MainWindow::setTool(
     m_ui->actionMeasure->setChecked(tool == Measure);
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
+}
+
+void MainWindow::optimize(
+        OptimizationMode mode)
+{
+    const int start = findIndexBelowT(0) + 1;
+
+    // y = ax^2 + c
+    const double m = 1 / m_maxLD;
+    const double c = m_minDrag;
+    const double a = m * m / (4 * c);
+
+    const int workingSize    = 100;     // Working population
+    const int keepSize       = 10;      // Number of elites to keep
+    const int newSize        = 10;      // New genomes in first level
+    const int numGenerations = 250;     // Generations per level of detail
+    const int tournamentSize = 5;       // Number of individuals in a tournament
+    const int mutationRate   = 100;     // Frequency of mutations
+    const int truncationRate = 10;      // Frequency of truncations
+
+    qsrand(QTime::currentTime().msec());
+
+    const double dt = 0.25; // Time step (s)
+
+    int kLim = 0;
+    while (dt * (1 << kLim) < m_simulationTime)
+    {
+        ++kLim;
+    }
+
+    const int genomeSize = (1 << kLim) + 1;
+    const int kMin = kLim - 4;
+    const int kMax = kLim - 2;
+
+    GenePool genePool;
+
+    QProgressDialog progress("Initializing...",
+                             "Abort",
+                             0,
+                             (kMax - kMin + 1) * numGenerations * workingSize + workingSize,
+                             this);
+    progress.setWindowModality(Qt::WindowModal);
+
+    double maxScore = 0;
+    bool abort = false;
+
+    // Add new individuals
+    for (int i = 0; i < workingSize; ++i)
+    {
+        progress.setValue(progress.value() + 1);
+        if (progress.wasCanceled())
+        {
+            abort = true;
+            break;
+        }
+
+        Genome g(genomeSize, kMin, m_minLift, m_maxLift);
+        const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+        const double s = score(result, mode);
+        genePool.append(Score(s, g));
+
+        maxScore = qMax(maxScore, s);
+    }
+
+    // Increasing levels of detail
+    for (int k = kMin; k <= kMax && !abort; ++k)
+    {
+        // Generations
+        for (int j = 0; j < numGenerations && !abort; ++j)
+        {
+            progress.setValue(progress.value() + keepSize);
+            if (progress.wasCanceled())
+            {
+                abort = true;
+                break;
+            }
+
+            // Sort gene pool by score
+            qSort(genePool);
+
+            // Elitism
+            GenePool newGenePool = genePool.mid(0, keepSize);
+
+            // Initialize score
+            maxScore = 0;
+            for (int i = 0; i < keepSize; ++i)
+            {
+                maxScore = qMax(maxScore, newGenePool[i].first);
+            }
+
+            // Add new individuals in first level
+            for (int i = 0; k == kMin && i < newSize; ++i)
+            {
+                progress.setValue(progress.value() + 1);
+                if (progress.wasCanceled())
+                {
+                    abort = true;
+                    break;
+                }
+
+                Genome g(genomeSize, kMin, m_minLift, m_maxLift);
+                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+                const double s = score(result, mode);
+                newGenePool.append(Score(s, g));
+
+                maxScore = qMax(maxScore, s);
+            }
+
+            // Tournament selection
+            while (newGenePool.size() < workingSize)
+            {
+                progress.setValue(progress.value() + 1);
+                if (progress.wasCanceled())
+                {
+                    abort = true;
+                    break;
+                }
+
+                const Genome &p1 = selectGenome(genePool, tournamentSize);
+                const Genome &p2 = selectGenome(genePool, tournamentSize);
+                Genome g(p1, p2, k);
+
+                if (qrand() % 100 < truncationRate)
+                {
+                    g.truncate(k);
+                }
+                if (qrand() % 100 < mutationRate)
+                {
+                    g.mutate(k, kMin, m_minLift, m_maxLift);
+                }
+
+                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+                const double s = score(result, mode);
+                newGenePool.append(Score(s, g));
+
+                maxScore = qMax(maxScore, s);
+            }
+
+            genePool = newGenePool;
+
+            // Show best score in progress dialog
+            QString labelText;
+            switch (mode)
+            {
+            case Time:
+                labelText = QString::number(maxScore) + QString(" s");
+                break;
+            case Distance:
+                labelText = QString::number(maxScore / 1000) + QString(" km");
+                break;
+            case HorizontalSpeed:
+            case VerticalSpeed:
+                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
+                break;
+            }
+            progress.setLabelText(QString("Optimizing (best score is ") +
+                                  labelText +
+                                  QString(")..."));
+        }
+    }
+
+    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + workingSize);
+
+    // Sort gene pool by score
+    qSort(genePool);
+
+    // Keep most fit individual
+    m_optimal.clear();
+    m_optimal = genePool[0].second.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
+
+    emit dataChanged();
+}
+
+const Genome &MainWindow::selectGenome(
+        const GenePool &genePool,
+        const int tournamentSize)
+{
+    int jMax;
+    double sMax;
+    bool first = true;
+
+    for (int i = 0; i < tournamentSize; ++i)
+    {
+        const int j = qrand() % genePool.size();
+        if (first || genePool[j].first > sMax)
+        {
+            jMax = j;
+            sMax = genePool[j].first;
+            first = false;
+        }
+    }
+
+    return genePool[jMax].second;
+}
+
+bool MainWindow::getWindowBounds(
+        const QVector< DataPoint > result,
+        DataPoint &dpBottom,
+        DataPoint &dpTop)
+{
+    bool foundBottom = false;
+    bool foundTop = false;
+    int bottom, top;
+
+    for (int i = result.size() - 1; i >= 0; --i)
+    {
+        const DataPoint &dp = result[i];
+
+        if (dp.alt < mWindowBottom)
+        {
+            bottom = i;
+            foundBottom = true;
+        }
+
+        if (dp.alt < mWindowTop)
+        {
+            top = i;
+            foundTop = false;
+        }
+
+        if (dp.alt > mWindowTop)
+        {
+            foundTop = true;
+        }
+
+        if (dp.t < 0) break;
+    }
+
+    if (foundBottom && foundTop)
+    {
+        // Calculate bottom of window
+        const DataPoint &dp1 = result[bottom - 1];
+        const DataPoint &dp2 = result[bottom];
+        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
+
+        // Calculate top of window
+        const DataPoint &dp3 = result[top - 1];
+        const DataPoint &dp4 = result[top];
+        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+double MainWindow::score(
+        const QVector< DataPoint > &result,
+        OptimizationMode mode)
+{
+    DataPoint dpBottom, dpTop;
+    if (getWindowBounds(result, dpBottom, dpTop))
+    {
+        switch (mode)
+        {
+        case Time:
+            return dpBottom.t - dpTop.t;
+        case Distance:
+            return dpBottom.x - dpTop.x;
+        case HorizontalSpeed:
+            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
+        case VerticalSpeed:
+            return (mWindowTop - mWindowBottom) / (dpBottom.t - dpTop.t);
+        }
+    }
+    else
+    {
+        return 0;
+    }
 }

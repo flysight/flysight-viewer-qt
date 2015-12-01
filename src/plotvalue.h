@@ -29,17 +29,18 @@ public:
     virtual const QColor color() const = 0;
     virtual double value(const DataPoint &dp, Units units) const = 0;
 
-    QCPAxis *addAxis(QCustomPlot *plot, Units units) const
+    QCPAxis *addAxis(QCustomPlot *plot, Units units)
     {
-        QCPAxis *axis = plot->axisRect()->addAxis(QCPAxis::atLeft);
-        axis->setLabelColor(color());
-        axis->setTickLabelColor(color());
-        axis->setBasePen(QPen(color()));
-        axis->setTickPen(QPen(color()));
-        axis->setSubTickPen(QPen(color()));
-        axis->setLabel(title(units));
-        return axis;
+        mAxis = plot->axisRect()->addAxis(QCPAxis::atLeft);
+        mAxis->setLabelColor(color());
+        mAxis->setTickLabelColor(color());
+        mAxis->setBasePen(QPen(color()));
+        mAxis->setTickPen(QPen(color()));
+        mAxis->setSubTickPen(QPen(color()));
+        mAxis->setLabel(title(units));
+        return mAxis;
     }
+    QCPAxis *axis() const { return mAxis; }
 
     bool visible() const { return mVisible; }
     void setVisible(bool visible) { mVisible = visible; }
@@ -60,8 +61,11 @@ public:
         settings.endGroup();
     }
 
+    virtual bool hasOptimal() const { return false; }
+
 private:
     bool mVisible;
+    QCPAxis *mAxis;
 
     const QString key() const
     {
@@ -86,6 +90,8 @@ public:
         if (units == Metric) return DataPoint::elevation(dp);
         else                 return DataPoint::elevation(dp) * METERS_TO_FEET;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotVerticalSpeed: public PlotValue
@@ -105,6 +111,8 @@ public:
         if (units == Metric) return DataPoint::verticalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::verticalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotHorizontalSpeed: public PlotValue
@@ -124,6 +132,8 @@ public:
         if (units == Metric) return DataPoint::horizontalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::horizontalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotTotalSpeed: public PlotValue
@@ -143,6 +153,8 @@ public:
         if (units == Metric) return DataPoint::totalSpeed(dp) * MPS_TO_KMH;
         else                 return DataPoint::totalSpeed(dp) * MPS_TO_MPH;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDiveAngle: public PlotValue
@@ -162,6 +174,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::diveAngle(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotCurvature: public PlotValue
@@ -181,6 +195,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::curvature(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotGlideRatio: public PlotValue
@@ -200,6 +216,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::glideRatio(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotHorizontalAccuracy: public PlotValue
@@ -295,6 +313,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::time(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDistance2D: public PlotValue
@@ -314,6 +334,8 @@ public:
         if (units == Metric) return DataPoint::distance2D(dp);
         else                 return DataPoint::distance2D(dp) * METERS_TO_FEET;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotDistance3D: public PlotValue
@@ -333,6 +355,8 @@ public:
         if (units == Metric) return DataPoint::distance3D(dp);
         else                 return DataPoint::distance3D(dp) * METERS_TO_FEET;
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotWindSpeed: public PlotValue
@@ -428,6 +452,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::acceleration(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotTotalEnergy: public PlotValue
@@ -447,6 +473,8 @@ public:
         Q_UNUSED(units);
         return DataPoint::totalEnergy(dp);
     }
+
+    bool hasOptimal() const { return true; }
 };
 
 class PlotEnergyRate: public PlotValue
@@ -466,6 +494,50 @@ public:
         Q_UNUSED(units);
         return DataPoint::energyRate(dp);
     }
+
+    bool hasOptimal() const { return true; }
+};
+
+class PlotLift: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotLift() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Lift Coefficient");
+    }
+    const QColor color() const { return Qt::darkGreen; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::liftCoefficient(dp);
+    }
+
+    bool hasOptimal() const { return true; }
+};
+
+class PlotDrag: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotDrag() {}
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("Drag Coefficient");
+    }
+    const QColor color() const { return Qt::darkBlue; }
+    double value(const DataPoint &dp, Units units) const
+    {
+        Q_UNUSED(units);
+        return DataPoint::dragCoefficient(dp);
+    }
+
+    bool hasOptimal() const { return true; }
 };
 
 #endif // PLOTVALUE_H

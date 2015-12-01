@@ -12,6 +12,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
                 QStringList() << tr("General"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Wind"));
+    ui->contentsWidget->addItems(
+                QStringList() << tr("Aerodynamics"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -60,4 +62,81 @@ void ConfigDialog::setDtWind(
 double ConfigDialog::dtWind() const
 {
     return ui->dtWindEdit->text().toDouble();
+}
+
+void ConfigDialog::setMass(
+        double mass)
+{
+    ui->massEdit->setText(QString("%1").arg(mass));
+}
+
+double ConfigDialog::mass() const
+{
+    return ui->massEdit->text().toDouble();
+}
+
+void ConfigDialog::setPlanformArea(
+        double area)
+{
+    ui->areaEdit->setText(QString("%1").arg(area));
+}
+
+double ConfigDialog::planformArea() const
+{
+    return ui->areaEdit->text().toDouble();
+}
+
+void ConfigDialog::setMinDrag(
+        double minDrag)
+{
+    ui->minDragEdit->setText(QString("%1").arg(minDrag));
+}
+
+double ConfigDialog::minDrag() const
+{
+    return ui->minDragEdit->text().toDouble();
+}
+
+void ConfigDialog::setMinLift(
+        double minLift)
+{
+    ui->minLiftEdit->setText(QString("%1").arg(minLift));
+}
+
+double ConfigDialog::minLift() const
+{
+    return ui->minLiftEdit->text().toDouble();
+}
+
+void ConfigDialog::setMaxLift(
+        double maxLift)
+{
+    ui->maxLiftEdit->setText(QString("%1").arg(maxLift));
+}
+
+double ConfigDialog::maxLift() const
+{
+    return ui->maxLiftEdit->text().toDouble();
+}
+
+void ConfigDialog::setMaxLD(
+        double maxLD)
+{
+    ui->maxLDEdit->setText(QString("%1").arg(maxLD));
+}
+
+double ConfigDialog::maxLD() const
+{
+    return ui->maxLDEdit->text().toDouble();
+}
+
+void ConfigDialog::setSimulationTime(
+        int simulationTime)
+{
+    ui->simTimeSpinBox->setValue(simulationTime);
+}
+
+int ConfigDialog::simulationTime() const
+{
+    return ui->simTimeSpinBox->value();
 }

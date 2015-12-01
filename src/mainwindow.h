@@ -8,12 +8,22 @@
 #include "dataplot.h"
 #include "datapoint.h"
 #include "dataview.h"
+#include "genome.h"
 
 class QCPRange;
 class QCustomPlot;
+class ScoringView;
 
 namespace Ui {
 class MainWindow;
+}
+
+typedef QPair< double, Genome > Score;
+typedef QVector< Score > GenePool;
+
+static bool operator<(const Score &s1, const Score &s2)
+{
+    return s1.first > s2.first;
 }
 
 class MainWindow : public QMainWindow
@@ -24,6 +34,14 @@ public:
     typedef enum {
         Pan, Zoom, Measure, Zero, Ground
     } Tool;
+
+    typedef enum {
+        Actual, Optimal
+    } WindowMode;
+
+    typedef enum {
+        Time, Distance, HorizontalSpeed, VerticalSpeed
+    } OptimizationMode;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -66,6 +84,32 @@ public:
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
+    void setWindow(double windowBottom, double windowTop);
+    double windowTop(void) const { return mWindowTop; }
+    double windowBottom(void) const { return mWindowBottom; }
+
+    bool isWindowValid(void) const;
+    const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
+    const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
+
+    void setWindowMode(WindowMode mode);
+    WindowMode windowMode() const { return mWindowMode; }
+
+    double planformArea() const { return m_planformArea; }
+
+    double minDrag() const { return m_minDrag; }
+    double maxLift() const { return m_maxLift; }
+    double maxLD() const { return m_maxLD; }
+
+    void setMinDrag(double minDrag);
+    void setMaxLift(double maxLift);
+    void setMaxLD(double maxLD);
+
+    int optimalSize() const { return m_optimal.size(); }
+    const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
+
+    void optimize(OptimizationMode mode);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -90,6 +134,8 @@ private slots:
     void on_actionAcceleration_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
+    void on_actionLift_triggered();
+    void on_actionDrag_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
@@ -111,6 +157,7 @@ private slots:
 private:
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
+    QVector< DataPoint >  m_optimal;
 
     double                mMarkStart;
     double                mMarkEnd;
@@ -131,6 +178,28 @@ private:
     double                mRangeLower;
     double                mRangeUpper;
 
+    double                mWindowBottom;
+    double                mWindowTop;
+
+    bool                  mIsWindowValid;
+
+    DataPoint             mWindowBottomDP;
+    DataPoint             mWindowTopDP;
+
+    WindowMode            mWindowMode;
+
+    ScoringView          *mScoringView;
+
+    double                m_mass;
+    double                m_planformArea;
+
+    double                m_minDrag;
+    double                m_minLift;
+    double                m_maxLift;
+    double                m_maxLD;
+
+    int                   m_simulationTime;
+
     void writeSettings();
     void readSettings();
 
@@ -138,11 +207,16 @@ private:
     void initViews();
     void initMapView();
     void initWindView();
+    void initScoringView();
+    void initLiftDragView();
+
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
     void initWind();
     void getWind(const int center);
+
+    void initAerodynamics();
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
@@ -151,10 +225,18 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
+    const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
+    double score(const QVector< DataPoint > &result, OptimizationMode mode);
+    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
+
 signals:
     void dataLoaded();
     void dataChanged();
     void rotationChanged(double rotation);
+
+private slots:
+    void updateWindow();
+    void setScoringVisible(bool visible);
 };
 
 #endif // MAINWINDOW_H

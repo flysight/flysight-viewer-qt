@@ -37,6 +37,8 @@ public:
         Acceleration,
         TotalEnergy,
         EnergyRate,
+        Lift,
+        Drag,
         yaLast
     } YAxisType;
 
@@ -45,8 +47,8 @@ public:
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
-    const PlotValue *xValue() const { return m_xValues[m_xAxisType]; }
-    const PlotValue *yValue(int i) const { return m_yValues[i]; }
+    PlotValue *xValue() const { return m_xValues[m_xAxisType]; }
+    PlotValue *yValue(int i) const { return m_yValues[i]; }
 
     void togglePlot(YAxisType plot);
     bool plotVisible(YAxisType plot) const { return m_yValues[plot]->visible(); }

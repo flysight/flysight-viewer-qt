@@ -24,6 +24,27 @@ public:
     void setDtWind(double dtWind);
     double dtWind() const;
 
+    void setMass(double mass);
+    double mass() const;
+
+    void setPlanformArea(double area);
+    double planformArea() const;
+
+    void setMinDrag(double minDrag);
+    double minDrag() const;
+
+    void setMinLift(double minLift);
+    double minLift() const;
+
+    void setMaxLift(double maxLift);
+    double maxLift() const;
+
+    void setMaxLD(double maxLD);
+    double maxLD() const;
+
+    void setSimulationTime(int simulationTime);
+    int simulationTime() const;
+
 private:
     Ui::ConfigDialog *ui;
 
