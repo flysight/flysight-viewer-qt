@@ -114,7 +114,9 @@
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
+    <addaction name="separator"/>
     <addaction name="actionShowWindView"/>
+    <addaction name="separator"/>
     <addaction name="actionShowScoringView"/>
     <addaction name="actionShowLiftDragView"/>
    </widget>
@@ -547,7 +549,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Lift/Drag View</string>
+    <string>Drag Polar</string>
    </property>
    <property name="shortcut">
     <string>Alt+6</string>
@@ -558,7 +560,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>S&amp;coring View</string>
+    <string>S&amp;coring</string>
    </property>
    <property name="shortcut">
     <string>Alt+7</string>
