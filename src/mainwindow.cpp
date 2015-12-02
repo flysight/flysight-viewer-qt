@@ -229,7 +229,7 @@ void MainWindow::initWindView()
 void MainWindow::initScoringView()
 {
     mScoringView = new ScoringView;
-    QDockWidget *dockWidget = new QDockWidget(tr("Scoring View"));
+    QDockWidget *dockWidget = new QDockWidget(tr("Scoring"));
     dockWidget->setWidget(mScoringView);
     dockWidget->setObjectName("scoringView");
     dockWidget->setVisible(false);
@@ -251,7 +251,7 @@ void MainWindow::initScoringView()
 void MainWindow::initLiftDragView()
 {
     LiftDragPlot *liftDragPlot = new LiftDragPlot;
-    QDockWidget *dockWidget = new QDockWidget(tr("Lift/Drag View"));
+    QDockWidget *dockWidget = new QDockWidget(tr("Drag Polar"));
     dockWidget->setWidget(liftDragPlot);
     dockWidget->setObjectName("liftDragView");
     dockWidget->setVisible(false);
