@@ -58,13 +58,19 @@ else {
 RESOURCES += \
     resource.qrc
 
-LIBS     += -lvlc-qt -lvlc-qt-widgets
+INCLUDEPATH += ../include
 
 win32 {
-    LIBS        += -L../lib
-    INCLUDEPATH += ../include
+    LIBS += -L../lib
+    LIBS += -lvlc-qt -lvlc-qt-widgets
+}
+macx {
+    QMAKE_LFLAGS += -F../frameworks
+    LIBS         += -framework VLCQtCore
+    LIBS         += -framework VLCQtQml
+    LIBS         += -framework VLCQtWidgets
 }
 else {
-    LIBS        += -L/usr/local/lib
-    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    LIBS += -lvlc-qt -lvlc-qt-widgets
 }
