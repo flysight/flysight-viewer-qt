@@ -9,4 +9,4 @@
   4. In Terminal run `brew install postgresql`.
 2. In Terminal run:
   1. `macdeployqt FlySightViewer.app`
-  2. `cp -R /path/to/flysight-viewer-qt/frameworks/* FlySightViewer.app/Contents/Frameworks’
+  2. `cp -R /path/to/flysight-viewer-qt/frameworks/* FlySightViewer.app/Contents/Frameworks`
