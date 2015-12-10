@@ -11,3 +11,9 @@
   1. `/path/to/macdeployqt FlySightViewer.app`
   2. `cp -R /path/to/flysight-viewer-qt/frameworks/* FlySightViewer.app/Contents/Frameworks`
   3. `cp -R /Applications/VLC.app/Contents/MacOS/plugins FlySightViewer.app/Contents/MacOS`
+3. Open Disk Utility.
+4. Go to `File > New Image > Blank Image` and create a 250 MB disk image.
+5. Copy `FlySightViewer.app` into the new disk image.
+6. Eject the disk image.
+7. In Disk Utility, go to `Images > Convert`.
+  1. Select the new disk image and click OK.
