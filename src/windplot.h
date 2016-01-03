@@ -22,9 +22,13 @@ protected:
 private:
     MainWindow *mMainWindow;
 
-    void setMark(double mark);
+    double mWindE, mWindN;
+    double mVelAircraft;
+
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
+
+    void updateWind(const int start, const int end);
 
 public slots:
     void updatePlot();

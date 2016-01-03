@@ -65,10 +65,6 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotVerticalAccuracy);
     m_yValues.append(new PlotSpeedAccuracy);
     m_yValues.append(new PlotNumberOfSatellites);
-    m_yValues.append(new PlotWindSpeed);
-    m_yValues.append(new PlotWindDirection);
-    m_yValues.append(new PlotAircraftSpeed);
-    m_yValues.append(new PlotWindError);
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);
     m_yValues.append(new PlotEnergyRate);

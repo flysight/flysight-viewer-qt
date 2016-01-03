@@ -51,45 +51,13 @@ void WindPlot::mouseMoveEvent(
 
         if (resultDistance < selectionTolerance())
         {
-            setMark(resultTime);
+            mMainWindow->setMark(resultTime);
         }
         else
         {
             mMainWindow->clearMark();
-            QToolTip::hideText();
         }
     }
-}
-
-void WindPlot::setMark(
-        double mark)
-{
-    if (mMainWindow->dataSize() == 0) return;
-
-    DataPoint dp = mMainWindow->interpolateDataT(mark);
-    mMainWindow->setMark(mark);
-
-    QString status;
-    status = QString("<table width='200'>");
-
-    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-            .arg(PlotWindSpeed().title(mMainWindow->units()))
-            .arg(PlotWindSpeed().value(dp, mMainWindow->units()))
-            .arg(PlotWindSpeed().color().name());
-
-    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-            .arg(PlotWindDirection().title(mMainWindow->units()))
-            .arg(PlotWindDirection().value(dp, mMainWindow->units()))
-            .arg(PlotWindDirection().color().name());
-
-    status += QString("<tr style='color:%3;'><td>%1</td><td>%2</td></tr>")
-            .arg(PlotAircraftSpeed().title(mMainWindow->units()))
-            .arg(PlotAircraftSpeed().value(dp, mMainWindow->units()))
-            .arg(PlotAircraftSpeed().color().name());
-
-    status += QString("</table>");
-
-    QToolTip::showText(QCursor::pos(), status);
 }
 
 void WindPlot::updatePlot()
@@ -157,32 +125,6 @@ void WindPlot::updatePlot()
         x.clear();
         y.clear();
 
-        int start = mMainWindow->findIndexBelowT(dpEnd.t - mMainWindow->dtWind()) + 1;
-        int end   = mMainWindow->findIndexAboveT(dpEnd.t + mMainWindow->dtWind());
-
-        for (int i = start; i <= end; ++i)
-        {
-            const DataPoint &dp = mMainWindow->dataPoint(i);
-
-            t.append(dp.t);
-
-            if (mMainWindow->units() == PlotValue::Metric)
-            {
-                x.append(dp.velE * MPS_TO_KMH);
-                y.append(dp.velN * MPS_TO_KMH);
-            }
-            else
-            {
-                x.append(dp.velE * MPS_TO_MPH);
-                y.append(dp.velN * MPS_TO_MPH);
-            }
-        }
-
-        curve = new QCPCurve(xAxis, yAxis);
-        curve->setData(t, x, y);
-        curve->setPen(QPen(Qt::black));
-        addPlottable(curve);
-
         QVector< double > xMark, yMark;
 
         if (mMainWindow->units() == PlotValue::Metric)
@@ -201,57 +143,58 @@ void WindPlot::updatePlot()
         graph->setPen(QPen(Qt::black));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
 
-        xMark.clear();
-        yMark.clear();
+    updateWind(start, end);
+
+    QVector< double > xMark, yMark;
+
+    if (mMainWindow->units() == PlotValue::Metric)
+    {
+        xMark.append(mWindE * MPS_TO_KMH);
+        yMark.append(mWindN * MPS_TO_KMH);
+    }
+    else
+    {
+        xMark.append(mWindE * MPS_TO_MPH);
+        yMark.append(mWindN * MPS_TO_MPH);
+    }
+
+    QCPGraph *graph = addGraph();
+    graph->setData(xMark, yMark);
+    graph->setPen(QPen(Qt::red));
+    graph->setLineStyle(QCPGraph::lsNone);
+    graph->setScatterStyle(QCPScatterStyle::ssDisc);
+
+    const double x0 = mWindE;
+    const double y0 = mWindN;
+    const double r = mVelAircraft;
+
+    QVector< double > tCircle, xCircle, yCircle;
+
+    for (int i = 0; i <= 100; ++i)
+    {
+        tCircle.append(i);
+
+        const double x = x0 + r * cos((double) i / 100 * 2 * M_PI);
+        const double y = y0 + r * sin((double) i / 100 * 2 * M_PI);
 
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            xMark.append(dpEnd.windE * MPS_TO_KMH);
-            yMark.append(dpEnd.windN * MPS_TO_KMH);
+            xCircle.append(x * MPS_TO_KMH);
+            yCircle.append(y * MPS_TO_KMH);
         }
         else
         {
-            xMark.append(dpEnd.windE * MPS_TO_MPH);
-            yMark.append(dpEnd.windN * MPS_TO_MPH);
+            xCircle.append(x * MPS_TO_MPH);
+            yCircle.append(y * MPS_TO_MPH);
         }
-
-        graph = addGraph();
-        graph->setData(xMark, yMark);
-        graph->setPen(QPen(Qt::red));
-        graph->setLineStyle(QCPGraph::lsNone);
-        graph->setScatterStyle(QCPScatterStyle::ssDisc);
-
-        const double x0 = dpEnd.windE;
-        const double y0 = dpEnd.windN;
-        const double r = dpEnd.velAircraft;
-
-        QVector< double > tCircle, xCircle, yCircle;
-
-        for (int i = 0; i <= 100; ++i)
-        {
-            tCircle.append(i);
-
-            const double x = x0 + r * cos((double) i / 100 * 2 * M_PI);
-            const double y = y0 + r * sin((double) i / 100 * 2 * M_PI);
-
-            if (mMainWindow->units() == PlotValue::Metric)
-            {
-                xCircle.append(x * MPS_TO_KMH);
-                yCircle.append(y * MPS_TO_KMH);
-            }
-            else
-            {
-                xCircle.append(x * MPS_TO_MPH);
-                yCircle.append(y * MPS_TO_MPH);
-            }
-        }
-
-        curve = new QCPCurve(xAxis, yAxis);
-        curve->setData(tCircle, xCircle, yCircle);
-        curve->setPen(QPen(Qt::red));
-        addPlottable(curve);
     }
+
+    curve = new QCPCurve(xAxis, yAxis);
+    curve->setData(tCircle, xCircle, yCircle);
+    curve->setPen(QPen(Qt::red));
+    addPlottable(curve);
 
     replot();
 }
@@ -288,4 +231,78 @@ void WindPlot::setViewRange(
 
     xAxis->setRange(xMin, xMax);
     yAxis->setRange(yMin, yMax);
+}
+
+void WindPlot::updateWind(
+        const int start,
+        const int end)
+{
+    // Weighted least-squares circle fit based on this:
+    //   http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf
+
+    double xbar = 0, ybar = 0, N = 0;
+    for (int i = start; i < end; ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+
+        const double wi = 1.0;
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        xbar += wi * xi;
+        ybar += wi * yi;
+
+        N += wi;
+    }
+
+    xbar /= N;
+    ybar /= N;
+
+    double suu = 0, suv = 0, svv = 0;
+    double suuu = 0, suvv = 0, svuu = 0, svvv = 0;
+    for (int i = start; i < end; ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+
+        const double wi = 1.0;
+
+        const double xi = dp.velE;
+        const double yi = dp.velN;
+
+        const double ui = xi - xbar;
+        const double vi = yi - ybar;
+
+        suu += wi * ui * ui;
+        suv += wi * ui * vi;
+        svv += wi * vi * vi;
+
+        suuu += wi * ui * ui * ui;
+        suvv += wi * ui * vi * vi;
+        svuu += wi * vi * ui * ui;
+        svvv += wi * vi * vi * vi;
+    }
+
+    const double det = suu * svv - suv * suv;
+
+    if (det == 0)
+    {
+        mWindE = 0;
+        mWindN = 0;
+        mVelAircraft = 0;
+        return;
+    }
+
+    const double uc = 1 / det * (0.5 * svv * (suuu + suvv) - 0.5 * suv * (svvv + svuu));
+    const double vc = 1 / det * (0.5 * suu * (svvv + svuu) - 0.5 * suv * (suuu + suvv));
+
+    const double xc = uc + xbar;
+    const double yc = vc + ybar;
+
+    const double alpha = uc * uc + vc * vc + (suu + svv) / N;
+    const double R = sqrt(alpha);
+
+    mWindE = xc;
+    mWindN = yc;
+    mVelAircraft = R;
 }
