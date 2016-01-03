@@ -63,6 +63,7 @@ void WindPlot::mouseMoveEvent(
 void WindPlot::updatePlot()
 {
     clearPlottables();
+    clearItems();
 
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
