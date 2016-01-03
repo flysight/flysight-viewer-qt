@@ -196,6 +196,19 @@ void WindPlot::updatePlot()
     curve->setPen(QPen(Qt::red));
     addPlottable(curve);
 
+    // Add label to show best fit
+    QCPItemText *textLabel = new QCPItemText(this);
+    addItem(textLabel);
+
+    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+    textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+    textLabel->position->setCoords(0.75, 0.9);
+    textLabel->setText(
+                QString("Wind speed = %1 m/s\nWind direction = %2 deg\nAircraft speed = %3 m/s")
+                    .arg(sqrt(mWindE * mWindE + mWindN * mWindN))
+                    .arg(atan2(-mWindE, -mWindN) / M_PI * 180.0)
+                    .arg(mVelAircraft));
+
     replot();
 }
 
