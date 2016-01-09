@@ -944,9 +944,6 @@ void MainWindow::on_actionPreferences_triggered()
         }
 
         m_simulationTime = dlg.simulationTime();
-        m_units = dlg.units();
-
-        initRange();
     }
 }
 
