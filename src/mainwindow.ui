@@ -76,10 +76,6 @@
     <addaction name="separator"/>
     <addaction name="actionNumberOfSatellites"/>
     <addaction name="separator"/>
-    <addaction name="actionWindSpeed"/>
-    <addaction name="actionWindDirection"/>
-    <addaction name="actionAircraftSpeed"/>
-    <addaction name="separator"/>
     <addaction name="actionAcceleration"/>
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
@@ -443,39 +439,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
-   </property>
-  </action>
-  <action name="actionWindSpeed">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Wind Speed</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+W</string>
-   </property>
-  </action>
-  <action name="actionWindDirection">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Wind Direction</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+T</string>
-   </property>
-  </action>
-  <action name="actionAircraftSpeed">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Aircraft Speed</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+A</string>
    </property>
   </action>
   <action name="actionShowWindView">

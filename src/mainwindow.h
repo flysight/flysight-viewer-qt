@@ -50,7 +50,6 @@ public:
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
     PlotValue::Units units() const { return m_units; }
-    double dtWind() const { return m_dtWind; }
 
     void setRange(double lower, double upper);
     double rangeLower() const { return mRangeLower; }
@@ -127,10 +126,6 @@ private slots:
     void on_actionVerticalAccuracy_triggered();
     void on_actionSpeedAccuracy_triggered();
     void on_actionNumberOfSatellites_triggered();
-    void on_actionWindSpeed_triggered();
-    void on_actionWindDirection_triggered();
-    void on_actionAircraftSpeed_triggered();
-    void on_actionWindError_triggered();
     void on_actionAcceleration_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
@@ -166,7 +161,6 @@ private:
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
-    double                m_dtWind;
 
     QVector< DataPoint >  m_waypoints;
 
@@ -212,9 +206,6 @@ private:
 
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
-
-    void initWind();
-    void getWind(const int center);
 
     void initAerodynamics();
 

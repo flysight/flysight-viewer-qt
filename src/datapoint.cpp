@@ -41,11 +41,6 @@ DataPoint DataPoint::interpolate(
     ret.curv = p1.curv + a * (p2.curv - p1.curv);
     ret.accel = p1.accel + a * (p2.accel - p1.accel);
 
-    ret.windE = p1.windE + a * (p2.windE - p1.windE);
-    ret.windN = p1.windN + a * (p2.windN - p1.windN);
-    ret.velAircraft = p1.velAircraft + a * (p2.velAircraft - p1.velAircraft);
-    ret.windErr = p1.windErr + a * (p2.windErr - p1.windErr);
-
     ret.lift = p1.lift + a * (p2.lift - p1.lift);
     ret.drag = p1.drag + a * (p2.drag - p1.drag);
 
