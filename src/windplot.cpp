@@ -201,14 +201,23 @@ void WindPlot::updatePlot()
     QCPItemText *textLabel = new QCPItemText(this);
     addItem(textLabel);
 
-    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+    const double factor = (mMainWindow->units() == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
+    const QString units = (mMainWindow->units() == PlotValue::Metric) ? "km/h" : "mph";
+
+    double direction = atan2(-mWindE, -mWindN) / M_PI * 180.0;
+    if (direction < 0) direction += 360.0;
+
+    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
+    textLabel->setTextAlignment(Qt::AlignRight);
     textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel->position->setCoords(0.75, 0.9);
+    textLabel->position->setCoords(0.9, 0.9);
     textLabel->setText(
-                QString("Wind speed = %1 m/s\nWind direction = %2 deg\nAircraft speed = %3 m/s")
-                    .arg(sqrt(mWindE * mWindE + mWindN * mWindN))
-                    .arg(atan2(-mWindE, -mWindN) / M_PI * 180.0)
-                    .arg(mVelAircraft));
+                QString("Wind speed = %1 %2\nWind direction = %3 deg\nAircraft speed = %4 %5")
+                    .arg(sqrt(mWindE * mWindE + mWindN * mWindN) * factor)
+                    .arg(units)
+                    .arg(direction)
+                    .arg(mVelAircraft * factor)
+                    .arg(units));
 
     replot();
 }

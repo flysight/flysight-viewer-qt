@@ -309,9 +309,10 @@ void LiftDragPlot::updatePlot()
     QCPItemText *textLabel = new QCPItemText(this);
     addItem(textLabel);
 
-    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+    textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
+    textLabel->setTextAlignment(Qt::AlignRight);
     textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel->position->setCoords(0.75, 0.9);
+    textLabel->position->setCoords(0.9, 0.9);
     textLabel->setText(
                 QString("Minimum drag = %1\nMaximum lift = %2\nMaximum L/D = %3")
                     .arg(fabs(c))
