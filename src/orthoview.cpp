@@ -1,12 +1,16 @@
 #include "orthoview.h"
 
+#include <QVector3D>
+
 #include "common.h"
 #include "mainwindow.h"
 
 OrthoView::OrthoView(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
-    m_pan(false)
+    m_pan(false),
+    m_azimuth(30. / 180. * PI),
+    m_elevation(60. / 180. * PI)
 {
     setMouseTracking(true);
 }
@@ -41,8 +45,6 @@ void OrthoView::mouseMoveEvent(
 {
     if (m_pan)
     {
-        const double pi = 3.14159265359;
-
         QRect rect = axisRect()->rect();
         QPoint endPos = event->pos() - rect.center();
 
@@ -50,12 +52,22 @@ void OrthoView::mouseMoveEvent(
         double a2 = (double) (endPos.x() - rect.left()) / rect.width();
         double a = a2 - a1;
 
-        while (a < -pi) a += 2 * pi;
-        while (a >  pi) a -= 2 * pi;
+        while (a < -PI) a += 2 * PI;
+        while (a >  PI) a -= 2 * PI;
 
-        mMainWindow->setRotation(mMainWindow->rotation() - a);
+        double e1 = (double) (m_beginPos.y() - rect.bottom()) / rect.height();
+        double e2 = (double) (endPos.y() - rect.bottom()) / rect.height();
+        double e = e2 - e1;
+
+        e = qMax(e, -PI / 2);
+        e = qMin(e,  PI / 2);
+
+        m_azimuth   += a;
+        m_elevation += e;
 
         m_beginPos = endPos;
+
+        update();
     }
 
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
@@ -100,6 +112,15 @@ void OrthoView::mouseMoveEvent(
 
 void OrthoView::updateView()
 {
+    // Calculate camera vectors
+    QVector3D up(sin(m_elevation) * sin(m_azimuth),
+                 sin(m_elevation) * cos(m_azimuth),
+                 cos(m_elevation));
+    QVector3D bk(cos(m_elevation) * cos(m_azimuth),
+                 cos(m_elevation) * sin(m_azimuth),
+                 sin(m_elevation));
+    QVector3D rt = QVector3D::crossProduct(up, bk);
+
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
@@ -119,18 +140,19 @@ void OrthoView::updateView()
         {
             t.append(dp.t);
 
+            QVector3D cur;
             if (mMainWindow->units() == PlotValue::Metric)
             {
-                x.append(dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation()));
-                y.append(dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation()));
-                z.append(dp.z);
+                cur = QVector3D(dp.x, dp.y, dp.z);
             }
             else
             {
-                x.append((dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
-                y.append((dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
-                z.append((dp.z) * METERS_TO_FEET);
+                cur = QVector3D(dp.x, dp.y, dp.z) * METERS_TO_FEET;
             }
+
+            x.append(QVector3D::dotProduct(cur, rt));
+            y.append(QVector3D::dotProduct(cur, up));
+            z.append(QVector3D::dotProduct(cur, bk));
 
             if (first)
             {
@@ -169,18 +191,19 @@ void OrthoView::updateView()
 
         QVector< double > xMark, yMark, zMark;
 
+        QVector3D cur;
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            xMark.append(dpEnd.x *  cos(mMainWindow->rotation()) + dpEnd.y * sin(mMainWindow->rotation()));
-            yMark.append(dpEnd.x * -sin(mMainWindow->rotation()) + dpEnd.y * cos(mMainWindow->rotation()));
-            zMark.append(dpEnd.z);
+            cur = QVector3D(dpEnd.x, dpEnd.y, dpEnd.z);
         }
         else
         {
-            xMark.append((dpEnd.x *  cos(mMainWindow->rotation()) + dpEnd.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
-            yMark.append((dpEnd.x * -sin(mMainWindow->rotation()) + dpEnd.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
-            zMark.append((dpEnd.z) * METERS_TO_FEET);
+            cur = QVector3D(dpEnd.x, dpEnd.y, dpEnd.z) * METERS_TO_FEET;
         }
+
+        xMark.append(QVector3D::dotProduct(cur, rt));
+        yMark.append(QVector3D::dotProduct(cur, up));
+        zMark.append(QVector3D::dotProduct(cur, bk));
 
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
@@ -205,18 +228,19 @@ void OrthoView::updateView()
             dp.x = distance * sin(bearing);
             dp.y = distance * cos(bearing);
 
+            QVector3D cur;
             if (mMainWindow->units() == PlotValue::Metric)
             {
-                xMark.append(dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation()));
-                yMark.append(dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation()));
-                zMark.append(dp.z);
+                cur = QVector3D(dp.x, dp.y, dp.z);
             }
             else
             {
-                xMark.append((dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
-                yMark.append((dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
-                zMark.append((dp.z) * METERS_TO_FEET);
+                cur = QVector3D(dp.x, dp.y, dp.z) * METERS_TO_FEET;
             }
+
+            xMark.append(QVector3D::dotProduct(cur, rt));
+            yMark.append(QVector3D::dotProduct(cur, up));
+            zMark.append(QVector3D::dotProduct(cur, bk));
         }
 
         QCPGraph *graph = addGraph();

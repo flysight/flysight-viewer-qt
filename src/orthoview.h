@@ -27,6 +27,9 @@ private:
     QPoint      m_beginPos;
     bool        m_pan;
 
+    double      m_azimuth;
+    double      m_elevation;
+
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
 
