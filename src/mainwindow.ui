@@ -110,6 +110,7 @@
     <addaction name="actionShowTopView"/>
     <addaction name="actionShowFrontView"/>
     <addaction name="actionShowMapView"/>
+    <addaction name="actionShowOrthoView"/>
     <addaction name="separator"/>
     <addaction name="actionShowWindView"/>
     <addaction name="separator"/>
@@ -512,7 +513,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Drag Polar</string>
+    <string>&amp;Drag Polar</string>
    </property>
    <property name="shortcut">
     <string>Alt+6</string>
@@ -535,6 +536,20 @@
    </property>
    <property name="shortcut">
     <string>O</string>
+   </property>
+  </action>
+  <action name="actionShowOrthoView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>O&amp;rtho View</string>
+   </property>
+   <property name="toolTip">
+    <string>Orthographic View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+9</string>
    </property>
   </action>
  </widget>
