@@ -9,8 +9,8 @@ OrthoView::OrthoView(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
     m_pan(false),
-    m_azimuth(30. / 180. * PI),
-    m_elevation(60. / 180. * PI)
+    m_azimuth(-PI/2),
+    m_elevation(PI/2)
 {
     setMouseTracking(true);
 }
@@ -59,11 +59,11 @@ void OrthoView::mouseMoveEvent(
         double e2 = (double) (endPos.y() - rect.bottom()) / rect.height();
         double e = e2 - e1;
 
-        e = qMax(e, -PI / 2);
-        e = qMin(e,  PI / 2);
-
-        m_azimuth   += a;
+        m_azimuth   -= a;
         m_elevation += e;
+
+        m_elevation = qMax(m_elevation, -PI / 2);
+        m_elevation = qMin(m_elevation,  PI / 2);
 
         m_beginPos = endPos;
 
@@ -113,9 +113,9 @@ void OrthoView::mouseMoveEvent(
 void OrthoView::updateView()
 {
     // Calculate camera vectors
-    QVector3D up(sin(m_elevation) * sin(m_azimuth),
-                 sin(m_elevation) * cos(m_azimuth),
-                 cos(m_elevation));
+    QVector3D up(-sin(m_elevation) * cos(m_azimuth),
+                 -sin(m_elevation) * sin(m_azimuth),
+                  cos(m_elevation));
     QVector3D bk(cos(m_elevation) * cos(m_azimuth),
                  cos(m_elevation) * sin(m_azimuth),
                  sin(m_elevation));
