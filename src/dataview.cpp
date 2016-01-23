@@ -113,6 +113,9 @@ void DataView::updateView()
     double yMin, yMax;
     double zMin, zMax;
 
+    double uMin, uMax;
+    double vMin, vMax;
+
     bool first = true;
 
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
@@ -142,6 +145,9 @@ void DataView::updateView()
                 yMin = yMax = y.back();
                 zMin = zMax = z.back();
 
+                uMin = uMax = dp.x;
+                vMin = vMax = dp.y;
+
                 first = false;
             }
             else
@@ -154,6 +160,12 @@ void DataView::updateView()
 
                 if (z.back() < zMin) zMin = z.back();
                 if (z.back() > zMax) zMax = z.back();
+
+                if (dp.x < uMin) uMin = dp.x;
+                if (dp.x > uMax) uMax = dp.x;
+
+                if (dp.y < vMin) vMin = dp.y;
+                if (dp.y > vMax) vMax = dp.y;
             }
         }
     }
@@ -178,18 +190,34 @@ void DataView::updateView()
 
     addPlottable(curve);
 
+    double uMid = (uMin + uMax) / 2;
+    double vMid = (vMin + vMax) / 2;
+
+    double xMid = uMid *  cos(mMainWindow->rotation()) + vMid * sin(mMainWindow->rotation());
+    double yMid = uMid * -sin(mMainWindow->rotation()) + vMid * cos(mMainWindow->rotation());
+
+    double rMax = 0;
+    for (int i = 0; i < x.size(); ++i)
+    {
+        const double dx = x[i] - xMid;
+        const double dy = y[i] - yMid;
+        const double r = dx * dx + dy * dy;
+        if (r > rMax) rMax = r;
+    }
+    rMax = sqrt(rMax);
+
     switch (mDirection)
     {
     case Top:
-        setViewRange(xMin, xMax,
-                     yMin, yMax);
+        setViewRange(xMid - rMax, xMid + rMax,
+                     yMid - rMax, yMid + rMax);
         break;
     case Left:
-        setViewRange(xMin, xMax,
+        setViewRange(xMid - rMax, xMid + rMax,
                      zMin, zMax);
         break;
     case Front:
-        setViewRange(yMin, yMax,
+        setViewRange(yMid - rMax, yMid + rMax,
                      zMin, zMax);
         break;
     }
