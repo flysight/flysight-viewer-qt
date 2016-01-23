@@ -6,6 +6,8 @@
 #include "common.h"
 #include "mainwindow.h"
 
+#define WINDOW_MARGIN 1.2
+
 OrthoView::OrthoView(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
@@ -57,19 +59,21 @@ void OrthoView::mouseMoveEvent(
         QRect rect = axisRect()->rect();
         QPoint endPos = event->pos() - rect.center();
 
-        double a1 = (double) (m_beginPos.x() - rect.left()) / rect.width();
-        double a2 = (double) (endPos.x() - rect.left()) / rect.width();
+        double r = (double) qMin(rect.width(), rect.height()) / WINDOW_MARGIN;
+
+        double a1 = (double) (m_beginPos.x() - rect.left()) / r;
+        double a2 = (double) (endPos.x() - rect.left()) / r;
         double a = a2 - a1;
 
-        while (a < -PI) a += 2 * PI;
-        while (a >  PI) a -= 2 * PI;
-
-        double e1 = (double) (m_beginPos.y() - rect.bottom()) / rect.height();
-        double e2 = (double) (endPos.y() - rect.bottom()) / rect.height();
+        double e1 = (double) (m_beginPos.y() - rect.bottom()) / r;
+        double e2 = (double) (endPos.y() - rect.bottom()) / r;
         double e = e2 - e1;
 
         m_azimuth   -= a;
         m_elevation += e;
+
+        while (m_azimuth < -PI) m_azimuth += 2 * PI;
+        while (m_azimuth >  PI) m_azimuth -= 2 * PI;
 
         m_elevation = qMax(m_elevation, 0.);
         m_elevation = qMin(m_elevation, PI / 2);
@@ -345,8 +349,8 @@ void OrthoView::setViewRange(
 
     QRect rect = axisRect()->rect();
 
-    double xSpan = (xMax - xMin) * 1.2;
-    double ySpan = (yMax - yMin) * 1.2;
+    double xSpan = (xMax - xMin) * WINDOW_MARGIN;
+    double ySpan = (yMax - yMin) * WINDOW_MARGIN;
 
     double xScale = xSpan / rect.width() / xMMperPix;
     double yScale = ySpan / rect.height() / yMMperPix;
