@@ -35,6 +35,7 @@ private:
 
     QTimer     *m_timer;
 
+    void addOrientation();
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
 

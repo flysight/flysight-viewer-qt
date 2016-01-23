@@ -1,5 +1,6 @@
 #include "orthoview.h"
 
+#include <QPointF>
 #include <QTimer>
 #include <QVector3D>
 
@@ -333,7 +334,88 @@ void OrthoView::updateView()
         textLabel->setText(QString("Zoom = %1%").arg(m_scale * 100, 0, 'f', 0));
     }
 
+    addOrientation();
+
     replot();
+}
+
+void OrthoView::addOrientation()
+{
+    QPainter painter(this);
+
+    double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
+    double valPerPix = xAxis->range().size() / axisRect()->width();
+    double valPerMM = valPerPix / mmPerPix;
+
+    // Camera vectors
+    QVector3D up(-sin(m_elevation) * cos(m_azimuth),
+                 -sin(m_elevation) * sin(m_azimuth),
+                  cos(m_elevation));
+    QVector3D bk(cos(m_elevation) * cos(m_azimuth),
+                 cos(m_elevation) * sin(m_azimuth),
+                 sin(m_elevation));
+    QVector3D rt = QVector3D::crossProduct(up, bk);
+
+    // Transformed basis
+    QVector3D o(-rt.x() - rt.y() - rt.z(),
+                -up.x() - up.y() - up.z(),
+                -bk.x() - bk.y() - bk.z());
+    QVector3D x( rt.x() - rt.y() - rt.z(),
+                 up.x() - up.y() - up.z(),
+                 bk.x() - bk.y() - bk.z());
+    QVector3D y(-rt.x() + rt.y() - rt.z(),
+                -up.x() + up.y() - up.z(),
+                -bk.x() + bk.y() - bk.z());
+    QVector3D z(-rt.x() - rt.y() + rt.z(),
+                -up.x() - up.y() + up.z(),
+                -bk.x() - bk.y() + bk.z());
+
+    // Corner in plot space
+    QPointF corner(xAxis->range().upper - 10 * valPerMM,
+                   yAxis->range().upper - 10 * valPerMM);
+
+    // Add "grass"
+    QVector< double > ts, xs, ys;
+    ts.append(0);
+    xs.append(corner.x() + 5 * valPerMM * o.x());
+    ys.append(corner.y() + 5 * valPerMM * o.y());
+    for (int i = 0; i <= 10; ++i)
+    {
+        double a = i / 10.0 * PI / 2.0;
+        QVector3D u = o + (x - o) * cos(a) + (y - o) * sin(a);
+
+        ts.append(i + 1);
+        xs.append(corner.x() + 5 * valPerMM * u.x());
+        ys.append(corner.y() + 5 * valPerMM * u.y());
+    }
+    ts.append(12);
+    xs.append(corner.x() + 5 * valPerMM * o.x());
+    ys.append(corner.y() + 5 * valPerMM * o.y());
+
+    QCPCurve *curve = new QCPCurve(xAxis, yAxis);
+    addPlottable(curve);
+    curve->setData(ts, xs, ys);
+    curve->setPen(QPen(Qt::green));
+    curve->setBrush(QBrush(QColor(0, 255, 0, 64)));
+
+    // Add arrows
+    QCPItemLine *arrow = new QCPItemLine(this);
+    addItem(arrow);
+    arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
+    arrow->end->setCoords(corner + 5 * valPerMM * x.toPointF());
+    arrow->setHead(QCPLineEnding::esSpikeArrow);
+
+    arrow = new QCPItemLine(this);
+    addItem(arrow);
+    arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
+    arrow->end->setCoords(corner + 5 * valPerMM * y.toPointF());
+    arrow->setHead(QCPLineEnding::esSpikeArrow);
+
+    arrow = new QCPItemLine(this);
+    addItem(arrow);
+    arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
+    arrow->end->setCoords(corner + 5 * valPerMM * z.toPointF());
+    arrow->setHead(QCPLineEnding::esSpikeArrow);
 }
 
 void OrthoView::setViewRange(
