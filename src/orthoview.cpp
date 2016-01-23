@@ -122,8 +122,14 @@ void OrthoView::mouseMoveEvent(
 void OrthoView::wheelEvent(
         QWheelEvent *event)
 {
+    // Adjust scale
     m_scale /= exp((double) -event->angleDelta().y() / 500);
+    if (m_scale < 1) m_scale = 1;
+
+    // Start timer for "zoom" display
     m_timer->start();
+
+    // Update the view
     updateView();
 }
 
