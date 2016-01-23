@@ -8,6 +8,7 @@
 #include "mainwindow.h"
 
 #define WINDOW_MARGIN 1.2
+#define MIN_ARROW_LEN 0.2
 
 OrthoView::OrthoView(QWidget *parent) :
     QCustomPlot(parent),
@@ -403,19 +404,22 @@ void OrthoView::addOrientation()
     addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * x.toPointF());
-    arrow->setHead(QCPLineEnding::esSpikeArrow);
+    if (QVector2D(x - o).length() > MIN_ARROW_LEN)
+        arrow->setHead(QCPLineEnding::esSpikeArrow);
 
     arrow = new QCPItemLine(this);
     addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * y.toPointF());
-    arrow->setHead(QCPLineEnding::esSpikeArrow);
+    if (QVector2D(y - o).length() > MIN_ARROW_LEN)
+        arrow->setHead(QCPLineEnding::esSpikeArrow);
 
     arrow = new QCPItemLine(this);
     addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * z.toPointF());
-    arrow->setHead(QCPLineEnding::esSpikeArrow);
+    if (QVector2D(z - o).length() > MIN_ARROW_LEN)
+        arrow->setHead(QCPLineEnding::esSpikeArrow);
 }
 
 void OrthoView::setViewRange(
