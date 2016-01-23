@@ -1,5 +1,6 @@
 #include "orthoview.h"
 
+#include <QTimer>
 #include <QVector3D>
 
 #include "common.h"
@@ -10,9 +11,17 @@ OrthoView::OrthoView(QWidget *parent) :
     mMainWindow(0),
     m_pan(false),
     m_azimuth(-PI/2),
-    m_elevation(PI/2)
+    m_elevation(PI/2),
+    m_scale(1)
 {
     setMouseTracking(true);
+
+    // Set up timer
+    m_timer = new QTimer(this);
+    m_timer->setSingleShot(true);
+    m_timer->setInterval(1000);
+
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(endTimer()));
 }
 
 QSize OrthoView::sizeHint() const
@@ -67,7 +76,7 @@ void OrthoView::mouseMoveEvent(
 
         m_beginPos = endPos;
 
-        update();
+        updateView();
     }
 
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
@@ -108,6 +117,19 @@ void OrthoView::mouseMoveEvent(
             mMainWindow->clearMark();
         }
     }
+}
+
+void OrthoView::wheelEvent(
+        QWheelEvent *event)
+{
+    m_scale /= exp((double) -event->angleDelta().y() / 500);
+    m_timer->start();
+    updateView();
+}
+
+void OrthoView::endTimer()
+{
+    updateView();
 }
 
 void OrthoView::updateView()
@@ -194,6 +216,7 @@ void OrthoView::updateView()
     }
 
     clearPlottables();
+    clearItems();
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
@@ -219,8 +242,8 @@ void OrthoView::updateView()
     }
     rMax = sqrt(rMax);
 
-    setViewRange(xMid - rMax, xMid + rMax,
-                 yMid - rMax, yMid + rMax);
+    setViewRange(xMid - rMax / m_scale, xMid + rMax / m_scale,
+                 yMid - rMax / m_scale, yMid + rMax / m_scale);
 
     if (mMainWindow->markActive())
     {
@@ -285,6 +308,19 @@ void OrthoView::updateView()
         graph->setPen(QPen(Qt::black));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssPlus);
+    }
+
+    if (m_timer->isActive())
+    {
+        // Add label to show zoom
+        QCPItemText *textLabel = new QCPItemText(this);
+        addItem(textLabel);
+
+        textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
+        textLabel->setTextAlignment(Qt::AlignRight);
+        textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+        textLabel->position->setCoords(0.9, 0.9);
+        textLabel->setText(QString("Zoom = %1%").arg(m_scale * 100, 0, 'f', 0));
     }
 
     replot();

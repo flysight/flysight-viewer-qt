@@ -4,6 +4,7 @@
 #include "qcustomplot.h"
 
 class MainWindow;
+class QTimer;
 
 class OrthoView : public QCustomPlot
 {
@@ -20,6 +21,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 private:
     MainWindow *mMainWindow;
@@ -29,12 +31,16 @@ private:
 
     double      m_azimuth;
     double      m_elevation;
+    double      m_scale;
+
+    QTimer     *m_timer;
 
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
 
 public slots:
     void updateView();
+    void endTimer();
 };
 
 #endif // ORTHOVIEW_H
