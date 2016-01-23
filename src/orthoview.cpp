@@ -130,6 +130,10 @@ void OrthoView::updateView()
     double yMin, yMax;
     double zMin, zMax;
 
+    double uMin, uMax;
+    double vMin, vMax;
+    double wMin, wMax;
+
     bool first = true;
 
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
@@ -160,6 +164,10 @@ void OrthoView::updateView()
                 yMin = yMax = y.back();
                 zMin = zMax = z.back();
 
+                uMin = uMax = dp.x;
+                vMin = vMax = dp.y;
+                wMin = wMax = dp.z;
+
                 first = false;
             }
             else
@@ -172,6 +180,15 @@ void OrthoView::updateView()
 
                 if (z.back() < zMin) zMin = z.back();
                 if (z.back() > zMax) zMax = z.back();
+
+                if (dp.x < uMin) uMin = dp.x;
+                if (dp.x > uMax) uMax = dp.x;
+
+                if (dp.y < vMin) vMin = dp.y;
+                if (dp.y > vMax) vMax = dp.y;
+
+                if (dp.z < wMin) wMin = dp.z;
+                if (dp.z > wMax) wMax = dp.z;
             }
         }
     }
@@ -183,7 +200,27 @@ void OrthoView::updateView()
     curve->setPen(QPen(Qt::black));
     addPlottable(curve);
 
-    setViewRange(xMin, xMax, yMin, yMax);
+    QVector3D mid((uMin + uMax) / 2,
+                  (vMin + vMax) / 2,
+                  (wMin + wMax) / 2);
+
+    double xMid = QVector3D::dotProduct(mid, rt);
+    double yMid = QVector3D::dotProduct(mid, up);
+    double zMid = QVector3D::dotProduct(mid, bk);
+
+    double rMax = 0;
+    for (int i = 0; i < x.size(); ++i)
+    {
+        const double dx = x[i] - xMid;
+        const double dy = y[i] - yMid;
+        const double dz = z[i] - zMid;
+        const double r = dx * dx + dy * dy + dz * dz;
+        if (r > rMax) rMax = r;
+    }
+    rMax = sqrt(rMax);
+
+    setViewRange(xMid - rMax, xMid + rMax,
+                 yMid - rMax, yMid + rMax);
 
     if (mMainWindow->markActive())
     {
