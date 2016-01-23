@@ -62,8 +62,8 @@ void OrthoView::mouseMoveEvent(
         m_azimuth   -= a;
         m_elevation += e;
 
-        m_elevation = qMax(m_elevation, -PI / 2);
-        m_elevation = qMin(m_elevation,  PI / 2);
+        m_elevation = qMax(m_elevation, 0.);
+        m_elevation = qMin(m_elevation, PI / 2);
 
         m_beginPos = endPos;
 
