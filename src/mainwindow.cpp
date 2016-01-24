@@ -19,9 +19,10 @@
 #include "genome.h"
 #include "liftdragplot.h"
 #include "mapview.h"
+#include "orthoview.h"
+#include "scoringview.h"
 #include "videoview.h"
 #include "windplot.h"
-#include "scoringview.h"
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -59,6 +60,7 @@ MainWindow::MainWindow(
 
     // Initialize 3D views
     initViews();
+    initOrthoView();
 
     // Initialize map view
     initMapView();
@@ -263,6 +265,26 @@ void MainWindow::initLiftDragView()
 
     connect(this, SIGNAL(dataChanged()),
             liftDragPlot, SLOT(updatePlot()));
+}
+
+void MainWindow::initOrthoView()
+{
+    OrthoView *orthoView = new OrthoView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Ortho View"));
+    dockWidget->setWidget(orthoView);
+    dockWidget->setObjectName("orthoView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    orthoView->setMainWindow(this);
+
+    connect(m_ui->actionShowOrthoView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowOrthoView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            orthoView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(

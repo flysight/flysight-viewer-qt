@@ -3,6 +3,8 @@
 
 #include <QPointF>
 
+#define PI          3.14159265359
+
 #define A_GRAVITY   9.80665     // Standard acceleration due to gravity (m/s^2)
 #define SL_PRESSURE 101325      // Sea level pessure (Pa)
 #define LAPSE_RATE  0.0065      // Temperature lapse rate (K/m)
