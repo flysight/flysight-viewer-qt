@@ -61,7 +61,7 @@ void OrthoView::mouseMoveEvent(
         QRect rect = axisRect()->rect();
         QPoint endPos = event->pos() - rect.center();
 
-        double r = (double) qMin(rect.width(), rect.height()) / WINDOW_MARGIN;
+        double r = (double) qMin(rect.width(), rect.height()) / 2 / WINDOW_MARGIN;
 
         double a1 = (double) (m_beginPos.x() - rect.left()) / r;
         double a2 = (double) (endPos.x() - rect.left()) / r;
