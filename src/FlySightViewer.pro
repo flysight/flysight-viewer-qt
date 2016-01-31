@@ -61,10 +61,12 @@ RESOURCES += \
     resource.qrc
 
 INCLUDEPATH += ../include
+INCLUDEPATH += ../include/wwWidgets
 
 win32 {
     LIBS += -L../lib
     LIBS += -lvlc-qt -lvlc-qt-widgets
+    LIBS += -lwwwidgets4
 }
 macx {
     QMAKE_LFLAGS += -F../frameworks

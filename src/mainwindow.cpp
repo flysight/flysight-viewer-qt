@@ -922,7 +922,7 @@ void MainWindow::on_actionImportGates_triggered()
 
 void MainWindow::on_actionPreferences_triggered()
 {
-    ConfigDialog dlg;
+    ConfigDialog dlg(this);
 
     dlg.setUnits(m_units);
     dlg.setMass(m_mass);
@@ -966,6 +966,23 @@ void MainWindow::on_actionPreferences_triggered()
         }
 
         m_simulationTime = dlg.simulationTime();
+
+        bool colorChanged = false;
+        for (int i = 0; i < plotArea()->yaLast; ++i)
+        {
+            PlotValue *yValue = plotArea()->yValue(i);
+            QColor color = dlg.plotColor(i);
+            if (yValue->color() != color)
+            {
+                yValue->setColor(color);
+                colorChanged = true;
+            }
+        }
+
+        if (colorChanged)
+        {
+            emit dataChanged();
+        }
     }
 }
 
@@ -1552,4 +1569,9 @@ double MainWindow::score(
     {
         return 0;
     }
+}
+
+DataPlot *MainWindow::plotArea() const
+{
+    return m_ui->plotArea;
 }
