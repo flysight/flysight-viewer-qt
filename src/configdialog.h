@@ -21,9 +21,6 @@ public:
     void setUnits(PlotValue::Units units);
     PlotValue::Units units() const;
 
-    void setDtWind(double dtWind);
-    double dtWind() const;
-
     void setMass(double mass);
     double mass() const;
 
