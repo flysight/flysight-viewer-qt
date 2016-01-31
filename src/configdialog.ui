@@ -208,7 +208,7 @@
            <item>
             <widget class="QTableWidget" name="plotTable">
              <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
             </widget>
            </item>

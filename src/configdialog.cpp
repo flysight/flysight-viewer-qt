@@ -2,16 +2,28 @@
 #include "ui_configdialog.h"
 
 #include <QComboBox>
+#include <QSettings>
 #include <QwwColorComboBox>
 
 #include "dataplot.h"
 #include "mainwindow.h"
+
+#define PLOT_COLUMN_COLOUR  0
+#define PLOT_COLUMN_MIN     1
+#define PLOT_COLUMN_MAX     2
+#define PLOT_NUM_COLUMNS    3
 
 ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
     QDialog(mainWindow),
     ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
+
+    // Restore window geometry
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("configDialog");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    settings.endGroup();
 
     // Add page
     ui->contentsWidget->addItems(
@@ -43,6 +55,12 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
 
 ConfigDialog::~ConfigDialog()
 {
+    // Save window geometry
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("configDialog");
+    settings.setValue("geometry", saveGeometry());
+    settings.endGroup();
+
     delete ui;
 }
 
@@ -63,25 +81,21 @@ void ConfigDialog::updatePlots()
     QStringList colorNames = QColor::colorNames();
 
     // Set up plots widget
-    ui->plotTable->setColumnCount(4);
+    ui->plotTable->setColumnCount(PLOT_NUM_COLUMNS);
     ui->plotTable->setRowCount(DataPlot::yaLast);
 
     ui->plotTable->setHorizontalHeaderLabels(
-                QStringList() << tr("Label") << tr("Colour") << tr("Minimum") << tr("Maximum"));
+                QStringList() << tr("Colour") << tr("Minimum") << tr("Maximum"));
+
+    QStringList verticalHeaderLabels;
 
     for (int i = 0; i < DataPlot::yaLast; ++i)
     {
         PlotValue *yValue = mainWindow->plotArea()->yValue(i);
 
-        QTableWidgetItem *item;
-        if (!(item = ui->plotTable->item(i, 0)))
-        {
-            item = new QTableWidgetItem;
-            ui->plotTable->setItem(i, 0, item);
-        }
-        item->setText(yValue->title(units()));
+        verticalHeaderLabels << yValue->title(units());
 
-        if (!ui->plotTable->cellWidget(i, 1))
+        if (!ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR))
         {
             QwwColorComboBox *combo = new QwwColorComboBox();
             foreach (const QString &colorName, colorNames)
@@ -93,28 +107,31 @@ void ConfigDialog::updatePlots()
                     combo->setCurrentText(colorName);
                 }
             }
-            ui->plotTable->setCellWidget(i, 1, combo);
+            ui->plotTable->setCellWidget(i, PLOT_COLUMN_COLOUR, combo);
         }
 
         // Conversion factor from internal units to display units
         const double factor = yValue->factor(units());
 
-        if (!(item = ui->plotTable->item(i, 2)))
+        QTableWidgetItem *item;
+        if (!(item = ui->plotTable->item(i, PLOT_COLUMN_MIN)))
         {
             item = new QTableWidgetItem;
-            ui->plotTable->setItem(i, 2, item);
+            ui->plotTable->setItem(i, PLOT_COLUMN_MIN, item);
         }
         item->setText(QString::number(yValue->minimum() * factor));
         item->setCheckState(yValue->useMinimum() ? Qt::Checked : Qt::Unchecked);
 
-        if (!(item = ui->plotTable->item(i, 3)))
+        if (!(item = ui->plotTable->item(i, PLOT_COLUMN_MAX)))
         {
             item = new QTableWidgetItem;
-            ui->plotTable->setItem(i, 3, item);
+            ui->plotTable->setItem(i, PLOT_COLUMN_MAX, item);
         }
         item->setText(QString::number(yValue->maximum() * factor));
         item->setCheckState(yValue->useMaximum() ? Qt::Checked : Qt::Unchecked);
     }
+
+    ui->plotTable->setVerticalHeaderLabels(verticalHeaderLabels);
 }
 
 void ConfigDialog::setUnits(
@@ -208,30 +225,30 @@ int ConfigDialog::simulationTime() const
 QColor ConfigDialog::plotColor(
         int i) const
 {
-    QComboBox *combo = (QComboBox *) ui->plotTable->cellWidget(i, 1);
+    QComboBox *combo = (QComboBox *) ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR);
     return QColor(combo->currentText());
 }
 
 double ConfigDialog::plotMinimum(
         int i) const
 {
-    return ui->plotTable->item(i, 2)->text().toDouble();
+    return ui->plotTable->item(i, PLOT_COLUMN_MIN)->text().toDouble();
 }
 
 double ConfigDialog::plotMaximum(
         int i) const
 {
-    return ui->plotTable->item(i, 3)->text().toDouble();
+    return ui->plotTable->item(i, PLOT_COLUMN_MAX)->text().toDouble();
 }
 
 bool ConfigDialog::plotUseMinimum(
         int i) const
 {
-    return ui->plotTable->item(i, 2)->checkState() == Qt::Checked;
+    return ui->plotTable->item(i, PLOT_COLUMN_MIN)->checkState() == Qt::Checked;
 }
 
 bool ConfigDialog::plotUseMaximum(
         int i) const
 {
-    return ui->plotTable->item(i, 3)->checkState() == Qt::Checked;
+    return ui->plotTable->item(i, PLOT_COLUMN_MAX)->checkState() == Qt::Checked;
 }
