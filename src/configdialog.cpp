@@ -2,6 +2,7 @@
 #include "ui_configdialog.h"
 
 #include <QComboBox>
+#include <QwwColorComboBox>
 
 #include "dataplot.h"
 #include "mainwindow.h"
@@ -41,11 +42,11 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
         QTableWidgetItem *item = new QTableWidgetItem;
         item->setText(yValue->title());
 
-        QComboBox *combo = new QComboBox();
+        QwwColorComboBox *combo = new QwwColorComboBox();
         foreach (const QString &colorName, colorNames)
         {
             const QColor &color(colorName);
-            combo->addItem(colorName, color);
+            combo->addColor(color, colorName);
             if (color == yValue->color())
             {
                 combo->setCurrentText(colorName);

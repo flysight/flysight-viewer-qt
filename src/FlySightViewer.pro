@@ -61,10 +61,13 @@ RESOURCES += \
     resource.qrc
 
 INCLUDEPATH += ../include
+INCLUDEPATH += "D:\Qt\5.5\mingw492_32\include\wwWidgets"
 
 win32 {
     LIBS += -L../lib
     LIBS += -lvlc-qt -lvlc-qt-widgets
+    LIBS += -L"D:\Qt\5.5\mingw492_32\lib"
+    LIBS += -lwwwidgets4
 }
 macx {
     QMAKE_LFLAGS += -F../frameworks
