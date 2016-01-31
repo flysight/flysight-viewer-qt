@@ -23,7 +23,8 @@ public:
         Imperial
     } Units;
 
-    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color) {}
+    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color),
+        mMinimum(0), mMaximum(1), mUseMinimum(false), mUseMaximum(false) {}
 
     virtual const QString title() const = 0;
     virtual const QString title(Units units) const = 0;
@@ -31,7 +32,29 @@ public:
     void setColor(const QColor &color) { mColor = color; }
     const QColor &color() const { return mColor; }
 
-    virtual double value(const DataPoint &dp, Units units) const = 0;
+    double value(const DataPoint &dp, Units units) const
+    {
+        return rawValue(dp) * factor(units);
+    }
+
+    virtual double rawValue(const DataPoint &dp) const = 0;
+    virtual double factor(Units units) const
+    {
+        Q_UNUSED(units);
+        return 1;
+    }
+
+    void setMinimum(double minimum) { mMinimum = minimum; }
+    double minimum() const { return mMinimum; }
+
+    void setMaximum(double maximum) { mMaximum = maximum; }
+    double maximum() const { return mMaximum; }
+
+    void setUseMinimum(double useMinimum) { mUseMinimum = useMinimum; }
+    double useMinimum() const { return mUseMinimum; }
+
+    void setUseMaximum(double useMaximum) { mUseMaximum = useMaximum; }
+    double useMaximum() const { return mUseMaximum; }
 
     QCPAxis *addAxis(QCustomPlot *plot, Units units)
     {
@@ -55,6 +78,10 @@ public:
         settings.beginGroup("plotValue/" + key());
         mVisible = settings.value("visible", mVisible).toBool();
         mColor = settings.value("color", mColor).value<QColor>();
+        mMinimum = settings.value("minimum", mMinimum).toDouble();
+        mMaximum = settings.value("maximum", mMaximum).toDouble();
+        mUseMinimum = settings.value("useMinimum", mUseMinimum).toBool();
+        mUseMaximum = settings.value("useMaximum", mUseMaximum).toBool();
         settings.endGroup();
     }
 
@@ -64,6 +91,10 @@ public:
         settings.beginGroup("plotValue/" + key());
         settings.setValue("visible", mVisible);
         settings.setValue("color", mColor);
+        settings.setValue("minimum", mMinimum);
+        settings.setValue("maximum", mMaximum);
+        settings.setValue("useMinimum", mUseMinimum);
+        settings.setValue("useMaximum", mUseMaximum);
         settings.endGroup();
     }
 
@@ -72,6 +103,8 @@ public:
 private:
     bool     mVisible;
     QColor   mColor;
+    double   mMinimum, mMaximum;
+    bool     mUseMinimum, mUseMaximum;
     QCPAxis *mAxis;
 
     const QString key() const
@@ -95,10 +128,14 @@ public:
         if (units == Metric) return title() + tr(" (m)");
         else                 return title() + tr(" (ft)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::elevation(dp);
-        else                 return DataPoint::elevation(dp) * METERS_TO_FEET;
+        return DataPoint::elevation(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
     }
 
     bool hasOptimal() const { return true; }
@@ -119,10 +156,14 @@ public:
         if (units == Metric) return title() + tr(" (km/h)");
         else                 return title() + tr(" (mph)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::verticalSpeed(dp) * MPS_TO_KMH;
-        else                 return DataPoint::verticalSpeed(dp) * MPS_TO_MPH;
+        return DataPoint::verticalSpeed(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? MPS_TO_KMH
+                                 : MPS_TO_MPH;
     }
 
     bool hasOptimal() const { return true; }
@@ -143,10 +184,14 @@ public:
         if (units == Metric) return title() + tr(" (km/h)");
         else                 return title() + tr(" (mph)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::horizontalSpeed(dp) * MPS_TO_KMH;
-        else                 return DataPoint::horizontalSpeed(dp) * MPS_TO_MPH;
+        return DataPoint::horizontalSpeed(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? MPS_TO_KMH
+                                 : MPS_TO_MPH;
     }
 
     bool hasOptimal() const { return true; }
@@ -167,10 +212,14 @@ public:
         if (units == Metric) return title() + tr(" (km/h)");
         else                 return title() + tr(" (mph)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::totalSpeed(dp) * MPS_TO_KMH;
-        else                 return DataPoint::totalSpeed(dp) * MPS_TO_MPH;
+        return DataPoint::totalSpeed(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? MPS_TO_KMH
+                                 : MPS_TO_MPH;
     }
 
     bool hasOptimal() const { return true; }
@@ -191,9 +240,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (deg)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::diveAngle(dp);
     }
 
@@ -215,9 +263,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (deg/s)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::curvature(dp);
     }
 
@@ -239,9 +286,8 @@ public:
         Q_UNUSED(units);
         return title();
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::glideRatio(dp);
     }
 
@@ -263,10 +309,14 @@ public:
         if (units == Metric) return title() + tr(" (m)");
         else                 return title() + tr(" (ft)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return dp.DataPoint::horizontalAccuracy(dp);
-        else                 return dp.DataPoint::horizontalAccuracy(dp) * METERS_TO_FEET;
+        return DataPoint::horizontalAccuracy(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
     }
 };
 
@@ -285,10 +335,14 @@ public:
         if (units == Metric) return title() + tr(" (m)");
         else                 return title() + tr(" (ft)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::verticalAccuracy(dp);
-        else                 return DataPoint::verticalAccuracy(dp) * METERS_TO_FEET;
+        return DataPoint::verticalAccuracy(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
     }
 };
 
@@ -307,10 +361,14 @@ public:
         if (units == Metric) return title() + tr(" (km/h)");
         else                 return title() + tr(" (mph)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::speedAccuracy(dp) * MPS_TO_KMH;
-        else                 return DataPoint::speedAccuracy(dp) * MPS_TO_MPH;
+        return DataPoint::speedAccuracy(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? MPS_TO_KMH
+                                 : MPS_TO_MPH;
     }
 };
 
@@ -329,9 +387,8 @@ public:
         Q_UNUSED(units);
         return title();
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::numberOfSatellites(dp);
     }
 };
@@ -351,9 +408,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (s)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::time(dp);
     }
 
@@ -375,10 +431,14 @@ public:
         if (units == Metric) return title() + tr(" (m)");
         else                 return title() + tr(" (ft)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::distance2D(dp);
-        else                 return DataPoint::distance2D(dp) * METERS_TO_FEET;
+        return DataPoint::distance2D(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
     }
 
     bool hasOptimal() const { return true; }
@@ -399,10 +459,14 @@ public:
         if (units == Metric) return title() + tr(" (m)");
         else                 return title() + tr(" (ft)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        if (units == Metric) return DataPoint::distance3D(dp);
-        else                 return DataPoint::distance3D(dp) * METERS_TO_FEET;
+        return DataPoint::distance3D(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
     }
 
     bool hasOptimal() const { return true; }
@@ -423,9 +487,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (m/s^2)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::acceleration(dp);
     }
 
@@ -447,9 +510,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (J/kg)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::totalEnergy(dp);
     }
 
@@ -471,9 +533,8 @@ public:
         Q_UNUSED(units);
         return title() + tr(" (J/kg/s)");
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::energyRate(dp);
     }
 
@@ -495,9 +556,8 @@ public:
         Q_UNUSED(units);
         return title();
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::liftCoefficient(dp);
     }
 
@@ -519,9 +579,8 @@ public:
         Q_UNUSED(units);
         return title();
     }
-    double value(const DataPoint &dp, Units units) const
+    double rawValue(const DataPoint &dp) const
     {
-        Q_UNUSED(units);
         return DataPoint::dragCoefficient(dp);
     }
 
