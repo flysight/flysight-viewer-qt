@@ -109,6 +109,8 @@ public:
 
     void optimize(OptimizationMode mode);
 
+    DataPlot *plotArea() const;
+
 protected:
     void closeEvent(QCloseEvent *event);
 

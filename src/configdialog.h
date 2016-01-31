@@ -1,6 +1,7 @@
 #ifndef CONFIGDIALOG_H
 #define CONFIGDIALOG_H
 
+#include <QColor>
 #include <QDialog>
 #include <QListWidget>
 
@@ -10,12 +11,14 @@ namespace Ui {
 class ConfigDialog;
 }
 
+class MainWindow;
+
 class ConfigDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ConfigDialog(QWidget *parent = 0);
+    explicit ConfigDialog(MainWindow *mainWindow);
     ~ConfigDialog();
 
     void setUnits(PlotValue::Units units);
@@ -41,6 +44,8 @@ public:
 
     void setSimulationTime(int simulationTime);
     int simulationTime() const;
+
+    QColor plotColor(int i) const;
 
 private:
     Ui::ConfigDialog *ui;

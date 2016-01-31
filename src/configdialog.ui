@@ -31,9 +31,9 @@
        <item>
         <widget class="QStackedWidget" name="pagesWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
-         <widget class="QWidget" name="page">
+         <widget class="QWidget" name="general">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -71,7 +71,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="page_3">
+         <widget class="QWidget" name="aerodynamics">
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QLabel" name="label_6">
@@ -199,6 +199,17 @@
              <property name="value">
               <number>120</number>
              </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="plots">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QTableWidget" name="plotTable">
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
           </layout>

@@ -23,10 +23,14 @@ public:
         Imperial
     } Units;
 
-    PlotValue(bool visible = false): mVisible(visible) {}
+    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color) {}
 
+    virtual const QString title() const = 0;
     virtual const QString title(Units units) const = 0;
-    virtual const QColor color() const = 0;
+
+    void setColor(const QColor &color) { mColor = color; }
+    const QColor &color() const { return mColor; }
+
     virtual double value(const DataPoint &dp, Units units) const = 0;
 
     QCPAxis *addAxis(QCustomPlot *plot, Units units)
@@ -50,6 +54,7 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         mVisible = settings.value("visible", mVisible).toBool();
+        mColor = settings.value("color", mColor).value<QColor>();
         settings.endGroup();
     }
 
@@ -58,13 +63,15 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         settings.setValue("visible", mVisible);
+        settings.setValue("color", mColor);
         settings.endGroup();
     }
 
     virtual bool hasOptimal() const { return false; }
 
 private:
-    bool mVisible;
+    bool     mVisible;
+    QColor   mColor;
     QCPAxis *mAxis;
 
     const QString key() const
@@ -78,13 +85,16 @@ class PlotElevation: public PlotValue
     Q_OBJECT
 
 public:
-    PlotElevation(): PlotValue(true) {}
+    PlotElevation(): PlotValue(true, Qt::black) {}
+    const QString title() const
+    {
+        return tr("Elevation");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Elevation (m)");
-        else                 return tr("Elevation (ft)");
+        if (units == Metric) return title() + tr(" (m)");
+        else                 return title() + tr(" (ft)");
     }
-    const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::elevation(dp);
@@ -99,13 +109,16 @@ class PlotVerticalSpeed: public PlotValue
     Q_OBJECT
 
 public:
-    PlotVerticalSpeed() {}
+    PlotVerticalSpeed(): PlotValue(false, Qt::green) {}
+    const QString title() const
+    {
+        return tr("Vertical Speed");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Vertical Speed (km/h)");
-        else                 return tr("Vertical Speed (mph)");
+        if (units == Metric) return title() + tr(" (km/h)");
+        else                 return title() + tr(" (mph)");
     }
-    const QColor color() const { return Qt::green; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::verticalSpeed(dp) * MPS_TO_KMH;
@@ -120,13 +133,16 @@ class PlotHorizontalSpeed: public PlotValue
     Q_OBJECT
 
 public:
-    PlotHorizontalSpeed() {}
+    PlotHorizontalSpeed(): PlotValue(false, Qt::red) {}
+    const QString title() const
+    {
+        return tr("Horizontal Speed");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Horizontal Speed (km/h)");
-        else                 return tr("Horizontal Speed (mph)");
+        if (units == Metric) return title() + tr(" (km/h)");
+        else                 return title() + tr(" (mph)");
     }
-    const QColor color() const { return Qt::red; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::horizontalSpeed(dp) * MPS_TO_KMH;
@@ -141,13 +157,16 @@ class PlotTotalSpeed: public PlotValue
     Q_OBJECT
 
 public:
-    PlotTotalSpeed() {}
+    PlotTotalSpeed(): PlotValue(false, Qt::blue) {}
+    const QString title() const
+    {
+        return tr("Total Speed");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Total Speed (km/h)");
-        else                 return tr("Total Speed (mph)");
+        if (units == Metric) return title() + tr(" (km/h)");
+        else                 return title() + tr(" (mph)");
     }
-    const QColor color() const { return Qt::blue; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::totalSpeed(dp) * MPS_TO_KMH;
@@ -162,13 +181,16 @@ class PlotDiveAngle: public PlotValue
     Q_OBJECT
 
 public:
-    PlotDiveAngle() {}
+    PlotDiveAngle(): PlotValue(false, Qt::magenta) {}
+    const QString title() const
+    {
+        return tr("Dive Angle");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Dive Angle (deg)");
+        return title() + tr(" (deg)");
     }
-    const QColor color() const { return Qt::magenta; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -183,13 +205,16 @@ class PlotCurvature: public PlotValue
     Q_OBJECT
 
 public:
-    PlotCurvature() {}
+    PlotCurvature(): PlotValue(false, Qt::darkYellow) {}
+    const QString title() const
+    {
+        return tr("Dive Rate");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Dive Rate (deg/s)");
+        return title() + tr(" (deg/s)");
     }
-    const QColor color() const { return Qt::darkYellow; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -204,13 +229,16 @@ class PlotGlideRatio: public PlotValue
     Q_OBJECT
 
 public:
-    PlotGlideRatio() {}
+    PlotGlideRatio(): PlotValue(false, Qt::darkCyan) {}
+    const QString title() const
+    {
+        return tr("Glide Ratio");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Glide Ratio");
+        return title();
     }
-    const QColor color() const { return Qt::darkCyan; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -225,13 +253,16 @@ class PlotHorizontalAccuracy: public PlotValue
     Q_OBJECT
 
 public:
-    PlotHorizontalAccuracy() {}
+    PlotHorizontalAccuracy(): PlotValue(false, Qt::darkRed) {}
+    const QString title() const
+    {
+        return tr("Horizontal Accuracy");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Horizontal Accuracy (m)");
-        else                 return tr("Horizontal Accuracy (ft)");
+        if (units == Metric) return title() + tr(" (m)");
+        else                 return title() + tr(" (ft)");
     }
-    const QColor color() const { return Qt::darkRed; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return dp.DataPoint::horizontalAccuracy(dp);
@@ -244,13 +275,16 @@ class PlotVerticalAccuracy: public PlotValue
     Q_OBJECT
 
 public:
-    PlotVerticalAccuracy() {}
+    PlotVerticalAccuracy(): PlotValue(false, Qt::darkGreen) {}
+    const QString title() const
+    {
+        return tr("Vertical Accuracy");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Vertical Accuracy (m)");
-        else                 return tr("Vertical Accuracy (ft)");
+        if (units == Metric) return title() + tr(" (m)");
+        else                 return title() + tr(" (ft)");
     }
-    const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::verticalAccuracy(dp);
@@ -263,13 +297,16 @@ class PlotSpeedAccuracy: public PlotValue
     Q_OBJECT
 
 public:
-    PlotSpeedAccuracy() {}
+    PlotSpeedAccuracy(): PlotValue(false, Qt::darkBlue) {}
+    const QString title() const
+    {
+        return tr("Speed Accuracy");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Speed Accuracy (km/h)");
-        else                 return tr("Speed Accuracy (mph)");
+        if (units == Metric) return title() + tr(" (km/h)");
+        else                 return title() + tr(" (mph)");
     }
-    const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::speedAccuracy(dp) * MPS_TO_KMH;
@@ -282,13 +319,16 @@ class PlotNumberOfSatellites: public PlotValue
     Q_OBJECT
 
 public:
-    PlotNumberOfSatellites() {}
+    PlotNumberOfSatellites(): PlotValue(false, Qt::darkMagenta) {}
+    const QString title() const
+    {
+        return tr("Number of Satellites");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Number of Satellites");
+        return title();
     }
-    const QColor color() const { return Qt::darkMagenta; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -301,13 +341,16 @@ class PlotTime: public PlotValue
     Q_OBJECT
 
 public:
-    PlotTime() {}
+    PlotTime(): PlotValue(false, Qt::black) {}
+    const QString title() const
+    {
+        return tr("Time");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Time (s)");
+        return title() + tr(" (s)");
     }
-    const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -322,13 +365,16 @@ class PlotDistance2D: public PlotValue
     Q_OBJECT
 
 public:
-    PlotDistance2D() {}
+    PlotDistance2D(): PlotValue(false, Qt::black) {}
+    const QString title() const
+    {
+        return tr("Horizontal Distance");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Horizontal Distance (m)");
-        else                 return tr("Horizontal Distance (ft)");
+        if (units == Metric) return title() + tr(" (m)");
+        else                 return title() + tr(" (ft)");
     }
-    const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::distance2D(dp);
@@ -343,13 +389,16 @@ class PlotDistance3D: public PlotValue
     Q_OBJECT
 
 public:
-    PlotDistance3D() {}
+    PlotDistance3D(): PlotValue(false, Qt::black) {}
+    const QString title() const
+    {
+        return tr("Total Distance");
+    }
     const QString title(Units units) const
     {
-        if (units == Metric) return tr("Total Distance (m)");
-        else                 return tr("Total Distance (ft)");
+        if (units == Metric) return title() + tr(" (m)");
+        else                 return title() + tr(" (ft)");
     }
-    const QColor color() const { return Qt::black; }
     double value(const DataPoint &dp, Units units) const
     {
         if (units == Metric) return DataPoint::distance3D(dp);
@@ -364,13 +413,16 @@ class PlotAcceleration: public PlotValue
     Q_OBJECT
 
 public:
-    PlotAcceleration() {}
+    PlotAcceleration(): PlotValue(false, Qt::darkRed) {}
+    const QString title() const
+    {
+        return tr("Acceleration");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Acceleration (m/s^2)");
+        return title() + tr(" (m/s^2)");
     }
-    const QColor color() const { return Qt::darkRed; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -385,13 +437,16 @@ class PlotTotalEnergy: public PlotValue
     Q_OBJECT
 
 public:
-    PlotTotalEnergy() {}
+    PlotTotalEnergy(): PlotValue(false, Qt::darkGreen) {}
+    const QString title() const
+    {
+        return tr("Total Energy");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Total Energy (J/kg)");
+        return title() + tr(" (J/kg)");
     }
-    const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -406,13 +461,16 @@ class PlotEnergyRate: public PlotValue
     Q_OBJECT
 
 public:
-    PlotEnergyRate() {}
+    PlotEnergyRate(): PlotValue(false, Qt::darkBlue) {}
+    const QString title() const
+    {
+        return tr("Energy Rate");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Energy Rate (J/kg/s)");
+        return title() + tr(" (J/kg/s)");
     }
-    const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -427,13 +485,16 @@ class PlotLift: public PlotValue
     Q_OBJECT
 
 public:
-    PlotLift() {}
+    PlotLift(): PlotValue(false, Qt::darkGreen) {}
+    const QString title() const
+    {
+        return tr("Lift Coefficient");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Lift Coefficient");
+        return title();
     }
-    const QColor color() const { return Qt::darkGreen; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
@@ -448,13 +509,16 @@ class PlotDrag: public PlotValue
     Q_OBJECT
 
 public:
-    PlotDrag() {}
+    PlotDrag(): PlotValue(false, Qt::darkBlue) {}
+    const QString title() const
+    {
+        return tr("Drag Coefficient");
+    }
     const QString title(Units units) const
     {
         Q_UNUSED(units);
-        return tr("Drag Coefficient");
+        return title();
     }
-    const QColor color() const { return Qt::darkBlue; }
     double value(const DataPoint &dp, Units units) const
     {
         Q_UNUSED(units);
