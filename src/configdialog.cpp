@@ -25,49 +25,12 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
     ui->unitsCombo->addItems(
                 QStringList() << tr("Metric") << tr("Imperial"));
 
-    // Color list
-    QStringList colorNames = QColor::colorNames();
+    // Update plot widget
+    updatePlots();
 
-    // Set up plots widget
-    ui->plotTable->setColumnCount(4);
-    ui->plotTable->setRowCount(DataPlot::yaLast);
-
-    ui->plotTable->setHorizontalHeaderLabels(
-                QStringList() << tr("Label") << tr("Colour") << tr("Minimum") << tr("Maximum"));
-
-    for (int i = 0; i < DataPlot::yaLast; ++i)
-    {
-        PlotValue *yValue = mainWindow->plotArea()->yValue(i);
-
-        QTableWidgetItem *item = new QTableWidgetItem;
-        item->setText(yValue->title(mainWindow->units()));
-        ui->plotTable->setItem(i, 0, item);
-
-        QwwColorComboBox *combo = new QwwColorComboBox();
-        foreach (const QString &colorName, colorNames)
-        {
-            const QColor &color(colorName);
-            combo->addColor(color, colorName);
-            if (color == yValue->color())
-            {
-                combo->setCurrentText(colorName);
-            }
-        }
-        ui->plotTable->setCellWidget(i, 1, combo);
-
-        // Conversion factor from internal units to display units
-        const double factor = yValue->factor(mainWindow->units());
-
-        item = new QTableWidgetItem;
-        item->setText(QString::number(yValue->minimum() * factor));
-        item->setCheckState(yValue->useMinimum() ? Qt::Checked : Qt::Unchecked);
-        ui->plotTable->setItem(i, 2, item);
-
-        item = new QTableWidgetItem;
-        item->setText(QString::number(yValue->maximum() * factor));
-        item->setCheckState(yValue->useMaximum() ? Qt::Checked : Qt::Unchecked);
-        ui->plotTable->setItem(i, 3, item);
-    }
+    // Update plots when units are changed
+    connect(ui->unitsCombo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(updatePlots()));
 
     // Connect contents panel to stacked widget
     connect(ui->contentsWidget,
@@ -90,6 +53,68 @@ void ConfigDialog::changePage(
     if (!current) current = previous;
     ui->pagesWidget->setCurrentIndex(
                 ui->contentsWidget->row(current));
+}
+
+void ConfigDialog::updatePlots()
+{
+    MainWindow *mainWindow = (MainWindow *) parent();
+
+    // Color list
+    QStringList colorNames = QColor::colorNames();
+
+    // Set up plots widget
+    ui->plotTable->setColumnCount(4);
+    ui->plotTable->setRowCount(DataPlot::yaLast);
+
+    ui->plotTable->setHorizontalHeaderLabels(
+                QStringList() << tr("Label") << tr("Colour") << tr("Minimum") << tr("Maximum"));
+
+    for (int i = 0; i < DataPlot::yaLast; ++i)
+    {
+        PlotValue *yValue = mainWindow->plotArea()->yValue(i);
+
+        QTableWidgetItem *item;
+        if (!(item = ui->plotTable->item(i, 0)))
+        {
+            item = new QTableWidgetItem;
+            ui->plotTable->setItem(i, 0, item);
+        }
+        item->setText(yValue->title(units()));
+
+        if (!ui->plotTable->cellWidget(i, 1))
+        {
+            QwwColorComboBox *combo = new QwwColorComboBox();
+            foreach (const QString &colorName, colorNames)
+            {
+                const QColor &color(colorName);
+                combo->addColor(color, colorName);
+                if (color == yValue->color())
+                {
+                    combo->setCurrentText(colorName);
+                }
+            }
+            ui->plotTable->setCellWidget(i, 1, combo);
+        }
+
+        // Conversion factor from internal units to display units
+        const double factor = yValue->factor(units());
+
+        if (!(item = ui->plotTable->item(i, 2)))
+        {
+            item = new QTableWidgetItem;
+            ui->plotTable->setItem(i, 2, item);
+        }
+        item->setText(QString::number(yValue->minimum() * factor));
+        item->setCheckState(yValue->useMinimum() ? Qt::Checked : Qt::Unchecked);
+
+        if (!(item = ui->plotTable->item(i, 3)))
+        {
+            item = new QTableWidgetItem;
+            ui->plotTable->setItem(i, 3, item);
+        }
+        item->setText(QString::number(yValue->maximum() * factor));
+        item->setCheckState(yValue->useMaximum() ? Qt::Checked : Qt::Unchecked);
+    }
 }
 
 void ConfigDialog::setUnits(
