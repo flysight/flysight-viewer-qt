@@ -29,11 +29,11 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
     QStringList colorNames = QColor::colorNames();
 
     // Set up plots widget
-    ui->plotTable->setColumnCount(2);
+    ui->plotTable->setColumnCount(4);
     ui->plotTable->setRowCount(DataPlot::yaLast);
 
     ui->plotTable->setHorizontalHeaderLabels(
-                QStringList() << tr("Label") << tr("Colour"));
+                QStringList() << tr("Label") << tr("Colour") << tr("Minimum") << tr("Maximum"));
 
     for (int i = 0; i < DataPlot::yaLast; ++i)
     {
@@ -41,6 +41,7 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
 
         QTableWidgetItem *item = new QTableWidgetItem;
         item->setText(yValue->title());
+        ui->plotTable->setItem(i, 0, item);
 
         QwwColorComboBox *combo = new QwwColorComboBox();
         foreach (const QString &colorName, colorNames)
@@ -52,9 +53,17 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
                 combo->setCurrentText(colorName);
             }
         }
-
-        ui->plotTable->setItem(i, 0, item);
         ui->plotTable->setCellWidget(i, 1, combo);
+
+        item = new QTableWidgetItem;
+        item->setText(QString::number(yValue->minimum()));
+        item->setCheckState(yValue->useMinimum() ? Qt::Checked : Qt::Unchecked);
+        ui->plotTable->setItem(i, 2, item);
+
+        item = new QTableWidgetItem;
+        item->setText(QString::number(yValue->maximum()));
+        item->setCheckState(yValue->useMaximum() ? Qt::Checked : Qt::Unchecked);
+        ui->plotTable->setItem(i, 3, item);
     }
 
     // Connect contents panel to stacked widget
@@ -173,4 +182,28 @@ QColor ConfigDialog::plotColor(
 {
     QComboBox *combo = (QComboBox *) ui->plotTable->cellWidget(i, 1);
     return QColor(combo->currentText());
+}
+
+double ConfigDialog::plotMinimum(
+        int i) const
+{
+    return ui->plotTable->item(i, 2)->text().toDouble();
+}
+
+double ConfigDialog::plotMaximum(
+        int i) const
+{
+    return ui->plotTable->item(i, 3)->text().toDouble();
+}
+
+bool ConfigDialog::plotUseMinimum(
+        int i) const
+{
+    return ui->plotTable->item(i, 2)->checkState() == Qt::Checked;
+}
+
+bool ConfigDialog::plotUseMaximum(
+        int i) const
+{
+    return ui->plotTable->item(i, 3)->checkState() == Qt::Checked;
 }

@@ -967,19 +967,43 @@ void MainWindow::on_actionPreferences_triggered()
 
         m_simulationTime = dlg.simulationTime();
 
-        bool colorChanged = false;
+        bool plotChanged = false;
         for (int i = 0; i < plotArea()->yaLast; ++i)
         {
             PlotValue *yValue = plotArea()->yValue(i);
-            QColor color = dlg.plotColor(i);
-            if (yValue->color() != color)
+
+            if (yValue->color() != dlg.plotColor(i))
             {
-                yValue->setColor(color);
-                colorChanged = true;
+                yValue->setColor(dlg.plotColor(i));
+                plotChanged = true;
+            }
+
+            if (yValue->minimum() != dlg.plotMinimum(i))
+            {
+                yValue->setMinimum(dlg.plotMinimum(i));
+                plotChanged = true;
+            }
+
+            if (yValue->maximum() != dlg.plotMaximum(i))
+            {
+                yValue->setMaximum(dlg.plotMaximum(i));
+                plotChanged = true;
+            }
+
+            if (yValue->useMinimum() != dlg.plotUseMinimum(i))
+            {
+                yValue->setUseMinimum(dlg.plotUseMinimum(i));
+                plotChanged = true;
+            }
+
+            if (yValue->useMaximum() != dlg.plotUseMaximum(i))
+            {
+                yValue->setUseMaximum(dlg.plotUseMaximum(i));
+                plotChanged = true;
             }
         }
 
-        if (colorChanged)
+        if (plotChanged)
         {
             emit dataChanged();
         }

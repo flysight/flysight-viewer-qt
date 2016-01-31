@@ -47,6 +47,12 @@ public:
 
     QColor plotColor(int i) const;
 
+    double plotMinimum(int i) const;
+    double plotMaximum(int i) const;
+
+    bool plotUseMinimum(int i) const;
+    bool plotUseMaximum(int i) const;
+
 private:
     Ui::ConfigDialog *ui;
 

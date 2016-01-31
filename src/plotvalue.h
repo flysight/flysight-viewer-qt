@@ -23,7 +23,8 @@ public:
         Imperial
     } Units;
 
-    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color) {}
+    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color),
+        mMinimum(0), mMaximum(1), mUseMinimum(false), mUseMaximum(false) {}
 
     virtual const QString title() const = 0;
     virtual const QString title(Units units) const = 0;
@@ -32,6 +33,18 @@ public:
     const QColor &color() const { return mColor; }
 
     virtual double value(const DataPoint &dp, Units units) const = 0;
+
+    void setMinimum(double minimum) { mMinimum = minimum; }
+    double minimum() const { return mMinimum; }
+
+    void setMaximum(double maximum) { mMaximum = maximum; }
+    double maximum() const { return mMaximum; }
+
+    void setUseMinimum(double useMinimum) { mUseMinimum = useMinimum; }
+    double useMinimum() const { return mUseMinimum; }
+
+    void setUseMaximum(double useMaximum) { mUseMaximum = useMaximum; }
+    double useMaximum() const { return mUseMaximum; }
 
     QCPAxis *addAxis(QCustomPlot *plot, Units units)
     {
@@ -55,6 +68,10 @@ public:
         settings.beginGroup("plotValue/" + key());
         mVisible = settings.value("visible", mVisible).toBool();
         mColor = settings.value("color", mColor).value<QColor>();
+        mMinimum = settings.value("minimum", mMinimum).toDouble();
+        mMaximum = settings.value("maximum", mMaximum).toDouble();
+        mUseMinimum = settings.value("useMinimum", mUseMinimum).toBool();
+        mUseMaximum = settings.value("useMaximum", mUseMaximum).toBool();
         settings.endGroup();
     }
 
@@ -64,6 +81,10 @@ public:
         settings.beginGroup("plotValue/" + key());
         settings.setValue("visible", mVisible);
         settings.setValue("color", mColor);
+        settings.setValue("minimum", mMinimum);
+        settings.setValue("maximum", mMaximum);
+        settings.setValue("useMinimum", mUseMinimum);
+        settings.setValue("useMaximum", mUseMaximum);
         settings.endGroup();
     }
 
@@ -72,6 +93,8 @@ public:
 private:
     bool     mVisible;
     QColor   mColor;
+    double   mMinimum, mMaximum;
+    bool     mUseMinimum, mUseMaximum;
     QCPAxis *mAxis;
 
     const QString key() const

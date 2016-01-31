@@ -459,7 +459,11 @@ void DataPlot::updateYRanges()
         }
 
         if (!first)
-            axisRect()->axis(QCPAxis::atLeft, k++)->setRange(yMin, yMax);
+        {
+            axisRect()->axis(QCPAxis::atLeft, k++)->setRange(
+                        yValue(j)->useMinimum() ? yValue(j)->minimum() : yMin,
+                        yValue(j)->useMaximum() ? yValue(j)->maximum() : yMax);
+        }
     }
 
     replot();
