@@ -980,13 +980,13 @@ void MainWindow::on_actionPreferences_triggered()
 
             if (yValue->minimum() != dlg.plotMinimum(i))
             {
-                yValue->setMinimum(dlg.plotMinimum(i));
+                yValue->setMinimum(dlg.plotMinimum(i) / yValue->factor(units()));
                 plotChanged = true;
             }
 
             if (yValue->maximum() != dlg.plotMaximum(i))
             {
-                yValue->setMaximum(dlg.plotMaximum(i));
+                yValue->setMaximum(dlg.plotMaximum(i) / yValue->factor(units()));
                 plotChanged = true;
             }
 

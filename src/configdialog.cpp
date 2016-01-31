@@ -40,7 +40,7 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
         PlotValue *yValue = mainWindow->plotArea()->yValue(i);
 
         QTableWidgetItem *item = new QTableWidgetItem;
-        item->setText(yValue->title());
+        item->setText(yValue->title(mainWindow->units()));
         ui->plotTable->setItem(i, 0, item);
 
         QwwColorComboBox *combo = new QwwColorComboBox();
@@ -55,13 +55,16 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
         }
         ui->plotTable->setCellWidget(i, 1, combo);
 
+        // Conversion factor from internal units to display units
+        const double factor = yValue->factor(mainWindow->units());
+
         item = new QTableWidgetItem;
-        item->setText(QString::number(yValue->minimum()));
+        item->setText(QString::number(yValue->minimum() * factor));
         item->setCheckState(yValue->useMinimum() ? Qt::Checked : Qt::Unchecked);
         ui->plotTable->setItem(i, 2, item);
 
         item = new QTableWidgetItem;
-        item->setText(QString::number(yValue->maximum()));
+        item->setText(QString::number(yValue->maximum() * factor));
         item->setCheckState(yValue->useMaximum() ? Qt::Checked : Qt::Unchecked);
         ui->plotTable->setItem(i, 3, item);
     }
