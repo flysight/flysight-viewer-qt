@@ -11,8 +11,6 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     ui->contentsWidget->addItems(
                 QStringList() << tr("General"));
     ui->contentsWidget->addItems(
-                QStringList() << tr("Wind"));
-    ui->contentsWidget->addItems(
                 QStringList() << tr("Aerodynamics"));
 
     // Add units
@@ -51,17 +49,6 @@ void ConfigDialog::setUnits(
 PlotValue::Units ConfigDialog::units() const
 {
     return (PlotValue::Units) ui->unitsCombo->currentIndex();
-}
-
-void ConfigDialog::setDtWind(
-        double dtWind)
-{
-    ui->dtWindEdit->setText(QString("%1").arg(dtWind));
-}
-
-double ConfigDialog::dtWind() const
-{
-    return ui->dtWindEdit->text().toDouble();
 }
 
 void ConfigDialog::setMass(
