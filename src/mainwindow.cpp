@@ -1181,6 +1181,73 @@ void MainWindow::on_actionExportPlot_triggered()
     }
 }
 
+void MainWindow::on_actionExportTrack_triggered()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get last file read
+    QString rootFolder = settings.value("trackFolder").toString();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Export Track"),
+                                                    rootFolder,
+                                                    tr("CSV Files (*.csv)"));
+
+    if (!fileName.isEmpty())
+    {
+        // Remember last file read
+        settings.setValue("trackFolder", QFileInfo(fileName).absoluteFilePath());
+
+        // Open output file
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            // TODO: Error message
+            return;
+        }
+
+        QTextStream stream(&file);
+
+        // Write header
+        stream << "time,lat,lon,hMSL,velN,velE,velD,hAcc,vAcc,sAcc,heading,cAcc,gpsFix,numSV" << endl;
+        stream << ",(deg),(deg),(m),(m/s),(m/s),(m/s),(m),(m),(m/s),(deg),(deg),," << endl;
+
+        double lower = rangeLower();
+        double upper = rangeUpper();
+
+        for (int i = 0; i < dataSize(); ++i)
+        {
+            const DataPoint &dp = dataPoint(i);
+
+            if (lower <= dp.t && dp.t <= upper)
+            {
+                stream << dp.dateTime.date().toString(Qt::ISODate) << "T";
+                stream << dp.dateTime.time().toString(Qt::ISODate) << ".";
+                stream << QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')) << "Z,";
+
+                stream << QString::number(dp.lat) << ",";
+                stream << QString::number(dp.lon) << ",";
+                stream << QString::number(dp.hMSL) << ",";
+
+                stream << QString::number(dp.velN) << ",";
+                stream << QString::number(dp.velE) << ",";
+                stream << QString::number(dp.velD) << ",";
+
+                stream << QString::number(dp.hAcc) << ",";
+                stream << QString::number(dp.vAcc) << ",";
+                stream << QString::number(dp.sAcc) << ",";
+
+                stream << ",";  // heading
+                stream << ",";  // cAcc
+                stream << ",";  // gpsFix
+
+                stream << QString::number(dp.numSV) << endl;
+            }
+        }
+    }
+}
+
 void MainWindow::setRange(
         double lower,
         double upper)

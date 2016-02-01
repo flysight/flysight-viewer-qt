@@ -49,6 +49,7 @@
     <addaction name="actionImportGates"/>
     <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
+    <addaction name="actionExportTrack"/>
     <addaction name="actionExportPlot"/>
     <addaction name="actionExportKML"/>
     <addaction name="separator"/>
@@ -550,6 +551,14 @@
    </property>
    <property name="shortcut">
     <string>Alt+9</string>
+   </property>
+  </action>
+  <action name="actionExportTrack">
+   <property name="text">
+    <string>Export Tra&amp;ck...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
    </property>
   </action>
  </widget>
