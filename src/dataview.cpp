@@ -174,15 +174,15 @@ void DataView::updateView()
     {
     case Top:
         curve->setData(t, x, y);
-        curve->setPen(QPen(Qt::black));
+        curve->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         break;
     case Left:
         curve->setData(t, x, z);
-        curve->setPen(QPen(Qt::blue));
+        curve->setPen(QPen(Qt::blue, mMainWindow->lineThickness()));
         break;
     case Front:
         curve->setData(t, y, z);
-        curve->setPen(QPen(Qt::red));
+        curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
         break;
     }
 
@@ -224,13 +224,13 @@ void DataView::updateView()
     {
         QCPGraph *graph = addGraph();
         graph->addData(xAxis->range().upper, (yMin + yMax) / 2);
-        graph->setPen(QPen(Qt::red));
+        graph->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
 
         graph = addGraph();
         graph->addData((xMin + xMax) / 2, yAxis->range().lower);
-        graph->setPen(QPen(Qt::blue));
+        graph->setPen(QPen(Qt::blue, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 12));
     }
@@ -267,7 +267,7 @@ void DataView::updateView()
             graph->setData(yMark, zMark);
             break;
         }
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
@@ -315,7 +315,7 @@ void DataView::updateView()
             graph->setData(yMark, zMark);
             break;
         }
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssPlus);
     }

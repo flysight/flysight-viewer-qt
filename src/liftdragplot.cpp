@@ -188,7 +188,7 @@ void LiftDragPlot::updatePlot()
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::lightGray));
+    curve->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
     curve->setLineStyle(QCPCurve::lsNone);
     curve->setScatterStyle(QCPScatterStyle::ssDisc);
     addPlottable(curve);
@@ -225,7 +225,7 @@ void LiftDragPlot::updatePlot()
 
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
@@ -248,7 +248,7 @@ void LiftDragPlot::updatePlot()
 
         QCPGraph *graph = addGraph();
         graph->setData(x, y);
-        graph->setPen(QPen(Qt::blue, 0, Qt::DashLine));
+        graph->setPen(QPen(Qt::blue, mMainWindow->lineThickness(), Qt::DashLine));
     }
 
     // Draw minimum drag
@@ -260,7 +260,7 @@ void LiftDragPlot::updatePlot()
 
     QCPGraph *graph = addGraph();
     graph->setData(x, y);
-    graph->setPen(QPen(Qt::blue, 0, Qt::DashLine));
+    graph->setPen(QPen(Qt::blue, mMainWindow->lineThickness(), Qt::DashLine));
 
     // Draw maximum lift
     x.clear();
@@ -271,7 +271,7 @@ void LiftDragPlot::updatePlot()
 
     graph = addGraph();
     graph->setData(x, y);
-    graph->setPen(QPen(Qt::blue, 0, Qt::DashLine));
+    graph->setPen(QPen(Qt::blue, mMainWindow->lineThickness(), Qt::DashLine));
 
     // Draw saved curve
     t.clear();
@@ -289,7 +289,7 @@ void LiftDragPlot::updatePlot()
 
     curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::red));
+    curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
     addPlottable(curve);
 
     // Draw dot at maximum L/D
@@ -301,7 +301,7 @@ void LiftDragPlot::updatePlot()
 
     graph = addGraph();
     graph->setData(x, y);
-    graph->setPen(QPen(Qt::red));
+    graph->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
     graph->setLineStyle(QCPGraph::lsNone);
     graph->setScatterStyle(QCPScatterStyle::ssDisc);
 

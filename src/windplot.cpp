@@ -113,7 +113,7 @@ void WindPlot::updatePlot()
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::lightGray));
+    curve->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
     addPlottable(curve);
 
     setViewRange(xMin, xMax, yMin, yMax);
@@ -141,7 +141,7 @@ void WindPlot::updatePlot()
 
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
@@ -163,7 +163,7 @@ void WindPlot::updatePlot()
 
     QCPGraph *graph = addGraph();
     graph->setData(xMark, yMark);
-    graph->setPen(QPen(Qt::red));
+    graph->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
     graph->setLineStyle(QCPGraph::lsNone);
     graph->setScatterStyle(QCPScatterStyle::ssDisc);
 
@@ -194,7 +194,7 @@ void WindPlot::updatePlot()
 
     curve = new QCPCurve(xAxis, yAxis);
     curve->setData(tCircle, xCircle, yCircle);
-    curve->setPen(QPen(Qt::red));
+    curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
     addPlottable(curve);
 
     // Add label to show best fit

@@ -232,7 +232,7 @@ void OrthoView::updateView()
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::black));
+    curve->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
     addPlottable(curve);
 
     QVector3D mid((uMin + uMax) / 2,
@@ -279,7 +279,7 @@ void OrthoView::updateView()
 
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssDisc);
     }
@@ -317,7 +317,7 @@ void OrthoView::updateView()
 
         QCPGraph *graph = addGraph();
         graph->setData(xMark, yMark);
-        graph->setPen(QPen(Qt::black));
+        graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPScatterStyle::ssPlus);
     }
@@ -396,7 +396,7 @@ void OrthoView::addOrientation()
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     addPlottable(curve);
     curve->setData(ts, xs, ys);
-    curve->setPen(QPen(Qt::green));
+    curve->setPen(QPen(Qt::green, mMainWindow->lineThickness()));
     curve->setBrush(QBrush(QColor(0, 255, 0, 64)));
 
     // Add arrows
