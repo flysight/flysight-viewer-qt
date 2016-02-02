@@ -20,6 +20,7 @@
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "orthoview.h"
+#include "playbackview.h"
 #include "scoringview.h"
 #include "videoview.h"
 #include "windplot.h"
@@ -74,6 +75,9 @@ MainWindow::MainWindow(
 
     // Initialize lift/drag view
     initLiftDragView();
+
+    // Initialize playback controls
+    initPlaybackView();
 
     // Restore window state
     readSettings();
@@ -288,6 +292,26 @@ void MainWindow::initOrthoView()
 
     connect(this, SIGNAL(dataChanged()),
             orthoView, SLOT(updateView()));
+}
+
+void MainWindow::initPlaybackView()
+{
+    PlaybackView *playbackView = new PlaybackView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Playback View"));
+    dockWidget->setWidget(playbackView);
+    dockWidget->setObjectName("playbackView");
+    dockWidget->setFloating(true);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    playbackView->setMainWindow(this);
+
+    connect(m_ui->actionShowPlaybackView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowPlaybackView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(dataChanged()),
+            playbackView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(

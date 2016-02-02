@@ -212,6 +212,7 @@ private:
     void initScoringView();
     void initLiftDragView();
     void initOrthoView();
+    void initPlaybackView();
 
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);

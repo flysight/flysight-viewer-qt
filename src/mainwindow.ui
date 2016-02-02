@@ -117,6 +117,8 @@
     <addaction name="separator"/>
     <addaction name="actionShowScoringView"/>
     <addaction name="actionShowLiftDragView"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowPlaybackView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -559,6 +561,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actionShowPlaybackView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Playback</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+0</string>
    </property>
   </action>
  </widget>
