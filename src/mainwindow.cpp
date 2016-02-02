@@ -1260,17 +1260,17 @@ void MainWindow::on_actionExportTrack_triggered()
                 stream << dp.dateTime.time().toString(Qt::ISODate) << ".";
                 stream << QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')) << "Z,";
 
-                stream << QString::number(dp.lat) << ",";
-                stream << QString::number(dp.lon) << ",";
-                stream << QString::number(dp.hMSL) << ",";
+                stream << QString::number(dp.lat, 'f', 7) << ",";
+                stream << QString::number(dp.lon, 'f', 7) << ",";
+                stream << QString::number(dp.hMSL, 'f', 3) << ",";
 
-                stream << QString::number(dp.velN) << ",";
-                stream << QString::number(dp.velE) << ",";
-                stream << QString::number(dp.velD) << ",";
+                stream << QString::number(dp.velN, 'f', 2) << ",";
+                stream << QString::number(dp.velE, 'f', 2) << ",";
+                stream << QString::number(dp.velD, 'f', 2) << ",";
 
-                stream << QString::number(dp.hAcc) << ",";
-                stream << QString::number(dp.vAcc) << ",";
-                stream << QString::number(dp.sAcc) << ",";
+                stream << QString::number(dp.hAcc, 'f', 3) << ",";
+                stream << QString::number(dp.vAcc, 'f', 3) << ",";
+                stream << QString::number(dp.sAcc, 'f', 2) << ",";
 
                 stream << ",";  // heading
                 stream << ",";  // cAcc
