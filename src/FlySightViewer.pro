@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     liftdragplot.cpp \
     scoringview.cpp \
     genome.cpp \
-    orthoview.cpp
+    orthoview.cpp \
+    playbackview.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -43,12 +44,14 @@ HEADERS  += mainwindow.h \
     liftdragplot.h \
     scoringview.h \
     genome.h \
-    orthoview.h
+    orthoview.h \
+    playbackview.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
     videoview.ui \
-    scoringview.ui
+    scoringview.ui \
+    playbackview.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico
