@@ -252,3 +252,14 @@ bool ConfigDialog::plotUseMaximum(
 {
     return ui->plotTable->item(i, PLOT_COLUMN_MAX)->checkState() == Qt::Checked;
 }
+
+void ConfigDialog::setLineThickness(
+        double width)
+{
+    ui->lineThicknessEdit->setText(QString::number(width));
+}
+
+double ConfigDialog::lineThickness() const
+{
+    return ui->lineThicknessEdit->text().toDouble();
+}

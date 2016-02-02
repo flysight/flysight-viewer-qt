@@ -935,6 +935,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMaxLift(m_maxLift);
     dlg.setMaxLD(m_maxLD);
     dlg.setSimulationTime(m_simulationTime);
+    dlg.setLineThickness(mLineThickness);
 
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -1004,6 +1005,12 @@ void MainWindow::on_actionPreferences_triggered()
                 yValue->setUseMaximum(dlg.plotUseMaximum(i));
                 plotChanged = true;
             }
+        }
+
+        if (mLineThickness != dlg.lineThickness())
+        {
+            mLineThickness = dlg.lineThickness();
+            plotChanged = true;
         }
 
         if (plotChanged)

@@ -53,6 +53,9 @@ public:
     bool plotUseMinimum(int i) const;
     bool plotUseMaximum(int i) const;
 
+    void setLineThickness(double with);
+    double lineThickness() const;
+
 private:
     Ui::ConfigDialog *ui;
 
