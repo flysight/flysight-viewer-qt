@@ -43,7 +43,8 @@ MainWindow::MainWindow(
     m_minLift(0.0),
     m_maxLift(0.5),
     m_maxLD(3.0),
-    m_simulationTime(120)
+    m_simulationTime(120),
+    mLineThickness(0)
 {
     m_ui->setupUi(this);
 
@@ -119,6 +120,7 @@ void MainWindow::writeSettings()
     settings.setValue("maxLift", m_maxLift);
     settings.setValue("maxLD", m_maxLD);
     settings.setValue("simulationTime", m_simulationTime);
+    settings.setValue("lineThickness", mLineThickness);
     settings.endGroup();
 }
 
@@ -137,6 +139,7 @@ void MainWindow::readSettings()
     m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
     m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
     m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
+    mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
     settings.endGroup();
 }
 
@@ -932,6 +935,7 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMaxLift(m_maxLift);
     dlg.setMaxLD(m_maxLD);
     dlg.setSimulationTime(m_simulationTime);
+    dlg.setLineThickness(mLineThickness);
 
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -1001,6 +1005,12 @@ void MainWindow::on_actionPreferences_triggered()
                 yValue->setUseMaximum(dlg.plotUseMaximum(i));
                 plotChanged = true;
             }
+        }
+
+        if (mLineThickness != dlg.lineThickness())
+        {
+            mLineThickness = dlg.lineThickness();
+            plotChanged = true;
         }
 
         if (plotChanged)
@@ -1665,4 +1675,11 @@ double MainWindow::score(
 DataPlot *MainWindow::plotArea() const
 {
     return m_ui->plotArea;
+}
+
+void MainWindow::setLineThickness(
+        double width)
+{
+    mLineThickness = width;
+    emit dataChanged();
 }

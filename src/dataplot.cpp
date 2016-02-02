@@ -222,7 +222,7 @@ void DataPlot::paintEvent(
     {
         QPainter painter(this);
 
-        painter.setPen(QPen(Qt::black));
+        painter.setPen(QPen(Qt::black, mMainWindow->lineThickness()));
         painter.drawLine(m_beginPos.x(), axisRect()->rect().top(), m_beginPos.x(), axisRect()->rect().bottom());
         if (axisRect()->rect().left() <= m_cursorPos.x() && m_cursorPos.x() <= axisRect()->rect().right())
         {
@@ -243,7 +243,7 @@ void DataPlot::paintEvent(
         {
             QPainter painter(this);
 
-            painter.setPen(QPen(Qt::black));
+            painter.setPen(QPen(Qt::black, mMainWindow->lineThickness()));
             painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
             painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
         }
@@ -519,7 +519,7 @@ void DataPlot::updatePlot()
                     axisRect()->axis(QCPAxis::atBottom),
                     yValue(Elevation)->axis());
         graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), 0, Qt::DashLine));
+        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
 
         yElev.clear();
         yElev << yValue(Elevation)->value(dpBottom, mMainWindow->units())
@@ -529,12 +529,12 @@ void DataPlot::updatePlot()
                     axisRect()->axis(QCPAxis::atBottom),
                     yValue(Elevation)->axis());
         graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), 0, Qt::DashLine));
+        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
 
         QCPItemRect *rect = new QCPItemRect(this);
         addItem(rect);
 
-        rect->setPen(QPen(QBrush(Qt::lightGray), 0, Qt::DashLine));
+        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
         rect->setBrush(QColor(0, 0, 0, 8));
 
         rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
@@ -550,7 +550,7 @@ void DataPlot::updatePlot()
         rect = new QCPItemRect(this);
         addItem(rect);
 
-        rect->setPen(QPen(QBrush(Qt::lightGray), 0, Qt::DashLine));
+        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
         rect->setBrush(QColor(0, 0, 0, 8));
 
         rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
@@ -581,7 +581,7 @@ void DataPlot::updatePlot()
                     axisRect()->axis(QCPAxis::atBottom),
                     axis);
         graph->setData(x, y);
-        graph->setPen(QPen(yValue(j)->color()));
+        graph->setPen(QPen(yValue(j)->color(), mMainWindow->lineThickness()));
 
         if (yValue(j)->hasOptimal())
         {
@@ -597,7 +597,7 @@ void DataPlot::updatePlot()
                         axisRect()->axis(QCPAxis::atBottom),
                         axis);
             graph->setData(xOptimal, yOptimal);
-            graph->setPen(QPen(QBrush(yValue(j)->color()), 0, Qt::DotLine));
+            graph->setPen(QPen(QBrush(yValue(j)->color()), mMainWindow->lineThickness(), Qt::DotLine));
         }
     }
 
@@ -623,7 +623,7 @@ void DataPlot::updatePlot()
                         axisRect()->axis(QCPAxis::atLeft, k++));
 
             graph->setData(xMark, yMark);
-            graph->setPen(QPen(Qt::black));
+            graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
             graph->setLineStyle(QCPGraph::lsNone);
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
         }

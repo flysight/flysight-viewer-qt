@@ -111,6 +111,9 @@ public:
 
     DataPlot *plotArea() const;
 
+    void setLineThickness(double width);
+    double lineThickness() const { return mLineThickness; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -196,6 +199,8 @@ private:
     double                m_maxLD;
 
     int                   m_simulationTime;
+
+    double                mLineThickness;
 
     void writeSettings();
     void readSettings();
