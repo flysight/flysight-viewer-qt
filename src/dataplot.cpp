@@ -222,7 +222,7 @@ void DataPlot::paintEvent(
     {
         QPainter painter(this);
 
-        painter.setPen(QPen(Qt::black, mMainWindow->lineThickness()));
+        painter.setPen(QPen(Qt::black));
         painter.drawLine(m_beginPos.x(), axisRect()->rect().top(), m_beginPos.x(), axisRect()->rect().bottom());
         if (axisRect()->rect().left() <= m_cursorPos.x() && m_cursorPos.x() <= axisRect()->rect().right())
         {
@@ -243,7 +243,7 @@ void DataPlot::paintEvent(
         {
             QPainter painter(this);
 
-            painter.setPen(QPen(Qt::black, mMainWindow->lineThickness()));
+            painter.setPen(QPen(Qt::black));
             painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
             painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
         }
