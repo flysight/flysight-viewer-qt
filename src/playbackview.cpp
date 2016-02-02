@@ -8,7 +8,8 @@ PlaybackView::PlaybackView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PlaybackView),
     mMainWindow(0),
-    mBusy(false)
+    mBusy(false),
+    mState(Paused)
 {
     ui->setupUi(this);
 
@@ -38,53 +39,19 @@ QSize PlaybackView::sizeHint() const
 
 void PlaybackView::play()
 {
-/*    switch(mPlayer->state())
+    switch(mState)
     {
-    case Vlc::Playing:
-        mPlayer->pause();
-        break;
-    default:
-        mPlayer->play();
-        break;
-    }
-*/}
-/*
-void PlaybackView::stateChanged()
-{
-    switch(mPlayer->state())
-    {
-    case Vlc::Playing:
+    case Paused:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        mState = Playing;
         break;
     default:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        mState = Paused;
         break;
     }
 }
 
-void PlaybackView::timeChanged(int position)
-{
-    mBusy = true;
-
-    // Update controls
-    ui->positionSlider->setValue(position);
-    ui->scrubDial->setValue(position % 1000);
-
-    // Update text label
-    double time = (double) (position - mZeroPosition) / 1000;
-    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
-
-    // Update other views
-    mMainWindow->setMark(time);
-
-    mBusy = false;
-}
-
-void PlaybackView::lengthChanged(int duration)
-{
-    ui->positionSlider->setRange(0, duration);
-}
-*/
 void PlaybackView::setPosition(int position)
 {
     if (!mBusy)
@@ -103,23 +70,7 @@ void PlaybackView::setPosition(int position)
         mBusy = false;
     }
 }
-/*
-void PlaybackView::setScrubPosition(int position)
-{
-    if (!mBusy)
-    {
-        int oldPosition = mPlayer->time();
-        int newPosition = oldPosition - oldPosition % 1000 + position;
 
-        while (newPosition <= oldPosition - 500) newPosition += 1000;
-        while (newPosition >  oldPosition + 500) newPosition -= 1000;
-
-        // Update video position
-        mPlayer->setTime(newPosition);
-        timeChanged(newPosition);
-    }
-}
-*/
 void PlaybackView::updateView()
 {
     if (mBusy || !mMainWindow) return;

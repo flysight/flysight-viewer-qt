@@ -22,6 +22,10 @@ public:
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
 private:
+    enum {
+        Paused, Playing
+    } mState;
+
     Ui::PlaybackView *ui;
     MainWindow       *mMainWindow;
     bool              mBusy;
@@ -31,10 +35,7 @@ public slots:
     void updateView();
 
 private slots:
-/*    void stateChanged();
-    void timeChanged(int position);
-    void lengthChanged(int duration);
-*/    void setPosition(int position);
+    void setPosition(int position);
 };
 
 #endif // PLAYBACKVIEW_H
