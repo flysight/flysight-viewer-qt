@@ -8,6 +8,7 @@ namespace Ui {
 }
 
 class MainWindow;
+class QTimer;
 
 class PlaybackView : public QWidget
 {
@@ -28,7 +29,9 @@ private:
 
     Ui::PlaybackView *ui;
     MainWindow       *mMainWindow;
+
     bool              mBusy;
+    QTimer           *mTimer;
 
 public slots:
     void play();
@@ -36,6 +39,7 @@ public slots:
 
 private slots:
     void setPosition(int position);
+    void tick();
 };
 
 #endif // PLAYBACKVIEW_H

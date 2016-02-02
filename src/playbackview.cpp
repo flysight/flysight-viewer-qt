@@ -1,8 +1,12 @@
 #include "playbackview.h"
 #include "ui_playbackview.h"
 
+#include <QTimer>
+
 #include "common.h"
 #include "mainwindow.h"
+
+#define INTERVAL 250    // Timer interval in ms
 
 PlaybackView::PlaybackView(QWidget *parent) :
     QWidget(parent),
@@ -24,6 +28,11 @@ PlaybackView::PlaybackView(QWidget *parent) :
     connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
 
     updateView();
+
+    // Set up timer
+    mTimer = new QTimer(this);
+    mTimer->setInterval(INTERVAL);
+    connect(mTimer, SIGNAL(timeout()), this, SLOT(tick()));
 }
 
 PlaybackView::~PlaybackView()
@@ -43,12 +52,45 @@ void PlaybackView::play()
     {
     case Paused:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        mTimer->start();
         mState = Playing;
         break;
     default:
         ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        mTimer->stop();
         mState = Paused;
         break;
+    }
+}
+
+void PlaybackView::tick()
+{
+    const DataPoint &dpEnd = mMainWindow->dataPoint(mMainWindow->dataSize() - 1);
+
+    if (mMainWindow->rangeUpper() == dpEnd.t)
+    {
+        // Stop playback
+        ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        mTimer->stop();
+        mState = Paused;
+    }
+    else
+    {
+        double lower = mMainWindow->rangeLower() + INTERVAL / 1000.;
+        double upper = mMainWindow->rangeUpper() + INTERVAL / 1000.;
+
+        if (upper > dpEnd.t)
+        {
+            lower -= upper - dpEnd.t;
+            upper = dpEnd.t;
+        }
+
+        // Round to nearest interval
+        lower = (int) (lower * 1000 / INTERVAL) * INTERVAL / 1000.;
+        upper = (int) (upper * 1000 / INTERVAL) * INTERVAL / 1000.;
+
+        // Change window position
+        mMainWindow->setRange(lower, upper);
     }
 }
 
@@ -58,14 +100,25 @@ void PlaybackView::setPosition(int position)
     {
         mBusy = true;
 
-        // References
-        const double range = mMainWindow->rangeUpper() - mMainWindow->rangeLower();
+        // Stop playback
+        ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        mTimer->stop();
+        mState = Paused;
+
+        // Get view range
+        const double lower = mMainWindow->rangeLower() + INTERVAL / 1000.;
+        const double upper = mMainWindow->rangeUpper() + INTERVAL / 1000.;
+
+        // Get data range
         const DataPoint &dpStart = mMainWindow->dataPoint(0);
 
         // Change window position
         mMainWindow->setRange(
                     dpStart.t + position / 1000.,
-                    dpStart.t + position / 1000. + range);
+                    dpStart.t + position / 1000. + upper - lower);
+
+        // Update text label
+        ui->timeLabel->setText(QString("%1 s").arg(lower, 0, 'f', 3));
 
         mBusy = false;
     }
@@ -77,23 +130,32 @@ void PlaybackView::updateView()
 
     if (mMainWindow->dataSize() > 0)
     {
+        mBusy = true;
+
         // Enable controls
         ui->playButton->setEnabled(true);
         ui->positionSlider->setEnabled(true);
 
-        // Length changed
-        const double range = mMainWindow->rangeUpper() - mMainWindow->rangeLower();
+        // Get view range
+        const double lower = mMainWindow->rangeLower() + INTERVAL / 1000.;
+        const double upper = mMainWindow->rangeUpper() + INTERVAL / 1000.;
+
+        // Get data range
         const DataPoint &dpStart = mMainWindow->dataPoint(0);
         const DataPoint &dpEnd = mMainWindow->dataPoint(mMainWindow->dataSize() - 1);
-        const int duration = ((dpEnd.t - dpStart.t) - range) * 1000;
+
+        // Update slider range
+        const int duration = ((dpEnd.t - dpStart.t) - (upper - lower)) * 1000;
         ui->positionSlider->setRange(0, duration);
 
-        // Position changed
-        const int position = (mMainWindow->rangeLower() - dpStart.t) * 1000;
+        // Update slider position
+        const int position = (lower - dpStart.t) * 1000;
         ui->positionSlider->setValue(position);
 
         // Update text label
-        ui->timeLabel->setText(QString("%1 s").arg(dpStart.t, 0, 'f', 3));
+        ui->timeLabel->setText(QString("%1 s").arg(lower, 0, 'f', 3));
+
+        mBusy = false;
     }
     else
     {
