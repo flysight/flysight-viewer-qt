@@ -35,6 +35,8 @@ public:
         EnergyRate,
         Lift,
         Drag,
+        Course,
+        CourseAccuracy,
         yaLast
     } YAxisType;
 

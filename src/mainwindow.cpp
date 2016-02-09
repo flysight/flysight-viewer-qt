@@ -416,6 +416,8 @@ void MainWindow::on_actionImport_triggered()
         HAcc,
         VAcc,
         SAcc,
+        Heading,
+        CAcc,
         NumSV
     } Columns;
 
@@ -430,19 +432,28 @@ void MainWindow::on_actionImport_triggered()
         {
             const QString &s = cols[i];
 
-            if (s == "time")  colMap[Time]  = i;
-            if (s == "lat")   colMap[Lat]   = i;
-            if (s == "lon")   colMap[Lon]   = i;
-            if (s == "hMSL")  colMap[HMSL]  = i;
-            if (s == "velN")  colMap[VelN]  = i;
-            if (s == "velE")  colMap[VelE]  = i;
-            if (s == "velD")  colMap[VelD]  = i;
-            if (s == "hAcc")  colMap[HAcc]  = i;
-            if (s == "vAcc")  colMap[VAcc]  = i;
-            if (s == "sAcc")  colMap[SAcc]  = i;
-            if (s == "numSV") colMap[NumSV] = i;
+            if (s == "time")    colMap[Time]    = i;
+            if (s == "lat")     colMap[Lat]     = i;
+            if (s == "lon")     colMap[Lon]     = i;
+            if (s == "hMSL")    colMap[HMSL]    = i;
+            if (s == "velN")    colMap[VelN]    = i;
+            if (s == "velE")    colMap[VelE]    = i;
+            if (s == "velD")    colMap[VelD]    = i;
+            if (s == "hAcc")    colMap[HAcc]    = i;
+            if (s == "vAcc")    colMap[VAcc]    = i;
+            if (s == "sAcc")    colMap[SAcc]    = i;
+            if (s == "heading") colMap[Heading] = i;
+            if (s == "cAcc")    colMap[CAcc]    = i;
+            if (s == "numSV")   colMap[NumSV]   = i;
         }
     }
+
+    // Flags for what data is available
+    const bool hasHeading = colMap.contains(Heading) && colMap.contains(CAcc);
+
+    // Cumulative heading
+    double prevHeading;
+    bool firstHeading = true;
 
     // Skip next row
     if (!in.atEnd()) in.readLine();
@@ -471,6 +482,32 @@ void MainWindow::on_actionImport_triggered()
         pt.hAcc  = cols[colMap[HAcc]].toDouble();
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
+
+        if (hasHeading)
+        {
+            pt.heading = cols[colMap[Heading]].toDouble();
+            pt.cAcc    = cols[colMap[CAcc]].toDouble();
+        }
+        else
+        {
+            // Calculate heading
+            pt.heading = atan2(pt.velE, pt.velN) / PI * 180;
+
+            // Calculate heading accuracy
+            const double s = DataPoint::totalSpeed(pt);
+            if (s != 0) pt.cAcc = pt.sAcc / s;
+            else        pt.cAcc = 0;
+        }
+
+        // Adjust heading
+        if (!firstHeading)
+        {
+            while (pt.heading <  prevHeading - 180) pt.heading += 360;
+            while (pt.heading >= prevHeading + 180) pt.heading -= 360;
+        }
+
+        firstHeading = false;
+        prevHeading = pt.heading;
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
@@ -803,6 +840,8 @@ void MainWindow::updateLeftActions()
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
     m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
+    m_ui->actionCourse->setChecked(m_ui->plotArea->plotVisible(DataPlot::Course));
+    m_ui->actionCourseAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::CourseAccuracy));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -868,6 +907,16 @@ void MainWindow::on_actionLift_triggered()
 void MainWindow::on_actionDrag_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::Drag);
+}
+
+void MainWindow::on_actionCourse_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Course);
+}
+
+void MainWindow::on_actionCourseAccuracy_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::CourseAccuracy);
 }
 
 void MainWindow::on_actionPan_triggered()

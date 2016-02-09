@@ -26,6 +26,9 @@ public:
     double      vAcc;
     double      sAcc;
 
+    double      heading;
+    double      cAcc;
+
     int         numSV;
 
     double      t;
@@ -153,6 +156,16 @@ public:
     static double dragCoefficient(const DataPoint &dp)
     {
         return dp.drag;
+    }
+
+    static double course(const DataPoint &dp)
+    {
+        return dp.heading;
+    }
+
+    static double courseAccuracy(const DataPoint &dp)
+    {
+        return dp.cAcc;
     }
 };
 

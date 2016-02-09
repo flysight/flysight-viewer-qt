@@ -70,6 +70,8 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotEnergyRate);
     m_yValues.append(new PlotLift);
     m_yValues.append(new PlotDrag);
+    m_yValues.append(new PlotCourse);
+    m_yValues.append(new PlotCourseAccuracy);
 
     foreach (PlotValue *v, m_yValues)
     {
