@@ -27,6 +27,7 @@ public:
     double      sAcc;
 
     double      heading;
+    double      omega;
     double      cAcc;
 
     int         numSV;
@@ -161,6 +162,11 @@ public:
     static double course(const DataPoint &dp)
     {
         return dp.heading;
+    }
+
+    static double courseRate(const DataPoint &dp)
+    {
+        return dp.omega;
     }
 
     static double courseAccuracy(const DataPoint &dp)

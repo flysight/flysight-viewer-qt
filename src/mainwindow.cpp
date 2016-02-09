@@ -556,12 +556,8 @@ void MainWindow::on_actionImport_triggered()
     {
         DataPoint &dp = m_data[i];
         dp.curv = getSlope(i, DataPoint::diveAngle);
-    }
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
         dp.accel = getSlope(i, DataPoint::totalSpeed);
+        dp.omega = getSlope(i, DataPoint::course);
     }
 
     initAerodynamics();
