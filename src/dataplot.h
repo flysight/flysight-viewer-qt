@@ -36,6 +36,7 @@ public:
         Lift,
         Drag,
         Course,
+        CourseRate,
         CourseAccuracy,
         yaLast
     } YAxisType;

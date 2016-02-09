@@ -610,12 +610,35 @@ public:
     bool hasOptimal() const { return false; }
 };
 
+class PlotCourseRate: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotCourseRate(): PlotValue(false, Qt::darkCyan) {}
+    const QString title() const
+    {
+        return tr("Course Rate");
+    }
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return title() + tr(" (deg/s)");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::courseRate(dp);
+    }
+
+    bool hasOptimal() const { return false; }
+};
+
 class PlotCourseAccuracy: public PlotValue
 {
     Q_OBJECT
 
 public:
-    PlotCourseAccuracy(): PlotValue(false, Qt::darkCyan) {}
+    PlotCourseAccuracy(): PlotValue(false, Qt::darkYellow) {}
     const QString title() const
     {
         return tr("Course Accuracy");

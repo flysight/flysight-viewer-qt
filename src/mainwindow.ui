@@ -68,6 +68,7 @@
     <addaction name="actionTotalSpeed"/>
     <addaction name="separator"/>
     <addaction name="actionCourse"/>
+    <addaction name="actionCourseRate"/>
     <addaction name="actionCourseAccuracy"/>
     <addaction name="separator"/>
     <addaction name="actionGlideRatio"/>
@@ -594,6 +595,14 @@
    </property>
    <property name="text">
     <string>Course Accuracy</string>
+   </property>
+  </action>
+  <action name="actionCourseRate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Course Rate</string>
    </property>
    <property name="shortcut">
     <string>Shift+C</string>
