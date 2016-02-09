@@ -16,21 +16,38 @@
 * along with this library. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef VLCQT_CONFIG_H_
-#define VLCQT_CONFIG_H_
+#ifndef VLCQT_COMMON_H_
+#define VLCQT_COMMON_H_
 
-// Version
-#define LIBVLCQT_VERSION "0.90.0"
-#define LIBVLCQT_VERSION_VCS ""
+#include <QtCore/QString>
+#include <QtCore/QStringList>
 
-#define LIBVLCQT_VERSION_MAJOR 0
-#define LIBVLCQT_VERSION_MINOR 90
-#define LIBVLCQT_VERSION_PATCH 0
+#include "SharedExportCore.h"
 
-#define LIBVLCQT_VERSION_QML_MAJOR 1
-#define LIBVLCQT_VERSION_QML_MINOR 0
+/*!
+    \defgroup VLCQtCore VLC-Qt Core (VLCQtCore)
+    \brief Core classes and functionality for main media playback
+ */
 
-// libVLC this library is built with
-#define LIBVLC_VERSION 0x020200
+/*!
+    \namespace VlcCommon Common.h VLCQtCore/Common.h
+    \ingroup VLCQtCore
+	\brief Common functions
+*/
+namespace VlcCommon
+{
+	/*!
+		\brief Common libvlc arguments
+		\return libvlc arguments (QStringList)
+	*/
+    VLCQT_CORE_EXPORT QStringList args();
 
-#endif // VLCQT_CONFIG_H_
+    /*!
+        \brief Set plugin path
+        \param path plugin path (QString)
+        \return success status
+    */
+    VLCQT_CORE_EXPORT bool setPluginPath(const QString &path);
+}
+
+#endif // VLCQT_COMMON_H_

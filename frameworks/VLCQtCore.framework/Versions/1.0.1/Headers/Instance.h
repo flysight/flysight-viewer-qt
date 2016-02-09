@@ -23,6 +23,8 @@
 
 #include "SharedExportCore.h"
 
+class VlcModuleDescription;
+
 struct libvlc_instance_t;
 
 /*!
@@ -58,6 +60,13 @@ public:
         \return libvlc instance (libvlc_instance_t *)
     */
     libvlc_instance_t *core();
+
+    /*!
+        \brief Returns libvlc initialisation status.
+        \return libvlc status (bool)
+    */
+    bool status() const;
+
 
     /*!
         \brief VLC-Qt version info
@@ -106,8 +115,21 @@ public:
     void setUserAgent(const QString &application,
                       const QString &version);
 
+    /*!
+        \brief List audio filter modules
+        \return audio filter module description list
+    */
+    QList<VlcModuleDescription *> audioFilterList() const;
+
+    /*!
+        \brief List video filter modules
+        \return video filter module description list
+    */
+    QList<VlcModuleDescription *> videoFilterList() const;
+
 private:
     libvlc_instance_t *_vlcInstance;
+    bool _status;
 };
 
 #endif // VLCQT_VLCINSTANCE_H_
