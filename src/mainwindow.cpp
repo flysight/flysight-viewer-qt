@@ -556,12 +556,8 @@ void MainWindow::on_actionImport_triggered()
     {
         DataPoint &dp = m_data[i];
         dp.curv = getSlope(i, DataPoint::diveAngle);
-    }
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
         dp.accel = getSlope(i, DataPoint::totalSpeed);
+        dp.omega = getSlope(i, DataPoint::course);
     }
 
     initAerodynamics();
@@ -841,6 +837,7 @@ void MainWindow::updateLeftActions()
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
     m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
     m_ui->actionCourse->setChecked(m_ui->plotArea->plotVisible(DataPlot::Course));
+    m_ui->actionCourseRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::CourseRate));
     m_ui->actionCourseAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::CourseAccuracy));
 }
 
@@ -912,6 +909,11 @@ void MainWindow::on_actionDrag_triggered()
 void MainWindow::on_actionCourse_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::Course);
+}
+
+void MainWindow::on_actionCourseRate_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::CourseRate);
 }
 
 void MainWindow::on_actionCourseAccuracy_triggered()

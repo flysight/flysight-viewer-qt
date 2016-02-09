@@ -45,6 +45,7 @@ DataPoint DataPoint::interpolate(
     ret.drag = p1.drag + a * (p2.drag - p1.drag);
 
     ret.heading = p1.heading + a * (p2.heading - p1.heading);
+    ret.omega = p1.omega + a * (p2.omega - p1.omega);
     ret.cAcc = p1.cAcc + a * (p2.cAcc - p1.cAcc);
 
     return ret;
