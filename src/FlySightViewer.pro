@@ -76,8 +76,10 @@ macx {
     LIBS         += -framework VLCQtCore
     LIBS         += -framework VLCQtQml
     LIBS         += -framework VLCQtWidgets
+    LIBS         += -framework wwwidgets4
 }
 else {
     LIBS += -L/usr/local/lib
     LIBS += -lvlc-qt -lvlc-qt-widgets
+    LIBS += -lwwwidgets4
 }
