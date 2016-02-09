@@ -451,6 +451,10 @@ void MainWindow::on_actionImport_triggered()
     // Flags for what data is available
     const bool hasHeading = colMap.contains(Heading) && colMap.contains(CAcc);
 
+    // Cumulative heading
+    double prevHeading;
+    bool firstHeading = true;
+
     // Skip next row
     if (!in.atEnd()) in.readLine();
 
@@ -488,14 +492,22 @@ void MainWindow::on_actionImport_triggered()
         {
             // Calculate heading
             pt.heading = atan2(pt.velE, pt.velN) / PI * 180;
-            while (pt.heading < -180) pt.heading += 360;
-            while (pt.heading >  180) pt.heading -= 360;
 
             // Calculate heading accuracy
             const double s = DataPoint::totalSpeed(pt);
             if (s != 0) pt.cAcc = pt.sAcc / s;
             else        pt.cAcc = 0;
         }
+
+        // Adjust heading
+        if (!firstHeading)
+        {
+            while (pt.heading <  prevHeading - 180) pt.heading += 360;
+            while (pt.heading >= prevHeading + 180) pt.heading -= 360;
+        }
+
+        firstHeading = false;
+        prevHeading = pt.heading;
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
