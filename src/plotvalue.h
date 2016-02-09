@@ -587,4 +587,50 @@ public:
     bool hasOptimal() const { return true; }
 };
 
+class PlotCourse: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotCourse(): PlotValue(false, Qt::yellow) {}
+    const QString title() const
+    {
+        return tr("Course");
+    }
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return title() + tr(" (deg)");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::course(dp);
+    }
+
+    bool hasOptimal() const { return false; }
+};
+
+class PlotCourseAccuracy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotCourseAccuracy(): PlotValue(false, Qt::darkYellow) {}
+    const QString title() const
+    {
+        return tr("Course Accuracy");
+    }
+    const QString title(Units units) const
+    {
+        Q_UNUSED(units);
+        return title() + tr(" (deg)");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::courseAccuracy(dp);
+    }
+
+    bool hasOptimal() const { return false; }
+};
+
 #endif // PLOTVALUE_H

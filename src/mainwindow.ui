@@ -67,6 +67,9 @@
     <addaction name="actionVerticalSpeed"/>
     <addaction name="actionTotalSpeed"/>
     <addaction name="separator"/>
+    <addaction name="actionCourse"/>
+    <addaction name="actionCourseAccuracy"/>
+    <addaction name="separator"/>
     <addaction name="actionGlideRatio"/>
     <addaction name="actionDiveAngle"/>
     <addaction name="actionCurvature"/>
@@ -464,7 +467,7 @@
     <string>Acceleration</string>
    </property>
    <property name="shortcut">
-    <string>Shift+C</string>
+    <string>Shift+A</string>
    </property>
   </action>
   <action name="actionTotalEnergy">
@@ -572,6 +575,28 @@
    </property>
    <property name="shortcut">
     <string>Alt+0</string>
+   </property>
+  </action>
+  <action name="actionCourse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Course</string>
+   </property>
+   <property name="shortcut">
+    <string>C</string>
+   </property>
+  </action>
+  <action name="actionCourseAccuracy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Course Accuracy</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+C</string>
    </property>
   </action>
  </widget>

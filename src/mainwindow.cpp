@@ -828,6 +828,8 @@ void MainWindow::updateLeftActions()
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
     m_ui->actionDrag->setChecked(m_ui->plotArea->plotVisible(DataPlot::Drag));
+    m_ui->actionCourse->setChecked(m_ui->plotArea->plotVisible(DataPlot::Course));
+    m_ui->actionCourseAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::CourseAccuracy));
 }
 
 void MainWindow::on_actionTotalSpeed_triggered()
@@ -893,6 +895,16 @@ void MainWindow::on_actionLift_triggered()
 void MainWindow::on_actionDrag_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::Drag);
+}
+
+void MainWindow::on_actionCourse_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::Course);
+}
+
+void MainWindow::on_actionCourseAccuracy_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::CourseAccuracy);
 }
 
 void MainWindow::on_actionPan_triggered()

@@ -136,6 +136,8 @@ private slots:
     void on_actionEnergyRate_triggered();
     void on_actionLift_triggered();
     void on_actionDrag_triggered();
+    void on_actionCourse_triggered();
+    void on_actionCourseAccuracy_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
