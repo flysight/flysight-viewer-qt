@@ -1321,8 +1321,14 @@ void MainWindow::on_actionExportTrack_triggered()
                 stream << QString::number(dp.vAcc, 'f', 3) << ",";
                 stream << QString::number(dp.sAcc, 'f', 2) << ",";
 
-                stream << ",";  // heading
-                stream << ",";  // cAcc
+                // Get adjusted heading
+                double heading = dp.heading;
+                while (heading <  0)   heading += 360;
+                while (heading >= 360) heading -= 360;
+
+                stream << QString::number(heading, 'f', 5) << ",";
+                stream << QString::number(dp.cAcc, 'f', 5) << ",";
+
                 stream << ",";  // gpsFix
 
                 stream << QString::number(dp.numSV) << endl;
