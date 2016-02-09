@@ -416,6 +416,8 @@ void MainWindow::on_actionImport_triggered()
         HAcc,
         VAcc,
         SAcc,
+        Heading,
+        CAcc,
         NumSV
     } Columns;
 
@@ -430,19 +432,24 @@ void MainWindow::on_actionImport_triggered()
         {
             const QString &s = cols[i];
 
-            if (s == "time")  colMap[Time]  = i;
-            if (s == "lat")   colMap[Lat]   = i;
-            if (s == "lon")   colMap[Lon]   = i;
-            if (s == "hMSL")  colMap[HMSL]  = i;
-            if (s == "velN")  colMap[VelN]  = i;
-            if (s == "velE")  colMap[VelE]  = i;
-            if (s == "velD")  colMap[VelD]  = i;
-            if (s == "hAcc")  colMap[HAcc]  = i;
-            if (s == "vAcc")  colMap[VAcc]  = i;
-            if (s == "sAcc")  colMap[SAcc]  = i;
-            if (s == "numSV") colMap[NumSV] = i;
+            if (s == "time")    colMap[Time]    = i;
+            if (s == "lat")     colMap[Lat]     = i;
+            if (s == "lon")     colMap[Lon]     = i;
+            if (s == "hMSL")    colMap[HMSL]    = i;
+            if (s == "velN")    colMap[VelN]    = i;
+            if (s == "velE")    colMap[VelE]    = i;
+            if (s == "velD")    colMap[VelD]    = i;
+            if (s == "hAcc")    colMap[HAcc]    = i;
+            if (s == "vAcc")    colMap[VAcc]    = i;
+            if (s == "sAcc")    colMap[SAcc]    = i;
+            if (s == "heading") colMap[Heading] = i;
+            if (s == "cAcc")    colMap[CAcc]    = i;
+            if (s == "numSV")   colMap[NumSV]   = i;
         }
     }
+
+    // Flags for what data is available
+    const bool hasHeading = colMap.contains(Heading) && colMap.contains(CAcc);
 
     // Skip next row
     if (!in.atEnd()) in.readLine();
@@ -471,6 +478,24 @@ void MainWindow::on_actionImport_triggered()
         pt.hAcc  = cols[colMap[HAcc]].toDouble();
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
+
+        if (hasHeading)
+        {
+            pt.heading = cols[colMap[Heading]].toDouble();
+            pt.cAcc    = cols[colMap[CAcc]].toDouble();
+        }
+        else
+        {
+            // Calculate heading
+            pt.heading = atan2(pt.velE, pt.velN) / PI * 180;
+            while (pt.heading < -180) pt.heading += 360;
+            while (pt.heading >  180) pt.heading -= 360;
+
+            // Calculate heading accuracy
+            const double s = DataPoint::totalSpeed(pt);
+            if (s != 0) pt.cAcc = pt.sAcc / s;
+            else        pt.cAcc = 0;
+        }
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
