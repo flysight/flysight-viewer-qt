@@ -592,7 +592,7 @@ class PlotCourse: public PlotValue
     Q_OBJECT
 
 public:
-    PlotCourse(): PlotValue(false, Qt::yellow) {}
+    PlotCourse(): PlotValue(false, Qt::cyan) {}
     const QString title() const
     {
         return tr("Course");
@@ -615,7 +615,7 @@ class PlotCourseAccuracy: public PlotValue
     Q_OBJECT
 
 public:
-    PlotCourseAccuracy(): PlotValue(false, Qt::darkYellow) {}
+    PlotCourseAccuracy(): PlotValue(false, Qt::darkCyan) {}
     const QString title() const
     {
         return tr("Course Accuracy");
