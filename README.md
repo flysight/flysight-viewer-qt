@@ -10,7 +10,7 @@
 2. In Terminal run:
   1. `/path/to/macdeployqt FlySightViewer.app`
   2. `cp -R /path/to/flysight-viewer-qt/frameworks/* FlySightViewer.app/Contents/Frameworks`
-  3. `cp -R /Applications/VLC.app/Contents/MacOS/lib FlySightViewer.app/Contents/MacOS`
+  3. `cp -R /Applications/VLC.app/Contents/MacOS/lib/* FlySightViewer.app/Contents/Frameworks`
   4. `cp -R /Applications/VLC.app/Contents/MacOS/plugins FlySightViewer.app/Contents/MacOS`
 3. Open Disk Utility.
   1. Go to `File > New Image > Blank Image` and create a 250 MB disk image.
