@@ -1689,11 +1689,15 @@ void MainWindow::optimize(
                 labelText = QString::number(maxScore) + QString(" s");
                 break;
             case Distance:
-                labelText = QString::number(maxScore / 1000) + QString(" km");
+                labelText = (m_units == PlotValue::Metric) ?
+                            QString::number(maxScore / 1000) + QString(" km"):
+                            QString::number(maxScore * METERS_TO_FEET / 5280) + QString(" mi");
                 break;
             case HorizontalSpeed:
             case VerticalSpeed:
-                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
+                labelText = (m_units == PlotValue::Metric) ?
+                            QString::number(maxScore * MPS_TO_KMH) + QString(" km/h"):
+                            QString::number(maxScore * MPS_TO_MPH) + QString(" mph");
                 break;
             }
             progress.setLabelText(QString("Optimizing (best score is ") +
