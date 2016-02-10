@@ -1,3 +1,5 @@
+#include <QGridLayout>
+#include <QPushButton>
 #include <QToolTip>
 
 #include "common.h"
@@ -8,7 +10,12 @@ WindPlot::WindPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0)
 {
+    QPushButton *save = new QPushButton(tr("Save"));
 
+    QGridLayout *layout = new QGridLayout;
+    setLayout(layout);
+
+    layout->addWidget(save, 0, 0, Qt::AlignRight | Qt::AlignTop);
 }
 
 QSize WindPlot::sizeHint() const
