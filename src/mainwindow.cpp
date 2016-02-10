@@ -471,41 +471,20 @@ void MainWindow::on_actionImport_triggered()
         m_data.append(pt);
     }
 
-    double dist2D = 0, dist3D = 0;
-
+    // Time and altitude
     for (int i = 0; i < m_data.size(); ++i)
     {
         const DataPoint &dp0 = m_data[m_data.size() - 1];
         DataPoint &dp = m_data[i];
 
-        double distance = getDistance(dp0, dp);
-        double bearing = getBearing(dp0, dp);
-
-        dp.x = distance * sin(bearing);
-        dp.y = distance * cos(bearing);
-        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
-
         qint64 start = dp0.dateTime.toMSecsSinceEpoch();
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
 
         dp.t = (double) (end - start) / 1000;
-
-        if (i > 0)
-        {
-            const DataPoint &dpPrev = m_data[i - 1];
-
-            double dh = getDistance(dpPrev, dp);
-            double dz = dp.hMSL - dpPrev.hMSL;
-
-            dist2D += dh;
-            dist3D += sqrt(dh * dh + dz * dz);
-        }
-
-        dp.dist2D = dist2D;
-        dp.dist3D = dist3D;
+        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
     }
 
-    // Wind-adjusted velocity
+    // Wind adjustments
     updateVelocity();
 
     // Clear optimum
@@ -520,6 +499,19 @@ void MainWindow::updateVelocity()
 {
     if (mWindAdjustment)
     {
+        // Wind-adjusted position
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp0 = interpolateDataT(0);
+            DataPoint &dp = m_data[i];
+
+            double distance = getDistance(dp0, dp);
+            double bearing = getBearing(dp0, dp);
+
+            dp.x = distance * sin(bearing) - mWindE * dp.t;
+            dp.y = distance * cos(bearing) - mWindN * dp.t;
+        }
+
         // Wind-adjusted velocity
         for (int i = 0; i < m_data.size(); ++i)
         {
@@ -531,6 +523,19 @@ void MainWindow::updateVelocity()
     }
     else
     {
+        // Unadjusted position
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp0 = interpolateDataT(0);
+            DataPoint &dp = m_data[i];
+
+            double distance = getDistance(dp0, dp);
+            double bearing = getBearing(dp0, dp);
+
+            dp.x = distance * sin(bearing);
+            dp.y = distance * cos(bearing);
+        }
+
         // Unadjusted velocity
         for (int i = 0; i < m_data.size(); ++i)
         {
@@ -539,6 +544,30 @@ void MainWindow::updateVelocity()
             dp.vx = dp.velE;
             dp.vy = dp.velN;
         }
+    }
+
+    // Distance measurements
+    double dist2D = 0, dist3D = 0;
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        if (i > 0)
+        {
+            const DataPoint &dpPrev = m_data[i - 1];
+
+            double dx = dp.x - dpPrev.x;
+            double dy = dp.y - dpPrev.y;
+            double dh = sqrt(dx * dx + dy * dy);
+            double dz = dp.hMSL - dpPrev.hMSL;
+
+            dist2D += dh;
+            dist3D += sqrt(dh * dh + dz * dz);
+        }
+
+        dp.dist2D = dist2D;
+        dp.dist3D = dist3D;
     }
 
     // Cumulative heading

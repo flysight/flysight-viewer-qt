@@ -67,7 +67,9 @@ void ScoringView::updateView()
 
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
-        const double distance = mMainWindow->getDistance(dpBottom, dpTop) ;
+        const double dx = dpBottom.x - dpTop.x;
+        const double dy = dpBottom.y - dpTop.y;
+        const double distance = sqrt(dx * dx + dy * dy) ;
         const double horizontalSpeed = distance / time;
         const double verticalSpeed = (top - bottom) / time;
 

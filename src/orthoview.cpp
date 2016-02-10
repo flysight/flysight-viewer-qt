@@ -290,8 +290,7 @@ void OrthoView::updateView()
 
         for (int i = 0; i < mMainWindow->waypointSize(); ++i)
         {
-            const DataPoint &dp0 = mMainWindow->dataPoint(
-                        mMainWindow->dataSize() - 1);
+            const DataPoint &dp0 = mMainWindow->interpolateDataT(0);
             DataPoint dp = mMainWindow->waypoint(i);
 
             double distance = mMainWindow->getDistance(dp0, dp);
