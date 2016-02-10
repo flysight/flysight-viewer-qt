@@ -98,6 +98,19 @@ void ScoringView::updateView()
     else
     {
         // Update display
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            ui->distanceUnits->setText(tr("km"));
+            ui->horizontalSpeedUnits->setText(tr("km/h"));
+            ui->verticalSpeedUnits->setText(tr("km/h"));
+        }
+        else
+        {
+            ui->distanceUnits->setText(tr("mi"));
+            ui->horizontalSpeedUnits->setText(tr("mph"));
+            ui->verticalSpeedUnits->setText(tr("mph"));
+        }
+
         ui->timeEdit->setText(tr("n/a"));
         ui->distanceEdit->setText(tr("n/a"));
         ui->horizontalSpeedEdit->setText(tr("n/a"));
