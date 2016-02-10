@@ -327,10 +327,20 @@ void OrthoView::updateView()
         QCPItemText *textLabel = new QCPItemText(this);
         addItem(textLabel);
 
+        QPainter painter(this);
+        double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
+
+        double xValPerPix = xAxis->range().size() / axisRect()->width();
+        double xValPerMM = xValPerPix / mmPerPix;
+
+        double yValPerPix = yAxis->range().size() / axisRect()->height();
+        double yValPerMM = yValPerPix / mmPerPix;
+
         textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
         textLabel->setTextAlignment(Qt::AlignRight);
-        textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-        textLabel->position->setCoords(0.9, 0.9);
+        textLabel->position->setType(QCPItemPosition::ptPlotCoords);
+        textLabel->position->setCoords(xAxis->range().upper - 5 * xValPerMM,
+                                       yAxis->range().lower + 5 * yValPerMM);
         textLabel->setText(QString("Zoom = %1%").arg(m_scale * 100, 0, 'f', 0));
     }
 
