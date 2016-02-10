@@ -106,6 +106,8 @@
     <addaction name="separator"/>
     <addaction name="actionZero"/>
     <addaction name="actionGround"/>
+    <addaction name="separator"/>
+    <addaction name="actionWind"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -606,6 +608,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+C</string>
+   </property>
+  </action>
+  <action name="actionWind">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wind Adjustment</string>
+   </property>
+   <property name="shortcut">
+    <string>W</string>
    </property>
   </action>
  </widget>

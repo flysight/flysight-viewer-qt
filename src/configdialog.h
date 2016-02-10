@@ -56,6 +56,14 @@ public:
     void setLineThickness(double with);
     double lineThickness() const;
 
+    void setWindSpeed(double speed);
+    double windSpeed() const;
+
+    void setWindUnits(QString units);
+
+    void setWindDirection(double dir);
+    double windDirection() const;
+
 private:
     Ui::ConfigDialog *ui;
 

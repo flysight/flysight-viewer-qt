@@ -290,8 +290,7 @@ void OrthoView::updateView()
 
         for (int i = 0; i < mMainWindow->waypointSize(); ++i)
         {
-            const DataPoint &dp0 = mMainWindow->dataPoint(
-                        mMainWindow->dataSize() - 1);
+            const DataPoint &dp0 = mMainWindow->interpolateDataT(0);
             DataPoint dp = mMainWindow->waypoint(i);
 
             double distance = mMainWindow->getDistance(dp0, dp);
@@ -328,10 +327,20 @@ void OrthoView::updateView()
         QCPItemText *textLabel = new QCPItemText(this);
         addItem(textLabel);
 
+        QPainter painter(this);
+        double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
+
+        double xRatioPerPix = 1.0 / axisRect()->width();
+        double xRatioPerMM = xRatioPerPix / mmPerPix;
+
+        double yRatioPerPix = 1.0 / axisRect()->height();
+        double yRatioPerMM = yRatioPerPix / mmPerPix;
+
         textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
         textLabel->setTextAlignment(Qt::AlignRight);
         textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-        textLabel->position->setCoords(0.9, 0.9);
+        textLabel->position->setCoords(1 - 5 * xRatioPerMM,
+                                       1 - 5 * yRatioPerMM);
         textLabel->setText(QString("Zoom = %1%").arg(m_scale * 100, 0, 'f', 0));
     }
 

@@ -32,6 +32,7 @@ private:
 
 public slots:
     void updatePlot();
+    void save();
 };
 
 #endif // WINDPLOT_H

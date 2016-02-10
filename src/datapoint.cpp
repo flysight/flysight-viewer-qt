@@ -48,5 +48,8 @@ DataPoint DataPoint::interpolate(
     ret.omega = p1.omega + a * (p2.omega - p1.omega);
     ret.cAcc = p1.cAcc + a * (p2.cAcc - p1.cAcc);
 
+    ret.vx = p1.vx + a * (p2.vx - p1.vx);
+    ret.vy = p1.vy + a * (p2.vy - p1.vy);
+
     return ret;
 }

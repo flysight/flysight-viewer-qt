@@ -638,6 +638,23 @@ void DataPlot::updatePlot()
         xAxis->setRange(QCPRange(xMin, xMax));
     }
 
+    if (mMainWindow->windAdjustment())
+    {
+        // Add label to indicate wind correction
+        QCPItemText *textLabel = new QCPItemText(this);
+        addItem(textLabel);
+
+        textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignRight);
+        textLabel->setTextAlignment(Qt::AlignRight);
+        textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+        textLabel->position->setCoords(1, 0);
+        textLabel->setBrush(QBrush(Qt::red));
+        textLabel->setColor(Qt::white);
+        textLabel->setText(tr("Results are adjusted for wind"));
+        textLabel->setFont(QFont(font().family(), font().pointSize(), QFont::Black));
+        textLabel->setPadding(QMargins(2, 2, 2, 2));
+    }
+
     updateYRanges();
 }
 

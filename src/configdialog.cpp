@@ -32,6 +32,8 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
                 QStringList() << tr("Aerodynamics"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Plots"));
+    ui->contentsWidget->addItems(
+                QStringList() << tr("Wind"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -262,4 +264,32 @@ void ConfigDialog::setLineThickness(
 double ConfigDialog::lineThickness() const
 {
     return ui->lineThicknessEdit->text().toDouble();
+}
+
+void ConfigDialog::setWindSpeed(
+        double speed)
+{
+    ui->windSpeedEdit->setText(QString::number(speed));
+}
+
+double ConfigDialog::windSpeed() const
+{
+    return ui->windSpeedEdit->text().toDouble();
+}
+
+void ConfigDialog::setWindUnits(
+        QString units)
+{
+    ui->windUnitsLabel->setText(units);
+}
+
+void ConfigDialog::setWindDirection(
+        double dir)
+{
+    ui->windDirectionEdit->setText(QString::number(dir));
+}
+
+double ConfigDialog::windDirection() const
+{
+    return ui->windDirectionEdit->text().toDouble();
 }

@@ -124,7 +124,7 @@ QVector< DataPoint > Genome::simulate(
         const DataPoint &dp0,
         double windowBottom)
 {
-    const double velH = sqrt(dp0.velE * dp0.velE + dp0.velN * dp0.velN);
+    const double velH = sqrt(dp0.vx * dp0.vx + dp0.vy * dp0.vy);
 
     double t      = dp0.t;
     double theta  = atan2(-dp0.velD, velH);
@@ -184,8 +184,8 @@ QVector< DataPoint > Genome::simulate(
 
         pt.hMSL  = y;
 
-        pt.velN  = 0;
-        pt.velE  = v * cos(theta);
+        pt.vx    = 0;
+        pt.vy    = v * cos(theta);
         pt.velD  = -v * sin(theta);
 
         pt.t = t;

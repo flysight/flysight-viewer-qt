@@ -114,6 +114,9 @@ public:
     void setLineThickness(double width);
     double lineThickness() const { return mLineThickness; }
 
+    void setWind(double windE, double windN);
+    bool windAdjustment() const { return mWindAdjustment; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -145,6 +148,7 @@ private slots:
     void on_actionMeasure_triggered();
     void on_actionZero_triggered();
     void on_actionGround_triggered();
+    void on_actionWind_triggered();
 
     void on_actionTime_triggered();
     void on_actionDistance2D_triggered();
@@ -172,8 +176,6 @@ private:
     PlotValue::Units      m_units;
 
     QVector< DataPoint >  m_waypoints;
-
-    double                m_timeStep;
 
     Tool                  mTool;
     Tool                  mPrevTool;
@@ -205,6 +207,9 @@ private:
 
     double                mLineThickness;
 
+    double                mWindE, mWindN;
+    bool                  mWindAdjustment;
+
     void writeSettings();
     void readSettings();
 
@@ -220,6 +225,7 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
+    void updateVelocity();
     void initAerodynamics();
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;

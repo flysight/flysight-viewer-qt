@@ -1,3 +1,5 @@
+#include <QGridLayout>
+#include <QPushButton>
 #include <QToolTip>
 
 #include "common.h"
@@ -8,7 +10,14 @@ WindPlot::WindPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0)
 {
+    QGridLayout *layout = new QGridLayout;
+    setLayout(layout);
 
+    QPushButton *save = new QPushButton(tr("Save"));
+    layout->addWidget(save, 0, 0, Qt::AlignRight | Qt::AlignTop);
+
+    connect(save, SIGNAL(clicked()),
+            this, SLOT(save()));
 }
 
 QSize WindPlot::sizeHint() const
@@ -207,10 +216,20 @@ void WindPlot::updatePlot()
     double direction = atan2(-mWindE, -mWindN) / M_PI * 180.0;
     if (direction < 0) direction += 360.0;
 
+    QPainter painter(this);
+    double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
+
+    double xRatioPerPix = 1.0 / axisRect()->width();
+    double xRatioPerMM = xRatioPerPix / mmPerPix;
+
+    double yRatioPerPix = 1.0 / axisRect()->height();
+    double yRatioPerMM = yRatioPerPix / mmPerPix;
+
     textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
     textLabel->setTextAlignment(Qt::AlignRight);
     textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel->position->setCoords(0.9, 0.9);
+    textLabel->position->setCoords(1 - 5 * xRatioPerMM,
+                                   1 - 5 * yRatioPerMM);
     textLabel->setText(
                 QString("Wind speed = %1 %2\nWind direction = %3 deg\nAircraft speed = %4 %5")
                     .arg(sqrt(mWindE * mWindE + mWindN * mWindN) * factor)
@@ -328,4 +347,9 @@ void WindPlot::updateWind(
     mWindE = xc;
     mWindN = yc;
     mVelAircraft = R;
+}
+
+void WindPlot::save()
+{
+    mMainWindow->setWind(mWindE, mWindN);
 }

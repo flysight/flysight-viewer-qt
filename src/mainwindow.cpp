@@ -45,7 +45,10 @@ MainWindow::MainWindow(
     m_maxLift(0.5),
     m_maxLD(3.0),
     m_simulationTime(120),
-    mLineThickness(0)
+    mLineThickness(0),
+    mWindE(0),
+    mWindN(0),
+    mWindAdjustment(false)
 {
     m_ui->setupUi(this);
 
@@ -110,6 +113,8 @@ void MainWindow::writeSettings()
     settings.setValue("maxLD", m_maxLD);
     settings.setValue("simulationTime", m_simulationTime);
     settings.setValue("lineThickness", mLineThickness);
+    settings.setValue("windE", mWindE);
+    settings.setValue("windN", mWindN);
     settings.endGroup();
 }
 
@@ -129,6 +134,8 @@ void MainWindow::readSettings()
     m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
     m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
     mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
+    mWindE = settings.value("windE", mWindE).toDouble();
+    mWindN = settings.value("windN", mWindN).toDouble();
     settings.endGroup();
 }
 
@@ -427,18 +434,9 @@ void MainWindow::on_actionImport_triggered()
             if (s == "hAcc")    colMap[HAcc]    = i;
             if (s == "vAcc")    colMap[VAcc]    = i;
             if (s == "sAcc")    colMap[SAcc]    = i;
-            if (s == "heading") colMap[Heading] = i;
-            if (s == "cAcc")    colMap[CAcc]    = i;
             if (s == "numSV")   colMap[NumSV]   = i;
         }
     }
-
-    // Flags for what data is available
-    const bool hasHeading = colMap.contains(Heading) && colMap.contains(CAcc);
-
-    // Cumulative heading
-    double prevHeading;
-    bool firstHeading = true;
 
     // Skip next row
     if (!in.atEnd()) in.readLine();
@@ -468,94 +466,26 @@ void MainWindow::on_actionImport_triggered()
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
 
-        if (hasHeading)
-        {
-            pt.heading = cols[colMap[Heading]].toDouble();
-            pt.cAcc    = cols[colMap[CAcc]].toDouble();
-        }
-        else
-        {
-            // Calculate heading
-            pt.heading = atan2(pt.velE, pt.velN) / PI * 180;
-
-            // Calculate heading accuracy
-            const double s = DataPoint::totalSpeed(pt);
-            if (s != 0) pt.cAcc = pt.sAcc / s;
-            else        pt.cAcc = 0;
-        }
-
-        // Adjust heading
-        if (!firstHeading)
-        {
-            while (pt.heading <  prevHeading - 180) pt.heading += 360;
-            while (pt.heading >= prevHeading + 180) pt.heading -= 360;
-        }
-
-        firstHeading = false;
-        prevHeading = pt.heading;
-
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
         m_data.append(pt);
     }
 
-    double dist2D = 0, dist3D = 0;
-
-    QVector< double > dt;
-
+    // Time and altitude
     for (int i = 0; i < m_data.size(); ++i)
     {
         const DataPoint &dp0 = m_data[m_data.size() - 1];
         DataPoint &dp = m_data[i];
 
-        double distance = getDistance(dp0, dp);
-        double bearing = getBearing(dp0, dp);
-
-        dp.x = distance * sin(bearing);
-        dp.y = distance * cos(bearing);
-        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
-
         qint64 start = dp0.dateTime.toMSecsSinceEpoch();
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
 
         dp.t = (double) (end - start) / 1000;
-
-        if (i > 0)
-        {
-            const DataPoint &dpPrev = m_data[i - 1];
-
-            double dh = getDistance(dpPrev, dp);
-            double dz = dp.hMSL - dpPrev.hMSL;
-
-            dist2D += dh;
-            dist3D += sqrt(dh * dh + dz * dz);
-
-            dt.append(dp.t - dpPrev.t);
-        }
-
-        dp.dist2D = dist2D;
-        dp.dist3D = dist3D;
+        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
     }
 
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.curv = getSlope(i, DataPoint::diveAngle);
-        dp.accel = getSlope(i, DataPoint::totalSpeed);
-        dp.omega = getSlope(i, DataPoint::course);
-    }
-
-    initAerodynamics();
-
-    if (dt.size() > 0)
-    {
-        qSort(dt.begin(), dt.end());
-        m_timeStep = dt.at(dt.size() / 2);
-    }
-    else
-    {
-        m_timeStep = 1.0;
-    }
+    // Wind adjustments
+    updateVelocity();
 
     // Clear optimum
     m_optimal.clear();
@@ -563,6 +493,122 @@ void MainWindow::on_actionImport_triggered()
     initRange();
 
     emit dataLoaded();
+}
+
+void MainWindow::updateVelocity()
+{
+    if (mWindAdjustment)
+    {
+        // Wind-adjusted position
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp0 = interpolateDataT(0);
+            DataPoint &dp = m_data[i];
+
+            double distance = getDistance(dp0, dp);
+            double bearing = getBearing(dp0, dp);
+
+            dp.x = distance * sin(bearing) - mWindE * dp.t;
+            dp.y = distance * cos(bearing) - mWindN * dp.t;
+        }
+
+        // Wind-adjusted velocity
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            DataPoint &dp = m_data[i];
+
+            dp.vx = dp.velE - mWindE;
+            dp.vy = dp.velN - mWindN;
+        }
+    }
+    else
+    {
+        // Unadjusted position
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp0 = interpolateDataT(0);
+            DataPoint &dp = m_data[i];
+
+            double distance = getDistance(dp0, dp);
+            double bearing = getBearing(dp0, dp);
+
+            dp.x = distance * sin(bearing);
+            dp.y = distance * cos(bearing);
+        }
+
+        // Unadjusted velocity
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            DataPoint &dp = m_data[i];
+
+            dp.vx = dp.velE;
+            dp.vy = dp.velN;
+        }
+    }
+
+    // Distance measurements
+    double dist2D = 0, dist3D = 0;
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        if (i > 0)
+        {
+            const DataPoint &dpPrev = m_data[i - 1];
+
+            double dx = dp.x - dpPrev.x;
+            double dy = dp.y - dpPrev.y;
+            double dh = sqrt(dx * dx + dy * dy);
+            double dz = dp.hMSL - dpPrev.hMSL;
+
+            dist2D += dh;
+            dist3D += sqrt(dh * dh + dz * dz);
+        }
+
+        dp.dist2D = dist2D;
+        dp.dist3D = dist3D;
+    }
+
+    // Cumulative heading
+    double prevHeading;
+    bool firstHeading = true;
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        // Calculate heading
+        dp.heading = atan2(dp.vx, dp.vy) / PI * 180;
+
+        // Calculate heading accuracy
+        const double s = DataPoint::totalSpeed(dp);
+        if (s != 0) dp.cAcc = dp.sAcc / s;
+        else        dp.cAcc = 0;
+
+        // Adjust heading
+        if (!firstHeading)
+        {
+            while (dp.heading <  prevHeading - 180) dp.heading += 360;
+            while (dp.heading >= prevHeading + 180) dp.heading -= 360;
+        }
+
+        firstHeading = false;
+        prevHeading = dp.heading;
+    }
+
+    // Parameters depending on velocity
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        dp.curv = getSlope(i, DataPoint::diveAngle);
+        dp.accel = getSlope(i, DataPoint::totalSpeed);
+        dp.omega = getSlope(i, DataPoint::course);
+    }
+
+    // Initialize aerodynamics
+    initAerodynamics();
 }
 
 void MainWindow::initAerodynamics()
@@ -581,10 +627,10 @@ void MainWindow::initAerodynamics()
 
         // Calculate acceleration due to drag
         const double vel = DataPoint::totalSpeed(dp);
-        const double proj = (accelN * dp.velN + accelE * dp.velE + accelD * dp.velD) / vel;
+        const double proj = (accelN * dp.vy + accelE * dp.vx + accelD * dp.velD) / vel;
 
-        const double dragN = proj * dp.velN / vel;
-        const double dragE = proj * dp.velE / vel;
+        const double dragN = proj * dp.vy / vel;
+        const double dragE = proj * dp.vx / vel;
         const double dragD = proj * dp.velD / vel;
 
         const double accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
@@ -931,6 +977,16 @@ void MainWindow::on_actionGround_triggered()
     setTool(Ground);
 }
 
+void MainWindow::on_actionWind_triggered()
+{
+    mWindAdjustment = !mWindAdjustment;
+    m_ui->actionWind->setChecked(mWindAdjustment);
+
+    updateVelocity();
+
+    emit dataChanged();
+}
+
 void MainWindow::on_actionImportGates_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Import Gates"), "", tr("CSV Files (*.csv)"));
@@ -996,6 +1052,17 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setMaxLD(m_maxLD);
     dlg.setSimulationTime(m_simulationTime);
     dlg.setLineThickness(mLineThickness);
+
+    const double factor = (m_units == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
+    const QString unitText = (m_units == PlotValue::Metric) ? "km/h" : "mph";
+
+    double windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN) * factor;
+    double windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
+    if (windDirection < 0) windDirection += 360;
+
+    dlg.setWindSpeed(windSpeed);
+    dlg.setWindUnits(unitText);
+    dlg.setWindDirection(windDirection);
 
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -1075,6 +1142,15 @@ void MainWindow::on_actionPreferences_triggered()
 
         if (plotChanged)
         {
+            emit dataChanged();
+        }
+
+        if (mWindE != -dlg.windSpeed() * sin(dlg.windDirection() / 180 * PI) / factor ||
+            mWindN != -dlg.windSpeed() * cos(dlg.windDirection() / 180 * PI) / factor)
+        {
+            mWindE = -dlg.windSpeed() * sin(dlg.windDirection() / 180 * PI) / factor;
+            mWindN = -dlg.windSpeed() * cos(dlg.windDirection() / 180 * PI) / factor;
+
             emit dataChanged();
         }
     }
@@ -1613,11 +1689,15 @@ void MainWindow::optimize(
                 labelText = QString::number(maxScore) + QString(" s");
                 break;
             case Distance:
-                labelText = QString::number(maxScore / 1000) + QString(" km");
+                labelText = (m_units == PlotValue::Metric) ?
+                            QString::number(maxScore / 1000) + QString(" km"):
+                            QString::number(maxScore * METERS_TO_FEET / 5280) + QString(" mi");
                 break;
             case HorizontalSpeed:
             case VerticalSpeed:
-                labelText = QString::number(maxScore * MPS_TO_KMH) + QString(" km/h");
+                labelText = (m_units == PlotValue::Metric) ?
+                            QString::number(maxScore * MPS_TO_KMH) + QString(" km/h"):
+                            QString::number(maxScore * MPS_TO_MPH) + QString(" mph");
                 break;
             }
             progress.setLabelText(QString("Optimizing (best score is ") +
@@ -1747,5 +1827,17 @@ void MainWindow::setLineThickness(
         double width)
 {
     mLineThickness = width;
+    emit dataChanged();
+}
+
+void MainWindow::setWind(
+        double windE,
+        double windN)
+{
+    mWindE = windE;
+    mWindN = windN;
+
+    updateVelocity();
+
     emit dataChanged();
 }

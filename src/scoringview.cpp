@@ -67,7 +67,9 @@ void ScoringView::updateView()
 
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
-        const double distance = mMainWindow->getDistance(dpBottom, dpTop) ;
+        const double dx = dpBottom.x - dpTop.x;
+        const double dy = dpBottom.y - dpTop.y;
+        const double distance = sqrt(dx * dx + dy * dy) ;
         const double horizontalSpeed = distance / time;
         const double verticalSpeed = (top - bottom) / time;
 
@@ -96,6 +98,19 @@ void ScoringView::updateView()
     else
     {
         // Update display
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            ui->distanceUnits->setText(tr("km"));
+            ui->horizontalSpeedUnits->setText(tr("km/h"));
+            ui->verticalSpeedUnits->setText(tr("km/h"));
+        }
+        else
+        {
+            ui->distanceUnits->setText(tr("mi"));
+            ui->horizontalSpeedUnits->setText(tr("mph"));
+            ui->verticalSpeedUnits->setText(tr("mph"));
+        }
+
         ui->timeEdit->setText(tr("n/a"));
         ui->distanceEdit->setText(tr("n/a"));
         ui->horizontalSpeedEdit->setText(tr("n/a"));
