@@ -312,17 +312,17 @@ void LiftDragPlot::updatePlot()
     QPainter painter(this);
     double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
 
-    double xValPerPix = xAxis->range().size() / axisRect()->width();
-    double xValPerMM = xValPerPix / mmPerPix;
+    double xRatioPerPix = 1.0 / axisRect()->width();
+    double xRatioPerMM = xRatioPerPix / mmPerPix;
 
-    double yValPerPix = yAxis->range().size() / axisRect()->height();
-    double yValPerMM = yValPerPix / mmPerPix;
+    double yRatioPerPix = 1.0 / axisRect()->height();
+    double yRatioPerMM = yRatioPerPix / mmPerPix;
 
     textLabel->setPositionAlignment(Qt::AlignBottom|Qt::AlignRight);
     textLabel->setTextAlignment(Qt::AlignRight);
-    textLabel->position->setType(QCPItemPosition::ptPlotCoords);
-    textLabel->position->setCoords(xAxis->range().upper - 5 * xValPerMM,
-                                   yAxis->range().lower + 5 * yValPerMM);
+    textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+    textLabel->position->setCoords(1 - 5 * xRatioPerMM,
+                                   1 - 5 * yRatioPerMM);
     textLabel->setText(
                 QString("Minimum drag = %1\nMaximum lift = %2\nMaximum L/D = %3")
                     .arg(fabs(c))
