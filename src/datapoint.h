@@ -47,6 +47,9 @@ public:
     double      lift;
     double      drag;
 
+    double      vx;     // Wind-corrected velocity
+    double      vy;
+
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
                                  double a);
@@ -58,12 +61,12 @@ public:
 
     static double northSpeed(const DataPoint &dp)
     {
-        return dp.velN;
+        return dp.vy;
     }
 
     static double eastSpeed(const DataPoint &dp)
     {
-        return dp.velE;
+        return dp.vx;
     }
 
     static double verticalSpeed(const DataPoint &dp)
@@ -73,18 +76,18 @@ public:
 
     static double horizontalSpeed(const DataPoint &dp)
     {
-        return sqrt(dp.velE * dp.velE + dp.velN * dp.velN);
+        return sqrt(dp.vx * dp.vx + dp.vy * dp.vy);
     }
 
     static double totalSpeed(const DataPoint &dp)
     {
-        return sqrt(dp.velE * dp.velE + dp.velN * dp.velN + dp.velD * dp.velD);
+        return sqrt(dp.vx * dp.vx + dp.vy * dp.vy + dp.velD * dp.velD);
     }
 
     static double diveAngle(const DataPoint &dp)
     {
         const double pi = 3.14159265359;
-        return atan2(dp.velD, sqrt(dp.velE * dp.velE + dp.velN * dp.velN)) / pi * 180;
+        return atan2(dp.velD, sqrt(dp.vx * dp.vx + dp.vy * dp.vy)) / pi * 180;
     }
 
     static double curvature(const DataPoint &dp)
@@ -94,7 +97,7 @@ public:
 
     static double glideRatio(const DataPoint &dp)
     {
-        if (dp.velD != 0) return sqrt(dp.velE * dp.velE + dp.velN * dp.velN) / dp.velD;
+        if (dp.velD != 0) return sqrt(dp.vx * dp.vx + dp.vy * dp.vy) / dp.velD;
         else              return 0;
     }
 

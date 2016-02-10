@@ -47,7 +47,8 @@ MainWindow::MainWindow(
     m_simulationTime(120),
     mLineThickness(0),
     mWindE(0),
-    mWindN(0)
+    mWindN(0),
+    mWindAdjustment(false)
 {
     m_ui->setupUi(this);
 
@@ -433,18 +434,9 @@ void MainWindow::on_actionImport_triggered()
             if (s == "hAcc")    colMap[HAcc]    = i;
             if (s == "vAcc")    colMap[VAcc]    = i;
             if (s == "sAcc")    colMap[SAcc]    = i;
-            if (s == "heading") colMap[Heading] = i;
-            if (s == "cAcc")    colMap[CAcc]    = i;
             if (s == "numSV")   colMap[NumSV]   = i;
         }
     }
-
-    // Flags for what data is available
-    const bool hasHeading = colMap.contains(Heading) && colMap.contains(CAcc);
-
-    // Cumulative heading
-    double prevHeading;
-    bool firstHeading = true;
 
     // Skip next row
     if (!in.atEnd()) in.readLine();
@@ -473,32 +465,6 @@ void MainWindow::on_actionImport_triggered()
         pt.hAcc  = cols[colMap[HAcc]].toDouble();
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
-
-        if (hasHeading)
-        {
-            pt.heading = cols[colMap[Heading]].toDouble();
-            pt.cAcc    = cols[colMap[CAcc]].toDouble();
-        }
-        else
-        {
-            // Calculate heading
-            pt.heading = atan2(pt.velE, pt.velN) / PI * 180;
-
-            // Calculate heading accuracy
-            const double s = DataPoint::totalSpeed(pt);
-            if (s != 0) pt.cAcc = pt.sAcc / s;
-            else        pt.cAcc = 0;
-        }
-
-        // Adjust heading
-        if (!firstHeading)
-        {
-            while (pt.heading <  prevHeading - 180) pt.heading += 360;
-            while (pt.heading >= prevHeading + 180) pt.heading -= 360;
-        }
-
-        firstHeading = false;
-        prevHeading = pt.heading;
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
@@ -543,15 +509,8 @@ void MainWindow::on_actionImport_triggered()
         dp.dist3D = dist3D;
     }
 
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.curv = getSlope(i, DataPoint::diveAngle);
-        dp.accel = getSlope(i, DataPoint::totalSpeed);
-        dp.omega = getSlope(i, DataPoint::course);
-    }
-
-    initAerodynamics();
+    // Wind-adjusted velocity
+    updateVelocity();
 
     if (dt.size() > 0)
     {
@@ -571,6 +530,72 @@ void MainWindow::on_actionImport_triggered()
     emit dataLoaded();
 }
 
+void MainWindow::updateVelocity()
+{
+    if (mWindAdjustment)
+    {
+        // Wind-adjusted velocity
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            DataPoint &dp = m_data[i];
+
+            dp.vx = dp.velE - mWindE;
+            dp.vy = dp.velN - mWindN;
+        }
+    }
+    else
+    {
+        // Unadjusted velocity
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            DataPoint &dp = m_data[i];
+
+            dp.vx = dp.velE;
+            dp.vy = dp.velN;
+        }
+    }
+
+    // Cumulative heading
+    double prevHeading;
+    bool firstHeading = true;
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        // Calculate heading
+        dp.heading = atan2(dp.vx, dp.vy) / PI * 180;
+
+        // Calculate heading accuracy
+        const double s = DataPoint::totalSpeed(dp);
+        if (s != 0) dp.cAcc = dp.sAcc / s;
+        else        dp.cAcc = 0;
+
+        // Adjust heading
+        if (!firstHeading)
+        {
+            while (dp.heading <  prevHeading - 180) dp.heading += 360;
+            while (dp.heading >= prevHeading + 180) dp.heading -= 360;
+        }
+
+        firstHeading = false;
+        prevHeading = dp.heading;
+    }
+
+    // Parameters depending on velocity
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+
+        dp.curv = getSlope(i, DataPoint::diveAngle);
+        dp.accel = getSlope(i, DataPoint::totalSpeed);
+        dp.omega = getSlope(i, DataPoint::course);
+    }
+
+    // Initialize aerodynamics
+    initAerodynamics();
+}
+
 void MainWindow::initAerodynamics()
 {
     for (int i = 0; i < m_data.size(); ++i)
@@ -587,10 +612,10 @@ void MainWindow::initAerodynamics()
 
         // Calculate acceleration due to drag
         const double vel = DataPoint::totalSpeed(dp);
-        const double proj = (accelN * dp.velN + accelE * dp.velE + accelD * dp.velD) / vel;
+        const double proj = (accelN * dp.vy + accelE * dp.vx + accelD * dp.velD) / vel;
 
-        const double dragN = proj * dp.velN / vel;
-        const double dragE = proj * dp.velE / vel;
+        const double dragN = proj * dp.vy / vel;
+        const double dragE = proj * dp.vx / vel;
         const double dragD = proj * dp.velD / vel;
 
         const double accelDrag = sqrt(dragN * dragN + dragE * dragE + dragD * dragD);
@@ -935,6 +960,16 @@ void MainWindow::on_actionZero_triggered()
 void MainWindow::on_actionGround_triggered()
 {
     setTool(Ground);
+}
+
+void MainWindow::on_actionWind_triggered()
+{
+    mWindAdjustment = !mWindAdjustment;
+    m_ui->actionWind->setChecked(mWindAdjustment);
+
+    updateVelocity();
+
+    emit dataChanged();
 }
 
 void MainWindow::on_actionImportGates_triggered()
@@ -1782,5 +1817,8 @@ void MainWindow::setWind(
 {
     mWindE = windE;
     mWindN = windN;
+
+    updateVelocity();
+
     emit dataChanged();
 }
