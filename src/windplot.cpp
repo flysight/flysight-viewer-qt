@@ -15,6 +15,9 @@ WindPlot::WindPlot(QWidget *parent) :
 
     QPushButton *save = new QPushButton(tr("Save"));
     layout->addWidget(save, 0, 0, Qt::AlignRight | Qt::AlignTop);
+
+    connect(save, SIGNAL(clicked()),
+            this, SLOT(save()));
 }
 
 QSize WindPlot::sizeHint() const
@@ -334,4 +337,9 @@ void WindPlot::updateWind(
     mWindE = xc;
     mWindN = yc;
     mVelAircraft = R;
+}
+
+void WindPlot::save()
+{
+    mMainWindow->setWind(mWindE, mWindN);
 }

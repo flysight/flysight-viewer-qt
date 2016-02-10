@@ -114,6 +114,8 @@ public:
     void setLineThickness(double width);
     double lineThickness() const { return mLineThickness; }
 
+    void setWind(double windE, double windN);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -204,6 +206,8 @@ private:
     int                   m_simulationTime;
 
     double                mLineThickness;
+
+    double                mWindE, mWindN;
 
     void writeSettings();
     void readSettings();

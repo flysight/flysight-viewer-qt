@@ -45,7 +45,9 @@ MainWindow::MainWindow(
     m_maxLift(0.5),
     m_maxLD(3.0),
     m_simulationTime(120),
-    mLineThickness(0)
+    mLineThickness(0),
+    mWindE(0),
+    mWindN(0)
 {
     m_ui->setupUi(this);
 
@@ -110,6 +112,8 @@ void MainWindow::writeSettings()
     settings.setValue("maxLD", m_maxLD);
     settings.setValue("simulationTime", m_simulationTime);
     settings.setValue("lineThickness", mLineThickness);
+    settings.setValue("windE", mWindE);
+    settings.setValue("windN", mWindN);
     settings.endGroup();
 }
 
@@ -129,6 +133,8 @@ void MainWindow::readSettings()
     m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
     m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
     mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
+    mWindE = settings.value("windE", mWindE).toDouble();
+    mWindN = settings.value("windN", mWindN).toDouble();
     settings.endGroup();
 }
 
@@ -1747,5 +1753,14 @@ void MainWindow::setLineThickness(
         double width)
 {
     mLineThickness = width;
+    emit dataChanged();
+}
+
+void MainWindow::setWind(
+        double windE,
+        double windN)
+{
+    mWindE = windE;
+    mWindN = windN;
     emit dataChanged();
 }
