@@ -115,6 +115,7 @@ public:
     double lineThickness() const { return mLineThickness; }
 
     void setWind(double windE, double windN);
+    bool windAdjustment() const { return mWindAdjustment; }
 
 protected:
     void closeEvent(QCloseEvent *event);
