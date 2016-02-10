@@ -473,8 +473,6 @@ void MainWindow::on_actionImport_triggered()
 
     double dist2D = 0, dist3D = 0;
 
-    QVector< double > dt;
-
     for (int i = 0; i < m_data.size(); ++i)
     {
         const DataPoint &dp0 = m_data[m_data.size() - 1];
@@ -501,8 +499,6 @@ void MainWindow::on_actionImport_triggered()
 
             dist2D += dh;
             dist3D += sqrt(dh * dh + dz * dz);
-
-            dt.append(dp.t - dpPrev.t);
         }
 
         dp.dist2D = dist2D;
@@ -511,16 +507,6 @@ void MainWindow::on_actionImport_triggered()
 
     // Wind-adjusted velocity
     updateVelocity();
-
-    if (dt.size() > 0)
-    {
-        qSort(dt.begin(), dt.end());
-        m_timeStep = dt.at(dt.size() / 2);
-    }
-    else
-    {
-        m_timeStep = 1.0;
-    }
 
     // Clear optimum
     m_optimal.clear();

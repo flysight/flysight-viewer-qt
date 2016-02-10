@@ -176,8 +176,6 @@ private:
 
     QVector< DataPoint >  m_waypoints;
 
-    double                m_timeStep;
-
     Tool                  mTool;
     Tool                  mPrevTool;
 
