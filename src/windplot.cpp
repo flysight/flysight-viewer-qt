@@ -10,11 +10,10 @@ WindPlot::WindPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0)
 {
-    QPushButton *save = new QPushButton(tr("Save"));
-
     QGridLayout *layout = new QGridLayout;
     setLayout(layout);
 
+    QPushButton *save = new QPushButton(tr("Save"));
     layout->addWidget(save, 0, 0, Qt::AlignRight | Qt::AlignTop);
 }
 
