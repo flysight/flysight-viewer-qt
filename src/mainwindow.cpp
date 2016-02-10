@@ -1003,6 +1003,17 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setSimulationTime(m_simulationTime);
     dlg.setLineThickness(mLineThickness);
 
+    const double factor = (m_units == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
+    const QString unitText = (m_units == PlotValue::Metric) ? "km/h" : "mph";
+
+    double windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN) * factor;
+    double windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
+    if (windDirection < 0) windDirection += 360;
+
+    dlg.setWindSpeed(windSpeed);
+    dlg.setWindUnits(unitText);
+    dlg.setWindDirection(windDirection);
+
     if (dlg.exec() == QDialog::Accepted)
     {
         if (m_units != dlg.units())
@@ -1081,6 +1092,15 @@ void MainWindow::on_actionPreferences_triggered()
 
         if (plotChanged)
         {
+            emit dataChanged();
+        }
+
+        if (mWindE != -dlg.windSpeed() * sin(dlg.windDirection() / 180 * PI) / factor ||
+            mWindN != -dlg.windSpeed() * cos(dlg.windDirection() / 180 * PI) / factor)
+        {
+            mWindE = -dlg.windSpeed() * sin(dlg.windDirection() / 180 * PI) / factor;
+            mWindN = -dlg.windSpeed() * cos(dlg.windDirection() / 180 * PI) / factor;
+
             emit dataChanged();
         }
     }
