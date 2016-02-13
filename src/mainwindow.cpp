@@ -292,7 +292,7 @@ void MainWindow::initPlaybackView()
     QDockWidget *dockWidget = new QDockWidget(tr("Playback View"));
     dockWidget->setWidget(playbackView);
     dockWidget->setObjectName("playbackView");
-    dockWidget->setFloating(true);
+    dockWidget->setVisible(false);
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
     playbackView->setMainWindow(this);
