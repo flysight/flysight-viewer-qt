@@ -136,6 +136,11 @@ void DataPlot::mouseReleaseEvent(
         DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(endPos.x()));
         mMainWindow->setGround(dpEnd.t);
     }
+    if (m_dragging && tool == MainWindow::Course)
+    {
+        DataPoint dpEnd = interpolateDataX(xAxis->pixelToCoord(endPos.x()));
+        mMainWindow->setCourse(dpEnd.t);
+    }
 
     if (m_dragging)
     {
