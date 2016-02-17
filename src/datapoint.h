@@ -27,7 +27,6 @@ public:
     double      sAcc;
 
     double      heading;
-    double      omega;
     double      cAcc;
 
     int         numSV;
@@ -49,6 +48,9 @@ public:
 
     double      vx;     // Wind-corrected velocity
     double      vy;
+
+    double      theta;
+    double      omega;
 
     static DataPoint interpolate(const DataPoint &p1,
                                  const DataPoint &p2,
@@ -164,7 +166,7 @@ public:
 
     static double course(const DataPoint &dp)
     {
-        return dp.heading;
+        return dp.theta;
     }
 
     static double courseRate(const DataPoint &dp)

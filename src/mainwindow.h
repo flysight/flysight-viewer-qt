@@ -32,7 +32,7 @@ class MainWindow : public QMainWindow
     
 public:
     typedef enum {
-        Pan, Zoom, Measure, Zero, Ground
+        Pan, Zoom, Measure, Zero, Ground, Course
     } Tool;
 
     typedef enum {
@@ -57,6 +57,7 @@ public:
 
     void setZero(double t);
     void setGround(double t);
+    void setCourse(double t);
 
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
@@ -148,6 +149,7 @@ private slots:
     void on_actionMeasure_triggered();
     void on_actionZero_triggered();
     void on_actionGround_triggered();
+    void on_actionSetCourse_triggered();
     void on_actionWind_triggered();
 
     void on_actionTime_triggered();

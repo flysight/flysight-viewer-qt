@@ -593,6 +593,9 @@ void MainWindow::updateVelocity()
             while (dp.heading >= prevHeading + 180) dp.heading -= 360;
         }
 
+        // Relative heading
+        dp.theta = dp.heading;
+
         firstHeading = false;
         prevHeading = dp.heading;
     }
@@ -975,6 +978,11 @@ void MainWindow::on_actionZero_triggered()
 void MainWindow::on_actionGround_triggered()
 {
     setTool(Ground);
+}
+
+void MainWindow::on_actionSetCourse_triggered()
+{
+    setTool(Course);
 }
 
 void MainWindow::on_actionWind_triggered()
@@ -1461,6 +1469,23 @@ void MainWindow::setGround(
     setTool(mPrevTool);
 }
 
+void MainWindow::setCourse(
+        double t)
+{
+    if (m_data.isEmpty()) return;
+
+    DataPoint dp0 = interpolateDataT(t);
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.theta -= dp0.theta;
+    }
+
+    setRange(mRangeLower, mRangeUpper);
+    setTool(mPrevTool);
+}
+
 void MainWindow::setWindow(
         double windowBottom,
         double windowTop)
@@ -1530,7 +1555,7 @@ void MainWindow::setWindowMode(
 void MainWindow::setTool(
         Tool tool)
 {
-    if (tool != Ground && tool != Zero)
+    if (tool != Course && tool != Ground && tool != Zero)
     {
         mPrevTool = tool;
     }
@@ -1541,6 +1566,7 @@ void MainWindow::setTool(
     m_ui->actionMeasure->setChecked(tool == Measure);
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
+    m_ui->actionCourse->setChecked(tool == Course);
 }
 
 void MainWindow::optimize(

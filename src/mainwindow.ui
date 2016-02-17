@@ -106,6 +106,7 @@
     <addaction name="separator"/>
     <addaction name="actionZero"/>
     <addaction name="actionGround"/>
+    <addaction name="actionSetCourse"/>
     <addaction name="separator"/>
     <addaction name="actionWind"/>
    </widget>
@@ -619,6 +620,17 @@
    </property>
    <property name="shortcut">
     <string>W</string>
+   </property>
+  </action>
+  <action name="actionSetCourse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Set C&amp;ourse</string>
+   </property>
+   <property name="shortcut">
+    <string>O</string>
    </property>
   </action>
  </widget>
