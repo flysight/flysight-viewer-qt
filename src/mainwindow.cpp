@@ -1566,7 +1566,7 @@ void MainWindow::setTool(
     m_ui->actionMeasure->setChecked(tool == Measure);
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
-    m_ui->actionCourse->setChecked(tool == Course);
+    m_ui->actionSetCourse->setChecked(tool == Course);
 }
 
 void MainWindow::optimize(
