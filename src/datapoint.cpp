@@ -8,8 +8,8 @@ DataPoint DataPoint::interpolate(
     DataPoint ret;
 
     const qint64 ms1 = p1.dateTime.toMSecsSinceEpoch();
-    const qint64 ms2 = p1.dateTime.toMSecsSinceEpoch();
-    ret.dateTime.fromMSecsSinceEpoch(
+    const qint64 ms2 = p2.dateTime.toMSecsSinceEpoch();
+    ret.dateTime = QDateTime::fromMSecsSinceEpoch(
                 ms1 + (qint64) (a * (ms2 - ms1)));
 
     ret.hasGeodetic = p1.hasGeodetic && p2.hasGeodetic;
