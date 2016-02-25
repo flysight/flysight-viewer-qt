@@ -273,7 +273,12 @@ void DataPlot::setMark(
     const int jEnd = findIndexBelowX(end);
 
     QString status;
-    status = QString("<table width='300'>");
+    status = QString("<u>%1 %2.%3 UTC</u>")
+            .arg(dpEnd.dateTime.date().toString(Qt::ISODate))
+            .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
+            .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
+
+    status += QString("<table width='300'>");
 
     double change = m_xValues[Time]->value(dpEnd, mMainWindow->units())
             - m_xValues[Time]->value(dpStart, mMainWindow->units());
@@ -371,7 +376,12 @@ void DataPlot::setMark(
     mMainWindow->setMark(dp.t);
 
     QString status;
-    status = QString("<table width='200'>");
+    status = QString("<u>%1 %2.%3 UTC</u>")
+            .arg(dp.dateTime.date().toString(Qt::ISODate))
+            .arg(dp.dateTime.time().toString(Qt::ISODate))
+            .arg(QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')));
+
+    status += QString("<table width='200'>");
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
             .arg(m_xValues[Time]->title(mMainWindow->units()))
