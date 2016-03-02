@@ -288,7 +288,15 @@ void DataPlot::setMark(
             .arg(change < 0 ? "" : "+")
             .arg(change);
 
-    if (m_xAxisType != Time)
+    change = m_xValues[Distance2D]->value(dpEnd, mMainWindow->units())
+            - m_xValues[Distance2D]->value(dpStart, mMainWindow->units());
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td><td>(%3%4)</td></tr>")
+            .arg(m_xValues[Distance2D]->title(mMainWindow->units()))
+            .arg(m_xValues[Distance2D]->value(dpEnd, mMainWindow->units()))
+            .arg(change < 0 ? "" : "+")
+            .arg(change);
+
+    if (m_xAxisType != Time && m_xAxisType != Distance2D)
     {
         change = xValue()->value(dpEnd, mMainWindow->units())
                 - xValue()->value(dpStart, mMainWindow->units());
@@ -387,7 +395,11 @@ void DataPlot::setMark(
             .arg(m_xValues[Time]->title(mMainWindow->units()))
             .arg(m_xValues[Time]->value(dp, mMainWindow->units()));
 
-    if (m_xAxisType != Time)
+    status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
+            .arg(m_xValues[Distance2D]->title(mMainWindow->units()))
+            .arg(m_xValues[Distance2D]->value(dp, mMainWindow->units()));
+
+    if (m_xAxisType != Time && m_xAxisType != Distance2D)
     {
         status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
                 .arg(xValue()->title(mMainWindow->units()))
