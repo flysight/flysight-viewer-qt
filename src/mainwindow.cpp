@@ -1500,7 +1500,8 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    setRange(rangeLower(), rangeUpper());
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
@@ -1517,7 +1518,8 @@ void MainWindow::setCourse(
         dp.theta -= dp0.theta;
     }
 
-    setRange(rangeLower(), rangeUpper());
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
