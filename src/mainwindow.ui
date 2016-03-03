@@ -100,8 +100,8 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <addaction name="actionLastZoom"/>
-    <addaction name="actionNextZoom"/>
+    <addaction name="actionUndoZoom"/>
+    <addaction name="actionRedoZoom"/>
     <addaction name="separator"/>
     <addaction name="actionPan"/>
     <addaction name="actionZoom"/>
@@ -636,17 +636,23 @@
     <string>O</string>
    </property>
   </action>
-  <action name="actionLastZoom">
+  <action name="actionUndoZoom">
    <property name="text">
-    <string>Last Zoom</string>
+    <string>Undo Zoom</string>
+   </property>
+   <property name="toolTip">
+    <string>Undo Zoom</string>
    </property>
    <property name="shortcut">
     <string>Backspace</string>
    </property>
   </action>
-  <action name="actionNextZoom">
+  <action name="actionRedoZoom">
    <property name="text">
-    <string>Next Zoom</string>
+    <string>Redo Zoom</string>
+   </property>
+   <property name="toolTip">
+    <string>Redo Zoom</string>
    </property>
    <property name="shortcut">
     <string>Shift+Backspace</string>

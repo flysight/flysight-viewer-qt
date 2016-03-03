@@ -810,10 +810,17 @@ void MainWindow::initRange()
     }
 
     // Clear zoom stack
-    mZoomLevels.clear();
+    mZoomLevelUndo.clear();
+    mZoomLevelRedo.clear();
 
-    // Initialize zoom stack
-    setRange(lower, upper);
+    mZoomLevel.rangeLower = qMin(lower, upper);
+    mZoomLevel.rangeUpper = qMax(lower, upper);
+
+    emit dataChanged();
+
+    // Enable controls
+    m_ui->actionUndoZoom->setEnabled(false);
+    m_ui->actionRedoZoom->setEnabled(false);
 }
 
 void MainWindow::on_actionElevation_triggered()
@@ -1417,18 +1424,17 @@ void MainWindow::setRange(
         double lower,
         double upper)
 {
-    ZoomLevel zoom;
-    zoom.rangeLower = qMin(lower, upper);
-    zoom.rangeUpper = qMax(lower, upper);
+    mZoomLevelUndo.push(mZoomLevel);
+    mZoomLevelRedo.clear();
 
-    mZoomLevels.push(zoom);
-    mZoomLevelsNext.clear();
+    mZoomLevel.rangeLower = qMin(lower, upper);
+    mZoomLevel.rangeUpper = qMax(lower, upper);
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
 
 void MainWindow::setRotation(
@@ -1461,7 +1467,23 @@ void MainWindow::setZero(
     mMarkStart -= dp0.t;
     mMarkEnd -= dp0.t;
 
-    setRange(rangeLower() - dp0.t, rangeUpper() - dp0.t);
+    QVector< ZoomLevel >::iterator p;
+    for (p = mZoomLevelUndo.begin(); p != mZoomLevelUndo.end(); ++p)
+    {
+        p->rangeLower -= dp0.t;
+        p->rangeUpper -= dp0.t;
+    }
+    for (p = mZoomLevelRedo.begin(); p != mZoomLevelRedo.end(); ++p)
+    {
+        p->rangeLower -= dp0.t;
+        p->rangeUpper -= dp0.t;
+    }
+
+    mZoomLevel.rangeLower -= dp0.t;
+    mZoomLevel.rangeUpper -= dp0.t;
+
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
@@ -1478,7 +1500,8 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    setRange(rangeLower(), rangeUpper());
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
@@ -1495,7 +1518,8 @@ void MainWindow::setCourse(
         dp.theta -= dp0.theta;
     }
 
-    setRange(rangeLower(), rangeUpper());
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
@@ -1881,24 +1905,26 @@ void MainWindow::setWind(
     emit dataChanged();
 }
 
-void MainWindow::on_actionLastZoom_triggered()
+void MainWindow::on_actionUndoZoom_triggered()
 {
-    mZoomLevelsNext.push(mZoomLevels.pop());
+    mZoomLevelRedo.push(mZoomLevel);
+    mZoomLevel = mZoomLevelUndo.pop();
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
 
-void MainWindow::on_actionNextZoom_triggered()
+void MainWindow::on_actionRedoZoom_triggered()
 {
-    mZoomLevels.push(mZoomLevelsNext.pop());
+    mZoomLevelUndo.push(mZoomLevel);
+    mZoomLevel = mZoomLevelRedo.pop();
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
