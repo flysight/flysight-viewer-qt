@@ -53,8 +53,8 @@ public:
     PlotValue::Units units() const { return m_units; }
 
     void setRange(double lower, double upper);
-    double rangeLower() const { return mZoomLevels.top().rangeLower; }
-    double rangeUpper() const { return mZoomLevels.top().rangeUpper; }
+    double rangeLower() const { return mZoomLevel.rangeLower; }
+    double rangeUpper() const { return mZoomLevel.rangeUpper; }
 
     void setZero(double t);
     void setGround(double t);
@@ -191,8 +191,9 @@ private:
     Tool                  mTool;
     Tool                  mPrevTool;
 
-    QStack< ZoomLevel >   mZoomLevels;
-    QStack< ZoomLevel >   mZoomLevelsNext;
+    ZoomLevel             mZoomLevel;
+    QStack< ZoomLevel >   mZoomLevelUndo;
+    QStack< ZoomLevel >   mZoomLevelRedo;
 
     double                mRangeLower;
     double                mRangeUpper;

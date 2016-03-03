@@ -810,10 +810,17 @@ void MainWindow::initRange()
     }
 
     // Clear zoom stack
-    mZoomLevels.clear();
+    mZoomLevelUndo.clear();
+    mZoomLevelRedo.clear();
 
-    // Initialize zoom stack
-    setRange(lower, upper);
+    mZoomLevel.rangeLower = qMin(lower, upper);
+    mZoomLevel.rangeUpper = qMax(lower, upper);
+
+    emit dataChanged();
+
+    // Enable controls
+    m_ui->actionUndoZoom->setEnabled(false);
+    m_ui->actionRedoZoom->setEnabled(false);
 }
 
 void MainWindow::on_actionElevation_triggered()
@@ -1417,18 +1424,17 @@ void MainWindow::setRange(
         double lower,
         double upper)
 {
-    ZoomLevel zoom;
-    zoom.rangeLower = qMin(lower, upper);
-    zoom.rangeUpper = qMax(lower, upper);
+    mZoomLevelUndo.push(mZoomLevel);
+    mZoomLevelRedo.clear();
 
-    mZoomLevels.push(zoom);
-    mZoomLevelsNext.clear();
+    mZoomLevel.rangeLower = qMin(lower, upper);
+    mZoomLevel.rangeUpper = qMax(lower, upper);
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
 
 void MainWindow::setRotation(
@@ -1883,22 +1889,24 @@ void MainWindow::setWind(
 
 void MainWindow::on_actionUndoZoom_triggered()
 {
-    mZoomLevelsNext.push(mZoomLevels.pop());
+    mZoomLevelRedo.push(mZoomLevel);
+    mZoomLevel = mZoomLevelUndo.pop();
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
 
 void MainWindow::on_actionRedoZoom_triggered()
 {
-    mZoomLevels.push(mZoomLevelsNext.pop());
+    mZoomLevelUndo.push(mZoomLevel);
+    mZoomLevel = mZoomLevelRedo.pop();
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 }
