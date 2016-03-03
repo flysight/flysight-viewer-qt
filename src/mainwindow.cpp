@@ -809,6 +809,10 @@ void MainWindow::initRange()
         }
     }
 
+    // Clear zoom stack
+    mZoomLevels.clear();
+
+    // Initialize zoom stack
     setRange(lower, upper);
 }
 
@@ -1412,8 +1416,10 @@ void MainWindow::setRange(
         double lower,
         double upper)
 {
-    mRangeLower = qMin(lower, upper);
-    mRangeUpper = qMax(lower, upper);
+    ZoomLevel zoom;
+    zoom.rangeLower = qMin(lower, upper);
+    zoom.rangeUpper = qMax(lower, upper);
+    mZoomLevels.push(zoom);
 
     emit dataChanged();
 }
@@ -1448,7 +1454,7 @@ void MainWindow::setZero(
     mMarkStart -= dp0.t;
     mMarkEnd -= dp0.t;
 
-    setRange(mRangeLower - dp0.t, mRangeUpper - dp0.t);
+    setRange(rangeLower() - dp0.t, rangeUpper() - dp0.t);
     setTool(mPrevTool);
 }
 
@@ -1465,7 +1471,7 @@ void MainWindow::setGround(
         dp.alt -= dp0.alt;
     }
 
-    setRange(mRangeLower, mRangeUpper);
+    setRange(rangeLower(), rangeUpper());
     setTool(mPrevTool);
 }
 
@@ -1482,7 +1488,7 @@ void MainWindow::setCourse(
         dp.theta -= dp0.theta;
     }
 
-    setRange(mRangeLower, mRangeUpper);
+    setRange(rangeLower(), rangeUpper());
     setTool(mPrevTool);
 }
 
