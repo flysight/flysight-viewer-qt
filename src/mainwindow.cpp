@@ -1427,8 +1427,8 @@ void MainWindow::setRange(
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
 }
 
 void MainWindow::setRotation(
@@ -1881,24 +1881,24 @@ void MainWindow::setWind(
     emit dataChanged();
 }
 
-void MainWindow::on_actionLastZoom_triggered()
+void MainWindow::on_actionUndoZoom_triggered()
 {
     mZoomLevelsNext.push(mZoomLevels.pop());
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
 }
 
-void MainWindow::on_actionNextZoom_triggered()
+void MainWindow::on_actionRedoZoom_triggered()
 {
     mZoomLevels.push(mZoomLevelsNext.pop());
 
     emit dataChanged();
 
     // Enable controls
-    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
-    m_ui->actionNextZoom->setEnabled(!mZoomLevelsNext.empty());
+    m_ui->actionUndoZoom->setEnabled(mZoomLevels.size() > 1);
+    m_ui->actionRedoZoom->setEnabled(!mZoomLevelsNext.empty());
 }

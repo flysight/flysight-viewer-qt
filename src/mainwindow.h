@@ -165,8 +165,8 @@ private slots:
     void on_actionExportPlot_triggered();
     void on_actionExportTrack_triggered();
 
-    void on_actionLastZoom_triggered();
-    void on_actionNextZoom_triggered();
+    void on_actionUndoZoom_triggered();
+    void on_actionRedoZoom_triggered();
 
 private:
     typedef struct {
