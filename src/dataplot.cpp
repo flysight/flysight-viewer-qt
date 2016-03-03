@@ -269,16 +269,30 @@ void DataPlot::setMark(
 
     if (mMainWindow->dataSize() == 0) return;
 
-    const int jStart = findIndexAboveX(start);
-    const int jEnd = findIndexBelowX(end);
-
     QString status;
-    status = QString("<u>%1 %2.%3 UTC</u>")
-            .arg(dpEnd.dateTime.date().toString(Qt::ISODate))
-            .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
-            .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
+    if (dpStart.dateTime.date() == dpEnd.dateTime.date())
+    {
+        status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 to %4.%5 UTC</u></p>")
+                .arg(dpStart.dateTime.date().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.time().toString(Qt::ISODate))
+                .arg(QString("%1").arg(dpStart.dateTime.time().msec(), 3, 10, QChar('0')))
+                .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
+                .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
+    }
+    else
+    {
+        status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 to %4 %5.%6 UTC</u></p>")
+                .arg(dpStart.dateTime.date().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.time().toString(Qt::ISODate))
+                .arg(QString("%1").arg(dpStart.dateTime.time().msec(), 3, 10, QChar('0')))
+                .arg(dpEnd.dateTime.date().toString(Qt::ISODate))
+                .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
+                .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
+    }
 
-    status += QString("<table width='300'>");
+    status += QString("<table width='400'>");
+
+    status += QString("<tr style='color:black;'><td></td><td><u>Value</u></td><td><u>Change</u></td><td><u>Min/Avg/Max</u></td></tr>");
 
     double change = m_xValues[Time]->value(dpEnd, mMainWindow->units())
             - m_xValues[Time]->value(dpStart, mMainWindow->units());
@@ -307,66 +321,75 @@ void DataPlot::setMark(
                 .arg(change);
     }
 
+    double low  = qMin(start, end);
+    double high = qMax(start, end);
+
+    DataPoint dpLow = interpolateDataX(low);
+    DataPoint dpHigh = interpolateDataX(high);
+
+    const int jMin = findIndexAboveX(low);
+    const int jMax = findIndexBelowX(high);
+
+    const DataPoint &dpMin = mMainWindow->dataPoint(jMin);
+    const DataPoint &dpMax = mMainWindow->dataPoint(jMax);
+
     for (int i = 0; i < yaLast; ++i)
     {
         if (yValue(i)->visible())
         {
-            double sum = 0;
-            if (jStart > jEnd)
+            double dx = m_xValues[Time]->value(dpMin, mMainWindow->units())
+                    - m_xValues[Time]->value(dpLow, mMainWindow->units());
+            double avg = (yValue(i)->value(dpMin, mMainWindow->units())
+                    + yValue(i)->value(dpLow, mMainWindow->units())) / 2;
+
+            double sum = avg * fabs(dx);
+            double dxSum = fabs(dx);
+
+            double min = yValue(i)->value(dpLow, mMainWindow->units());
+            double max = min;
+
+            for (int j = jMin ; j < jMax ; ++ j)
             {
-                const double dx = xValue()->value(dpEnd, mMainWindow->units())
-                        - xValue()->value(dpStart, mMainWindow->units());
-                const double avg = (yValue(i)->value(dpEnd, mMainWindow->units())
-                        + yValue(i)->value(dpStart, mMainWindow->units())) / 2;
+                const DataPoint &dp1 = mMainWindow->dataPoint(j);
+                const DataPoint &dp2 = mMainWindow->dataPoint(j + 1);
 
-                sum = avg * dx ;
-            }
-            else
-            {
-                const DataPoint &dp0 = mMainWindow->dataPoint(jStart);
+                dx = m_xValues[Time]->value(dp2, mMainWindow->units())
+                        - m_xValues[Time]->value(dp1, mMainWindow->units());
+                avg = (yValue(i)->value(dp2, mMainWindow->units())
+                        + yValue(i)->value(dp1, mMainWindow->units())) / 2;
 
-                double dx = xValue()->value(dp0, mMainWindow->units())
-                        - xValue()->value(dpStart, mMainWindow->units());
-                double avg = (yValue(i)->value(dp0, mMainWindow->units())
-                        + yValue(i)->value(dpStart, mMainWindow->units())) / 2;
+                sum += avg * fabs(dx) ;
+                dxSum += fabs(dx);
 
-                sum = avg * dx ;
-
-                for (int j = jStart ; j < jEnd ; ++ j)
-                {
-                    const DataPoint &dp1 = mMainWindow->dataPoint(j);
-                    const DataPoint &dp2 = mMainWindow->dataPoint(j + 1);
-
-                    dx = xValue()->value(dp2, mMainWindow->units())
-                            - xValue()->value(dp1, mMainWindow->units());
-                    avg = (yValue(i)->value(dp2, mMainWindow->units())
-                            + yValue(i)->value(dp1, mMainWindow->units())) / 2;
-
-                    sum += avg * dx ;
-                }
-
-                const DataPoint &dpN = mMainWindow->dataPoint(jEnd);
-
-                dx = xValue()->value(dpEnd, mMainWindow->units())
-                        - xValue()->value(dpN, mMainWindow->units());
-                avg = (yValue(i)->value(dpEnd, mMainWindow->units())
-                        + yValue(i)->value(dpN, mMainWindow->units())) / 2;
-
-                sum += avg * dx ;
+                min = qMin(min, yValue(i)->value(dp1, mMainWindow->units()));
+                max = qMax(max, yValue(i)->value(dp1, mMainWindow->units()));
             }
 
-            const double dx = xValue()->value(dpEnd, mMainWindow->units())
-                    - xValue()->value(dpStart, mMainWindow->units());
+            min = qMin(min, yValue(i)->value(dpMax, mMainWindow->units()));
+            max = qMax(max, yValue(i)->value(dpMax, mMainWindow->units()));
+
+            dx = m_xValues[Time]->value(dpHigh, mMainWindow->units())
+                    - m_xValues[Time]->value(dpMax, mMainWindow->units());
+            avg = (yValue(i)->value(dpHigh, mMainWindow->units())
+                    + yValue(i)->value(dpMax, mMainWindow->units())) / 2;
+
+            sum += avg * fabs(dx) ;
+            dxSum += fabs(dx);
+
+            min = qMin(min, yValue(i)->value(dpHigh, mMainWindow->units()));
+            max = qMax(max, yValue(i)->value(dpHigh, mMainWindow->units()));
 
             change = yValue(i)->value(dpEnd, mMainWindow->units())
                     - yValue(i)->value(dpStart, mMainWindow->units());
-            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td><td>[%6]</td></tr>")
+            status += QString("<tr style='color:%5;'><td>%1</td><td>%2</td><td>(%3%4)</td><td>[%6/%7/%8]</td></tr>")
                     .arg(yValue(i)->title(mMainWindow->units()))
                     .arg(yValue(i)->value(dpEnd, mMainWindow->units()))
                     .arg(change < 0 ? "" : "+")
                     .arg(change)
                     .arg(yValue(i)->color().name())
-                    .arg(sum / dx);
+                    .arg(min)
+                    .arg(sum / dxSum)
+                    .arg(max);
         }
     }
 
@@ -384,7 +407,7 @@ void DataPlot::setMark(
     mMainWindow->setMark(dp.t);
 
     QString status;
-    status = QString("<u>%1 %2.%3 UTC</u>")
+    status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 UTC</u></p>")
             .arg(dp.dateTime.date().toString(Qt::ISODate))
             .arg(dp.dateTime.time().toString(Qt::ISODate))
             .arg(QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')));
