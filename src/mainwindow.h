@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QStack>
 #include <QVector>
 
 #include "dataplot.h"
@@ -52,8 +53,8 @@ public:
     PlotValue::Units units() const { return m_units; }
 
     void setRange(double lower, double upper);
-    double rangeLower() const { return mRangeLower; }
-    double rangeUpper() const { return mRangeUpper; }
+    double rangeLower() const { return mZoomLevels.top().rangeLower; }
+    double rangeUpper() const { return mZoomLevels.top().rangeUpper; }
 
     void setZero(double t);
     void setGround(double t);
@@ -164,7 +165,15 @@ private slots:
     void on_actionExportPlot_triggered();
     void on_actionExportTrack_triggered();
 
+    void on_actionLastZoom_triggered();
+    void on_actionNextZoom_triggered();
+
 private:
+    typedef struct {
+        double rangeLower;
+        double rangeUpper;
+    } ZoomLevel;
+
     Ui::MainWindow       *m_ui;
     QVector< DataPoint >  m_data;
     QVector< DataPoint >  m_optimal;
@@ -181,6 +190,9 @@ private:
 
     Tool                  mTool;
     Tool                  mPrevTool;
+
+    QStack< ZoomLevel >   mZoomLevels;
+    QStack< ZoomLevel >   mZoomLevelsNext;
 
     double                mRangeLower;
     double                mRangeUpper;
