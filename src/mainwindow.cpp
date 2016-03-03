@@ -1467,7 +1467,23 @@ void MainWindow::setZero(
     mMarkStart -= dp0.t;
     mMarkEnd -= dp0.t;
 
-    setRange(rangeLower() - dp0.t, rangeUpper() - dp0.t);
+    QVector< ZoomLevel >::iterator p;
+    for (p = mZoomLevelUndo.begin(); p != mZoomLevelUndo.end(); ++p)
+    {
+        p->rangeLower -= dp0.t;
+        p->rangeUpper -= dp0.t;
+    }
+    for (p = mZoomLevelRedo.begin(); p != mZoomLevelRedo.end(); ++p)
+    {
+        p->rangeLower -= dp0.t;
+        p->rangeUpper -= dp0.t;
+    }
+
+    mZoomLevel.rangeLower -= dp0.t;
+    mZoomLevel.rangeUpper -= dp0.t;
+
+    emit dataChanged();
+
     setTool(mPrevTool);
 }
 
