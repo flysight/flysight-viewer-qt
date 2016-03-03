@@ -165,6 +165,9 @@ private slots:
     void on_actionExportPlot_triggered();
     void on_actionExportTrack_triggered();
 
+    void on_actionLastZoom_triggered();
+    void on_actionNextZoom_triggered();
+
 private:
     typedef struct {
         double rangeLower;

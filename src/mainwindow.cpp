@@ -1423,6 +1423,10 @@ void MainWindow::setRange(
     mZoomLevels.push(zoom);
 
     emit dataChanged();
+
+    // Enable controls
+    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
+    m_ui->actionNextZoom->setEnabled(false);
 }
 
 void MainWindow::setRotation(
@@ -1873,4 +1877,20 @@ void MainWindow::setWind(
     updateVelocity();
 
     emit dataChanged();
+}
+
+void MainWindow::on_actionLastZoom_triggered()
+{
+    mZoomLevels.pop();
+
+    emit dataChanged();
+
+    // Enable controls
+    m_ui->actionLastZoom->setEnabled(mZoomLevels.size() > 1);
+    m_ui->actionNextZoom->setEnabled(false);
+}
+
+void MainWindow::on_actionNextZoom_triggered()
+{
+
 }
