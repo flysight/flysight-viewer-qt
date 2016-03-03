@@ -1081,7 +1081,8 @@ void MainWindow::on_actionPreferences_triggered()
         if (m_units != dlg.units())
         {
             m_units = dlg.units();
-            initRange();
+
+            emit dataChanged();
         }
 
         if (m_mass != dlg.mass() ||
