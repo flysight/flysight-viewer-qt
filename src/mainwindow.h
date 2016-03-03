@@ -192,6 +192,8 @@ private:
     Tool                  mPrevTool;
 
     QStack< ZoomLevel >   mZoomLevels;
+    QStack< ZoomLevel >   mZoomLevelsNext;
+
     double                mRangeLower;
     double                mRangeUpper;
 
