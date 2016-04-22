@@ -77,8 +77,8 @@ public:
     int waypointSize() const { return m_waypoints.size(); }
     const DataPoint &waypoint(int i) const { return m_waypoints[i]; }
 
-    double getDistance(const DataPoint &dp1, const DataPoint &dp2) const;
-    double getBearing(const DataPoint &dp1, const DataPoint &dp2) const;
+    static double getDistance(const DataPoint &dp1, const DataPoint &dp2);
+    static double getBearing(const DataPoint &dp1, const DataPoint &dp2);
 
     void setMark(double start, double end);
     void setMark(double mark);

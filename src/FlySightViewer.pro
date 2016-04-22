@@ -27,7 +27,45 @@ SOURCES += main.cpp \
     scoringview.cpp \
     genome.cpp \
     orthoview.cpp \
-    playbackview.cpp
+    playbackview.cpp \
+    GeographicLib/Accumulator.cpp \
+    GeographicLib/AlbersEqualArea.cpp \
+    GeographicLib/AzimuthalEquidistant.cpp \
+    GeographicLib/CassiniSoldner.cpp \
+    GeographicLib/CircularEngine.cpp \
+    GeographicLib/DMS.cpp \
+    GeographicLib/Ellipsoid.cpp \
+    GeographicLib/EllipticFunction.cpp \
+    GeographicLib/GARS.cpp \
+    GeographicLib/Geocentric.cpp \
+    GeographicLib/GeoCoords.cpp \
+    GeographicLib/Geodesic.cpp \
+    GeographicLib/GeodesicExact.cpp \
+    GeographicLib/GeodesicExactC4.cpp \
+    GeographicLib/GeodesicLine.cpp \
+    GeographicLib/GeodesicLineExact.cpp \
+    GeographicLib/Geohash.cpp \
+    GeographicLib/Geoid.cpp \
+    GeographicLib/Georef.cpp \
+    GeographicLib/Gnomonic.cpp \
+    GeographicLib/GravityCircle.cpp \
+    GeographicLib/GravityModel.cpp \
+    GeographicLib/LambertConformalConic.cpp \
+    GeographicLib/LocalCartesian.cpp \
+    GeographicLib/MagneticCircle.cpp \
+    GeographicLib/MagneticModel.cpp \
+    GeographicLib/Math.cpp \
+    GeographicLib/MGRS.cpp \
+    GeographicLib/NormalGravity.cpp \
+    GeographicLib/OSGB.cpp \
+    GeographicLib/PolarStereographic.cpp \
+    GeographicLib/PolygonArea.cpp \
+    GeographicLib/Rhumb.cpp \
+    GeographicLib/SphericalEngine.cpp \
+    GeographicLib/TransverseMercator.cpp \
+    GeographicLib/TransverseMercatorExact.cpp \
+    GeographicLib/Utility.cpp \
+    GeographicLib/UTMUPS.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -65,6 +103,7 @@ RESOURCES += \
 
 INCLUDEPATH += ../include
 INCLUDEPATH += ../include/wwWidgets
+INCLUDEPATH += ../include/GeographicLib
 
 win32 {
     LIBS += -L../lib

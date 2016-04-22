@@ -13,6 +13,8 @@
 
 #include <math.h>
 
+#include "GeographicLib/Geodesic.hpp"
+
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
@@ -24,6 +26,8 @@
 #include "scoringview.h"
 #include "videoview.h"
 #include "windplot.h"
+
+using namespace GeographicLib;
 
 MainWindow::MainWindow(
         QWidget *parent):
@@ -712,27 +716,16 @@ double MainWindow::getSlope(
 
 double MainWindow::getDistance(
         const DataPoint &dp1,
-        const DataPoint &dp2) const
+        const DataPoint &dp2)
 {
     if (dp1.hasGeodetic && dp2.hasGeodetic)
     {
-        const double R = 6371009;
-        const double pi = 3.14159265359;
+        const Geodesic &geod = Geodesic::WGS84();
+        double s12;
 
-        double lat1 = dp1.lat / 180 * pi;
-        double lon1 = dp1.lon / 180 * pi;
+        geod.Inverse(dp1.lat, dp1.lon, dp2.lat, dp2.lon, s12);
 
-        double lat2 = dp2.lat / 180 * pi;
-        double lon2 = dp2.lon / 180 * pi;
-
-        double dLat = lat2 - lat1;
-        double dLon = lon2 - lon1;
-
-        double a = sin(dLat / 2) * sin(dLat / 2) +
-                sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
-        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-        return R * c;
+        return s12;
     }
     else
     {
@@ -745,7 +738,7 @@ double MainWindow::getDistance(
 
 double MainWindow::getBearing(
         const DataPoint &dp1,
-        const DataPoint &dp2) const
+        const DataPoint &dp2)
 {
     const double pi = 3.14159265359;
 
