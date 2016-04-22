@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QListWidget>
 
+#include "mainwindow.h"
 #include "plotvalue.h"
 
 namespace Ui {
@@ -23,6 +24,12 @@ public:
 
     void setUnits(PlotValue::Units units);
     PlotValue::Units units() const;
+
+    void setGroundReference(MainWindow::GroundReference ref);
+    MainWindow::GroundReference groundReference() const;
+
+    double fixedReference() const;
+    void setFixedReference(double elevation);
 
     void setMass(double mass);
     double mass() const;
