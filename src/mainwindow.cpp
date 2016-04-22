@@ -740,21 +740,12 @@ double MainWindow::getBearing(
         const DataPoint &dp1,
         const DataPoint &dp2)
 {
-    const double pi = 3.14159265359;
+    const Geodesic &geod = Geodesic::WGS84();
+    double azi1, azi2;
 
-    double lat1 = dp1.lat / 180 * pi;
-    double lon1 = dp1.lon / 180 * pi;
+    geod.Inverse(dp1.lat, dp1.lon, dp2.lat, dp2.lon, azi1, azi2);
 
-    double lat2 = dp2.lat / 180 * pi;
-    double lon2 = dp2.lon / 180 * pi;
-
-    double dLon = lon2 - lon1;
-
-    double y = sin(dLon) * cos(lat2);
-    double x = cos(lat1) * sin(lat2) -
-            sin(lat1) * cos(lat2) * cos(dLon);
-
-    return atan2(y, x);
+    return azi1 / 180 * PI;
 }
 
 void MainWindow::setMark(
