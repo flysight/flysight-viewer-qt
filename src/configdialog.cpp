@@ -147,6 +147,30 @@ PlotValue::Units ConfigDialog::units() const
     return (PlotValue::Units) ui->unitsCombo->currentIndex();
 }
 
+void ConfigDialog::setGroundReference(
+        MainWindow::GroundReference ref)
+{
+    ui->autoReferenceButton->setChecked(ref == MainWindow::Automatic);
+    ui->fixedReferenceButton->setChecked(ref == MainWindow::Fixed);
+}
+
+double ConfigDialog::fixedReference() const
+{
+    return ui->fixedReferenceEdit->text().toDouble();
+}
+
+void ConfigDialog::setFixedReference(
+        double elevation)
+{
+    ui->fixedReferenceEdit->setText(QString("%1").arg(elevation));
+}
+
+MainWindow::GroundReference ConfigDialog::groundReference() const
+{
+    if (ui->autoReferenceButton->isChecked()) return MainWindow::Automatic;
+    else                                      return MainWindow::Fixed;
+}
+
 void ConfigDialog::setMass(
         double mass)
 {

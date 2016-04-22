@@ -44,6 +44,10 @@ public:
         Time, Distance, HorizontalSpeed, VerticalSpeed
     } OptimizationMode;
 
+    typedef enum {
+        Automatic, Fixed
+    } GroundReference;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -225,6 +229,9 @@ private:
     double                mWindE, mWindN;
     bool                  mWindAdjustment;
 
+    GroundReference       mGroundReference;
+    double                mFixedReference;
+
     void writeSettings();
     void readSettings();
 
@@ -240,6 +247,7 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
+    void initAltitude();
     void updateVelocity();
     void initAerodynamics();
 

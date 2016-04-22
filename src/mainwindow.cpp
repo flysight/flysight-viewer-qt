@@ -48,7 +48,9 @@ MainWindow::MainWindow(
     mLineThickness(0),
     mWindE(0),
     mWindN(0),
-    mWindAdjustment(false)
+    mWindAdjustment(false),
+    mGroundReference(Automatic),
+    mFixedReference(0)
 {
     m_ui->setupUi(this);
 
@@ -102,19 +104,21 @@ void MainWindow::writeSettings()
     QSettings settings("FlySight", "Viewer");
 
     settings.beginGroup("mainWindow");
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("state", saveState());
-    settings.setValue("units", m_units);
-    settings.setValue("mass", m_mass);
-    settings.setValue("planformArea", m_planformArea);
-    settings.setValue("minDrag", m_minDrag);
-    settings.setValue("minLift", m_minLift);
-    settings.setValue("maxLift", m_maxLift);
-    settings.setValue("maxLD", m_maxLD);
-    settings.setValue("simulationTime", m_simulationTime);
-    settings.setValue("lineThickness", mLineThickness);
-    settings.setValue("windE", mWindE);
-    settings.setValue("windN", mWindN);
+        settings.setValue("geometry", saveGeometry());
+        settings.setValue("state", saveState());
+        settings.setValue("units", m_units);
+        settings.setValue("mass", m_mass);
+        settings.setValue("planformArea", m_planformArea);
+        settings.setValue("minDrag", m_minDrag);
+        settings.setValue("minLift", m_minLift);
+        settings.setValue("maxLift", m_maxLift);
+        settings.setValue("maxLD", m_maxLD);
+        settings.setValue("simulationTime", m_simulationTime);
+        settings.setValue("lineThickness", mLineThickness);
+        settings.setValue("windE", mWindE);
+        settings.setValue("windN", mWindN);
+        settings.setValue("groundReference", mGroundReference);
+        settings.setValue("fixedReference", mFixedReference);
     settings.endGroup();
 }
 
@@ -136,6 +140,8 @@ void MainWindow::readSettings()
     mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
     mWindE = settings.value("windE", mWindE).toDouble();
     mWindN = settings.value("windN", mWindN).toDouble();
+    mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
+    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
     settings.endGroup();
 }
 
@@ -471,7 +477,7 @@ void MainWindow::on_actionImport_triggered()
         m_data.append(pt);
     }
 
-    // Time and altitude
+    // Initialize time
     for (int i = 0; i < m_data.size(); ++i)
     {
         const DataPoint &dp0 = m_data[m_data.size() - 1];
@@ -481,8 +487,10 @@ void MainWindow::on_actionImport_triggered()
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
 
         dp.t = (double) (end - start) / 1000;
-        dp.z = dp.alt = dp.hMSL - dp0.hMSL;
     }
+
+    // Altitude above ground
+    initAltitude();
 
     // Wind adjustments
     updateVelocity();
@@ -493,6 +501,21 @@ void MainWindow::on_actionImport_triggered()
     initRange();
 
     emit dataLoaded();
+}
+
+void MainWindow::initAltitude()
+{
+    if (mGroundReference == Automatic)
+    {
+        const DataPoint &dp0 = m_data[m_data.size() - 1];
+        mFixedReference = dp0.hMSL;
+    }
+
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        DataPoint &dp = m_data[i];
+        dp.z = dp.alt = dp.hMSL - mFixedReference;
+    }
 }
 
 void MainWindow::updateVelocity()
@@ -1083,6 +1106,9 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setWindUnits(unitText);
     dlg.setWindDirection(windDirection);
 
+    dlg.setGroundReference(mGroundReference);
+    dlg.setFixedReference(mFixedReference);
+
     if (dlg.exec() == QDialog::Accepted)
     {
         if (m_units != dlg.units())
@@ -1170,6 +1196,17 @@ void MainWindow::on_actionPreferences_triggered()
         {
             mWindE = -dlg.windSpeed() * sin(dlg.windDirection() / 180 * PI) / factor;
             mWindN = -dlg.windSpeed() * cos(dlg.windDirection() / 180 * PI) / factor;
+
+            emit dataChanged();
+        }
+
+        if (mGroundReference != dlg.groundReference() ||
+            mFixedReference != dlg.fixedReference())
+        {
+            mGroundReference = dlg.groundReference();
+            mFixedReference = dlg.fixedReference();
+
+            initAltitude();
 
             emit dataChanged();
         }
