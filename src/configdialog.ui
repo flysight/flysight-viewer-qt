@@ -31,7 +31,7 @@
        <item>
         <widget class="QStackedWidget" name="pagesWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="general">
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -241,7 +241,7 @@
            <item>
             <widget class="QTableWidget" name="plotTable">
              <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
             </widget>
            </item>
