@@ -1292,7 +1292,7 @@ void MainWindow::on_actionExportKML_triggered()
                     stream << " ";
                 }
 
-                stream << QString("%1,%2,%3").arg(dp.lon, 0, 'f').arg(dp.lat, 0, 'f').arg(dp.hMSL, 0, 'f');
+                stream << QString("%1,%2,%3").arg(dp.lon, 0, 'f', 7).arg(dp.lat, 0, 'f', 7).arg(dp.hMSL, 0, 'f', 3);
             }
         }
 

@@ -407,12 +407,19 @@ void DataPlot::setMark(
     mMainWindow->setMark(dp.t);
 
     QString status;
-    status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 UTC</u></p>")
+    status = QString("<table width='300'>");
+
+    status += QString("<tr style='color:black;'><td align='center'><u>%1 %2.%3 UTC</u></td></tr>")
             .arg(dp.dateTime.date().toString(Qt::ISODate))
             .arg(dp.dateTime.time().toString(Qt::ISODate))
             .arg(QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')));
 
-    status += QString("<table width='200'>");
+    status += QString("<tr style='color:black;'><td align='center'><u>(%1 deg, %2 deg, %3 m)</u></td></tr>")
+            .arg(dp.lat, 0, 'f', 7)
+            .arg(dp.lon, 0, 'f', 7)
+            .arg(dp.hMSL, 0, 'f', 3);
+
+    status += QString("</table><table width='300'>");
 
     status += QString("<tr style='color:black;'><td>%1</td><td>%2</td></tr>")
             .arg(m_xValues[Time]->title(mMainWindow->units()))
