@@ -8,6 +8,7 @@ namespace Ui {
 }
 
 class MainWindow;
+class PPCForm;
 
 class ScoringView : public QWidget
 {
@@ -17,28 +18,18 @@ public:
     explicit ScoringView(QWidget *parent = 0);
     ~ScoringView();
 
-    virtual QSize sizeHint() const;
-
     void setMainWindow(MainWindow *mainWindow);
-
-protected:
-    virtual void keyPressEvent(QKeyEvent *);
 
 private:
     Ui::ScoringView *ui;
-    MainWindow      *mMainWindow;
+
+    PPCForm         *mPPCForm;
 
 public slots:
     void updateView();
 
 private slots:
-    void onFAIButtonClicked();
-    void onUpButtonClicked();
-    void onDownButtonClicked();
-    void onApplyButtonClicked();
-    void onActualButtonClicked();
-    void onOptimalButtonClicked();
-    void onOptimizeButtonClicked();
+    void changePage(int page);
 };
 
 #endif // SCORINGVIEW_H
