@@ -117,7 +117,7 @@ public:
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
 
-    void optimize(OptimizationMode mode);
+    void optimize();
 
     DataPlot *plotArea() const;
 

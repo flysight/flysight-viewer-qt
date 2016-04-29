@@ -21,10 +21,6 @@ PPCForm::PPCForm(QWidget *parent) :
 
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
-
-    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
-    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
-    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 PPCForm::~PPCForm()
@@ -52,9 +48,6 @@ void PPCForm::updateView()
     // Update window bounds
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->topEdit->setText(QString("%1").arg(top));
-
-    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
-    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
 
     if (mMainWindow->isWindowValid())
     {
@@ -147,35 +140,6 @@ void PPCForm::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void PPCForm::onActualButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Actual);
-}
-
-void PPCForm::onOptimalButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
-void PPCForm::onOptimizeButtonClicked()
-{
-    if (ui->timeButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::Time);
-    }
-    else if (ui->distanceButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::Distance);
-    }
-    else if (ui->hSpeedButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::HorizontalSpeed);
-    }
-
-    // Switch to optimal view
-    mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
 double PPCForm::score(
         const QVector< DataPoint > &result)
 {
@@ -195,8 +159,32 @@ double PPCForm::score(
             return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
         }
     }
+
+    return 0;
+}
+
+QString PPCForm::scoreAsText(
+        double score)
+{
+    if (ui->timeButton->isChecked())
+    {
+        return QString::number(score) + QString(" s");
+    }
+    else if (ui->distanceButton->isChecked())
+    {
+        return (mMainWindow->units() == PlotValue::Metric) ?
+                    QString::number(score / 1000) + QString(" km"):
+                    QString::number(score * METERS_TO_FEET / 5280) + QString(" mi");
+    }
+    else if (ui->hSpeedButton->isChecked())
+    {
+        return (mMainWindow->units() == PlotValue::Metric) ?
+                    QString::number(score * MPS_TO_KMH) + QString(" km/h"):
+                    QString::number(score * MPS_TO_MPH) + QString(" mph");
+    }
     else
     {
-        return 0;
+        Q_ASSERT(false);    // should never be called
+        return QString();
     }
 }

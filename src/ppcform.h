@@ -23,6 +23,7 @@ public:
     void setMainWindow(MainWindow *mainWindow);
 
     double score(const QVector< DataPoint > &result);
+    QString scoreAsText(double score);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -39,9 +40,6 @@ private slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
     void onApplyButtonClicked();
-    void onActualButtonClicked();
-    void onOptimalButtonClicked();
-    void onOptimizeButtonClicked();
 };
 
 #endif // PPCFORM_H

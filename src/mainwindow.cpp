@@ -1635,8 +1635,7 @@ void MainWindow::setTool(
     m_ui->actionSetCourse->setChecked(tool == Course);
 }
 
-void MainWindow::optimize(
-        OptimizationMode mode)
+void MainWindow::optimize()
 {
     const int start = findIndexBelowT(0) + 1;
 
@@ -1774,24 +1773,7 @@ void MainWindow::optimize(
             genePool = newGenePool;
 
             // Show best score in progress dialog
-            QString labelText;
-            switch (mode)
-            {
-            case Time:
-                labelText = QString::number(maxScore) + QString(" s");
-                break;
-            case Distance:
-                labelText = (m_units == PlotValue::Metric) ?
-                            QString::number(maxScore / 1000) + QString(" km"):
-                            QString::number(maxScore * METERS_TO_FEET / 5280) + QString(" mi");
-                break;
-            case HorizontalSpeed:
-            case VerticalSpeed:
-                labelText = (m_units == PlotValue::Metric) ?
-                            QString::number(maxScore * MPS_TO_KMH) + QString(" km/h"):
-                            QString::number(maxScore * MPS_TO_MPH) + QString(" mph");
-                break;
-            }
+            QString labelText = mScoringView->scoreAsText(maxScore);
             progress.setLabelText(QString("Optimizing (best score is ") +
                                   labelText +
                                   QString(")..."));

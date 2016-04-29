@@ -21,10 +21,6 @@ SpeedForm::SpeedForm(QWidget *parent) :
 
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
-
-    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
-    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
-    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 SpeedForm::~SpeedForm()
@@ -52,9 +48,6 @@ void SpeedForm::updateView()
     // Update window bounds
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->topEdit->setText(QString("%1").arg(top));
-
-    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
-    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
 
     if (mMainWindow->isWindowValid())
     {
@@ -136,24 +129,6 @@ void SpeedForm::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void SpeedForm::onActualButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Actual);
-}
-
-void SpeedForm::onOptimalButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
-void SpeedForm::onOptimizeButtonClicked()
-{
-    mMainWindow->optimize(MainWindow::VerticalSpeed);
-
-    // Switch to optimal view
-    mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
 double SpeedForm::score(
         const QVector< DataPoint > &result)
 {
@@ -165,8 +140,14 @@ double SpeedForm::score(
     {
         return (top - bottom) / (dpBottom.t - dpTop.t);
     }
-    else
-    {
-        return 0;
-    }
+
+    return 0;
+}
+
+QString SpeedForm::scoreAsText(
+        double score)
+{
+    return (mMainWindow->units() == PlotValue::Metric) ?
+                QString::number(score * MPS_TO_KMH) + QString(" km/h"):
+                QString::number(score * MPS_TO_MPH) + QString(" mph");
 }

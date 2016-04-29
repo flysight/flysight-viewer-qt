@@ -27,6 +27,11 @@ ScoringView::ScoringView(QWidget *parent) :
     // Connect mode combo to stacked widget
     connect(ui->modeComboBox, SIGNAL(activated(int)),
             this, SLOT(changePage(int)));
+
+    // Connect optimization buttons
+    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
+    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
+    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 ScoringView::~ScoringView()
@@ -50,6 +55,11 @@ void ScoringView::setMainWindow(
 
 void ScoringView::updateView()
 {
+    // Update mode selection
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+
+    // Update forms
     mPPCForm->updateView();
     mSpeedForm->updateView();
 }
@@ -74,4 +84,38 @@ double ScoringView::score(
         Q_ASSERT(false);    // should never be called
         return 0;
     }
+}
+
+QString ScoringView::scoreAsText(
+        double score)
+{
+    switch (mMainWindow->scoringMode())
+    {
+    case MainWindow::PPC:
+        return mPPCForm->scoreAsText(score);
+    case MainWindow::Speed:
+        return mSpeedForm->scoreAsText(score);
+    default:
+        Q_ASSERT(false);    // should never be called
+        return QString();
+    }
+}
+
+void ScoringView::onActualButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Actual);
+}
+
+void ScoringView::onOptimalButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void ScoringView::onOptimizeButtonClicked()
+{
+    // Perform optimization
+    mMainWindow->optimize();
+
+    // Switch to optimal view
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

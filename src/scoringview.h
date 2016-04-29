@@ -23,6 +23,7 @@ public:
     void setMainWindow(MainWindow *mainWindow);
 
     double score(const QVector< DataPoint > &result);
+    QString scoreAsText(double score);
 
 private:
     Ui::ScoringView *ui;
@@ -35,6 +36,9 @@ public slots:
 
 private slots:
     void changePage(int page);
+    void onActualButtonClicked();
+    void onOptimalButtonClicked();
+    void onOptimizeButtonClicked();
 };
 
 #endif // SCORINGVIEW_H
