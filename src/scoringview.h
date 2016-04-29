@@ -9,6 +9,7 @@ namespace Ui {
 
 class MainWindow;
 class PPCForm;
+class SpeedForm;
 
 class ScoringView : public QWidget
 {
@@ -22,8 +23,9 @@ public:
 
 private:
     Ui::ScoringView *ui;
-
+    MainWindow      *mMainWindow;
     PPCForm         *mPPCForm;
+    SpeedForm       *mSpeedForm;
 
 public slots:
     void updateView();

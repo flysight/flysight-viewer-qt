@@ -45,6 +45,10 @@ public:
     } OptimizationMode;
 
     typedef enum {
+        PPC, Speed
+    } ScoringMode;
+
+    typedef enum {
         Automatic, Fixed
     } GroundReference;
 
@@ -122,6 +126,9 @@ public:
 
     void setWind(double windE, double windN);
     bool windAdjustment() const { return mWindAdjustment; }
+
+    void setScoringMode(ScoringMode mode);
+    ScoringMode scoringMode() const { return mScoringMode; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -213,6 +220,7 @@ private:
     WindowMode            mWindowMode;
 
     ScoringView          *mScoringView;
+    ScoringMode           mScoringMode;
 
     double                m_mass;
     double                m_planformArea;

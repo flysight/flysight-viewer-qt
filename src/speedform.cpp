@@ -1,5 +1,5 @@
-#include "ppcform.h"
-#include "ui_ppcform.h"
+#include "speedform.h"
+#include "ui_speedform.h"
 
 #include <QPushButton>
 
@@ -8,9 +8,9 @@
 #include "mainwindow.h"
 #include "plotvalue.h"
 
-PPCForm::PPCForm(QWidget *parent) :
+SpeedForm::SpeedForm(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::PPCForm),
+    ui(new Ui::SpeedForm),
     mMainWindow(0)
 {
     ui->setupUi(this);
@@ -27,24 +27,24 @@ PPCForm::PPCForm(QWidget *parent) :
     connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
-PPCForm::~PPCForm()
+SpeedForm::~SpeedForm()
 {
     delete ui;
 }
 
-QSize PPCForm::sizeHint() const
+QSize SpeedForm::sizeHint() const
 {
     // Keeps windows from being intialized as very short
     return QSize(175, 175);
 }
 
-void PPCForm::setMainWindow(
+void SpeedForm::setMainWindow(
         MainWindow *mainWindow)
 {
     mMainWindow = mainWindow;
 }
 
-void PPCForm::updateView()
+void SpeedForm::updateView()
 {
     const double bottom = mMainWindow->windowBottom();
     const double top = mMainWindow->windowTop();
@@ -64,25 +64,18 @@ void PPCForm::updateView()
 
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
-        const double distance = MainWindow::getDistance(dpTop, dpBottom);
-        const double horizontalSpeed = distance / time;
+        const double verticalSpeed = (top - bottom) / time;
 
         // Update display
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            ui->timeEdit->setText(QString("%1").arg(time));
-            ui->distanceEdit->setText(QString("%1").arg(distance / 1000));
-            ui->distanceUnits->setText(tr("km"));
-            ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_KMH));
-            ui->horizontalSpeedUnits->setText(tr("km/h"));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_KMH));
+            ui->verticalSpeedUnits->setText(tr("km/h"));
         }
         else
         {
-            ui->timeEdit->setText(QString("%1").arg(time));
-            ui->distanceEdit->setText(QString("%1").arg(distance * METERS_TO_FEET / 5280));
-            ui->distanceUnits->setText(tr("mi"));
-            ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
-            ui->horizontalSpeedUnits->setText(tr("mph"));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH));
+            ui->verticalSpeedUnits->setText(tr("mph"));
         }
     }
     else
@@ -90,27 +83,23 @@ void PPCForm::updateView()
         // Update display
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            ui->distanceUnits->setText(tr("km"));
-            ui->horizontalSpeedUnits->setText(tr("km/h"));
+            ui->verticalSpeedUnits->setText(tr("km/h"));
         }
         else
         {
-            ui->distanceUnits->setText(tr("mi"));
-            ui->horizontalSpeedUnits->setText(tr("mph"));
+            ui->verticalSpeedUnits->setText(tr("mph"));
         }
 
-        ui->timeEdit->setText(tr("n/a"));
-        ui->distanceEdit->setText(tr("n/a"));
-        ui->horizontalSpeedEdit->setText(tr("n/a"));
+        ui->verticalSpeedEdit->setText(tr("n/a"));
     }
 }
 
-void PPCForm::onFAIButtonClicked()
+void SpeedForm::onFAIButtonClicked()
 {
-    mMainWindow->setWindow(2000, 3000);
+    mMainWindow->setWindow(1700, 2700);
 }
 
-void PPCForm::onApplyButtonClicked()
+void SpeedForm::onApplyButtonClicked()
 {
     double bottom = ui->bottomEdit->text().toDouble();
     double top = ui->topEdit->text().toDouble();
@@ -119,21 +108,21 @@ void PPCForm::onApplyButtonClicked()
     mMainWindow->setFocus();
 }
 
-void PPCForm::onUpButtonClicked()
+void SpeedForm::onUpButtonClicked()
 {
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() + 10,
                 mMainWindow->windowTop() + 10);
 }
 
-void PPCForm::onDownButtonClicked()
+void SpeedForm::onDownButtonClicked()
 {
     mMainWindow->setWindow(
                 mMainWindow->windowBottom() - 10,
                 mMainWindow->windowTop() - 10);
 }
 
-void PPCForm::keyPressEvent(QKeyEvent *event)
+void SpeedForm::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
@@ -147,30 +136,19 @@ void PPCForm::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void PPCForm::onActualButtonClicked()
+void SpeedForm::onActualButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Actual);
 }
 
-void PPCForm::onOptimalButtonClicked()
+void SpeedForm::onOptimalButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
 
-void PPCForm::onOptimizeButtonClicked()
+void SpeedForm::onOptimizeButtonClicked()
 {
-    if (ui->timeButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::Time);
-    }
-    else if (ui->distanceButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::Distance);
-    }
-    else if (ui->hSpeedButton->isChecked())
-    {
-        mMainWindow->optimize(MainWindow::HorizontalSpeed);
-    }
+    mMainWindow->optimize(MainWindow::VerticalSpeed);
 
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);

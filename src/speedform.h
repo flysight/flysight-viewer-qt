@@ -1,21 +1,21 @@
-#ifndef PPCFORM_H
-#define PPCFORM_H
+#ifndef SPEEDFORM_H
+#define SPEEDFORM_H
 
 #include <QWidget>
 
 namespace Ui {
-    class PPCForm;
+    class SpeedForm;
 }
 
 class MainWindow;
 
-class PPCForm : public QWidget
+class SpeedForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit PPCForm(QWidget *parent = 0);
-    ~PPCForm();
+    explicit SpeedForm(QWidget *parent = 0);
+    ~SpeedForm();
 
     virtual QSize sizeHint() const;
 
@@ -25,7 +25,7 @@ protected:
     virtual void keyPressEvent(QKeyEvent *);
 
 private:
-    Ui::PPCForm *ui;
+    Ui::SpeedForm *ui;
     MainWindow  *mMainWindow;
 
 public slots:
@@ -41,4 +41,4 @@ private slots:
     void onOptimizeButtonClicked();
 };
 
-#endif // PPCFORM_H
+#endif // SPEEDFORM_H

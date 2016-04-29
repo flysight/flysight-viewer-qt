@@ -53,6 +53,7 @@ MainWindow::MainWindow(
     mWindE(0),
     mWindN(0),
     mWindAdjustment(false),
+    mScoringMode(PPC),
     mGroundReference(Automatic),
     mFixedReference(0)
 {
@@ -65,6 +66,9 @@ MainWindow::MainWindow(
     // Respond to data changed signal
     connect(this, SIGNAL(dataChanged()),
             this, SLOT(updateWindow()));
+
+    // Read settings
+    readSettings();
 
     // Intitialize plot area
     initPlot();
@@ -89,7 +93,11 @@ MainWindow::MainWindow(
     initPlaybackView();
 
     // Restore window state
-    readSettings();
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("mainWindow");
+        restoreGeometry(settings.value("geometry").toByteArray());
+        restoreState(settings.value("state").toByteArray());
+    settings.endGroup();
 
     // Set default tool
     setTool(Pan);
@@ -121,6 +129,7 @@ void MainWindow::writeSettings()
         settings.setValue("lineThickness", mLineThickness);
         settings.setValue("windE", mWindE);
         settings.setValue("windN", mWindN);
+        settings.setValue("scoringMode", mScoringMode);
         settings.setValue("groundReference", mGroundReference);
         settings.setValue("fixedReference", mFixedReference);
     settings.endGroup();
@@ -131,21 +140,20 @@ void MainWindow::readSettings()
     QSettings settings("FlySight", "Viewer");
 
     settings.beginGroup("mainWindow");
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("state").toByteArray());
-    m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
-    m_mass = settings.value("mass", m_mass).toDouble();
-    m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
-    m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
-    m_minLift = settings.value("minLift", m_minLift).toDouble();
-    m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
-    m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
-    m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
-    mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
-    mWindE = settings.value("windE", mWindE).toDouble();
-    mWindN = settings.value("windN", mWindN).toDouble();
-    mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
-    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
+        m_mass = settings.value("mass", m_mass).toDouble();
+        m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
+        m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+        m_minLift = settings.value("minLift", m_minLift).toDouble();
+        m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
+        m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
+        m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
+        mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
+        mWindE = settings.value("windE", mWindE).toDouble();
+        mWindN = settings.value("windN", mWindN).toDouble();
+        mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
+    	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
+	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
     settings.endGroup();
 }
 
@@ -1948,4 +1956,11 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+}
+
+void MainWindow::setScoringMode(
+        ScoringMode mode)
+{
+    mScoringMode = mode;
+    emit dataChanged();
 }

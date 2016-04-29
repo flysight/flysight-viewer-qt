@@ -29,6 +29,7 @@ SOURCES += main.cpp \
     orthoview.cpp \
     playbackview.cpp \
     ppcform.cpp \
+    speedform.cpp \
     GeographicLib/Accumulator.cpp \
     GeographicLib/AlbersEqualArea.cpp \
     GeographicLib/AzimuthalEquidistant.cpp \
@@ -85,14 +86,16 @@ HEADERS  += mainwindow.h \
     genome.h \
     orthoview.h \
     playbackview.h \
-    ppcform.h
+    ppcform.h \
+    speedform.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
     videoview.ui \
     scoringview.ui \
     playbackview.ui \
-    ppcform.ui
+    ppcform.ui \
+    speedform.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico
