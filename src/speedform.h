@@ -7,6 +7,7 @@ namespace Ui {
     class SpeedForm;
 }
 
+class DataPoint;
 class MainWindow;
 
 class SpeedForm : public QWidget
@@ -20,6 +21,8 @@ public:
     virtual QSize sizeHint() const;
 
     void setMainWindow(MainWindow *mainWindow);
+
+    double score(const QVector< DataPoint > &result);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);

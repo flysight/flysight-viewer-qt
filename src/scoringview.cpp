@@ -60,3 +60,18 @@ void ScoringView::changePage(
     mMainWindow->setScoringMode((MainWindow::ScoringMode) page);
     ui->stackedWidget->setCurrentIndex(page);
 }
+
+double ScoringView::score(
+        const QVector< DataPoint > &result)
+{
+    switch (mMainWindow->scoringMode())
+    {
+    case MainWindow::PPC:
+        return mPPCForm->score(result);
+    case MainWindow::Speed:
+        return mSpeedForm->score(result);
+    default:
+        Q_ASSERT(false);    // should never be called
+        return 0;
+    }
+}

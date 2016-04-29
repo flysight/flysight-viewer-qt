@@ -1691,7 +1691,7 @@ void MainWindow::optimize(
 
         Genome g(genomeSize, kMin, m_minLift, m_maxLift);
         const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-        const double s = score(result, mode);
+        const double s = mScoringView->score(result);
         genePool.append(Score(s, g));
 
         maxScore = qMax(maxScore, s);
@@ -1735,7 +1735,7 @@ void MainWindow::optimize(
 
                 Genome g(genomeSize, kMin, m_minLift, m_maxLift);
                 const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = score(result, mode);
+                const double s = mScoringView->score(result);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1765,7 +1765,7 @@ void MainWindow::optimize(
                 }
 
                 const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = score(result, mode);
+                const double s = mScoringView->score(result);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1882,31 +1882,6 @@ bool MainWindow::getWindowBounds(
     else
     {
         return false;
-    }
-}
-
-double MainWindow::score(
-        const QVector< DataPoint > &result,
-        OptimizationMode mode)
-{
-    DataPoint dpBottom, dpTop;
-    if (getWindowBounds(result, dpBottom, dpTop))
-    {
-        switch (mode)
-        {
-        case Time:
-            return dpBottom.t - dpTop.t;
-        case Distance:
-            return dpBottom.x - dpTop.x;
-        case HorizontalSpeed:
-            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
-        case VerticalSpeed:
-            return (mWindowTop - mWindowBottom) / (dpBottom.t - dpTop.t);
-        }
-    }
-    else
-    {
-        return 0;
     }
 }
 

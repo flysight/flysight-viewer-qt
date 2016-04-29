@@ -153,3 +153,20 @@ void SpeedForm::onOptimizeButtonClicked()
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
+
+double SpeedForm::score(
+        const QVector< DataPoint > &result)
+{
+    const double bottom = mMainWindow->windowBottom();
+    const double top = mMainWindow->windowTop();
+
+    DataPoint dpBottom, dpTop;
+    if (mMainWindow->getWindowBounds(result, dpBottom, dpTop))
+    {
+        return (top - bottom) / (dpBottom.t - dpTop.t);
+    }
+    else
+    {
+        return 0;
+    }
+}

@@ -130,6 +130,8 @@ public:
     void setScoringMode(ScoringMode mode);
     ScoringMode scoringMode() const { return mScoringMode; }
 
+    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -267,8 +269,6 @@ private:
     void updateLeftActions();
 
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
-    double score(const QVector< DataPoint > &result, OptimizationMode mode);
-    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
 signals:
     void dataLoaded();

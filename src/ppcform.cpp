@@ -175,3 +175,28 @@ void PPCForm::onOptimizeButtonClicked()
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
+
+double PPCForm::score(
+        const QVector< DataPoint > &result)
+{
+    DataPoint dpBottom, dpTop;
+    if (mMainWindow->getWindowBounds(result, dpBottom, dpTop))
+    {
+        if (ui->timeButton->isChecked())
+        {
+            return dpBottom.t - dpTop.t;
+        }
+        else if (ui->distanceButton->isChecked())
+        {
+            return dpBottom.x - dpTop.x;
+        }
+        else if (ui->hSpeedButton->isChecked())
+        {
+            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}

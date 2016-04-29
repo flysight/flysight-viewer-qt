@@ -7,6 +7,7 @@ namespace Ui {
     class ScoringView;
 }
 
+class DataPoint;
 class MainWindow;
 class PPCForm;
 class SpeedForm;
@@ -20,6 +21,8 @@ public:
     ~ScoringView();
 
     void setMainWindow(MainWindow *mainWindow);
+
+    double score(const QVector< DataPoint > &result);
 
 private:
     Ui::ScoringView *ui;
