@@ -56,6 +56,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    const QVector< DataPoint > &data() const { return m_data; }
     int dataSize() const { return m_data.size(); }
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
@@ -115,6 +116,7 @@ public:
     void setMaxLift(double maxLift);
     void setMaxLD(double maxLD);
 
+    const QVector< DataPoint > &optimal() const { return m_optimal; }
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
 

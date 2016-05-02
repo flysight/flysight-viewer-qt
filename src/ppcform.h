@@ -36,6 +36,7 @@ private slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
     void onApplyButtonClicked();
+
     void onModeChanged();
 };
 

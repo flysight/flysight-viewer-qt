@@ -48,19 +48,30 @@ void PPCForm::setMainWindow(
 
 void PPCForm::updateView()
 {
-    const double bottom = mMainWindow->windowBottom();
-    const double top = mMainWindow->windowTop();
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+
+    const double bottom = method->windowBottom();
+    const double top = method->windowTop();
 
     // Update window bounds
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->topEdit->setText(QString("%1").arg(top));
 
-    if (mMainWindow->isWindowValid())
-    {
-        // Get window bounds
-        const DataPoint &dpBottom = mMainWindow->windowBottomDP();
-        const DataPoint &dpTop = mMainWindow->windowTopDP();
+    DataPoint dpBottom, dpTop;
+    bool success;
 
+    switch (mMainWindow->windowMode())
+    {
+    case MainWindow::Actual:
+        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+        break;
+    case MainWindow::Optimal:
+        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop);
+        break;
+    }
+
+    if (success)
+    {
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
         const double distance = MainWindow::getDistance(dpTop, dpBottom);
@@ -106,7 +117,8 @@ void PPCForm::updateView()
 
 void PPCForm::onFAIButtonClicked()
 {
-    mMainWindow->setWindow(2000, 3000);
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    method->setWindow(2000, 3000);
 }
 
 void PPCForm::onApplyButtonClicked()
@@ -114,22 +126,22 @@ void PPCForm::onApplyButtonClicked()
     double bottom = ui->bottomEdit->text().toDouble();
     double top = ui->topEdit->text().toDouble();
 
-    mMainWindow->setWindow(bottom, top);
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    method->setWindow(bottom, top);
+
     mMainWindow->setFocus();
 }
 
 void PPCForm::onUpButtonClicked()
 {
-    mMainWindow->setWindow(
-                mMainWindow->windowBottom() + 10,
-                mMainWindow->windowTop() + 10);
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    method->setWindow(method->windowBottom() + 10, method->windowTop() + 10);
 }
 
 void PPCForm::onDownButtonClicked()
 {
-    mMainWindow->setWindow(
-                mMainWindow->windowBottom() - 10,
-                mMainWindow->windowTop() - 10);
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    method->setWindow(method->windowBottom() - 10, method->windowTop() - 10);
 }
 
 void PPCForm::keyPressEvent(QKeyEvent *event)
