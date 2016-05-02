@@ -22,7 +22,7 @@ ScoringView::ScoringView(QWidget *parent) :
     // Add options to combo box
     ui->modeComboBox->addItem("PPC");
     ui->modeComboBox->addItem("Speed");
-    ui->modeComboBox->addItem("Performance");
+    ui->modeComboBox->addItem("Records");
 
     // Add forms to stacked view
     ui->stackedWidget->addWidget(mPPCForm);

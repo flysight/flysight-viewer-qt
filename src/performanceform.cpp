@@ -54,13 +54,22 @@ void PerformanceForm::updateView()
 
     // Calculate results
     const double time = dpEnd.t - dpStart.t;
-    const double vDistance = dpEnd.z - dpStart.z;
+    const double vDistance = dpStart.z - dpEnd.z;
     const double hDistance = MainWindow::getDistance(dpStart, dpEnd);
 
     // Update display
-    ui->timeEdit->setText(QString("%1").arg(time));
-    ui->vDistanceEdit->setText(QString("%1").arg(vDistance));
-    ui->hDistanceEdit->setText(QString("%1").arg(hDistance));
+    ui->timeEdit->setText(QString("%1").arg(time, 0, 'f', 3));
+    ui->vDistanceEdit->setText(QString("%1").arg(vDistance, 0, 'f', 3));
+    ui->hDistanceEdit->setText(QString("%1").arg(hDistance, 0, 'f', 3));
+
+    // Auxiliary values
+    ui->startLatEdit->setText(QString("%1").arg(dpStart.lat, 0, 'f', 7));
+    ui->startLonEdit->setText(QString("%1").arg(dpStart.lon, 0, 'f', 7));
+    ui->startElevEdit->setText(QString("%1").arg(dpStart.hMSL, 0, 'f', 3));
+
+    ui->endLatEdit->setText(QString("%1").arg(dpEnd.lat, 0, 'f', 7));
+    ui->endLonEdit->setText(QString("%1").arg(dpEnd.lon, 0, 'f', 7));
+    ui->endElevEdit->setText(QString("%1").arg(dpEnd.hMSL, 0, 'f', 3));
 }
 
 void PerformanceForm::onApplyButtonClicked()
