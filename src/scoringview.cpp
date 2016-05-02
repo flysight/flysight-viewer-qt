@@ -119,3 +119,17 @@ void ScoringView::onOptimizeButtonClicked()
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
+
+void ScoringView::prepareDataPlot(
+        DataPlot *plot)
+{
+    switch (mMainWindow->scoringMode())
+    {
+    case MainWindow::PPC:
+        mPPCForm->prepareDataPlot(plot);
+    case MainWindow::Speed:
+        mSpeedForm->prepareDataPlot(plot);
+    default:
+        Q_ASSERT(false);    // should never be called
+    }
+}

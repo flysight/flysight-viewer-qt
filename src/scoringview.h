@@ -7,6 +7,7 @@ namespace Ui {
     class ScoringView;
 }
 
+class DataPlot;
 class DataPoint;
 class MainWindow;
 class PPCForm;
@@ -24,6 +25,8 @@ public:
 
     double score(const QVector< DataPoint > &result);
     QString scoreAsText(double score);
+
+    void prepareDataPlot(DataPlot *plot);
 
 private:
     Ui::ScoringView *ui;

@@ -151,3 +151,9 @@ QString SpeedForm::scoreAsText(
                 QString::number(score * MPS_TO_KMH) + QString(" km/h"):
                 QString::number(score * MPS_TO_MPH) + QString(" mph");
 }
+
+void SpeedForm::prepareDataPlot(
+        DataPlot *plot)
+{
+
+}

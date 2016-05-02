@@ -1921,3 +1921,9 @@ void MainWindow::setScoringMode(
     mScoringMode = mode;
     emit dataChanged();
 }
+
+void MainWindow::prepareDataPlot(
+        DataPlot *plot)
+{
+    mScoringView->prepareDataPlot(plot);
+}

@@ -132,6 +132,8 @@ public:
 
     bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
+    void prepareDataPlot(DataPlot *plot);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
