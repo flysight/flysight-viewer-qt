@@ -21,6 +21,7 @@
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "orthoview.h"
+#include "performancescoring.h"
 #include "playbackview.h"
 #include "ppcscoring.h"
 #include "scoringview.h"
@@ -60,6 +61,7 @@ MainWindow::MainWindow(
     // Initialize scoring methods
     mScoringMethods.append(new PPCScoring(this));
     mScoringMethods.append(new SpeedScoring(this));
+    mScoringMethods.append(new PerformanceScoring(this));
 
     // Connect scoring method signals
     for (int i = PPC; i < smLast; ++i)
@@ -1674,7 +1676,10 @@ void MainWindow::setScoringMode(
 void MainWindow::prepareDataPlot(
         DataPlot *plot)
 {
-    mScoringMethods[mScoringMode]->prepareDataPlot(plot);
+    if (mScoringView->isVisible())
+    {
+        mScoringMethods[mScoringMode]->prepareDataPlot(plot);
+    }
 }
 
 void MainWindow::setOptimal(

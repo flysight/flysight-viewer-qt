@@ -25,12 +25,12 @@ class ScoringMethod : public QObject
 public:
     explicit ScoringMethod(QObject *parent = 0);
 
-    virtual double score(const QVector< DataPoint > &result) = 0;
-    virtual QString scoreAsText(double score) = 0;
+    virtual double score(const QVector< DataPoint > &result) { return 0; }
+    virtual QString scoreAsText(double score) { return QString(); }
 
     virtual void prepareDataPlot(DataPlot *plot) {}
 
-    virtual void optimize() = 0;
+    virtual void optimize() {}
 
 protected:
     void optimize(MainWindow *mainWindow, double windowBottom);
