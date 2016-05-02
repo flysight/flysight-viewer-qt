@@ -29,6 +29,8 @@ public:
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
 
+    void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
+
 private:
     MainWindow *mMainWindow;
 

@@ -9,7 +9,6 @@
 #include "dataplot.h"
 #include "datapoint.h"
 #include "dataview.h"
-#include "genome.h"
 
 class QCPRange;
 class QCustomPlot;
@@ -18,14 +17,6 @@ class ScoringView;
 
 namespace Ui {
 class MainWindow;
-}
-
-typedef QPair< double, Genome > Score;
-typedef QVector< Score > GenePool;
-
-static bool operator<(const Score &s1, const Score &s2)
-{
-    return s1.first > s2.first;
 }
 
 class MainWindow : public QMainWindow
@@ -95,32 +86,28 @@ public:
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
 
-    void setWindow(double windowBottom, double windowTop);
-    double windowTop(void) const { return mWindowTop; }
-    double windowBottom(void) const { return mWindowBottom; }
-
-    bool isWindowValid(void) const;
-    const DataPoint &windowTopDP(void) const { return mWindowTopDP; }
-    const DataPoint &windowBottomDP(void) const { return mWindowBottomDP; }
-
     void setWindowMode(WindowMode mode);
     WindowMode windowMode() const { return mWindowMode; }
 
+    double mass() const { return m_mass; }
     double planformArea() const { return m_planformArea; }
 
     double minDrag() const { return m_minDrag; }
+    double minLift() const { return m_minLift; }
     double maxLift() const { return m_maxLift; }
     double maxLD() const { return m_maxLD; }
 
+    int simulationTime() const { return m_simulationTime; }
+
     void setMinDrag(double minDrag);
     void setMaxLift(double maxLift);
-    void setMaxLD(double maxLD);
+    void setMaxLD(double maxLD);    
 
     const QVector< DataPoint > &optimal() const { return m_optimal; }
+    void setOptimal(const QVector< DataPoint > &result);
+
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
-
-    void optimize();
 
     DataPlot *plotArea() const;
 
@@ -217,14 +204,6 @@ private:
     double                mRangeLower;
     double                mRangeUpper;
 
-    double                mWindowBottom;
-    double                mWindowTop;
-
-    bool                  mIsWindowValid;
-
-    DataPoint             mWindowBottomDP;
-    DataPoint             mWindowTopDP;
-
     WindowMode            mWindowMode;
 
     ScoringView          *mScoringView;
@@ -276,15 +255,12 @@ private:
     void updateBottomActions();
     void updateLeftActions();
 
-    const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
-
 signals:
     void dataLoaded();
     void dataChanged();
     void rotationChanged(double rotation);
 
 private slots:
-    void updateWindow();
     void setScoringVisible(bool visible);
 };
 

@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 #include "ppcform.h"
+#include "scoringmethod.h"
 #include "speedform.h"
 
 ScoringView::ScoringView(QWidget *parent) :
@@ -83,8 +84,10 @@ void ScoringView::onOptimalButtonClicked()
 
 void ScoringView::onOptimizeButtonClicked()
 {
+    ScoringMethod *method = mMainWindow->scoringMethod(mMainWindow->scoringMode());
+
     // Perform optimization
-    mMainWindow->optimize();
+    method->optimize();
 
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);

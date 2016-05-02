@@ -18,7 +18,6 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
-#include "genome.h"
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "orthoview.h"
@@ -39,9 +38,6 @@ MainWindow::MainWindow(
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
-    mWindowBottom(2000),
-    mWindowTop(3000),
-    mIsWindowValid(false),
     mWindowMode(Actual),
     mScoringView(0),
     m_mass(70),
@@ -1565,16 +1561,6 @@ void MainWindow::setCourse(
     setTool(mPrevTool);
 }
 
-void MainWindow::setWindow(
-        double windowBottom,
-        double windowTop)
-{
-    mWindowBottom = windowBottom;
-    mWindowTop = windowTop;
-
-    emit dataChanged();
-}
-
 void MainWindow::setScoringVisible(
         bool visible)
 {
@@ -1605,24 +1591,6 @@ void MainWindow::setMaxLD(
     emit dataChanged();
 }
 
-void MainWindow::updateWindow(void)
-{
-    switch (mWindowMode)
-    {
-    case Actual:
-        mIsWindowValid = getWindowBounds(m_data, mWindowBottomDP, mWindowTopDP);
-        break;
-    case Optimal:
-        mIsWindowValid = getWindowBounds(m_optimal, mWindowBottomDP, mWindowTopDP);
-        break;
-    }
-}
-
-bool MainWindow::isWindowValid() const
-{
-    return mIsWindowValid && mScoringView && m_ui->actionShowScoringView->isChecked();
-}
-
 void MainWindow::setWindowMode(
         WindowMode mode)
 {
@@ -1646,238 +1614,6 @@ void MainWindow::setTool(
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
     m_ui->actionSetCourse->setChecked(tool == Course);
-}
-
-void MainWindow::optimize()
-{
-    const int start = findIndexBelowT(0) + 1;
-
-    // y = ax^2 + c
-    const double m = 1 / m_maxLD;
-    const double c = m_minDrag;
-    const double a = m * m / (4 * c);
-
-    const int workingSize    = 100;     // Working population
-    const int keepSize       = 10;      // Number of elites to keep
-    const int newSize        = 10;      // New genomes in first level
-    const int numGenerations = 250;     // Generations per level of detail
-    const int tournamentSize = 5;       // Number of individuals in a tournament
-    const int mutationRate   = 100;     // Frequency of mutations
-    const int truncationRate = 10;      // Frequency of truncations
-
-    qsrand(QTime::currentTime().msec());
-
-    const double dt = 0.25; // Time step (s)
-
-    int kLim = 0;
-    while (dt * (1 << kLim) < m_simulationTime)
-    {
-        ++kLim;
-    }
-
-    const int genomeSize = (1 << kLim) + 1;
-    const int kMin = kLim - 4;
-    const int kMax = kLim - 2;
-
-    GenePool genePool;
-
-    QProgressDialog progress("Initializing...",
-                             "Abort",
-                             0,
-                             (kMax - kMin + 1) * numGenerations * workingSize + workingSize,
-                             this);
-    progress.setWindowModality(Qt::WindowModal);
-
-    double maxScore = 0;
-    bool abort = false;
-
-    // Add new individuals
-    for (int i = 0; i < workingSize; ++i)
-    {
-        progress.setValue(progress.value() + 1);
-        if (progress.wasCanceled())
-        {
-            abort = true;
-            break;
-        }
-
-        Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-        const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-        const double s = mScoringMethods[mScoringMode]->score(result);
-        genePool.append(Score(s, g));
-
-        maxScore = qMax(maxScore, s);
-    }
-
-    // Increasing levels of detail
-    for (int k = kMin; k <= kMax && !abort; ++k)
-    {
-        // Generations
-        for (int j = 0; j < numGenerations && !abort; ++j)
-        {
-            progress.setValue(progress.value() + keepSize);
-            if (progress.wasCanceled())
-            {
-                abort = true;
-                break;
-            }
-
-            // Sort gene pool by score
-            qSort(genePool);
-
-            // Elitism
-            GenePool newGenePool = genePool.mid(0, keepSize);
-
-            // Initialize score
-            maxScore = 0;
-            for (int i = 0; i < keepSize; ++i)
-            {
-                maxScore = qMax(maxScore, newGenePool[i].first);
-            }
-
-            // Add new individuals in first level
-            for (int i = 0; k == kMin && i < newSize; ++i)
-            {
-                progress.setValue(progress.value() + 1);
-                if (progress.wasCanceled())
-                {
-                    abort = true;
-                    break;
-                }
-
-                Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = mScoringMethods[mScoringMode]->score(result);
-                newGenePool.append(Score(s, g));
-
-                maxScore = qMax(maxScore, s);
-            }
-
-            // Tournament selection
-            while (newGenePool.size() < workingSize)
-            {
-                progress.setValue(progress.value() + 1);
-                if (progress.wasCanceled())
-                {
-                    abort = true;
-                    break;
-                }
-
-                const Genome &p1 = selectGenome(genePool, tournamentSize);
-                const Genome &p2 = selectGenome(genePool, tournamentSize);
-                Genome g(p1, p2, k);
-
-                if (qrand() % 100 < truncationRate)
-                {
-                    g.truncate(k);
-                }
-                if (qrand() % 100 < mutationRate)
-                {
-                    g.mutate(k, kMin, m_minLift, m_maxLift);
-                }
-
-                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = mScoringMethods[mScoringMode]->score(result);
-                newGenePool.append(Score(s, g));
-
-                maxScore = qMax(maxScore, s);
-            }
-
-            genePool = newGenePool;
-
-            // Show best score in progress dialog
-            QString labelText = mScoringMethods[mScoringMode]->scoreAsText(maxScore);
-            progress.setLabelText(QString("Optimizing (best score is ") +
-                                  labelText +
-                                  QString(")..."));
-        }
-    }
-
-    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + workingSize);
-
-    // Sort gene pool by score
-    qSort(genePool);
-
-    // Keep most fit individual
-    m_optimal.clear();
-    m_optimal = genePool[0].second.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-
-    emit dataChanged();
-}
-
-const Genome &MainWindow::selectGenome(
-        const GenePool &genePool,
-        const int tournamentSize)
-{
-    int jMax;
-    double sMax;
-    bool first = true;
-
-    for (int i = 0; i < tournamentSize; ++i)
-    {
-        const int j = qrand() % genePool.size();
-        if (first || genePool[j].first > sMax)
-        {
-            jMax = j;
-            sMax = genePool[j].first;
-            first = false;
-        }
-    }
-
-    return genePool[jMax].second;
-}
-
-bool MainWindow::getWindowBounds(
-        const QVector< DataPoint > result,
-        DataPoint &dpBottom,
-        DataPoint &dpTop)
-{
-    bool foundBottom = false;
-    bool foundTop = false;
-    int bottom, top;
-
-    for (int i = result.size() - 1; i >= 0; --i)
-    {
-        const DataPoint &dp = result[i];
-
-        if (dp.alt < mWindowBottom)
-        {
-            bottom = i;
-            foundBottom = true;
-        }
-
-        if (dp.alt < mWindowTop)
-        {
-            top = i;
-            foundTop = false;
-        }
-
-        if (dp.alt > mWindowTop)
-        {
-            foundTop = true;
-        }
-
-        if (dp.t < 0) break;
-    }
-
-    if (foundBottom && foundTop)
-    {
-        // Calculate bottom of window
-        const DataPoint &dp1 = result[bottom - 1];
-        const DataPoint &dp2 = result[bottom];
-        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
-
-        // Calculate top of window
-        const DataPoint &dp3 = result[top - 1];
-        const DataPoint &dp4 = result[top];
-        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 DataPlot *MainWindow::plotArea() const
@@ -1939,4 +1675,12 @@ void MainWindow::prepareDataPlot(
         DataPlot *plot)
 {
     mScoringMethods[mScoringMode]->prepareDataPlot(plot);
+}
+
+void MainWindow::setOptimal(
+        const QVector< DataPoint > &result)
+{
+    m_optimal = result;
+    emit dataChanged();
+
 }
