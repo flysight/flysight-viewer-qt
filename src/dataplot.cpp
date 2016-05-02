@@ -557,72 +557,11 @@ void DataPlot::updatePlot()
         QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
     }
 
+    // Draw annotations on plot background
+    mMainWindow->prepareDataPlot(this);
+
     DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
     DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
-
-    double xMin = xValue()->value(dpLower, mMainWindow->units());
-    double xMax = xValue()->value(dpUpper, mMainWindow->units());
-
-    // Add shading for scoring window
-    if (yValue(Elevation)->visible() && mMainWindow->isWindowValid())
-    {
-        const DataPoint &dpTop = mMainWindow->windowTopDP();
-        const DataPoint &dpBottom = mMainWindow->windowBottomDP();
-
-        QVector< double > xElev, yElev;
-
-        xElev << xMin << xMax;
-        yElev << yValue(Elevation)->value(dpTop, mMainWindow->units())
-              << yValue(Elevation)->value(dpTop, mMainWindow->units());
-
-        QCPGraph *graph = addGraph(
-                    axisRect()->axis(QCPAxis::atBottom),
-                    yValue(Elevation)->axis());
-        graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-
-        yElev.clear();
-        yElev << yValue(Elevation)->value(dpBottom, mMainWindow->units())
-              << yValue(Elevation)->value(dpBottom, mMainWindow->units());
-
-        graph = addGraph(
-                    axisRect()->axis(QCPAxis::atBottom),
-                    yValue(Elevation)->axis());
-        graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-
-        QCPItemRect *rect = new QCPItemRect(this);
-        addItem(rect);
-
-        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-        rect->setBrush(QColor(0, 0, 0, 8));
-
-        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->topLeft->setAxes(xAxis, yValue(Elevation)->axis());
-        rect->topLeft->setCoords(-0.1, -0.1);
-
-        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->bottomRight->setAxes(xAxis, yValue(Elevation)->axis());
-        rect->bottomRight->setCoords(
-                    (xValue()->value(dpTop, mMainWindow->units()) - xMin) / (xMax - xMin),
-                    1.1);
-
-        rect = new QCPItemRect(this);
-        addItem(rect);
-
-        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-        rect->setBrush(QColor(0, 0, 0, 8));
-
-        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->topLeft->setAxes(xAxis, yValue(Elevation)->axis());
-        rect->topLeft->setCoords(
-                    (xValue()->value(dpBottom, mMainWindow->units()) - xMin) / (xMax - xMin),
-                    -0.1);
-
-        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->bottomRight->setAxes(xAxis, yValue(Elevation)->axis());
-        rect->bottomRight->setCoords(1.1, 1.1);
-    }
 
     // Draw plots
     for (int j = 0; j < yaLast; ++j)
@@ -692,6 +631,9 @@ void DataPlot::updatePlot()
     // Set x-axis range
     if (mMainWindow->dataSize() > 0)
     {
+        const double xMin = xValue()->value(dpLower, mMainWindow->units());
+        const double xMax = xValue()->value(dpUpper, mMainWindow->units());
+
         xAxis->setRange(QCPRange(xMin, xMax));
     }
 

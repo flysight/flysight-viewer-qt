@@ -18,12 +18,13 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
-#include "genome.h"
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "orthoview.h"
 #include "playbackview.h"
+#include "ppcscoring.h"
 #include "scoringview.h"
+#include "speedscoring.h"
 #include "videoview.h"
 #include "windplot.h"
 
@@ -37,9 +38,6 @@ MainWindow::MainWindow(
     mMarkActive(false),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
-    mWindowBottom(2000),
-    mWindowTop(3000),
-    mIsWindowValid(false),
     mWindowMode(Actual),
     mScoringView(0),
     m_mass(70),
@@ -53,10 +51,22 @@ MainWindow::MainWindow(
     mWindE(0),
     mWindN(0),
     mWindAdjustment(false),
+    mScoringMode(PPC),
     mGroundReference(Automatic),
     mFixedReference(0)
 {
     m_ui->setupUi(this);
+
+    // Initialize scoring methods
+    mScoringMethods.append(new PPCScoring(this));
+    mScoringMethods.append(new SpeedScoring(this));
+
+    // Connect scoring method signals
+    for (int i = PPC; i < smLast; ++i)
+    {
+        connect(mScoringMethods[i], SIGNAL(dataChanged()),
+                this, SIGNAL(dataChanged()));
+    }
 
     // Ensure that closeEvent is called
     connect(m_ui->actionExit, SIGNAL(triggered()),
@@ -65,6 +75,9 @@ MainWindow::MainWindow(
     // Respond to data changed signal
     connect(this, SIGNAL(dataChanged()),
             this, SLOT(updateWindow()));
+
+    // Read settings
+    readSettings();
 
     // Intitialize plot area
     initPlot();
@@ -89,7 +102,11 @@ MainWindow::MainWindow(
     initPlaybackView();
 
     // Restore window state
-    readSettings();
+    QSettings settings("FlySight", "Viewer");
+    settings.beginGroup("mainWindow");
+        restoreGeometry(settings.value("geometry").toByteArray());
+        restoreState(settings.value("state").toByteArray());
+    settings.endGroup();
 
     // Set default tool
     setTool(Pan);
@@ -121,6 +138,7 @@ void MainWindow::writeSettings()
         settings.setValue("lineThickness", mLineThickness);
         settings.setValue("windE", mWindE);
         settings.setValue("windN", mWindN);
+        settings.setValue("scoringMode", mScoringMode);
         settings.setValue("groundReference", mGroundReference);
         settings.setValue("fixedReference", mFixedReference);
     settings.endGroup();
@@ -131,21 +149,20 @@ void MainWindow::readSettings()
     QSettings settings("FlySight", "Viewer");
 
     settings.beginGroup("mainWindow");
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("state").toByteArray());
-    m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
-    m_mass = settings.value("mass", m_mass).toDouble();
-    m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
-    m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
-    m_minLift = settings.value("minLift", m_minLift).toDouble();
-    m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
-    m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
-    m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
-    mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
-    mWindE = settings.value("windE", mWindE).toDouble();
-    mWindN = settings.value("windN", mWindN).toDouble();
-    mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
-    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        m_units = (PlotValue::Units) settings.value("units", m_units).toInt();
+        m_mass = settings.value("mass", m_mass).toDouble();
+        m_planformArea = settings.value("planformArea", m_planformArea).toDouble();
+        m_minDrag = settings.value("minDrag", m_minDrag).toDouble();
+        m_minLift = settings.value("minLift", m_minLift).toDouble();
+        m_maxLift = settings.value("maxLift", m_maxLift).toDouble();
+        m_maxLD = settings.value("maxLD", m_maxLD).toDouble();
+        m_simulationTime = settings.value("simulationTime", m_simulationTime).toInt();
+        mLineThickness = settings.value("lineThickness", mLineThickness).toDouble();
+        mWindE = settings.value("windE", mWindE).toDouble();
+        mWindN = settings.value("windN", mWindN).toDouble();
+        mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
+    	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
+	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
     settings.endGroup();
 }
 
@@ -1544,16 +1561,6 @@ void MainWindow::setCourse(
     setTool(mPrevTool);
 }
 
-void MainWindow::setWindow(
-        double windowBottom,
-        double windowTop)
-{
-    mWindowBottom = windowBottom;
-    mWindowTop = windowTop;
-
-    emit dataChanged();
-}
-
 void MainWindow::setScoringVisible(
         bool visible)
 {
@@ -1584,24 +1591,6 @@ void MainWindow::setMaxLD(
     emit dataChanged();
 }
 
-void MainWindow::updateWindow(void)
-{
-    switch (mWindowMode)
-    {
-    case Actual:
-        mIsWindowValid = getWindowBounds(m_data, mWindowBottomDP, mWindowTopDP);
-        break;
-    case Optimal:
-        mIsWindowValid = getWindowBounds(m_optimal, mWindowBottomDP, mWindowTopDP);
-        break;
-    }
-}
-
-bool MainWindow::isWindowValid() const
-{
-    return mIsWindowValid && mScoringView && m_ui->actionShowScoringView->isChecked();
-}
-
 void MainWindow::setWindowMode(
         WindowMode mode)
 {
@@ -1625,281 +1614,6 @@ void MainWindow::setTool(
     m_ui->actionZero->setChecked(tool == Zero);
     m_ui->actionGround->setChecked(tool == Ground);
     m_ui->actionSetCourse->setChecked(tool == Course);
-}
-
-void MainWindow::optimize(
-        OptimizationMode mode)
-{
-    const int start = findIndexBelowT(0) + 1;
-
-    // y = ax^2 + c
-    const double m = 1 / m_maxLD;
-    const double c = m_minDrag;
-    const double a = m * m / (4 * c);
-
-    const int workingSize    = 100;     // Working population
-    const int keepSize       = 10;      // Number of elites to keep
-    const int newSize        = 10;      // New genomes in first level
-    const int numGenerations = 250;     // Generations per level of detail
-    const int tournamentSize = 5;       // Number of individuals in a tournament
-    const int mutationRate   = 100;     // Frequency of mutations
-    const int truncationRate = 10;      // Frequency of truncations
-
-    qsrand(QTime::currentTime().msec());
-
-    const double dt = 0.25; // Time step (s)
-
-    int kLim = 0;
-    while (dt * (1 << kLim) < m_simulationTime)
-    {
-        ++kLim;
-    }
-
-    const int genomeSize = (1 << kLim) + 1;
-    const int kMin = kLim - 4;
-    const int kMax = kLim - 2;
-
-    GenePool genePool;
-
-    QProgressDialog progress("Initializing...",
-                             "Abort",
-                             0,
-                             (kMax - kMin + 1) * numGenerations * workingSize + workingSize,
-                             this);
-    progress.setWindowModality(Qt::WindowModal);
-
-    double maxScore = 0;
-    bool abort = false;
-
-    // Add new individuals
-    for (int i = 0; i < workingSize; ++i)
-    {
-        progress.setValue(progress.value() + 1);
-        if (progress.wasCanceled())
-        {
-            abort = true;
-            break;
-        }
-
-        Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-        const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-        const double s = score(result, mode);
-        genePool.append(Score(s, g));
-
-        maxScore = qMax(maxScore, s);
-    }
-
-    // Increasing levels of detail
-    for (int k = kMin; k <= kMax && !abort; ++k)
-    {
-        // Generations
-        for (int j = 0; j < numGenerations && !abort; ++j)
-        {
-            progress.setValue(progress.value() + keepSize);
-            if (progress.wasCanceled())
-            {
-                abort = true;
-                break;
-            }
-
-            // Sort gene pool by score
-            qSort(genePool);
-
-            // Elitism
-            GenePool newGenePool = genePool.mid(0, keepSize);
-
-            // Initialize score
-            maxScore = 0;
-            for (int i = 0; i < keepSize; ++i)
-            {
-                maxScore = qMax(maxScore, newGenePool[i].first);
-            }
-
-            // Add new individuals in first level
-            for (int i = 0; k == kMin && i < newSize; ++i)
-            {
-                progress.setValue(progress.value() + 1);
-                if (progress.wasCanceled())
-                {
-                    abort = true;
-                    break;
-                }
-
-                Genome g(genomeSize, kMin, m_minLift, m_maxLift);
-                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = score(result, mode);
-                newGenePool.append(Score(s, g));
-
-                maxScore = qMax(maxScore, s);
-            }
-
-            // Tournament selection
-            while (newGenePool.size() < workingSize)
-            {
-                progress.setValue(progress.value() + 1);
-                if (progress.wasCanceled())
-                {
-                    abort = true;
-                    break;
-                }
-
-                const Genome &p1 = selectGenome(genePool, tournamentSize);
-                const Genome &p2 = selectGenome(genePool, tournamentSize);
-                Genome g(p1, p2, k);
-
-                if (qrand() % 100 < truncationRate)
-                {
-                    g.truncate(k);
-                }
-                if (qrand() % 100 < mutationRate)
-                {
-                    g.mutate(k, kMin, m_minLift, m_maxLift);
-                }
-
-                const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = score(result, mode);
-                newGenePool.append(Score(s, g));
-
-                maxScore = qMax(maxScore, s);
-            }
-
-            genePool = newGenePool;
-
-            // Show best score in progress dialog
-            QString labelText;
-            switch (mode)
-            {
-            case Time:
-                labelText = QString::number(maxScore) + QString(" s");
-                break;
-            case Distance:
-                labelText = (m_units == PlotValue::Metric) ?
-                            QString::number(maxScore / 1000) + QString(" km"):
-                            QString::number(maxScore * METERS_TO_FEET / 5280) + QString(" mi");
-                break;
-            case HorizontalSpeed:
-            case VerticalSpeed:
-                labelText = (m_units == PlotValue::Metric) ?
-                            QString::number(maxScore * MPS_TO_KMH) + QString(" km/h"):
-                            QString::number(maxScore * MPS_TO_MPH) + QString(" mph");
-                break;
-            }
-            progress.setLabelText(QString("Optimizing (best score is ") +
-                                  labelText +
-                                  QString(")..."));
-        }
-    }
-
-    progress.setValue((kMax - kMin + 1) * numGenerations * workingSize + workingSize);
-
-    // Sort gene pool by score
-    qSort(genePool);
-
-    // Keep most fit individual
-    m_optimal.clear();
-    m_optimal = genePool[0].second.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-
-    emit dataChanged();
-}
-
-const Genome &MainWindow::selectGenome(
-        const GenePool &genePool,
-        const int tournamentSize)
-{
-    int jMax;
-    double sMax;
-    bool first = true;
-
-    for (int i = 0; i < tournamentSize; ++i)
-    {
-        const int j = qrand() % genePool.size();
-        if (first || genePool[j].first > sMax)
-        {
-            jMax = j;
-            sMax = genePool[j].first;
-            first = false;
-        }
-    }
-
-    return genePool[jMax].second;
-}
-
-bool MainWindow::getWindowBounds(
-        const QVector< DataPoint > result,
-        DataPoint &dpBottom,
-        DataPoint &dpTop)
-{
-    bool foundBottom = false;
-    bool foundTop = false;
-    int bottom, top;
-
-    for (int i = result.size() - 1; i >= 0; --i)
-    {
-        const DataPoint &dp = result[i];
-
-        if (dp.alt < mWindowBottom)
-        {
-            bottom = i;
-            foundBottom = true;
-        }
-
-        if (dp.alt < mWindowTop)
-        {
-            top = i;
-            foundTop = false;
-        }
-
-        if (dp.alt > mWindowTop)
-        {
-            foundTop = true;
-        }
-
-        if (dp.t < 0) break;
-    }
-
-    if (foundBottom && foundTop)
-    {
-        // Calculate bottom of window
-        const DataPoint &dp1 = result[bottom - 1];
-        const DataPoint &dp2 = result[bottom];
-        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
-
-        // Calculate top of window
-        const DataPoint &dp3 = result[top - 1];
-        const DataPoint &dp4 = result[top];
-        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-double MainWindow::score(
-        const QVector< DataPoint > &result,
-        OptimizationMode mode)
-{
-    DataPoint dpBottom, dpTop;
-    if (getWindowBounds(result, dpBottom, dpTop))
-    {
-        switch (mode)
-        {
-        case Time:
-            return dpBottom.t - dpTop.t;
-        case Distance:
-            return dpBottom.x - dpTop.x;
-        case HorizontalSpeed:
-            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
-        case VerticalSpeed:
-            return (mWindowTop - mWindowBottom) / (dpBottom.t - dpTop.t);
-        }
-    }
-    else
-    {
-        return 0;
-    }
 }
 
 DataPlot *MainWindow::plotArea() const
@@ -1948,4 +1662,25 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+}
+
+void MainWindow::setScoringMode(
+        ScoringMode mode)
+{
+    mScoringMode = mode;
+    emit dataChanged();
+}
+
+void MainWindow::prepareDataPlot(
+        DataPlot *plot)
+{
+    mScoringMethods[mScoringMode]->prepareDataPlot(plot);
+}
+
+void MainWindow::setOptimal(
+        const QVector< DataPoint > &result)
+{
+    m_optimal = result;
+    emit dataChanged();
+
 }
