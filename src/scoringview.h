@@ -10,6 +10,7 @@ namespace Ui {
 class DataPlot;
 class DataPoint;
 class MainWindow;
+class PerformanceForm;
 class PPCForm;
 class SpeedForm;
 
@@ -28,6 +29,7 @@ private:
     MainWindow      *mMainWindow;
     PPCForm         *mPPCForm;
     SpeedForm       *mSpeedForm;
+    PerformanceForm *mPerformanceForm;
 
 public slots:
     void updateView();
