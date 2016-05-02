@@ -38,6 +38,11 @@ private slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
     void onApplyButtonClicked();
+
+    void onActualButtonClicked();
+    void onOptimalButtonClicked();
+    void onOptimizeButtonClicked();
 };
+
 
 #endif // SPEEDFORM_H

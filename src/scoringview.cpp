@@ -28,11 +28,6 @@ ScoringView::ScoringView(QWidget *parent) :
     // Connect mode combo to stacked widget
     connect(ui->modeComboBox, SIGNAL(activated(int)),
             this, SLOT(changePage(int)));
-
-    // Connect optimization buttons
-    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
-    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
-    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 ScoringView::~ScoringView()
@@ -56,10 +51,6 @@ void ScoringView::setMainWindow(
 
 void ScoringView::updateView()
 {
-    // Update mode selection
-    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
-    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
-
     // Update forms
     mPPCForm->updateView();
     mSpeedForm->updateView();
@@ -70,25 +61,4 @@ void ScoringView::changePage(
 {
     mMainWindow->setScoringMode((MainWindow::ScoringMode) page);
     ui->stackedWidget->setCurrentIndex(page);
-}
-
-void ScoringView::onActualButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Actual);
-}
-
-void ScoringView::onOptimalButtonClicked()
-{
-    mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
-void ScoringView::onOptimizeButtonClicked()
-{
-    ScoringMethod *method = mMainWindow->scoringMethod(mMainWindow->scoringMode());
-
-    // Perform optimization
-    method->optimize();
-
-    // Switch to optimal view
-    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

@@ -27,6 +27,11 @@ PPCForm::PPCForm(QWidget *parent) :
     connect(ui->timeButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
     connect(ui->distanceButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
     connect(ui->hSpeedButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
+
+    // Connect optimization buttons
+    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
+    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
+    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 PPCForm::~PPCForm()
@@ -48,6 +53,10 @@ void PPCForm::setMainWindow(
 
 void PPCForm::updateView()
 {
+    // Update mode selection
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
 
     const double bottom = method->windowBottom();
@@ -165,4 +174,25 @@ void PPCForm::onModeChanged()
     if (ui->timeButton->isChecked())          method->setMode(PPCScoring::Time);
     else if (ui->distanceButton->isChecked()) method->setMode(PPCScoring::Distance);
     else                                      method->setMode(PPCScoring::Speed);
+}
+
+void PPCForm::onActualButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Actual);
+}
+
+void PPCForm::onOptimalButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void PPCForm::onOptimizeButtonClicked()
+{
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+
+    // Perform optimization
+    method->optimize();
+
+    // Switch to optimal view
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

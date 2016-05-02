@@ -22,6 +22,11 @@ SpeedForm::SpeedForm(QWidget *parent) :
 
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    // Connect optimization buttons
+    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
+    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
+    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 SpeedForm::~SpeedForm()
@@ -43,6 +48,10 @@ void SpeedForm::setMainWindow(
 
 void SpeedForm::updateView()
 {
+    // Update mode selection
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
+
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
 
     const double bottom = method->windowBottom();
@@ -140,4 +149,25 @@ void SpeedForm::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+void SpeedForm::onActualButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Actual);
+}
+
+void SpeedForm::onOptimalButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void SpeedForm::onOptimizeButtonClicked()
+{
+    SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
+
+    // Perform optimization
+    method->optimize();
+
+    // Switch to optimal view
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

@@ -34,9 +34,6 @@ public slots:
 
 private slots:
     void changePage(int page);
-    void onActualButtonClicked();
-    void onOptimalButtonClicked();
-    void onOptimizeButtonClicked();
 };
 
 #endif // SCORINGVIEW_H

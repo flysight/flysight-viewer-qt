@@ -38,6 +38,11 @@ private slots:
     void onApplyButtonClicked();
 
     void onModeChanged();
+
+    void onActualButtonClicked();
+    void onOptimalButtonClicked();
+    void onOptimizeButtonClicked();
 };
+
 
 #endif // PPCFORM_H
