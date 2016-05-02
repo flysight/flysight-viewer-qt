@@ -13,6 +13,7 @@
 
 class QCPRange;
 class QCustomPlot;
+class ScoringMethod;
 class ScoringView;
 
 namespace Ui {
@@ -45,7 +46,7 @@ public:
     } OptimizationMode;
 
     typedef enum {
-        PPC, Speed
+        PPC, Speed, smLast
     } ScoringMode;
 
     typedef enum {
@@ -129,6 +130,7 @@ public:
 
     void setScoringMode(ScoringMode mode);
     ScoringMode scoringMode() const { return mScoringMode; }
+    ScoringMethod *scoringMethod(int i) const { return mScoringMethods[i]; }
 
     bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
@@ -224,7 +226,9 @@ private:
     WindowMode            mWindowMode;
 
     ScoringView          *mScoringView;
-    ScoringMode           mScoringMode;
+
+    QVector< ScoringMethod* > mScoringMethods;
+    ScoringMode               mScoringMode;
 
     double                m_mass;
     double                m_planformArea;

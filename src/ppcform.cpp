@@ -8,6 +8,7 @@
 #include "datapoint.h"
 #include "mainwindow.h"
 #include "plotvalue.h"
+#include "ppcscoring.h"
 
 PPCForm::PPCForm(QWidget *parent) :
     QWidget(parent),
@@ -22,6 +23,10 @@ PPCForm::PPCForm(QWidget *parent) :
 
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    connect(ui->timeButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
+    connect(ui->distanceButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
+    connect(ui->hSpeedButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
 }
 
 PPCForm::~PPCForm()
@@ -141,122 +146,11 @@ void PPCForm::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-double PPCForm::score(
-        const QVector< DataPoint > &result)
+void PPCForm::onModeChanged()
 {
-    DataPoint dpBottom, dpTop;
-    if (mMainWindow->getWindowBounds(result, dpBottom, dpTop))
-    {
-        if (ui->timeButton->isChecked())
-        {
-            return dpBottom.t - dpTop.t;
-        }
-        else if (ui->distanceButton->isChecked())
-        {
-            return dpBottom.x - dpTop.x;
-        }
-        else if (ui->hSpeedButton->isChecked())
-        {
-            return (dpBottom.x - dpTop.x) / (dpBottom.t - dpTop.t);
-        }
-    }
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
 
-    return 0;
-}
-
-QString PPCForm::scoreAsText(
-        double score)
-{
-    if (ui->timeButton->isChecked())
-    {
-        return QString::number(score) + QString(" s");
-    }
-    else if (ui->distanceButton->isChecked())
-    {
-        return (mMainWindow->units() == PlotValue::Metric) ?
-                    QString::number(score / 1000) + QString(" km"):
-                    QString::number(score * METERS_TO_FEET / 5280) + QString(" mi");
-    }
-    else if (ui->hSpeedButton->isChecked())
-    {
-        return (mMainWindow->units() == PlotValue::Metric) ?
-                    QString::number(score * MPS_TO_KMH) + QString(" km/h"):
-                    QString::number(score * MPS_TO_MPH) + QString(" mph");
-    }
-    else
-    {
-        Q_ASSERT(false);    // should never be called
-        return QString();
-    }
-}
-
-void PPCForm::prepareDataPlot(
-        DataPlot *plot)
-{
-    // Add shading for scoring window
-    if (plot->yValue(DataPlot::Elevation)->visible() && mMainWindow->isWindowValid())
-    {
-        const DataPoint &dpTop = mMainWindow->windowTopDP();
-        const DataPoint &dpBottom = mMainWindow->windowBottomDP();
-
-        DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
-        DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
-
-        const double xMin = plot->xValue()->value(dpLower, mMainWindow->units());
-        const double xMax = plot->xValue()->value(dpUpper, mMainWindow->units());
-
-        QVector< double > xElev, yElev;
-
-        xElev << xMin << xMax;
-        yElev << plot->yValue(DataPlot::Elevation)->value(dpTop, mMainWindow->units())
-              << plot->yValue(DataPlot::Elevation)->value(dpTop, mMainWindow->units());
-
-        QCPGraph *graph = plot->addGraph(
-                    plot->axisRect()->axis(QCPAxis::atBottom),
-                    plot->yValue(DataPlot::Elevation)->axis());
-        graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-
-        yElev.clear();
-        yElev << plot->yValue(DataPlot::Elevation)->value(dpBottom, mMainWindow->units())
-              << plot->yValue(DataPlot::Elevation)->value(dpBottom, mMainWindow->units());
-
-        graph = plot->addGraph(
-                    plot->axisRect()->axis(QCPAxis::atBottom),
-                    plot->yValue(DataPlot::Elevation)->axis());
-        graph->setData(xElev, yElev);
-        graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-
-        QCPItemRect *rect = new QCPItemRect(plot);
-        plot->addItem(rect);
-
-        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-        rect->setBrush(QColor(0, 0, 0, 8));
-
-        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->topLeft->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
-        rect->topLeft->setCoords(-0.1, -0.1);
-
-        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->bottomRight->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
-        rect->bottomRight->setCoords(
-                    (plot->xValue()->value(dpTop, mMainWindow->units()) - xMin) / (xMax - xMin),
-                    1.1);
-
-        rect = new QCPItemRect(plot);
-        plot->addItem(rect);
-
-        rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
-        rect->setBrush(QColor(0, 0, 0, 8));
-
-        rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->topLeft->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
-        rect->topLeft->setCoords(
-                    (plot->xValue()->value(dpBottom, mMainWindow->units()) - xMin) / (xMax - xMin),
-                    -0.1);
-
-        rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
-        rect->bottomRight->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
-        rect->bottomRight->setCoords(1.1, 1.1);
-    }
+    if (ui->timeButton->isChecked())          method->setMode(PPCScoring::Time);
+    else if (ui->distanceButton->isChecked()) method->setMode(PPCScoring::Distance);
+    else                                      method->setMode(PPCScoring::Speed);
 }

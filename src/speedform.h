@@ -7,8 +7,6 @@ namespace Ui {
     class SpeedForm;
 }
 
-class DataPlot;
-class DataPoint;
 class MainWindow;
 
 class SpeedForm : public QWidget
@@ -23,10 +21,7 @@ public:
 
     void setMainWindow(MainWindow *mainWindow);
 
-    double score(const QVector< DataPoint > &result);
     QString scoreAsText(double score);
-
-    void prepareDataPlot(DataPlot *plot);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);

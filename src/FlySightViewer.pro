@@ -30,6 +30,9 @@ SOURCES += main.cpp \
     playbackview.cpp \
     ppcform.cpp \
     speedform.cpp \
+    scoringmethod.cpp \
+    ppcscoring.cpp \
+    speedscoring.cpp \
     GeographicLib/Accumulator.cpp \
     GeographicLib/AlbersEqualArea.cpp \
     GeographicLib/AzimuthalEquidistant.cpp \
@@ -87,7 +90,10 @@ HEADERS  += mainwindow.h \
     orthoview.h \
     playbackview.h \
     ppcform.h \
-    speedform.h
+    speedform.h \
+    scoringmethod.h \
+    ppcscoring.h \
+    speedscoring.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

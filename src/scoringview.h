@@ -23,11 +23,6 @@ public:
 
     void setMainWindow(MainWindow *mainWindow);
 
-    double score(const QVector< DataPoint > &result);
-    QString scoreAsText(double score);
-
-    void prepareDataPlot(DataPlot *plot);
-
 private:
     Ui::ScoringView *ui;
     MainWindow      *mMainWindow;

@@ -23,7 +23,9 @@
 #include "mapview.h"
 #include "orthoview.h"
 #include "playbackview.h"
+#include "ppcscoring.h"
 #include "scoringview.h"
+#include "speedscoring.h"
 #include "videoview.h"
 #include "windplot.h"
 
@@ -58,6 +60,17 @@ MainWindow::MainWindow(
     mFixedReference(0)
 {
     m_ui->setupUi(this);
+
+    // Initialize scoring methods
+    mScoringMethods.append(new PPCScoring(this));
+    mScoringMethods.append(new SpeedScoring(this));
+
+    // Connect scoring method signals
+    for (int i = PPC; i < smLast; ++i)
+    {
+        connect(mScoringMethods[i], SIGNAL(dataChanged()),
+                this, SIGNAL(dataChanged()));
+    }
 
     // Ensure that closeEvent is called
     connect(m_ui->actionExit, SIGNAL(triggered()),
@@ -1690,7 +1703,7 @@ void MainWindow::optimize()
 
         Genome g(genomeSize, kMin, m_minLift, m_maxLift);
         const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-        const double s = mScoringView->score(result);
+        const double s = mScoringMethods[mScoringMode]->score(result);
         genePool.append(Score(s, g));
 
         maxScore = qMax(maxScore, s);
@@ -1734,7 +1747,7 @@ void MainWindow::optimize()
 
                 Genome g(genomeSize, kMin, m_minLift, m_maxLift);
                 const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = mScoringView->score(result);
+                const double s = mScoringMethods[mScoringMode]->score(result);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1764,7 +1777,7 @@ void MainWindow::optimize()
                 }
 
                 const QVector< DataPoint > result = g.simulate(dt, a, c, m_planformArea, m_mass, m_data[start], mWindowBottom);
-                const double s = mScoringView->score(result);
+                const double s = mScoringMethods[mScoringMode]->score(result);
                 newGenePool.append(Score(s, g));
 
                 maxScore = qMax(maxScore, s);
@@ -1773,7 +1786,7 @@ void MainWindow::optimize()
             genePool = newGenePool;
 
             // Show best score in progress dialog
-            QString labelText = mScoringView->scoreAsText(maxScore);
+            QString labelText = mScoringMethods[mScoringMode]->scoreAsText(maxScore);
             progress.setLabelText(QString("Optimizing (best score is ") +
                                   labelText +
                                   QString(")..."));
@@ -1925,5 +1938,5 @@ void MainWindow::setScoringMode(
 void MainWindow::prepareDataPlot(
         DataPlot *plot)
 {
-    mScoringView->prepareDataPlot(plot);
+    mScoringMethods[mScoringMode]->prepareDataPlot(plot);
 }

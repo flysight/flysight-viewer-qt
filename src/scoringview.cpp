@@ -71,36 +71,6 @@ void ScoringView::changePage(
     ui->stackedWidget->setCurrentIndex(page);
 }
 
-double ScoringView::score(
-        const QVector< DataPoint > &result)
-{
-    switch (mMainWindow->scoringMode())
-    {
-    case MainWindow::PPC:
-        return mPPCForm->score(result);
-    case MainWindow::Speed:
-        return mSpeedForm->score(result);
-    default:
-        Q_ASSERT(false);    // should never be called
-        return 0;
-    }
-}
-
-QString ScoringView::scoreAsText(
-        double score)
-{
-    switch (mMainWindow->scoringMode())
-    {
-    case MainWindow::PPC:
-        return mPPCForm->scoreAsText(score);
-    case MainWindow::Speed:
-        return mSpeedForm->scoreAsText(score);
-    default:
-        Q_ASSERT(false);    // should never be called
-        return QString();
-    }
-}
-
 void ScoringView::onActualButtonClicked()
 {
     mMainWindow->setWindowMode(MainWindow::Actual);
@@ -118,18 +88,4 @@ void ScoringView::onOptimizeButtonClicked()
 
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
-}
-
-void ScoringView::prepareDataPlot(
-        DataPlot *plot)
-{
-    switch (mMainWindow->scoringMode())
-    {
-    case MainWindow::PPC:
-        mPPCForm->prepareDataPlot(plot);
-    case MainWindow::Speed:
-        mSpeedForm->prepareDataPlot(plot);
-    default:
-        Q_ASSERT(false);    // should never be called
-    }
 }

@@ -7,8 +7,6 @@ namespace Ui {
     class PPCForm;
 }
 
-class DataPlot;
-class DataPoint;
 class MainWindow;
 
 class PPCForm : public QWidget
@@ -22,11 +20,6 @@ public:
     virtual QSize sizeHint() const;
 
     void setMainWindow(MainWindow *mainWindow);
-
-    double score(const QVector< DataPoint > &result);
-    QString scoreAsText(double score);
-
-    void prepareDataPlot(DataPlot *plot);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -43,6 +36,7 @@ private slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
     void onApplyButtonClicked();
+    void onModeChanged();
 };
 
 #endif // PPCFORM_H
