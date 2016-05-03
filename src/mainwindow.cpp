@@ -500,7 +500,7 @@ void MainWindow::on_actionImport_triggered()
         m_data.append(pt);
     }
 
-    // Initialize time
+    // Initialize time and altitude
     for (int i = 0; i < m_data.size(); ++i)
     {
         const DataPoint &dp0 = m_data[m_data.size() - 1];
@@ -510,6 +510,7 @@ void MainWindow::on_actionImport_triggered()
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
 
         dp.t = (double) (end - start) / 1000;
+        dp.z = dp.hMSL - dp0.hMSL;
     }
 
     // Altitude above ground
@@ -537,7 +538,7 @@ void MainWindow::initAltitude()
     for (int i = 0; i < m_data.size(); ++i)
     {
         DataPoint &dp = m_data[i];
-        dp.z = dp.alt = dp.hMSL - mFixedReference;
+        dp.alt = dp.hMSL - mFixedReference;
     }
 }
 
