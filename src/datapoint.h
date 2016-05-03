@@ -58,7 +58,7 @@ public:
 
     static double elevation(const DataPoint &dp)
     {
-        return dp.alt;
+        return dp.z;
     }
 
     static double northSpeed(const DataPoint &dp)

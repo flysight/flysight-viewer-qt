@@ -161,19 +161,19 @@ bool PPCScoring::getWindowBounds(
     {
         const DataPoint &dp = result[i];
 
-        if (dp.alt < mWindowBottom)
+        if (dp.z < mWindowBottom)
         {
             bottom = i;
             foundBottom = true;
         }
 
-        if (dp.alt < mWindowTop)
+        if (dp.z < mWindowTop)
         {
             top = i;
             foundTop = false;
         }
 
-        if (dp.alt > mWindowTop)
+        if (dp.z > mWindowTop)
         {
             foundTop = true;
         }
@@ -186,12 +186,12 @@ bool PPCScoring::getWindowBounds(
         // Calculate bottom of window
         const DataPoint &dp1 = result[bottom - 1];
         const DataPoint &dp2 = result[bottom];
-        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.alt) / (dp2.alt - dp1.alt));
+        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.z) / (dp2.z - dp1.z));
 
         // Calculate top of window
         const DataPoint &dp3 = result[top - 1];
         const DataPoint &dp4 = result[top];
-        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.alt) / (dp4.alt - dp3.alt));
+        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.z) / (dp4.z - dp3.z));
 
         return true;
     }
