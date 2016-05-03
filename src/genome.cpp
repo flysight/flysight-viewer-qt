@@ -191,7 +191,7 @@ QVector< DataPoint > Genome::simulate(
         pt.t = t;
         pt.x = x;
         pt.y = 0;
-        pt.z = pt.alt = y + dp0.alt - dp0.hMSL;
+        pt.z = y + dp0.z - dp0.hMSL;
 
         dist2D += dx;
         dist3D += sqrt(dx * dx + dy * dy);
@@ -207,7 +207,7 @@ QVector< DataPoint > Genome::simulate(
 
         result.append(pt);
 
-        if (pt.alt < windowBottom) break;
+        if (pt.z < windowBottom) break;
     }
 
     return result;
