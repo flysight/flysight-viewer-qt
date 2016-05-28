@@ -1683,6 +1683,15 @@ void MainWindow::prepareDataPlot(
     }
 }
 
+void MainWindow::prepareMapView(
+        MapView *view)
+{
+    if (mScoringView->isVisible())
+    {
+        mScoringMethods[mScoringMode]->prepareMapView(view);
+    }
+}
+
 void MainWindow::setOptimal(
         const QVector< DataPoint > &result)
 {

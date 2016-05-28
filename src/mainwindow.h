@@ -10,6 +10,7 @@
 #include "datapoint.h"
 #include "dataview.h"
 
+class MapView;
 class QCPRange;
 class QCustomPlot;
 class ScoringMethod;
@@ -124,6 +125,7 @@ public:
     bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
     void prepareDataPlot(DataPlot *plot);
+    void prepareMapView(MapView *plot);
 
 protected:
     void closeEvent(QCloseEvent *event);

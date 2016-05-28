@@ -10,6 +10,7 @@
 
 class DataPlot;
 class MainWindow;
+class MapView;
 
 typedef QPair< double, Genome > Score;
 typedef QVector< Score > GenePool;
@@ -29,6 +30,7 @@ public:
     virtual QString scoreAsText(double score) { return QString(); }
 
     virtual void prepareDataPlot(DataPlot *plot) {}
+    virtual void prepareMapView(MapView *view) {}
 
     virtual void optimize() {}
 

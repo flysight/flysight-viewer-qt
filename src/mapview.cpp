@@ -1,5 +1,6 @@
 #include "mapview.h"
 
+#include <QVector>
 #include <QWebFrame>
 #include <QWebElement>
 
@@ -181,4 +182,7 @@ void MapView::updateView()
 
         page()->currentFrame()->documentElement().evaluateJavaScript(js);
     }
+
+    // Draw annotations on map
+    mMainWindow->prepareMapView(this);
 }

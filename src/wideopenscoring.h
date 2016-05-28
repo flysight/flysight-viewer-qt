@@ -27,6 +27,7 @@ public:
     void setLaneLength(double laneLength);
 
     void prepareDataPlot(DataPlot *plot);
+    void prepareMapView(MapView *view);
 
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
@@ -42,6 +43,11 @@ private:
     double      mBottom;
     double      mLaneWidth;
     double      mLaneLength;
+
+    void splitLine(QVector< double > &lat, QVector< double > &lon,
+                   double startLat, double startLon,
+                   double endLat, double endLon,
+                   double threshold, int depth);
 
 signals:
 
