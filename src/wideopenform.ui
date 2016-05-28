@@ -59,9 +59,13 @@
        </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="endGlobeButton">
+       <widget class="QToolButton" name="endGlobeButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resource.qrc">
+          <normaloff>:/images/globe.png</normaloff>:/images/globe.png</iconset>
         </property>
        </widget>
       </item>
@@ -92,9 +96,13 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="startGlobeButton">
+       <widget class="QToolButton" name="startGlobeButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resource.qrc">
+          <normaloff>:/images/globe.png</normaloff>:/images/globe.png</iconset>
         </property>
        </widget>
       </item>
@@ -223,6 +231,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
