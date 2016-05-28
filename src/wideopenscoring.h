@@ -10,29 +10,38 @@ class WideOpenScoring : public ScoringMethod
 public:
     WideOpenScoring(MainWindow *mainWindow);
 
-    Mode mode() const { return mMode; }
-    void setMode(Mode mode);
+    double endLatitude(void) const { return mEndLatitude; }
+    double endLongitude(void) const { return mEndLongitude; }
+    void setEnd(double endLatitude, double endLongitude);
 
-    double windowTop(void) const { return mWindowTop; }
-    double windowBottom(void) const { return mWindowBottom; }
-    void setWindow(double windowBottom, double windowTop);
+    double bearing(void) const { return mBearing; }
+    void setBearing(double bearing);
 
-    double score(const QVector< DataPoint > &result);
-    QString scoreAsText(double score);
+    double bottom(void) const { return mBottom; }
+    void setBottom(double bottom);
+
+    double laneWidth(void) const { return mLaneWidth; }
+    void setLaneWidth(double laneWidth);
+
+    double laneLength(void) const { return mLaneLength; }
+    void setLaneLength(double laneLength);
 
     void prepareDataPlot(DataPlot *plot);
 
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
 
-    void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
-
 private:
     MainWindow *mMainWindow;
 
-    Mode        mMode;
-    double      mWindowTop;
-    double      mWindowBottom;
+    double      mEndLatitude;
+    double      mEndLongitude;
+
+    double      mBearing;
+
+    double      mBottom;
+    double      mLaneWidth;
+    double      mLaneLength;
 
 signals:
 
