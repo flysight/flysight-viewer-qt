@@ -17,6 +17,10 @@ WideOpenForm::WideOpenForm(QWidget *parent) :
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->laneWidthEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->laneLengthEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    // Connect start/end buttons
+    connect(ui->startGlobeButton, SIGNAL(clicked()), this, SLOT(onStartButtonClicked()));
+    connect(ui->endGlobeButton, SIGNAL(clicked()), this, SLOT(onEndButtonClicked()));
 }
 
 WideOpenForm::~WideOpenForm()
@@ -50,10 +54,10 @@ void WideOpenForm::updateView()
     const double laneLength = method->laneLength();
 
     // Update display
-    ui->endLatitudeEdit->setText(QString("%1").arg(endLatitude));
-    ui->endLongitudeEdit->setText(QString("%1").arg(endLongitude));
+    ui->endLatitudeEdit->setText(QString("%1").arg(endLatitude, 0, 'f', 7));
+    ui->endLongitudeEdit->setText(QString("%1").arg(endLongitude, 0, 'f', 7));
 
-    ui->bearingEdit->setText(QString("%1").arg(bearing));
+    ui->bearingEdit->setText(QString("%1").arg(bearing, 0, 'f', 5));
 
     ui->bottomEdit->setText(QString("%1").arg(bottom));
     ui->laneWidthEdit->setText(QString("%1").arg(laneWidth));
@@ -102,11 +106,29 @@ void WideOpenForm::onApplyButtonClicked()
     mMainWindow->setFocus();
 }
 
+void WideOpenForm::onStartButtonClicked()
+{
+    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
+    method->setMapMode(WideOpenScoring::Start);
+    setFocus();
+}
+
+void WideOpenForm::onEndButtonClicked()
+{
+    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
+    method->setMapMode(WideOpenScoring::End);
+    setFocus();
+}
+
 void WideOpenForm::keyPressEvent(
         QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
+        // Cancel map selection
+        WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
+        method->setMapMode(WideOpenScoring::None);
+
         // Reset display
         updateView();
 

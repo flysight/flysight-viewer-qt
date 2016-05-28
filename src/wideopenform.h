@@ -33,6 +33,8 @@ public slots:
 
 private slots:
     void onApplyButtonClicked();
+    void onStartButtonClicked();
+    void onEndButtonClicked();
 };
 
 #endif // WIDEOPENFORM_H

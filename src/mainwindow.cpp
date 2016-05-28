@@ -1692,6 +1692,28 @@ void MainWindow::prepareMapView(
     }
 }
 
+bool MainWindow::updateReference(
+        double lat,
+        double lon)
+{
+    if (mScoringView->isVisible())
+    {
+        return mScoringMethods[mScoringMode]->updateReference(lat, lon);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void MainWindow::closeReference()
+{
+    if (mScoringView->isVisible())
+    {
+        mScoringMethods[mScoringMode]->closeReference();
+    }
+}
+
 void MainWindow::setOptimal(
         const QVector< DataPoint > &result)
 {

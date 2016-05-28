@@ -23,7 +23,8 @@ WideOpenScoring::WideOpenScoring(
     mBearing(0),
     mBottom(2000),
     mLaneWidth(500),
-    mLaneLength(10000)
+    mLaneLength(10000),
+    mMapMode(None)
 {
 
 }
@@ -62,6 +63,13 @@ void WideOpenScoring::setLaneLength(
         double laneLength)
 {
     mLaneLength = laneLength;
+    emit dataChanged();
+}
+
+void WideOpenScoring::setMapMode(
+        MapMode mode)
+{
+    mMapMode = mode;
     emit dataChanged();
 }
 
@@ -289,4 +297,32 @@ bool WideOpenScoring::getWindowBounds(
     {
         return false;
     }
+}
+
+bool WideOpenScoring::updateReference(
+        double lat,
+        double lon)
+{
+    if (mMapMode == Start)
+    {
+        double azi1, azi2;
+        Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, lat, lon, azi1, azi2);
+        setBearing(azi1);
+        return true;
+    }
+    else if (mMapMode == End)
+    {
+        setEnd(lat, lon);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void WideOpenScoring::closeReference()
+{
+    setMapMode(None);
+    mMainWindow->setFocus();
 }

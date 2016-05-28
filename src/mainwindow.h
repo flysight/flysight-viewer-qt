@@ -127,6 +127,9 @@ public:
     void prepareDataPlot(DataPlot *plot);
     void prepareMapView(MapView *plot);
 
+    bool updateReference(double lat, double lon);
+    void closeReference();
+
 protected:
     void closeEvent(QCloseEvent *event);
 

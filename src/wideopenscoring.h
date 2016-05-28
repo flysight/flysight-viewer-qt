@@ -8,6 +8,10 @@ class MainWindow;
 class WideOpenScoring : public ScoringMethod
 {
 public:
+    typedef enum {
+        None, Start, End
+    } MapMode;
+
     WideOpenScoring(MainWindow *mainWindow);
 
     double endLatitude(void) const { return mEndLatitude; }
@@ -26,8 +30,13 @@ public:
     double laneLength(void) const { return mLaneLength; }
     void setLaneLength(double laneLength);
 
+    void setMapMode(MapMode mode);
+
     void prepareDataPlot(DataPlot *plot);
     void prepareMapView(MapView *view);
+
+    bool updateReference(double lat, double lon);
+    void closeReference();
 
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
@@ -43,6 +52,8 @@ private:
     double      mBottom;
     double      mLaneWidth;
     double      mLaneLength;
+
+    MapMode     mMapMode;
 
     void splitLine(QVector< double > &lat, QVector< double > &lon,
                    double startLat, double startLon,

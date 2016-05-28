@@ -32,6 +32,9 @@ public:
     virtual void prepareDataPlot(DataPlot *plot) {}
     virtual void prepareMapView(MapView *view) {}
 
+    virtual bool updateReference(double lat, double lon) {}
+    virtual void closeReference() {}
+
     virtual void optimize() {}
 
 protected:
