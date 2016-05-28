@@ -71,11 +71,11 @@ void WideOpenForm::updateView()
     if (success)
     {
         // Calculate results
-        const double distance = MainWindow::getDistance(dpTop, dpBottom);
+        const double distance = MainWindow::getDistance(dpTop, dpBottom);   // No! Should use inline distance only.
 
         // Update display
         ui->distanceEdit->setText(QString("%1").arg(distance / 1000));
-        ui->speedEdit->setText(QString("%1").arg(dpBottom.t));
+        ui->speedEdit->setText(QString("%1").arg(dpBottom.t));              // No! Show actual time. Also check for DNF.
     }
     else
     {

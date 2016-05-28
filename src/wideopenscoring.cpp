@@ -288,8 +288,7 @@ bool WideOpenScoring::getWindowBounds(
         dpTop = DataPoint();
         dpTop.hasGeodetic = true;
 
-        const Geodesic &geod = Geodesic::WGS84();
-        geod.Direct(mEndLatitude, mEndLongitude, mBearing + 180, mLaneLength, dpTop.lat, dpTop.lon);
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing, mLaneLength, dpTop.lat, dpTop.lon);
 
         return true;
     }
