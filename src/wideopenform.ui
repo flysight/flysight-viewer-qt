@@ -30,7 +30,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="topEdit"/>
+         <widget class="QLineEdit" name="endLatitudeEdit"/>
         </item>
         <item row="0" column="2">
          <widget class="QLabel" name="topUnits">
@@ -47,7 +47,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="bottomEdit"/>
+         <widget class="QLineEdit" name="endLongitudeEdit"/>
         </item>
         <item row="1" column="2">
          <widget class="QLabel" name="bottomUnits">
@@ -59,7 +59,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="endGlobeButton">
         <property name="text">
          <string>PushButton</string>
         </property>
@@ -82,7 +82,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="bearingEdit"/>
       </item>
       <item>
        <widget class="QLabel" name="label_4">
@@ -92,7 +92,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="startGlobeButton">
         <property name="text">
          <string>PushButton</string>
         </property>
@@ -115,7 +115,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="bottomEdit"/>
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="label_8">
@@ -132,7 +132,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_3"/>
+       <widget class="QLineEdit" name="laneWidthEdit"/>
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="label_9">
@@ -149,7 +149,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit_4"/>
+       <widget class="QLineEdit" name="laneLengthEdit"/>
       </item>
       <item row="2" column="2">
        <widget class="QLabel" name="label_10">
@@ -168,7 +168,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QRadioButton" name="timeButton">
+       <widget class="QRadioButton" name="distanceButton">
         <property name="text">
          <string>Distance:</string>
         </property>
@@ -178,7 +178,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="timeEdit">
+       <widget class="QLineEdit" name="distanceEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
@@ -192,14 +192,14 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QRadioButton" name="distanceButton">
+       <widget class="QRadioButton" name="speedButton">
         <property name="text">
          <string>Finish time:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="distanceEdit">
+       <widget class="QLineEdit" name="speedEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
