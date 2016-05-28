@@ -128,17 +128,6 @@ void WideOpenScoring::prepareMapView(
     const double zoom = view->page()->currentFrame()->documentElement().evaluateJavaScript("map.getZoom();").toDouble();
     const double threshold = earthCircumference / pow(2, zoom) / view->width();
 
-    // Add reference line to map
-    QString js;
-    js  = QString("var path2 = wo.getPath();") +
-          QString("while (path2.length > 0) { path2.pop(); }");
-
-    js += QString("var path3 = woBounds.getPath();") +
-          QString("while (path3.length > 0) { path3.pop(); }");
-
-    js += QString("var path4 = woFinish.getPath();") +
-          QString("while (path4.length > 0) { path4.pop(); }");
-
     // Draw lane center
     double woProjLat, woProjLon;
     Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing, mLaneLength, woProjLat, woProjLon);
@@ -153,6 +142,7 @@ void WideOpenScoring::prepareMapView(
     lat.push_back(woProjLat);
     lon.push_back(woProjLon);
 
+    QString js;
     for (int i = 0; i < lat.size(); ++i)
     {
         js += QString("path2.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');

@@ -244,6 +244,18 @@ void MapView::updateView()
         page()->currentFrame()->documentElement().evaluateJavaScript(js);
     }
 
+    // Remove reference line from map
+    js  = QString("var path2 = wo.getPath();") +
+          QString("while (path2.length > 0) { path2.pop(); }");
+
+    js += QString("var path3 = woBounds.getPath();") +
+          QString("while (path3.length > 0) { path3.pop(); }");
+
+    js += QString("var path4 = woFinish.getPath();") +
+          QString("while (path4.length > 0) { path4.pop(); }");
+
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+
     // Draw annotations on map
     mMainWindow->prepareMapView(this);
 }
