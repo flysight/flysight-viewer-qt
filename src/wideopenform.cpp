@@ -83,10 +83,51 @@ void WideOpenForm::updateView()
 
         double s12;
         Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, s12);
-        ui->distanceEdit->setText(QString("%1").arg(s12 / 1000));
+        ui->distanceEdit->setText(QString("%1").arg(s12 / 1000, 0, 'f', 3));
 
         // Calculate time
-        ui->speedEdit->setText(QString("%1").arg(dpBottom.t));              // No! Show actual time when jumper crosses *finish line*. Also check for DNF.
+        int i, start = mMainWindow->findIndexBelowT(0) + 1;
+        double d1, t;
+        DataPoint dp1;
+
+        for (i = start; i < mMainWindow->dataSize(); ++i)
+        {
+            const DataPoint &dp2 = mMainWindow->dataPoint(i);
+
+            // Calculate distance
+            double lat0, lon0;
+            intercept(dpTop.lat, dpTop.lon, endLatitude, endLongitude, dp2.lat, dp2.lon, lat0, lon0);
+
+            double d2;
+            Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, d2);
+
+            if (i > start && d1 < laneLength && d2 >= laneLength)
+            {
+                t = dp1.t + (dp2.t - dp1.t) / (d2 - d1) * (laneLength - d1);
+                break;
+            }
+
+            d1 = d2;
+            dp1 = dp2;
+        }
+
+        if (i < mMainWindow->dataSize())
+        {
+            DataPoint dp = mMainWindow->interpolateDataT(t);
+
+            if (dp.z > bottom)
+            {
+                ui->speedEdit->setText(dp.dateTime.toString("hh:mm:ss.zzz"));
+            }
+            else
+            {
+                ui->speedEdit->setText(tr("did not finish"));
+            }
+        }
+        else
+        {
+            ui->speedEdit->setText(tr("n/a"));
+        }
     }
     else
     {
