@@ -176,7 +176,7 @@ void MainWindow::initPlot()
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
-            m_ui->plotArea, SLOT(updatePlot()));
+            m_ui->plotArea, SLOT(updateCursor()));
 }
 
 void MainWindow::initViews()
