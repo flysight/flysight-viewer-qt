@@ -209,7 +209,7 @@ void MainWindow::initSingleView(
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
-            dataView, SLOT(updateView()));
+            dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
 }
