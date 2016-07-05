@@ -263,6 +263,7 @@ private:
 signals:
     void dataLoaded();
     void dataChanged();
+    void cursorChanged();
     void rotationChanged(double rotation);
 
 private slots:

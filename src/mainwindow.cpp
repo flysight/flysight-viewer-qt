@@ -76,10 +76,6 @@ MainWindow::MainWindow(
     connect(m_ui->actionExit, SIGNAL(triggered()),
             this, SLOT(close()));
 
-    // Respond to data changed signal
-    connect(this, SIGNAL(dataChanged()),
-            this, SLOT(updateWindow()));
-
     // Read settings
     readSettings();
 
@@ -789,7 +785,7 @@ void MainWindow::setMark(
         mMarkActive = false;
     }
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::setMark(
@@ -808,14 +804,14 @@ void MainWindow::setMark(
         mMarkActive = false;
     }
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::clearMark()
 {
     mMarkActive = false;
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::initRange()
