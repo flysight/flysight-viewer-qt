@@ -35,42 +35,42 @@ void WideOpenScoring::setEnd(
 {
     mEndLatitude = endLatitude;
     mEndLongitude = endLongitude;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::setBearing(
         double bearing)
 {
     mBearing = bearing;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::setBottom(
         double bottom)
 {
     mBottom = bottom;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::setLaneWidth(
         double laneWidth)
 {
     mLaneWidth = laneWidth;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::setLaneLength(
         double laneLength)
 {
     mLaneLength = laneLength;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::setMapMode(
         MapMode mode)
 {
     mMapMode = mode;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void WideOpenScoring::prepareDataPlot(

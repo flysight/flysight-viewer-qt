@@ -18,7 +18,7 @@ void SpeedScoring::setWindow(
 {
     mWindowBottom = windowBottom;
     mWindowTop = windowTop;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 double SpeedScoring::score(

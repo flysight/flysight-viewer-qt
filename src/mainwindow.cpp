@@ -68,7 +68,7 @@ MainWindow::MainWindow(
     // Connect scoring method signals
     for (int i = PPC; i < smLast; ++i)
     {
-        connect(mScoringMethods[i], SIGNAL(dataChanged()),
+        connect(mScoringMethods[i], SIGNAL(scoringChanged()),
                 this, SIGNAL(dataChanged()));
     }
 
