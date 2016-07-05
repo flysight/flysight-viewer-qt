@@ -175,6 +175,8 @@ void MainWindow::initPlot()
 
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
+            m_ui->plotArea, SLOT(updatePlot()));
 }
 
 void MainWindow::initViews()
@@ -206,6 +208,8 @@ void MainWindow::initSingleView(
 
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            dataView, SLOT(updateView()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
 }
@@ -229,6 +233,8 @@ void MainWindow::initMapView()
             mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            mapView, SLOT(updateView()));
 }
 
 void MainWindow::initWindView()
@@ -248,6 +254,8 @@ void MainWindow::initWindView()
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            windPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
             windPlot, SLOT(updatePlot()));
 }
 
@@ -271,6 +279,8 @@ void MainWindow::initScoringView()
 
     connect(this, SIGNAL(dataChanged()),
             mScoringView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            mScoringView, SLOT(updateView()));
 }
 
 void MainWindow::initLiftDragView()
@@ -290,6 +300,8 @@ void MainWindow::initLiftDragView()
             m_ui->actionShowLiftDragView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
             liftDragPlot, SLOT(updatePlot()));
 }
 
@@ -311,6 +323,8 @@ void MainWindow::initOrthoView()
 
     connect(this, SIGNAL(dataChanged()),
             orthoView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            orthoView, SLOT(updateView()));
 }
 
 void MainWindow::initPlaybackView()
@@ -330,6 +344,8 @@ void MainWindow::initPlaybackView()
             m_ui->actionShowPlaybackView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            playbackView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
             playbackView, SLOT(updateView()));
 }
 
@@ -1246,6 +1262,8 @@ void MainWindow::on_actionImportVideo_triggered()
         // Set up notifications for video view
         connect(this, SIGNAL(dataChanged()),
                 videoView, SLOT(updateView()));
+        connect(this, SIGNAL(cursorChanged()),
+                videoView, SLOT(updateView()));
 
         // Associate view with this file
         videoView->setMedia(fileName);
@@ -1715,5 +1733,4 @@ void MainWindow::setOptimal(
 {
     m_optimal = result;
     emit dataChanged();
-
 }
