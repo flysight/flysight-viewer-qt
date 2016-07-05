@@ -279,8 +279,6 @@ void MainWindow::initScoringView()
 
     connect(this, SIGNAL(dataChanged()),
             mScoringView, SLOT(updateView()));
-    connect(this, SIGNAL(cursorChanged()),
-            mScoringView, SLOT(updateView()));
 }
 
 void MainWindow::initLiftDragView()
