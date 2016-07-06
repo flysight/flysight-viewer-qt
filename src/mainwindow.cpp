@@ -301,6 +301,8 @@ void MainWindow::initLiftDragView()
             liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(aeroChanged()),
+            liftDragPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::initOrthoView()
@@ -1587,7 +1589,7 @@ void MainWindow::setMinDrag(
 {
     m_minDrag = minDrag;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setMaxLift(
@@ -1595,7 +1597,7 @@ void MainWindow::setMaxLift(
 {
     m_maxLift = maxLift;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setMaxLD(
@@ -1603,7 +1605,7 @@ void MainWindow::setMaxLD(
 {
     m_maxLD = maxLD;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setWindowMode(
