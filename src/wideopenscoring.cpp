@@ -76,10 +76,8 @@ void WideOpenScoring::setMapMode(
 void WideOpenScoring::prepareDataPlot(
         DataPlot *plot)
 {
-    DataPoint dpBottom, dpTop;
-    bool success;
-
-    success = getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+    DataPoint dpBottom;
+    bool success = getWindowBounds(mMainWindow->data(), dpBottom);
 
     // Add shading for scoring window
     if (success && plot->yValue(DataPlot::Elevation)->visible())
@@ -248,8 +246,7 @@ void WideOpenScoring::splitLine(
 
 bool WideOpenScoring::getWindowBounds(
         const QVector< DataPoint > &result,
-        DataPoint &dpBottom,
-        DataPoint &dpTop)
+        DataPoint &dpBottom)
 {
     bool foundBottom = false;
     int bottom;
@@ -273,12 +270,6 @@ bool WideOpenScoring::getWindowBounds(
         const DataPoint &dp1 = result[bottom - 1];
         const DataPoint &dp2 = result[bottom];
         dpBottom = DataPoint::interpolate(dp1, dp2, (mBottom - dp1.z) / (dp2.z - dp1.z));
-
-        // Calculate top of window
-        dpTop = DataPoint();
-        dpTop.hasGeodetic = true;
-
-        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing, mLaneLength, dpTop.lat, dpTop.lon);
 
         return true;
     }

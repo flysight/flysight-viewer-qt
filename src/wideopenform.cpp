@@ -70,12 +70,31 @@ void WideOpenForm::updateView()
     ui->laneWidthEdit->setText(QString("%1").arg(laneWidth));
     ui->laneLengthEdit->setText(QString("%1").arg(laneLength));
 
-    DataPoint dpBottom, dpTop;
-    bool success;
+    // Find reference point for distance
+    DataPoint dpTop;
+    dpTop.hasGeodetic = true;
+    Geodesic::WGS84().Direct(endLatitude, endLongitude, bearing, laneLength, dpTop.lat, dpTop.lon);
 
-    success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+    // Find exit point
+    DataPoint dp0 = mMainWindow->interpolateDataT(0);
 
-    if (success)
+    // Find where we cross the bottom
+    DataPoint dpBottom;
+    bool success = method->getWindowBounds(mMainWindow->data(), dpBottom);
+
+    if (dp0.z < bottom)
+    {
+        // Update display
+        ui->distanceEdit->setText(tr("exit below bottom"));
+        ui->speedEdit->setText(tr("exit below bottom"));
+    }
+    else if (!success)
+    {
+        // Update display
+        ui->distanceEdit->setText(tr("ends above bottom"));
+        ui->speedEdit->setText(tr("ends above bottom"));
+    }
+    else
     {
         // Calculate distance
         double lat0, lon0;
@@ -115,25 +134,19 @@ void WideOpenForm::updateView()
         {
             DataPoint dp = mMainWindow->interpolateDataT(t);
 
-            if (dp.z > bottom)
+            if (dp.t < dpBottom.t)
             {
                 ui->speedEdit->setText(dp.dateTime.toString("hh:mm:ss.zzz"));
             }
             else
             {
-                ui->speedEdit->setText(tr("did not finish"));
+                ui->speedEdit->setText(tr("hit bottom first"));
             }
         }
         else
         {
-            ui->speedEdit->setText(tr("n/a"));
+            ui->speedEdit->setText(tr("did not finish"));
         }
-    }
-    else
-    {
-        // Update display
-        ui->distanceEdit->setText(tr("n/a"));
-        ui->speedEdit->setText(tr("n/a"));
     }
 }
 

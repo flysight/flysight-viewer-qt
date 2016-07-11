@@ -39,7 +39,7 @@ public:
     void closeReference();
 
     bool getWindowBounds(const QVector< DataPoint > &result,
-                         DataPoint &dpBottom, DataPoint &dpTop);
+                         DataPoint &dpBottom);
 
 private:
     MainWindow *mMainWindow;
