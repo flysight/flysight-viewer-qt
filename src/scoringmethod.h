@@ -44,7 +44,7 @@ private:
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
 
 signals:
-    void dataChanged();
+    void scoringChanged();
 
 public slots:
 };

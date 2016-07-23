@@ -36,12 +36,15 @@ private:
     QPoint      m_topViewBeginPos;
     bool        m_topViewPan;
 
+    QVector< QCPGraph* >  m_cursors;
+
     void setViewRange(double xMin, double xMax,
                       double yMin, double yMax);
     void addNorthArrow();
 
 public slots:
     void updateView();
+    void updateCursor();
 };
 
 #endif // DATAVIEW_H
