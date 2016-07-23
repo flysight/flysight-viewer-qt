@@ -1,18 +1,18 @@
-#ifndef WIDEOPENSCORING_H
-#define WIDEOPENSCORING_H
+#ifndef WIDEOPENDISTANCESCORING_H
+#define WIDEOPENDISTANCESCORING_H
 
 #include "scoringmethod.h"
 
 class MainWindow;
 
-class WideOpenScoring : public ScoringMethod
+class WideOpenDistanceScoring : public ScoringMethod
 {
 public:
     typedef enum {
         None, Start, End
     } MapMode;
 
-    WideOpenScoring(MainWindow *mainWindow);
+    WideOpenDistanceScoring(MainWindow *mainWindow);
 
     double endLatitude(void) const { return mEndLatitude; }
     double endLongitude(void) const { return mEndLongitude; }
@@ -65,4 +65,4 @@ signals:
 public slots:
 };
 
-#endif // WIDEOPENSCORING_H
+#endif // WIDEOPENDISTANCESCORING_H

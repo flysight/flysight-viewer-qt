@@ -1,4 +1,4 @@
-#include "wideopenscoring.h"
+#include "wideopendistancescoring.h"
 
 #include <QVector>
 #include <QWebFrame>
@@ -14,7 +14,7 @@
 
 using namespace GeographicLib;
 
-WideOpenScoring::WideOpenScoring(
+WideOpenDistanceScoring::WideOpenDistanceScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
@@ -29,7 +29,7 @@ WideOpenScoring::WideOpenScoring(
 
 }
 
-void WideOpenScoring::setEnd(
+void WideOpenDistanceScoring::setEnd(
         double endLatitude,
         double endLongitude)
 {
@@ -38,42 +38,42 @@ void WideOpenScoring::setEnd(
     emit scoringChanged();
 }
 
-void WideOpenScoring::setBearing(
+void WideOpenDistanceScoring::setBearing(
         double bearing)
 {
     mBearing = bearing;
     emit scoringChanged();
 }
 
-void WideOpenScoring::setBottom(
+void WideOpenDistanceScoring::setBottom(
         double bottom)
 {
     mBottom = bottom;
     emit scoringChanged();
 }
 
-void WideOpenScoring::setLaneWidth(
+void WideOpenDistanceScoring::setLaneWidth(
         double laneWidth)
 {
     mLaneWidth = laneWidth;
     emit scoringChanged();
 }
 
-void WideOpenScoring::setLaneLength(
+void WideOpenDistanceScoring::setLaneLength(
         double laneLength)
 {
     mLaneLength = laneLength;
     emit scoringChanged();
 }
 
-void WideOpenScoring::setMapMode(
+void WideOpenDistanceScoring::setMapMode(
         MapMode mode)
 {
     mMapMode = mode;
     emit scoringChanged();
 }
 
-void WideOpenScoring::prepareDataPlot(
+void WideOpenDistanceScoring::prepareDataPlot(
         DataPlot *plot)
 {
     DataPoint dpBottom;
@@ -118,7 +118,7 @@ void WideOpenScoring::prepareDataPlot(
     }
 }
 
-void WideOpenScoring::prepareMapView(
+void WideOpenDistanceScoring::prepareMapView(
         MapView *view)
 {
     // Distance threshold
@@ -216,7 +216,7 @@ void WideOpenScoring::prepareMapView(
     view->page()->currentFrame()->documentElement().evaluateJavaScript(js);
 }
 
-void WideOpenScoring::splitLine(
+void WideOpenDistanceScoring::splitLine(
         QVector< double > &lat,
         QVector< double > &lon,
         double startLat,
@@ -244,7 +244,7 @@ void WideOpenScoring::splitLine(
     }
 }
 
-bool WideOpenScoring::getWindowBounds(
+bool WideOpenDistanceScoring::getWindowBounds(
         const QVector< DataPoint > &result,
         DataPoint &dpBottom)
 {
@@ -279,7 +279,7 @@ bool WideOpenScoring::getWindowBounds(
     }
 }
 
-bool WideOpenScoring::updateReference(
+bool WideOpenDistanceScoring::updateReference(
         double lat,
         double lon)
 {
@@ -301,7 +301,7 @@ bool WideOpenScoring::updateReference(
     }
 }
 
-void WideOpenScoring::closeReference()
+void WideOpenDistanceScoring::closeReference()
 {
     setMapMode(None);
     mMainWindow->setFocus();

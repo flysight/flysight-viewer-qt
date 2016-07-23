@@ -73,8 +73,10 @@ SOURCES += main.cpp \
     GeographicLib/UTMUPS.cpp \
     performancescoring.cpp \
     performanceform.cpp \
-    wideopenscoring.cpp \
-    wideopenform.cpp
+    wideopenspeedform.cpp \
+    wideopendistanceform.cpp \
+    wideopendistancescoring.cpp \
+    wideopenspeedscoring.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -100,8 +102,10 @@ HEADERS  += mainwindow.h \
     speedscoring.h \
     performancescoring.h \
     performanceform.h \
-    wideopenscoring.h \
-    wideopenform.h
+    wideopenspeedform.h \
+    wideopendistanceform.h \
+    wideopendistancescoring.h \
+    wideopenspeedscoring.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
@@ -111,7 +115,8 @@ FORMS    += mainwindow.ui \
     ppcform.ui \
     speedform.ui \
     performanceform.ui \
-    wideopenform.ui
+    wideopenspeedform.ui \
+    wideopendistanceform.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico

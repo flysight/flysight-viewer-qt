@@ -27,7 +27,8 @@
 #include "scoringview.h"
 #include "speedscoring.h"
 #include "videoview.h"
-#include "wideopenscoring.h"
+#include "wideopendistancescoring.h"
+#include "wideopenspeedscoring.h"
 #include "windplot.h"
 
 using namespace GeographicLib;
@@ -63,7 +64,8 @@ MainWindow::MainWindow(
     mScoringMethods.append(new PPCScoring(this));
     mScoringMethods.append(new SpeedScoring(this));
     mScoringMethods.append(new PerformanceScoring(this));
-    mScoringMethods.append(new WideOpenScoring(this));
+    mScoringMethods.append(new WideOpenSpeedScoring(this));
+    mScoringMethods.append(new WideOpenDistanceScoring(this));
 
     // Connect scoring method signals
     for (int i = PPC; i < smLast; ++i)

@@ -1,5 +1,5 @@
-#include "wideopenform.h"
-#include "ui_wideopenform.h"
+#include "wideopenspeedform.h"
+#include "ui_wideopenspeedform.h"
 
 #include "GeographicLib/Constants.hpp"
 #include "GeographicLib/Geodesic.hpp"
@@ -7,13 +7,13 @@
 #include "GeographicLib/Rhumb.hpp"
 
 #include "mainwindow.h"
-#include "wideopenscoring.h"
+#include "wideopenspeedscoring.h"
 
 using namespace GeographicLib;
 
-WideOpenForm::WideOpenForm(QWidget *parent) :
+WideOpenSpeedForm::WideOpenSpeedForm(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::WideOpenForm),
+    ui(new Ui::WideOpenSpeedForm),
     mMainWindow(0)
 {
     ui->setupUi(this);
@@ -30,26 +30,26 @@ WideOpenForm::WideOpenForm(QWidget *parent) :
     connect(ui->endGlobeButton, SIGNAL(clicked()), this, SLOT(onEndButtonClicked()));
 }
 
-WideOpenForm::~WideOpenForm()
+WideOpenSpeedForm::~WideOpenSpeedForm()
 {
     delete ui;
 }
 
-QSize WideOpenForm::sizeHint() const
+QSize WideOpenSpeedForm::sizeHint() const
 {
     // Keeps windows from being intialized as very short
     return QSize(175, 175);
 }
 
-void WideOpenForm::setMainWindow(
+void WideOpenSpeedForm::setMainWindow(
         MainWindow *mainWindow)
 {
     mMainWindow = mainWindow;
 }
 
-void WideOpenForm::updateView()
+void WideOpenSpeedForm::updateView()
 {
-    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
+    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
 
     const double endLatitude = method->endLatitude();
     const double endLongitude = method->endLongitude();
@@ -156,7 +156,7 @@ void WideOpenForm::updateView()
 // From https://sourceforge.net/p/geographiclib/discussion/1026621/thread/21aaff9f/#8a93
 // See http://arxiv.org/pdf/1102.1215v1.pdf
 
-void WideOpenForm::intercept(
+void WideOpenSpeedForm::intercept(
         double lata1,
         double lona1,
         double lata2,
@@ -224,7 +224,7 @@ void WideOpenForm::intercept(
     }
 }
 
-void WideOpenForm::onApplyButtonClicked()
+void WideOpenSpeedForm::onApplyButtonClicked()
 {
     const double endLatitude = ui->endLatitudeEdit->text().toDouble();
     const double endLongitude = ui->endLongitudeEdit->text().toDouble();
@@ -235,7 +235,7 @@ void WideOpenForm::onApplyButtonClicked()
     const double laneWidth = ui->laneWidthEdit->text().toDouble();
     const double laneLength = ui->laneLengthEdit->text().toDouble();
 
-    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
+    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
     method->setEnd(endLatitude, endLongitude);
     method->setBearing(bearing);
     method->setBottom(bottom);
@@ -245,28 +245,28 @@ void WideOpenForm::onApplyButtonClicked()
     mMainWindow->setFocus();
 }
 
-void WideOpenForm::onStartButtonClicked()
+void WideOpenSpeedForm::onStartButtonClicked()
 {
-    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
-    method->setMapMode(WideOpenScoring::Start);
+    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
+    method->setMapMode(WideOpenSpeedScoring::Start);
     setFocus();
 }
 
-void WideOpenForm::onEndButtonClicked()
+void WideOpenSpeedForm::onEndButtonClicked()
 {
-    WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
-    method->setMapMode(WideOpenScoring::End);
+    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
+    method->setMapMode(WideOpenSpeedScoring::End);
     setFocus();
 }
 
-void WideOpenForm::keyPressEvent(
+void WideOpenSpeedForm::keyPressEvent(
         QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
         // Cancel map selection
-        WideOpenScoring *method = (WideOpenScoring *) mMainWindow->scoringMethod(MainWindow::WideOpen);
-        method->setMapMode(WideOpenScoring::None);
+        WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
+        method->setMapMode(WideOpenSpeedScoring::None);
 
         // Reset display
         updateView();

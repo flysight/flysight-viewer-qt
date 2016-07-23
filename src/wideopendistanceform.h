@@ -1,21 +1,21 @@
-#ifndef WIDEOPENFORM_H
-#define WIDEOPENFORM_H
+#ifndef WIDEOPENDISTANCEFORM_H
+#define WIDEOPENDISTANCEFORM_H
 
 #include <QWidget>
 
 namespace Ui {
-class WideOpenForm;
+class WideOpenDistanceForm;
 }
 
 class MainWindow;
 
-class WideOpenForm : public QWidget
+class WideOpenDistanceForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit WideOpenForm(QWidget *parent = 0);
-    ~WideOpenForm();
+    explicit WideOpenDistanceForm(QWidget *parent = 0);
+    ~WideOpenDistanceForm();
 
     virtual QSize sizeHint() const;
 
@@ -25,7 +25,7 @@ protected:
     virtual void keyPressEvent(QKeyEvent *);
 
 private:
-    Ui::WideOpenForm *ui;
+    Ui::WideOpenDistanceForm *ui;
     MainWindow  *mMainWindow;
 
     static void intercept(double lata1, double lona1, double lata2, double lona2,
@@ -40,4 +40,4 @@ private slots:
     void onEndButtonClicked();
 };
 
-#endif // WIDEOPENFORM_H
+#endif // WIDEOPENDISTANCEFORM_H
