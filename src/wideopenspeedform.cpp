@@ -85,25 +85,15 @@ void WideOpenSpeedForm::updateView()
     if (dp0.z < bottom)
     {
         // Update display
-        ui->distanceEdit->setText(tr("exit below bottom"));
         ui->speedEdit->setText(tr("exit below bottom"));
     }
     else if (!success)
     {
         // Update display
-        ui->distanceEdit->setText(tr("ends above bottom"));
         ui->speedEdit->setText(tr("ends above bottom"));
     }
     else
     {
-        // Calculate distance
-        double lat0, lon0;
-        intercept(dpTop.lat, dpTop.lon, endLatitude, endLongitude, dpBottom.lat, dpBottom.lon, lat0, lon0);
-
-        double s12;
-        Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, s12);
-        ui->distanceEdit->setText(QString("%1").arg(s12 / 1000, 0, 'f', 3));
-
         // Calculate time
         int i, start = mMainWindow->findIndexBelowT(0) + 1;
         double d1, t;
