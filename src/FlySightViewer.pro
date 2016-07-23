@@ -76,7 +76,8 @@ SOURCES += main.cpp \
     wideopenspeedform.cpp \
     wideopendistanceform.cpp \
     wideopendistancescoring.cpp \
-    wideopenspeedscoring.cpp
+    wideopenspeedscoring.cpp \
+    geographicutil.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -105,7 +106,8 @@ HEADERS  += mainwindow.h \
     wideopenspeedform.h \
     wideopendistanceform.h \
     wideopendistancescoring.h \
-    wideopenspeedscoring.h
+    wideopenspeedscoring.h \
+    geographicutil.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

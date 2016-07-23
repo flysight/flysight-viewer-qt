@@ -7,12 +7,14 @@
 #include "GeographicLib/Geodesic.hpp"
 #include "GeographicLib/GeodesicLine.hpp"
 
+#include "geographicutil.h"
 #include "mainwindow.h"
 #include "mapview.h"
 
 #define MAX_SPLIT_DEPTH 8
 
 using namespace GeographicLib;
+using namespace GeographicUtil;
 
 WideOpenDistanceScoring::WideOpenDistanceScoring(
         MainWindow *mainWindow):
@@ -190,27 +192,42 @@ void WideOpenDistanceScoring::prepareMapView(
         js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(rtLat[i], 0, 'f').arg(rtLon[i], 0, 'f');
     }
 
-    // Draw finish line
-    double woLeftLat, woLeftLon;
-    Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+    // Find where we cross the bottom
+    DataPoint dpBottom;
+    bool success = getWindowBounds(mMainWindow->data(), dpBottom);
 
-    double woRightLat, woRightLon;
-    Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
-
-    lat.clear();
-    lon.clear();
-
-    lat.push_back(woLeftLat);
-    lon.push_back(woLeftLon);
-
-    splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
-
-    lat.push_back(woRightLat);
-    lon.push_back(woRightLon);
-
-    for (int i = 0; i < lat.size(); ++i)
+    if (success)
     {
-        js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+        // Get reference point
+        double lat0, lon0;
+        intercept(woProjLat, woProjLon, mEndLatitude, mEndLongitude, dpBottom.lat, dpBottom.lon, lat0, lon0);
+
+        // Draw finish line
+        double woLeftLat, woLeftLon;
+        Geodesic::WGS84().Direct(lat0, lon0, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+
+        double woRightLat, woRightLon;
+        Geodesic::WGS84().Direct(lat0, lon0, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
+
+        lat.clear();
+        lon.clear();
+
+        lat.push_back(woLeftLat);
+        lon.push_back(woLeftLon);
+
+        splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
+
+        lat.push_back(woRightLat);
+        lon.push_back(woRightLon);
+
+        for (int i = 0; i < lat.size(); ++i)
+        {
+            js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+        }
+    }
+    else
+    {
+        // Draw 'X'
     }
 
     view->page()->currentFrame()->documentElement().evaluateJavaScript(js);
