@@ -254,6 +254,9 @@ void MapView::updateView()
     js += QString("var path4 = woFinish.getPath();") +
           QString("while (path4.length > 0) { path4.pop(); }");
 
+    js += QString("var path5 = woFinish2.getPath();") +
+          QString("while (path5.length > 0) { path5.pop(); }");
+
     page()->currentFrame()->documentElement().evaluateJavaScript(js);
 
     // Draw annotations on map

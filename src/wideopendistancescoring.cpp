@@ -227,7 +227,48 @@ void WideOpenDistanceScoring::prepareMapView(
     }
     else
     {
-        // Draw 'X'
+        // Draw first line of 'X'
+        double woLeftLat, woLeftLon;
+        double woRightLat, woRightLon;
+
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing + 45, mLaneWidth, woLeftLat, woLeftLon);
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing + 225, mLaneWidth, woRightLat, woRightLon);
+
+        lat.clear();
+        lon.clear();
+
+        lat.push_back(woLeftLat);
+        lon.push_back(woLeftLon);
+
+        splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
+
+        lat.push_back(woRightLat);
+        lon.push_back(woRightLon);
+
+        for (int i = 0; i < lat.size(); ++i)
+        {
+            js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+        }
+
+        // Draw second line of 'X'
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing - 45, mLaneWidth, woLeftLat, woLeftLon);
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing - 225, mLaneWidth, woRightLat, woRightLon);
+
+        lat.clear();
+        lon.clear();
+
+        lat.push_back(woLeftLat);
+        lon.push_back(woLeftLon);
+
+        splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
+
+        lat.push_back(woRightLat);
+        lon.push_back(woRightLon);
+
+        for (int i = 0; i < lat.size(); ++i)
+        {
+            js += QString("path5.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+        }
     }
 
     view->page()->currentFrame()->documentElement().evaluateJavaScript(js);
