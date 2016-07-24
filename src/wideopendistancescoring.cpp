@@ -315,10 +315,10 @@ void WideOpenDistanceScoring::prepareMapView(
         {
             // Draw finish line
             double woLeftLat, woLeftLon;
-            Geodesic::WGS84().Direct(lat0, lon0, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+            Geodesic::WGS84().Direct(lat0, lon0, mBearing - 90, mLaneWidth, woLeftLat, woLeftLon);
 
             double woRightLat, woRightLon;
-            Geodesic::WGS84().Direct(lat0, lon0, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
+            Geodesic::WGS84().Direct(lat0, lon0, mBearing + 90, mLaneWidth, woRightLat, woRightLon);
 
             lat.clear();
             lon.clear();
