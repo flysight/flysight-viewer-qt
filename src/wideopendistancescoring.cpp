@@ -192,37 +192,149 @@ void WideOpenDistanceScoring::prepareMapView(
         js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(rtLat[i], 0, 'f').arg(rtLon[i], 0, 'f');
     }
 
+    // Find exit point
+    DataPoint dp0 = mMainWindow->interpolateDataT(0);
+
     // Find where we cross the bottom
     DataPoint dpBottom;
     bool success = getWindowBounds(mMainWindow->data(), dpBottom);
 
-    if (success)
+    if (dp0.z >= mBottom && success)
     {
-        // Get reference point
+        // Get projected point
         double lat0, lon0;
         intercept(woProjLat, woProjLon, mEndLatitude, mEndLongitude, dpBottom.lat, dpBottom.lon, lat0, lon0);
 
-        // Draw finish line
-        double woLeftLat, woLeftLon;
-        Geodesic::WGS84().Direct(lat0, lon0, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+        // Distance from top
+        double topDist;
+        Geodesic::WGS84().Inverse(woProjLat, woProjLon, lat0, lon0, topDist);
 
-        double woRightLat, woRightLon;
-        Geodesic::WGS84().Direct(lat0, lon0, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
+        // Distance from bottom
+        double bottomDist;
+        Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, lat0, lon0, bottomDist);
 
-        lat.clear();
-        lon.clear();
-
-        lat.push_back(woLeftLat);
-        lon.push_back(woLeftLon);
-
-        splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
-
-        lat.push_back(woRightLat);
-        lon.push_back(woRightLon);
-
-        for (int i = 0; i < lat.size(); ++i)
+        bool inside = true;
+        if (topDist > bottomDist)
         {
-            js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+            if (topDist > mLaneLength)
+            {
+                // Point is after bottom
+                inside = false;
+
+                double woLeftLat, woLeftLon;
+
+                // Draw first line of arrow
+                Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing + 45, mLaneWidth, woLeftLat, woLeftLon);
+
+                lat.clear();
+                lon.clear();
+
+                lat.push_back(woLeftLat);
+                lon.push_back(woLeftLon);
+
+                splitLine(lat, lon, woLeftLat, woLeftLon, mEndLatitude, mEndLongitude, threshold, 0);
+
+                lat.push_back(mEndLatitude);
+                lon.push_back(mEndLongitude);
+
+                for (int i = 0; i < lat.size(); ++i)
+                {
+                    js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+                }
+
+                // Draw second line of arrow
+                Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing - 45, mLaneWidth, woLeftLat, woLeftLon);
+
+                lat.clear();
+                lon.clear();
+
+                lat.push_back(mEndLatitude);
+                lon.push_back(mEndLongitude);
+
+                splitLine(lat, lon, mEndLatitude, mEndLongitude, woLeftLat, woLeftLon, threshold, 0);
+
+                lat.push_back(woLeftLat);
+                lon.push_back(woLeftLon);
+
+                for (int i = 0; i < lat.size(); ++i)
+                {
+                    js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+                }
+            }
+        }
+        else
+        {
+            if (bottomDist > mLaneLength)
+            {
+                // Point is before top
+                inside = false;
+
+                double woLeftLat, woLeftLon;
+
+                // Draw first line of arrow
+                Geodesic::WGS84().Direct(woProjLat, woProjLon, mBearing + 135, mLaneWidth, woLeftLat, woLeftLon);
+
+                lat.clear();
+                lon.clear();
+
+                lat.push_back(woLeftLat);
+                lon.push_back(woLeftLon);
+
+                splitLine(lat, lon, woLeftLat, woLeftLon, woProjLat, woProjLon, threshold, 0);
+
+                lat.push_back(woProjLat);
+                lon.push_back(woProjLon);
+
+                for (int i = 0; i < lat.size(); ++i)
+                {
+                    js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+                }
+
+                // Draw second line of arrow
+                Geodesic::WGS84().Direct(woProjLat, woProjLon, mBearing - 135, mLaneWidth, woLeftLat, woLeftLon);
+
+                lat.clear();
+                lon.clear();
+
+                lat.push_back(woProjLat);
+                lon.push_back(woProjLon);
+
+                splitLine(lat, lon, woProjLat, woProjLon, woLeftLat, woLeftLon, threshold, 0);
+
+                lat.push_back(woLeftLat);
+                lon.push_back(woLeftLon);
+
+                for (int i = 0; i < lat.size(); ++i)
+                {
+                    js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+                }
+            }
+        }
+
+        if (inside)
+        {
+            // Draw finish line
+            double woLeftLat, woLeftLon;
+            Geodesic::WGS84().Direct(lat0, lon0, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+
+            double woRightLat, woRightLon;
+            Geodesic::WGS84().Direct(lat0, lon0, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
+
+            lat.clear();
+            lon.clear();
+
+            lat.push_back(woLeftLat);
+            lon.push_back(woLeftLon);
+
+            splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
+
+            lat.push_back(woRightLat);
+            lon.push_back(woRightLon);
+
+            for (int i = 0; i < lat.size(); ++i)
+            {
+                js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+            }
         }
     }
     else
