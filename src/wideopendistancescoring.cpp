@@ -1,5 +1,6 @@
 #include "wideopendistancescoring.h"
 
+#include <QSettings>
 #include <QVector>
 #include <QWebFrame>
 #include <QWebElement>
@@ -29,6 +30,34 @@ WideOpenDistanceScoring::WideOpenDistanceScoring(
     mMapMode(None)
 {
 
+}
+
+void WideOpenDistanceScoring::readSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("wideOpenDistanceScoring");
+        mEndLatitude  = settings.value("endLatitude", mEndLatitude).toDouble();
+        mEndLongitude = settings.value("endLongitude", mEndLongitude).toDouble();
+        mBearing      = settings.value("bearing", mBearing).toDouble();
+        mBottom       = settings.value("bottom", mBottom).toDouble();
+        mLaneWidth    = settings.value("laneWidth", mLaneWidth).toDouble();
+        mLaneLength   = settings.value("laneLength", mLaneLength).toDouble();
+    settings.endGroup();
+}
+
+void WideOpenDistanceScoring::writeSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("wideOpenDistanceScoring");
+        settings.setValue("endLatitude", mEndLatitude);
+        settings.setValue("endLongitude", mEndLongitude);
+        settings.setValue("bearing", mBearing);
+        settings.setValue("bottom", mBottom);
+        settings.setValue("laneWidth", mLaneWidth);
+        settings.setValue("laneLength", mLaneLength);
+    settings.endGroup();
 }
 
 void WideOpenDistanceScoring::setEnd(

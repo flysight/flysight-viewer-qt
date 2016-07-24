@@ -41,6 +41,9 @@ public:
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom);
 
+    void readSettings();
+    void writeSettings();
+
 private:
     MainWindow *mMainWindow;
 

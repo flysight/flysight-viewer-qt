@@ -67,6 +67,12 @@ MainWindow::MainWindow(
     mScoringMethods.append(new WideOpenSpeedScoring(this));
     mScoringMethods.append(new WideOpenDistanceScoring(this));
 
+    // Read scoring method settings
+    for (int i = PPC; i < smLast; ++i)
+    {
+        mScoringMethods[i]->readSettings();
+    }
+
     // Connect scoring method signals
     for (int i = PPC; i < smLast; ++i)
     {
@@ -356,6 +362,12 @@ void MainWindow::closeEvent(
 {
     // Save window state
     writeSettings();
+
+    // Write scoring method settings
+    for (int i = PPC; i < smLast; ++i)
+    {
+        mScoringMethods[i]->writeSettings();
+    }
 
     // Okay to close
     event->accept();

@@ -37,6 +37,9 @@ public:
 
     virtual void optimize() {}
 
+    virtual void readSettings() {}
+    virtual void writeSettings() {}
+
 protected:
     void optimize(MainWindow *mainWindow, double windowBottom);
 

@@ -1,5 +1,6 @@
 #include "wideopenspeedscoring.h"
 
+#include <QSettings>
 #include <QVector>
 #include <QWebFrame>
 #include <QWebElement>
@@ -29,6 +30,34 @@ WideOpenSpeedScoring::WideOpenSpeedScoring(
     mMapMode(None)
 {
 
+}
+
+void WideOpenSpeedScoring::readSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("wideOpenSpeedScoring");
+        mEndLatitude  = settings.value("endLatitude", mEndLatitude).toDouble();
+        mEndLongitude = settings.value("endLongitude", mEndLongitude).toDouble();
+        mBearing      = settings.value("bearing", mBearing).toDouble();
+        mBottom       = settings.value("bottom", mBottom).toDouble();
+        mLaneWidth    = settings.value("laneWidth", mLaneWidth).toDouble();
+        mLaneLength   = settings.value("laneLength", mLaneLength).toDouble();
+    settings.endGroup();
+}
+
+void WideOpenSpeedScoring::writeSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("wideOpenSpeedScoring");
+        settings.setValue("endLatitude", mEndLatitude);
+        settings.setValue("endLongitude", mEndLongitude);
+        settings.setValue("bearing", mBearing);
+        settings.setValue("bottom", mBottom);
+        settings.setValue("laneWidth", mLaneWidth);
+        settings.setValue("laneLength", mLaneLength);
+    settings.endGroup();
 }
 
 void WideOpenSpeedScoring::setEnd(
