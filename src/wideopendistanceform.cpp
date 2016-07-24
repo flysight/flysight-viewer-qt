@@ -94,13 +94,27 @@ void WideOpenDistanceForm::updateView()
     }
     else
     {
-        // Calculate distance
+        // Get projected point
         double lat0, lon0;
         intercept(dpTop.lat, dpTop.lon, endLatitude, endLongitude, dpBottom.lat, dpBottom.lon, lat0, lon0);
 
+        // Distance from top
+        double topDist;
+        Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, topDist);
+
+        // Distance from bottom
+        double bottomDist;
+        Geodesic::WGS84().Inverse(endLatitude, endLongitude, lat0, lon0, bottomDist);
+
         double s12;
-        Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, s12);
-        ui->distanceEdit->setText(QString("%1").arg(s12 / 1000, 0, 'f', 3));
+        if (topDist > bottomDist)
+        {
+            ui->distanceEdit->setText(QString("%1").arg(topDist / 1000, 0, 'f', 3));
+        }
+        else
+        {
+            ui->distanceEdit->setText(QString("%1").arg((laneLength - bottomDist) / 1000, 0, 'f', 3));
+        }
     }
 }
 
