@@ -103,12 +103,27 @@ void WideOpenSpeedForm::updateView()
         {
             const DataPoint &dp2 = mMainWindow->dataPoint(i);
 
-            // Calculate distance
+            // Get projected point
             double lat0, lon0;
             intercept(dpTop.lat, dpTop.lon, endLatitude, endLongitude, dp2.lat, dp2.lon, lat0, lon0);
 
+            // Distance from top
+            double topDist;
+            Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, topDist);
+
+            // Distance from bottom
+            double bottomDist;
+            Geodesic::WGS84().Inverse(endLatitude, endLongitude, lat0, lon0, bottomDist);
+
             double d2;
-            Geodesic::WGS84().Inverse(dpTop.lat, dpTop.lon, lat0, lon0, d2);
+            if (topDist > bottomDist)
+            {
+                d2 = topDist;
+            }
+            else
+            {
+                d2 = laneLength - bottomDist;
+            }
 
             if (i > start && d1 < laneLength && d2 >= laneLength)
             {
@@ -124,7 +139,7 @@ void WideOpenSpeedForm::updateView()
         {
             DataPoint dp = mMainWindow->interpolateDataT(t);
 
-            if (dp.t < dpBottom.t)
+            if (dp.t <= dpBottom.t)
             {
                 ui->speedEdit->setText(dp.dateTime.toString("hh:mm:ss.zzz"));
             }
