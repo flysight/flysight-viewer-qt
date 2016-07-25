@@ -64,7 +64,6 @@ void WideOpenSpeedForm::updateView()
     // Update display
     ui->endLatitudeEdit->setText(QString("%1").arg(endLatitude, 0, 'f', 7));
     ui->endLongitudeEdit->setText(QString("%1").arg(endLongitude, 0, 'f', 7));
-
     ui->bearingEdit->setText(QString("%1").arg(bearing, 0, 'f', 5));
 
     // Get unit text and factor
@@ -173,7 +172,6 @@ void WideOpenSpeedForm::onApplyButtonClicked()
 {
     const double endLatitude = ui->endLatitudeEdit->text().toDouble();
     const double endLongitude = ui->endLongitudeEdit->text().toDouble();
-
     const double bearing = ui->bearingEdit->text().toDouble();
 
     // Get factor
