@@ -24,7 +24,7 @@ WideOpenDistanceScoring::WideOpenDistanceScoring(
     mEndLatitude(51.0500),
     mEndLongitude(-114.0667),
     mBearing(0),
-    mBottom(2000),
+    mBottom(6000 / METERS_TO_FEET),
     mLaneWidth(500),
     mLaneLength(10000),
     mMapMode(None)
