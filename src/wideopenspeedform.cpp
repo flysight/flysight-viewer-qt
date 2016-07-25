@@ -90,12 +90,12 @@ void WideOpenSpeedForm::updateView()
     else if (dp0.z < bottom)
     {
         // Update display
-        ui->speedEdit->setText(tr("exit below bottom"));
+        ui->speedEdit->setText(tr("set exit"));
     }
     else if (!success)
     {
         // Update display
-        ui->speedEdit->setText(tr("ends above bottom"));
+        ui->speedEdit->setText(tr("incomplete data"));
     }
     else
     {
@@ -150,7 +150,7 @@ void WideOpenSpeedForm::updateView()
             }
             else
             {
-                ui->speedEdit->setText(tr("hit bottom first"));
+                ui->speedEdit->setText(tr("did not finish"));
             }
         }
         else

@@ -90,12 +90,12 @@ void WideOpenDistanceForm::updateView()
     else if (dp0.z < bottom)
     {
         // Update display
-        ui->distanceEdit->setText(tr("exit below bottom"));
+        ui->distanceEdit->setText(tr("set exit"));
     }
     else if (!success)
     {
         // Update display
-        ui->distanceEdit->setText(tr("ends above bottom"));
+        ui->distanceEdit->setText(tr("incomplete data"));
     }
     else
     {
