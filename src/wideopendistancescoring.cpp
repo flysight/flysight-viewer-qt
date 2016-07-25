@@ -228,7 +228,32 @@ void WideOpenDistanceScoring::prepareMapView(
     DataPoint dpBottom;
     bool success = getWindowBounds(mMainWindow->data(), dpBottom);
 
-    if (dp0.z >= mBottom && success)
+    if (mMainWindow->dataSize() == 0)
+    {
+        // Draw long finish line
+        double woLeftLat, woLeftLon;
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing - 90, mLaneLength / 2, woLeftLat, woLeftLon);
+
+        double woRightLat, woRightLon;
+        Geodesic::WGS84().Direct(mEndLatitude, mEndLongitude, mBearing + 90, mLaneLength / 2, woRightLat, woRightLon);
+
+        lat.clear();
+        lon.clear();
+
+        lat.push_back(woLeftLat);
+        lon.push_back(woLeftLon);
+
+        splitLine(lat, lon, woLeftLat, woLeftLon, woRightLat, woRightLon, threshold, 0);
+
+        lat.push_back(woRightLat);
+        lon.push_back(woRightLon);
+
+        for (int i = 0; i < lat.size(); ++i)
+        {
+            js += QString("path4.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+        }
+    }
+    else if (dp0.z >= mBottom && success)
     {
         // Get projected point
         double lat0, lon0;

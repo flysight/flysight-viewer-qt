@@ -82,7 +82,12 @@ void WideOpenSpeedForm::updateView()
     DataPoint dpBottom;
     bool success = method->getWindowBounds(mMainWindow->data(), dpBottom);
 
-    if (dp0.z < bottom)
+    if (mMainWindow->dataSize() == 0)
+    {
+        // Update display
+        ui->speedEdit->setText(tr("no data"));
+    }
+    else if (dp0.z < bottom)
     {
         // Update display
         ui->speedEdit->setText(tr("exit below bottom"));
