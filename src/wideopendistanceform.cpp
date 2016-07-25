@@ -66,9 +66,18 @@ void WideOpenDistanceForm::updateView()
 
     ui->bearingEdit->setText(QString("%1").arg(bearing, 0, 'f', 5));
 
-    ui->bottomEdit->setText(QString("%1").arg(bottom));
-    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth));
-    ui->laneLengthEdit->setText(QString("%1").arg(laneLength));
+    // Get unit text and factor
+    QString unitText = PlotDistance2D().unitText(mMainWindow->units());
+    const double factor = PlotDistance2D().factor(mMainWindow->units());
+
+    ui->bottomUnits->setText(unitText);
+    ui->laneWidthUnits->setText(unitText);
+    ui->laneLengthUnits->setText(unitText);
+    ui->distanceUnits->setText(unitText);
+
+    ui->bottomEdit->setText(QString("%1").arg(bottom * factor));
+    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth * factor));
+    ui->laneLengthEdit->setText(QString("%1").arg(laneLength * factor));
 
     // Find reference point for distance
     DataPoint dpTop;
@@ -114,11 +123,11 @@ void WideOpenDistanceForm::updateView()
         double s12;
         if (topDist > bottomDist)
         {
-            ui->distanceEdit->setText(QString("%1").arg(topDist / 1000, 0, 'f', 3));
+            ui->distanceEdit->setText(QString("%1").arg(topDist * factor, 0, 'f', 3));
         }
         else
         {
-            ui->distanceEdit->setText(QString("%1").arg((laneLength - bottomDist) / 1000, 0, 'f', 3));
+            ui->distanceEdit->setText(QString("%1").arg((laneLength - bottomDist) * factor, 0, 'f', 3));
         }
     }
 }
@@ -130,9 +139,12 @@ void WideOpenDistanceForm::onApplyButtonClicked()
 
     const double bearing = ui->bearingEdit->text().toDouble();
 
-    const double bottom = ui->bottomEdit->text().toDouble();
-    const double laneWidth = ui->laneWidthEdit->text().toDouble();
-    const double laneLength = ui->laneLengthEdit->text().toDouble();
+    // Get factor
+    const double factor = PlotDistance2D().factor(mMainWindow->units());
+
+    const double bottom = ui->bottomEdit->text().toDouble() / factor;
+    const double laneWidth = ui->laneWidthEdit->text().toDouble() / factor;
+    const double laneLength = ui->laneLengthEdit->text().toDouble() / factor;
 
     WideOpenDistanceScoring *method = (WideOpenDistanceScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenDistance);
     method->setEnd(endLatitude, endLongitude);

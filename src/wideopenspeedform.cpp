@@ -6,6 +6,7 @@
 
 #include "geographicutil.h"
 #include "mainwindow.h"
+#include "plotvalue.h"
 #include "wideopenspeedscoring.h"
 
 using namespace GeographicLib;
@@ -66,9 +67,17 @@ void WideOpenSpeedForm::updateView()
 
     ui->bearingEdit->setText(QString("%1").arg(bearing, 0, 'f', 5));
 
-    ui->bottomEdit->setText(QString("%1").arg(bottom));
-    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth));
-    ui->laneLengthEdit->setText(QString("%1").arg(laneLength));
+    // Get unit text and factor
+    QString unitText = PlotDistance2D().unitText(mMainWindow->units());
+    const double factor = PlotDistance2D().factor(mMainWindow->units());
+
+    ui->bottomUnits->setText(unitText);
+    ui->laneWidthUnits->setText(unitText);
+    ui->laneLengthUnits->setText(unitText);
+
+    ui->bottomEdit->setText(QString("%1").arg(bottom * factor));
+    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth * factor));
+    ui->laneLengthEdit->setText(QString("%1").arg(laneLength * factor));
 
     // Find reference point for distance
     DataPoint dpTop;
@@ -167,9 +176,12 @@ void WideOpenSpeedForm::onApplyButtonClicked()
 
     const double bearing = ui->bearingEdit->text().toDouble();
 
-    const double bottom = ui->bottomEdit->text().toDouble();
-    const double laneWidth = ui->laneWidthEdit->text().toDouble();
-    const double laneLength = ui->laneLengthEdit->text().toDouble();
+    // Get factor
+    const double factor = PlotDistance2D().factor(mMainWindow->units());
+
+    const double bottom = ui->bottomEdit->text().toDouble() / factor;
+    const double laneWidth = ui->laneWidthEdit->text().toDouble() / factor;
+    const double laneLength = ui->laneLengthEdit->text().toDouble() / factor;
 
     WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
     method->setEnd(endLatitude, endLongitude);

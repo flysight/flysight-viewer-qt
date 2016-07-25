@@ -33,7 +33,7 @@
          <widget class="QLineEdit" name="endLatitudeEdit"/>
         </item>
         <item row="0" column="2">
-         <widget class="QLabel" name="topUnits">
+         <widget class="QLabel" name="latUnits">
           <property name="text">
            <string>deg</string>
           </property>
@@ -50,7 +50,7 @@
          <widget class="QLineEdit" name="endLongitudeEdit"/>
         </item>
         <item row="1" column="2">
-         <widget class="QLabel" name="bottomUnits">
+         <widget class="QLabel" name="lonUnits">
           <property name="text">
            <string>deg</string>
           </property>
@@ -126,7 +126,7 @@
        <widget class="QLineEdit" name="bottomEdit"/>
       </item>
       <item row="0" column="2">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="bottomUnits">
         <property name="text">
          <string>m</string>
         </property>
@@ -143,7 +143,7 @@
        <widget class="QLineEdit" name="laneWidthEdit"/>
       </item>
       <item row="1" column="2">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="laneWidthUnits">
         <property name="text">
          <string>m</string>
         </property>
@@ -160,7 +160,7 @@
        <widget class="QLineEdit" name="laneLengthEdit"/>
       </item>
       <item row="2" column="2">
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="laneLengthUnits">
         <property name="text">
          <string>m</string>
         </property>
@@ -176,7 +176,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="2">
-       <widget class="QLabel" name="timeUnits">
+       <widget class="QLabel" name="distanceUnits">
         <property name="text">
          <string>km</string>
         </property>
