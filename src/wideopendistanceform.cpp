@@ -73,9 +73,9 @@ void WideOpenDistanceForm::updateView()
     ui->laneWidthUnits->setText(unitText);
     ui->laneLengthUnits->setText(unitText);
 
-    ui->bottomEdit->setText(QString("%1").arg(bottom * factor));
-    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth * factor));
-    ui->laneLengthEdit->setText(QString("%1").arg(laneLength * factor));
+    ui->bottomEdit->setText(QString("%1").arg(bottom * factor, 0, 'f', 0));
+    ui->laneWidthEdit->setText(QString("%1").arg(laneWidth * factor, 0, 'f', 0));
+    ui->laneLengthEdit->setText(QString("%1").arg(laneLength * factor, 0, 'f', 0));
 
     ui->distanceUnits->setText((mMainWindow->units() == PlotValue::Metric) ? tr("km") : tr("mi"));
 
