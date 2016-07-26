@@ -27,6 +27,8 @@
 #include "scoringview.h"
 #include "speedscoring.h"
 #include "videoview.h"
+#include "wideopendistancescoring.h"
+#include "wideopenspeedscoring.h"
 #include "windplot.h"
 
 using namespace GeographicLib;
@@ -62,21 +64,25 @@ MainWindow::MainWindow(
     mScoringMethods.append(new PPCScoring(this));
     mScoringMethods.append(new SpeedScoring(this));
     mScoringMethods.append(new PerformanceScoring(this));
+    mScoringMethods.append(new WideOpenSpeedScoring(this));
+    mScoringMethods.append(new WideOpenDistanceScoring(this));
+
+    // Read scoring method settings
+    for (int i = PPC; i < smLast; ++i)
+    {
+        mScoringMethods[i]->readSettings();
+    }
 
     // Connect scoring method signals
     for (int i = PPC; i < smLast; ++i)
     {
-        connect(mScoringMethods[i], SIGNAL(dataChanged()),
+        connect(mScoringMethods[i], SIGNAL(scoringChanged()),
                 this, SIGNAL(dataChanged()));
     }
 
     // Ensure that closeEvent is called
     connect(m_ui->actionExit, SIGNAL(triggered()),
             this, SLOT(close()));
-
-    // Respond to data changed signal
-    connect(this, SIGNAL(dataChanged()),
-            this, SLOT(updateWindow()));
 
     // Read settings
     readSettings();
@@ -177,6 +183,8 @@ void MainWindow::initPlot()
 
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
+            m_ui->plotArea, SLOT(updateCursor()));
 }
 
 void MainWindow::initViews()
@@ -208,6 +216,8 @@ void MainWindow::initSingleView(
 
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
 }
@@ -231,6 +241,8 @@ void MainWindow::initMapView()
             mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            mapView, SLOT(updateView()));
 }
 
 void MainWindow::initWindView()
@@ -250,6 +262,8 @@ void MainWindow::initWindView()
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            windPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
             windPlot, SLOT(updatePlot()));
 }
 
@@ -293,6 +307,10 @@ void MainWindow::initLiftDragView()
 
     connect(this, SIGNAL(dataChanged()),
             liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(cursorChanged()),
+            liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(aeroChanged()),
+            liftDragPlot, SLOT(updatePlot()));
 }
 
 void MainWindow::initOrthoView()
@@ -312,6 +330,8 @@ void MainWindow::initOrthoView()
             m_ui->actionShowOrthoView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            orthoView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
             orthoView, SLOT(updateView()));
 }
 
@@ -333,6 +353,8 @@ void MainWindow::initPlaybackView()
 
     connect(this, SIGNAL(dataChanged()),
             playbackView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            playbackView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -340,6 +362,12 @@ void MainWindow::closeEvent(
 {
     // Save window state
     writeSettings();
+
+    // Write scoring method settings
+    for (int i = PPC; i < smLast; ++i)
+    {
+        mScoringMethods[i]->writeSettings();
+    }
 
     // Okay to close
     event->accept();
@@ -787,7 +815,7 @@ void MainWindow::setMark(
         mMarkActive = false;
     }
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::setMark(
@@ -806,14 +834,14 @@ void MainWindow::setMark(
         mMarkActive = false;
     }
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::clearMark()
 {
     mMarkActive = false;
 
-    emit dataChanged();
+    emit cursorChanged();
 }
 
 void MainWindow::initRange()
@@ -1248,6 +1276,8 @@ void MainWindow::on_actionImportVideo_triggered()
         // Set up notifications for video view
         connect(this, SIGNAL(dataChanged()),
                 videoView, SLOT(updateView()));
+        connect(this, SIGNAL(cursorChanged()),
+                videoView, SLOT(updateView()));
 
         // Associate view with this file
         videoView->setMedia(fileName);
@@ -1573,7 +1603,7 @@ void MainWindow::setMinDrag(
 {
     m_minDrag = minDrag;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setMaxLift(
@@ -1581,7 +1611,7 @@ void MainWindow::setMaxLift(
 {
     m_maxLift = maxLift;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setMaxLD(
@@ -1589,7 +1619,7 @@ void MainWindow::setMaxLD(
 {
     m_maxLD = maxLD;
 
-    emit dataChanged();
+    emit aeroChanged();
 }
 
 void MainWindow::setWindowMode(
@@ -1681,10 +1711,40 @@ void MainWindow::prepareDataPlot(
     }
 }
 
+void MainWindow::prepareMapView(
+        MapView *view)
+{
+    if (mScoringView->isVisible())
+    {
+        mScoringMethods[mScoringMode]->prepareMapView(view);
+    }
+}
+
+bool MainWindow::updateReference(
+        double lat,
+        double lon)
+{
+    if (mScoringView->isVisible())
+    {
+        return mScoringMethods[mScoringMode]->updateReference(lat, lon);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void MainWindow::closeReference()
+{
+    if (mScoringView->isVisible())
+    {
+        mScoringMethods[mScoringMode]->closeReference();
+    }
+}
+
 void MainWindow::setOptimal(
         const QVector< DataPoint > &result)
 {
     m_optimal = result;
     emit dataChanged();
-
 }

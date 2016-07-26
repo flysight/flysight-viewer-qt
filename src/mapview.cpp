@@ -1,5 +1,6 @@
 #include "mapview.h"
 
+#include <QVector>
 #include <QWebFrame>
 #include <QWebElement>
 
@@ -8,7 +9,8 @@
 
 MapView::MapView(QWidget *parent) :
     QWebView(parent),
-    mMainWindow(0)
+    mMainWindow(0),
+    mDragging(false)
 {
     setUrl(QUrl("qrc:/html/mapview.html"));
 }
@@ -19,7 +21,104 @@ QSize MapView::sizeHint() const
     return QSize(175, 175);
 }
 
+void MapView::mousePressEvent(
+        QMouseEvent *event)
+{
+    if (updateReference(event))
+    {
+        mMainWindow->clearMark();
+        mDragging = true;
+    }
+    else
+    {
+        QWebView::mousePressEvent(event);
+    }
+}
+
+void MapView::mouseReleaseEvent(
+        QMouseEvent *event)
+{
+    if (mDragging)
+    {
+        mMainWindow->closeReference();
+        mDragging = false;
+    }
+    else
+    {
+        QWebView::mouseReleaseEvent(event);
+    }
+}
+
 void MapView::mouseMoveEvent(
+        QMouseEvent *event)
+{
+    if (mDragging)
+    {
+        updateReference(event);
+    }
+    else
+    {
+        // Get map view bounds
+        QString js = QString("var bounds = map.getBounds();") +
+                     QString("var ne = bounds.getNorthEast();") +
+                     QString("var sw = bounds.getSouthWest();");
+
+        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+
+        const double latMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lat();").toDouble();
+        const double latMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lat();").toDouble();
+        const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lng();").toDouble();
+        const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lng();").toDouble();
+
+        double lower = mMainWindow->rangeLower();
+        double upper = mMainWindow->rangeUpper();
+
+        double resultTime;
+        double resultDistance = std::numeric_limits<double>::max();
+
+        for (int i = 0; i + 1 < mMainWindow->dataSize(); ++i)
+        {
+            const DataPoint &dp1 = mMainWindow->dataPoint(i);
+            const DataPoint &dp2 = mMainWindow->dataPoint(i + 1);
+
+            if (lower <= dp1.t && dp1.t <= upper &&
+                lower <= dp2.t && dp2.t <= upper)
+            {
+                QPointF pt1 = QPointF(width() * (dp1.lon - lonMin) / (lonMax - lonMin),
+                                      height() * (latMax - dp1.lat) / (latMax - latMin));
+                QPointF pt2 = QPointF(width() * (dp2.lon - lonMin) / (lonMax - lonMin),
+                                      height() * (latMax - dp2.lat) / (latMax - latMin));
+
+                double mu;
+                double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
+
+                if (dist < resultDistance)
+                {
+                    double t1 = dp1.t;
+                    double t2 = dp2.t;
+
+                    resultTime = t1 + mu * (t2 - t1);
+                    resultDistance = dist;
+                }
+            }
+        }
+
+        const int selectionTolerance = 8;
+        if (resultDistance < selectionTolerance)
+        {
+            mMainWindow->setMark(resultTime);
+        }
+        else
+        {
+            mMainWindow->clearMark();
+        }
+
+        // Call base class
+        QWebView::mouseMoveEvent(event);
+    }
+}
+
+bool MapView::updateReference(
         QMouseEvent *event)
 {
     // Get map view bounds
@@ -34,51 +133,14 @@ void MapView::mouseMoveEvent(
     const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lng();").toDouble();
     const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lng();").toDouble();
 
-    double lower = mMainWindow->rangeLower();
-    double upper = mMainWindow->rangeUpper();
+    // Get click position
+    QPoint endPos = event->pos();
 
-    double resultTime;
-    double resultDistance = std::numeric_limits<double>::max();
+    const double lat = latMax - (double) endPos.y() / height() * (latMax - latMin);
+    const double lon = lonMin + (double) endPos.x() / width() * (lonMax - lonMin);
 
-    for (int i = 0; i + 1 < mMainWindow->dataSize(); ++i)
-    {
-        const DataPoint &dp1 = mMainWindow->dataPoint(i);
-        const DataPoint &dp2 = mMainWindow->dataPoint(i + 1);
-
-        if (lower <= dp1.t && dp1.t <= upper &&
-            lower <= dp2.t && dp2.t <= upper)
-        {
-            QPointF pt1 = QPointF(width() * (dp1.lon - lonMin) / (lonMax - lonMin),
-                                  height() * (latMax - dp1.lat) / (latMax - latMin));
-            QPointF pt2 = QPointF(width() * (dp2.lon - lonMin) / (lonMax - lonMin),
-                                  height() * (latMax - dp2.lat) / (latMax - latMin));
-
-            double mu;
-            double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
-
-            if (dist < resultDistance)
-            {
-                double t1 = dp1.t;
-                double t2 = dp2.t;
-
-                resultTime = t1 + mu * (t2 - t1);
-                resultDistance = dist;
-            }
-        }
-    }
-
-    const int selectionTolerance = 8;
-    if (resultDistance < selectionTolerance)
-    {
-        mMainWindow->setMark(resultTime);
-    }
-    else
-    {
-        mMainWindow->clearMark();
-    }
-
-    // Call base class
-    QWebView::mouseMoveEvent(event);
+    // Pass to main window
+    return mMainWindow->updateReference(lat, lon);
 }
 
 void MapView::initView()
@@ -181,4 +243,22 @@ void MapView::updateView()
 
         page()->currentFrame()->documentElement().evaluateJavaScript(js);
     }
+
+    // Remove reference line from map
+    js  = QString("var path2 = wo.getPath();") +
+          QString("while (path2.length > 0) { path2.pop(); }");
+
+    js += QString("var path3 = woBounds.getPath();") +
+          QString("while (path3.length > 0) { path3.pop(); }");
+
+    js += QString("var path4 = woFinish.getPath();") +
+          QString("while (path4.length > 0) { path4.pop(); }");
+
+    js += QString("var path5 = woFinish2.getPath();") +
+          QString("while (path5.length > 0) { path5.pop(); }");
+
+    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+
+    // Draw annotations on map
+    mMainWindow->prepareMapView(this);
 }

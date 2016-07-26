@@ -10,6 +10,7 @@
 
 class DataPlot;
 class MainWindow;
+class MapView;
 
 typedef QPair< double, Genome > Score;
 typedef QVector< Score > GenePool;
@@ -29,8 +30,15 @@ public:
     virtual QString scoreAsText(double score) { return QString(); }
 
     virtual void prepareDataPlot(DataPlot *plot) {}
+    virtual void prepareMapView(MapView *view) {}
+
+    virtual bool updateReference(double lat, double lon) {}
+    virtual void closeReference() {}
 
     virtual void optimize() {}
+
+    virtual void readSettings() {}
+    virtual void writeSettings() {}
 
 protected:
     void optimize(MainWindow *mainWindow, double windowBottom);
@@ -39,7 +47,7 @@ private:
     const Genome &selectGenome(const GenePool &genePool, const int tournamentSize);
 
 signals:
-    void dataChanged();
+    void scoringChanged();
 
 public slots:
 };

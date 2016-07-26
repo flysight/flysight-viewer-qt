@@ -16,10 +16,15 @@ public:
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
 protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
 private:
     MainWindow *mMainWindow;
+    bool        mDragging;
+
+    bool updateReference(QMouseEvent *event);
 
 public slots:
     void initView();

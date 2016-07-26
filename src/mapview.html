@@ -25,6 +25,32 @@
 
                 map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 
+                var woOptions = {
+                    strokeColor: '#0000FF',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2
+                };
+
+                wo = new google.maps.Polyline(woOptions);
+                wo.setMap(map);
+
+                woFinish = new google.maps.Polyline(woOptions);
+                woFinish.setMap(map);
+
+                woFinish2 = new google.maps.Polyline(woOptions);
+                woFinish2.setMap(map);
+
+                var woBoundsOptions = {
+                    strokeColor: '#0000FF',
+                    strokeOpacity: 0.0,
+                    strokeWeight: 2,
+                    fillColor: '#0000FF',
+                    fillOpacity: 0.2
+                };
+
+                woBounds = new google.maps.Polygon(woBoundsOptions);
+                woBounds.setMap(map);
+
                 var polyOptions = {
                     strokeColor: '#FF0000',
                     strokeOpacity: 1.0,

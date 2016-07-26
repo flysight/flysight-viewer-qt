@@ -526,8 +526,6 @@ void DataPlot::updateYRanges()
                         yValue(j)->useMaximum() ? yValue(j)->maximum() * factor : yMax);
         }
     }
-
-    replot();
 }
 
 void DataPlot::updatePlot()
@@ -543,6 +541,8 @@ void DataPlot::updatePlot()
 
     clearPlottables();
     clearItems();
+
+    m_cursors.clear();
 
     // Remove all axes
     while (axisRect()->axisCount(QCPAxis::atLeft) > 0)
@@ -600,34 +600,6 @@ void DataPlot::updatePlot()
         }
     }
 
-    // Draw mark
-    if (mMainWindow->markActive())
-    {
-        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
-
-        QVector< double > xMark, yMark;
-
-        xMark.append(xValue()->value(dpEnd, mMainWindow->units()));
-
-        int k = 0;
-        for (int j = 0; j < yaLast; ++j)
-        {
-            if (!yValue(j)->visible()) continue;
-
-            yMark.clear();
-            yMark.append(yValue(j)->value(dpEnd, mMainWindow->units()));
-
-            QCPGraph *graph = addGraph(
-                        xAxis,
-                        axisRect()->axis(QCPAxis::atLeft, k++));
-
-            graph->setData(xMark, yMark);
-            graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
-            graph->setLineStyle(QCPGraph::lsNone);
-            graph->setScatterStyle(QCPScatterStyle::ssDisc);
-        }
-    }
-
     // Set x-axis range
     if (mMainWindow->dataSize() > 0)
     {
@@ -655,6 +627,47 @@ void DataPlot::updatePlot()
     }
 
     updateYRanges();
+
+    updateCursor();
+}
+
+void DataPlot::updateCursor()
+{
+    for (int i = 0; i < m_cursors.size(); ++i)
+    {
+        removeGraph(m_cursors[i]);
+    }
+
+    m_cursors.clear();
+
+    // Draw mark
+    if (mMainWindow->markActive())
+    {
+        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
+
+        QVector< double > xMark, yMark;
+        xMark.append(xValue()->value(dpEnd, mMainWindow->units()));
+
+        for (int j = 0; j < yaLast; ++j)
+        {
+            if (!yValue(j)->visible()) continue;
+
+            yMark.clear();
+            yMark.append(yValue(j)->value(dpEnd, mMainWindow->units()));
+
+            QCPAxis *axis = yValue(j)->axis();
+            QCPGraph *graph = addGraph(xAxis, axis);
+
+            graph->setData(xMark, yMark);
+            graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPScatterStyle::ssDisc);
+
+            m_cursors.push_back(graph);
+        }
+    }
+
+    replot();
 }
 
 DataPoint DataPlot::interpolateDataX(

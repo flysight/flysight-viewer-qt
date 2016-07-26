@@ -10,6 +10,7 @@
 #include "datapoint.h"
 #include "dataview.h"
 
+class MapView;
 class QCPRange;
 class QCustomPlot;
 class ScoringMethod;
@@ -37,7 +38,7 @@ public:
     } OptimizationMode;
 
     typedef enum {
-        PPC, Speed, Performance, smLast
+        PPC, Speed, Performance, WideOpenSpeed, WideOpenDistance, smLast
     } ScoringMode;
 
     typedef enum {
@@ -124,6 +125,10 @@ public:
     bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
     void prepareDataPlot(DataPlot *plot);
+    void prepareMapView(MapView *plot);
+
+    bool updateReference(double lat, double lon);
+    void closeReference();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -258,6 +263,8 @@ private:
 signals:
     void dataLoaded();
     void dataChanged();
+    void cursorChanged();
+    void aeroChanged();
     void rotationChanged(double rotation);
 
 private slots:

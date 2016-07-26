@@ -17,7 +17,7 @@ void PPCScoring::setMode(
         Mode mode)
 {
     mMode = mode;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void PPCScoring::setWindow(
@@ -26,7 +26,7 @@ void PPCScoring::setWindow(
 {
     mWindowBottom = windowBottom;
     mWindowTop = windowTop;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 double PPCScoring::score(

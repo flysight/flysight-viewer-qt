@@ -2,4 +2,7 @@
     <qresource prefix="/html">
         <file>mapview.html</file>
     </qresource>
+    <qresource prefix="/">
+        <file>../images/globe.png</file>
+    </qresource>
 </RCC>

@@ -18,7 +18,7 @@ void PerformanceScoring::setRange(
 {
     mStartTime = startTime;
     mEndTime = endTime;
-    emit dataChanged();
+    emit scoringChanged();
 }
 
 void PerformanceScoring::prepareDataPlot(

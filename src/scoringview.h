@@ -13,6 +13,8 @@ class MainWindow;
 class PerformanceForm;
 class PPCForm;
 class SpeedForm;
+class WideOpenDistanceForm;
+class WideOpenSpeedForm;
 
 class ScoringView : public QWidget
 {
@@ -25,11 +27,13 @@ public:
     void setMainWindow(MainWindow *mainWindow);
 
 private:
-    Ui::ScoringView *ui;
-    MainWindow      *mMainWindow;
-    PPCForm         *mPPCForm;
-    SpeedForm       *mSpeedForm;
-    PerformanceForm *mPerformanceForm;
+    Ui::ScoringView      *ui;
+    MainWindow           *mMainWindow;
+    PPCForm              *mPPCForm;
+    SpeedForm            *mSpeedForm;
+    PerformanceForm      *mPerformanceForm;
+    WideOpenSpeedForm    *mWideOpenSpeedForm;
+    WideOpenDistanceForm *mWideOpenDistanceForm;
 
 public slots:
     void updateView();
