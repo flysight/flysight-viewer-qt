@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QTextStream>
+#include <QThread>
 
 #include <math.h>
 
@@ -18,6 +19,7 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "importworker.h"
 #include "liftdragplot.h"
 #include "mapview.h"
 #include "orthoview.h"
@@ -121,6 +123,18 @@ MainWindow::MainWindow(
 
     // Redraw plots
     emit dataChanged();
+
+    // Create interprocess import worker
+    QThread *thread = new QThread;
+    ImportWorker *worker = new ImportWorker;
+    worker->moveToThread(thread);
+
+    // Attach interprocess import worker
+    connect(thread, SIGNAL(started()), worker, SLOT(process()));
+    connect(worker, SIGNAL(importFile(QString)), this, SLOT(importFile(QString)));
+
+    // Start worker thread
+    thread->start();
 }
 
 MainWindow::~MainWindow()
