@@ -436,10 +436,18 @@ void MainWindow::on_actionImport_triggered()
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    // Get last file read
-    QString rootFolder = settings.value("folder").toString();
+    // Get file to import
+    importFile(QFileDialog::getOpenFileName(this,
+                                            tr("Import Track"),
+                                            settings.value("folder").toString(),
+                                            tr("CSV Files (*.csv)")));
+}
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Import Track"), rootFolder, tr("CSV Files (*.csv)"));
+void MainWindow::importFile(
+        QString fileName)
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))

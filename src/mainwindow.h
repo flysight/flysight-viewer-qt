@@ -130,6 +130,8 @@ public:
     bool updateReference(double lat, double lon);
     void closeReference();
 
+    void importFile(QString fileName);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
