@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
 
@@ -235,6 +236,7 @@ private:
     double                mFixedReference;
 
     QString               mDatabasePath;
+    QSqlDatabase          mDatabase;
 
     void writeSettings();
     void readSettings();

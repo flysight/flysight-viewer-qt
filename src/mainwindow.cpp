@@ -9,7 +9,6 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
-#include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QStandardPaths>
 #include <QTextStream>
@@ -203,9 +202,9 @@ void MainWindow::initDatabase()
     QString path = QDir(mDatabasePath).filePath("FlySight/FlySight.db");
     QDir(mDatabasePath).mkdir("FlySight");
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(path);
-    db.open();
+    mDatabase = QSqlDatabase::addDatabase("QSQLITE");
+    mDatabase.setDatabaseName(path);
+    mDatabase.open();
 
     QSqlQuery query;
     query.exec("create table jump "
