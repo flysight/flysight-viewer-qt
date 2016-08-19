@@ -78,7 +78,8 @@ SOURCES += main.cpp \
     wideopendistancescoring.cpp \
     wideopenspeedscoring.cpp \
     geographicutil.cpp \
-    importworker.cpp
+    importworker.cpp \
+    logbookview.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -109,7 +110,8 @@ HEADERS  += mainwindow.h \
     wideopendistancescoring.h \
     wideopenspeedscoring.h \
     geographicutil.h \
-    importworker.h
+    importworker.h \
+    logbookview.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
@@ -120,7 +122,8 @@ FORMS    += mainwindow.ui \
     speedform.ui \
     performanceform.ui \
     wideopenspeedform.ui \
-    wideopendistanceform.ui
+    wideopendistanceform.ui \
+    logbookview.ui
 
 win32 {
     RC_ICONS = FlySightViewer.ico

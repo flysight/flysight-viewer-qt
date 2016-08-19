@@ -129,6 +129,8 @@
     <addaction name="actionShowLiftDragView"/>
     <addaction name="separator"/>
     <addaction name="actionShowPlaybackView"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowLogbookView"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
@@ -656,6 +658,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+Backspace</string>
+   </property>
+  </action>
+  <action name="actionShowLogbookView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Logbook</string>
+   </property>
+   <property name="toolTip">
+    <string>Logbook</string>
    </property>
   </action>
  </widget>

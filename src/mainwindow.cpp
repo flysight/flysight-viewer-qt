@@ -23,6 +23,7 @@
 #include "dataview.h"
 #include "importworker.h"
 #include "liftdragplot.h"
+#include "logbookview.h"
 #include "mapview.h"
 #include "orthoview.h"
 #include "performancescoring.h"
@@ -115,6 +116,9 @@ MainWindow::MainWindow(
 
     // Initialize playback controls
     initPlaybackView();
+
+    // Initialize logbook view
+    initLogbookView();
 
     // Restore window state
     QSettings settings("FlySight", "Viewer");
@@ -393,6 +397,23 @@ void MainWindow::initPlaybackView()
             playbackView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             playbackView, SLOT(updateView()));
+}
+
+void MainWindow::initLogbookView()
+{
+    LogbookView *logbookView = new LogbookView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Logbook View"));
+    dockWidget->setWidget(logbookView);
+    dockWidget->setObjectName("logbookView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    logbookView->setMainWindow(this);
+
+    connect(m_ui->actionShowLogbookView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLogbookView, SLOT(setChecked(bool)));
 }
 
 void MainWindow::closeEvent(
