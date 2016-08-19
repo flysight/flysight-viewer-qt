@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport webkitwidgets
+QT       += core gui printsupport webkitwidgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

@@ -234,8 +234,12 @@ private:
     GroundReference       mGroundReference;
     double                mFixedReference;
 
+    QString               mDatabasePath;
+
     void writeSettings();
     void readSettings();
+
+    void initDatabase();
 
     void initPlot();
     void initViews();

@@ -9,6 +9,9 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QStandardPaths>
 #include <QTextStream>
 #include <QThread>
 
@@ -89,6 +92,9 @@ MainWindow::MainWindow(
     // Read settings
     readSettings();
 
+    // Initialize databse
+    initDatabase();
+
     // Intitialize plot area
     initPlot();
 
@@ -163,6 +169,7 @@ void MainWindow::writeSettings()
         settings.setValue("scoringMode", mScoringMode);
         settings.setValue("groundReference", mGroundReference);
         settings.setValue("fixedReference", mFixedReference);
+        settings.setValue("databasePath", mDatabasePath);
     settings.endGroup();
 }
 
@@ -185,7 +192,25 @@ void MainWindow::readSettings()
         mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
     	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
 	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        mDatabasePath = settings.value("databasePath",
+                                       QStandardPaths::writableLocation(
+                                           QStandardPaths::DocumentsLocation)).toString();
     settings.endGroup();
+}
+
+void MainWindow::initDatabase()
+{
+    QString path = QDir(mDatabasePath).filePath("FlySight/FlySight.db");
+    QDir(mDatabasePath).mkdir("FlySight");
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
+    db.open();
+
+    QSqlQuery query;
+    query.exec("create table jump "
+               "(id integer primary key, "
+               "filename text)");
 }
 
 void MainWindow::initPlot()
