@@ -221,7 +221,9 @@ void MainWindow::initDatabase()
     QSqlQuery query(mDatabase);
     query.exec("create table jump "
                "(id integer primary key, "
-               "filename text)");
+               "filename text, "
+               "start_time text, "
+               "end_time text)");
 
     query.exec("delete * from jump");
 
@@ -600,6 +602,8 @@ void MainWindow::importFile(
 
     QCryptographicHash hash(QCryptographicHash::Md5);
 
+    QDateTime start, end;
+
     while (!in.atEnd())
     {
         QString line = in.readLine();
@@ -610,6 +614,9 @@ void MainWindow::importFile(
         DataPoint pt;
 
         pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
+
+        if (!start.isValid()) start = pt.dateTime;
+        end = pt.dateTime;
 
         pt.hasGeodetic = true;
 
@@ -633,23 +640,29 @@ void MainWindow::importFile(
     // Close the file so we can rename it
     file.close();
 
-    QString uniqueName = QString(hash.result().toHex());
-    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
-    QString newPath = QDir(mDatabasePath).filePath(newName);
-
-    if (!QFile(newPath).exists())
+    if (!m_data.isEmpty())
     {
-        QFile::rename(localPath, newPath);
+        QString uniqueName = QString(hash.result().toHex());
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
 
-        QSqlQuery query(mDatabase);
-        query.exec(QString("insert into jump "
-                           "(filename) "
-                           "values "
-                           "('%1')").arg(uniqueName));
-    }
-    else
-    {
-        QFile::remove(localPath);
+        if (!QFile(newPath).exists())
+        {
+            QFile::rename(localPath, newPath);
+
+            QSqlQuery query(mDatabase);
+            query.exec(QString("insert into jump "
+                               "(filename, start_time, end_time) "
+                               "values "
+                               "('%1', '%2', '%3')")
+                       .arg(uniqueName)
+                       .arg(start.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                       .arg(end.toString("yyyy-MM-dd HH:mm:ss.zzz")));
+        }
+        else
+        {
+            QFile::remove(localPath);
+        }
     }
 
     // Initialize time
