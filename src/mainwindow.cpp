@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QCryptographicHash>
 #include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
@@ -532,7 +533,7 @@ void MainWindow::importFile(
 {
     // Copy to local database
     QDir(mDatabasePath).mkpath("FlySight/Tracks");
-    QString localPath = QDir(mDatabasePath).filePath("FlySight/Tracks/import.csv");
+    QString localPath = QDir(mDatabasePath).filePath("FlySight/Tracks/temp.csv");
     QFile::copy(fileName, localPath);
 
     // Initialize settings object
@@ -597,15 +598,14 @@ void MainWindow::importFile(
 
     m_data.clear();
 
-    QString uniqueName;
+    QCryptographicHash hash(QCryptographicHash::Md5);
 
     while (!in.atEnd())
     {
         QString line = in.readLine();
         QStringList cols = line.split(",");
 
-        if (uniqueName.isEmpty())
-            uniqueName = cols[colMap[Time]] + ".csv";
+        hash.addData(line.toUtf8());
 
         DataPoint pt;
 
@@ -633,10 +633,12 @@ void MainWindow::importFile(
     // Close the file so we can rename it
     file.close();
 
-    if (!uniqueName.isEmpty())
+    QString uniqueName = QString(hash.result().toHex());
+    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+    QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    if (!QFile(newPath).exists())
     {
-        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
-        QString newPath = QDir(mDatabasePath).filePath(newName);
         QFile::rename(localPath, newPath);
 
         QSqlQuery query(mDatabase);
@@ -644,6 +646,10 @@ void MainWindow::importFile(
                            "(filename) "
                            "values "
                            "('%1')").arg(uniqueName));
+    }
+    else
+    {
+        QFile::remove(localPath);
     }
 
     // Initialize time
