@@ -9,6 +9,8 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
+#include <QSqlDatabase>
+#include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
 #include <QTextStream>
@@ -92,7 +94,7 @@ MainWindow::MainWindow(
     // Read settings
     readSettings();
 
-    // Initialize databse
+    // Initialize database
     initDatabase();
 
     // Intitialize plot area
@@ -206,14 +208,37 @@ void MainWindow::initDatabase()
     QString path = QDir(mDatabasePath).filePath("FlySight/FlySight.db");
     QDir(mDatabasePath).mkdir("FlySight");
 
-    mDatabase = QSqlDatabase::addDatabase("QSQLITE");
+    mDatabase = QSqlDatabase::addDatabase("QSQLITE", "flysight");
     mDatabase.setDatabaseName(path);
-    mDatabase.open();
 
-    QSqlQuery query;
+    if (!mDatabase.open())
+    {
+        QSqlError err = mDatabase.lastError();
+        QMessageBox::critical(0, tr("Failed to open database"), err.text());
+    }
+/*
+    QSqlQuery query(mDatabase);
     query.exec("create table jump "
                "(id integer primary key, "
                "filename text)");
+
+    query.exec("delete * from jump");
+
+    query.exec("insert into jump "
+               "(filename) "
+               "values "
+               "('File 1')");
+
+    query.exec("insert into jump "
+               "(filename) "
+               "values "
+               "('File 2')");
+
+    query.exec("insert into jump "
+               "(filename) "
+               "values "
+               "('File 3')");
+*/
 }
 
 void MainWindow::initPlot()
