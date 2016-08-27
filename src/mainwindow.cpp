@@ -205,8 +205,8 @@ void MainWindow::readSettings()
 
 void MainWindow::initDatabase()
 {
+    QDir(mDatabasePath).mkpath("FlySight");
     QString path = QDir(mDatabasePath).filePath("FlySight/FlySight.db");
-    QDir(mDatabasePath).mkdir("FlySight");
 
     mDatabase = QSqlDatabase::addDatabase("QSQLITE", "flysight");
     mDatabase.setDatabaseName(path);
@@ -530,10 +530,15 @@ void MainWindow::on_actionImport_triggered()
 void MainWindow::importFile(
         QString fileName)
 {
+    // Copy to local database
+    QDir(mDatabasePath).mkpath("FlySight/Tracks");
+    QString localPath = QDir(mDatabasePath).filePath("FlySight/Tracks/import.csv");
+    QFile::copy(fileName, localPath);
+
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    QFile file(fileName);
+    QFile file(localPath);
     if (!file.open(QIODevice::ReadOnly))
     {
         // TODO: Error message
@@ -592,10 +597,15 @@ void MainWindow::importFile(
 
     m_data.clear();
 
+    QString uniqueName;
+
     while (!in.atEnd())
     {
         QString line = in.readLine();
         QStringList cols = line.split(",");
+
+        if (uniqueName.isEmpty())
+            uniqueName = cols[colMap[Time]] + ".csv";
 
         DataPoint pt;
 
@@ -618,6 +628,22 @@ void MainWindow::importFile(
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
         m_data.append(pt);
+    }
+
+    // Close the file so we can rename it
+    file.close();
+
+    if (!uniqueName.isEmpty())
+    {
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
+        QFile::rename(localPath, newPath);
+
+        QSqlQuery query(mDatabase);
+        query.exec(QString("insert into jump "
+                           "(filename) "
+                           "values "
+                           "('%1')").arg(uniqueName));
     }
 
     // Initialize time
