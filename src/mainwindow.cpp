@@ -217,31 +217,8 @@ void MainWindow::initDatabase()
         QSqlError err = mDatabase.lastError();
         QMessageBox::critical(0, tr("Failed to open database"), err.text());
     }
-/*
-    QSqlQuery query(mDatabase);
-    query.exec("create table jump "
-               "(id integer primary key, "
-               "filename text, "
-               "start_time text, "
-               "end_time text)");
 
-    query.exec("delete * from jump");
-
-    query.exec("insert into jump "
-               "(filename) "
-               "values "
-               "('File 1')");
-
-    query.exec("insert into jump "
-               "(filename) "
-               "values "
-               "('File 2')");
-
-    query.exec("insert into jump "
-               "(filename) "
-               "values "
-               "('File 3')");
-*/
+/*  CREATE TABLE files (id integer primary key, file_name text, start_time text, duration integer, sample_period integer, start_lat integer, start_lon integer, import_time text) */
 }
 
 void MainWindow::initPlot()
@@ -602,8 +579,6 @@ void MainWindow::importFile(
 
     QCryptographicHash hash(QCryptographicHash::Md5);
 
-    QDateTime start, end;
-
     while (!in.atEnd())
     {
         QString line = in.readLine();
@@ -614,9 +589,6 @@ void MainWindow::importFile(
         DataPoint pt;
 
         pt.dateTime = QDateTime::fromString(cols[colMap[Time]], Qt::ISODate);
-
-        if (!start.isValid()) start = pt.dateTime;
-        end = pt.dateTime;
 
         pt.hasGeodetic = true;
 
@@ -650,14 +622,33 @@ void MainWindow::importFile(
         {
             QFile::rename(localPath, newPath);
 
+            QDateTime startTime = m_data.front().dateTime;
+            qint64 duration = startTime.msecsTo(m_data.back().dateTime);
+
+            QVector< qint64 > dt;
+            for (int i = 1; i < m_data.size(); ++i)
+            {
+                dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
+            }
+            qSort(dt);
+            qint64 samplePeriod = dt[dt.size() / 2];
+
+            int startLat = (int) (m_data.front().lat * 10000000);
+            int startLon = (int) (m_data.front().lon * 10000000);
+            QDateTime importTime = QDateTime::currentDateTime();
+
             QSqlQuery query(mDatabase);
-            query.exec(QString("insert into jump "
-                               "(filename, start_time, end_time) "
+            query.exec(QString("insert into files "
+                               "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
                                "values "
-                               "('%1', '%2', '%3')")
+                               "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
                        .arg(uniqueName)
-                       .arg(start.toString("yyyy-MM-dd HH:mm:ss.zzz"))
-                       .arg(end.toString("yyyy-MM-dd HH:mm:ss.zzz")));
+                       .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                       .arg(duration)
+                       .arg(samplePeriod)
+                       .arg(startLat)
+                       .arg(startLon)
+                       .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz")));
         }
         else
         {
