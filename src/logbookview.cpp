@@ -61,6 +61,8 @@ void LogbookView::updateView()
 
     ui->tableWidget->setColumnCount(query.record().count());
     ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnHidden(0, true);  // Hide ID column
+    ui->tableWidget->setColumnHidden(1, true);  // Hide file_name column
 
     for (int j = 0; j < query.record().count(); ++j)
     {
