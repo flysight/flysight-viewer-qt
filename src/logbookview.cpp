@@ -101,6 +101,7 @@ void LogbookView::updateView()
     ui->tableWidget->setRowCount(0);
 
     ui->tableWidget->setColumnWidth(0, ui->tableWidget->horizontalHeader()->minimumSectionSize());
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 
     ui->tableWidget->setColumnHidden(1, true);  // Hide id column
     ui->tableWidget->setColumnHidden(2, true);  // Hide file_name column
