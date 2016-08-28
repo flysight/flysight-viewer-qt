@@ -96,6 +96,8 @@ void LogbookView::updateView()
         QMessageBox::critical(0, tr("Query failed"), err.text());
     }
 
+    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+
     ui->tableWidget->setColumnCount(query.record().count());
     ui->tableWidget->setRowCount(0);
 
@@ -104,10 +106,15 @@ void LogbookView::updateView()
     ui->tableWidget->setColumnHidden(5, true);  // Hide start_lat column
     ui->tableWidget->setColumnHidden(6, true);  // Hide start_lon column
 
-    for (int j = 0; j < query.record().count(); ++j)
-    {
-        ui->tableWidget->setHorizontalHeaderItem(j, new QTableWidgetItem(query.record().field(j).name()));
-    }
+    ui->tableWidget->setHorizontalHeaderLabels(QStringList()
+                                               << tr("ID")
+                                               << tr("File Name")
+                                               << tr("Start Time")
+                                               << tr("Duration")
+                                               << tr("Sample Period")
+                                               << tr("Latitude")
+                                               << tr("Longitude")
+                                               << tr("Import Time"));
 
     int index = 0;
     while (query.next())
