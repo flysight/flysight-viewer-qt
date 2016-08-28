@@ -42,8 +42,7 @@ class DurationItem : public QTableWidgetItem
 {
 public:
     DurationItem(qint64 duration, int type = Type):
-        QTableWidgetItem(duration < 60000   ? QString("%1").arg(duration / 1000) :
-                         duration < 3600000 ? QString("%1:%2").arg(duration / 60000)
+        QTableWidgetItem(duration < 3600000 ? QString("%1:%2").arg(duration / 60000)
                                                               .arg((duration / 1000) % 60, 2, 10, QChar('0')) :
                                               QString("%1:%2:%3").arg(duration / 3600000)
                                                                  .arg((duration / 60000) % 60, 2, 10, QChar('0'))
