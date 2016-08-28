@@ -566,12 +566,13 @@ void MainWindow::importFile(
             QDateTime startTime = m_data.front().dateTime;
             qint64 duration = startTime.msecsTo(m_data.back().dateTime);
 
-            qint64 samplePeriod = std::numeric_limits< qint64 >::max();
+            QVector< double > dt;
             for (int i = 1; i < m_data.size(); ++i)
             {
-                qint64 dt = m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime);
-                if (dt < samplePeriod) samplePeriod = dt;
+                dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
             }
+            qSort(dt);
+            qint64 samplePeriod = dt[dt.size() / 2];
 
             int startLat = (int) (m_data.front().lat * 10000000);
             int startLon = (int) (m_data.front().lon * 10000000);
