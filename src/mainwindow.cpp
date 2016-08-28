@@ -519,34 +519,12 @@ void MainWindow::importFile(
 
     // Create temporary file
     QTemporaryFile temporaryFile;
-    if (temporaryFile.open())
-    {
-        QFile file(fileName);
-        if (file.open(QIODevice::ReadOnly))
-        {
-            // Copy to temporary file
-            temporaryFile.write(file.readAll());
-        }
-        else
-        {
-            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
-        }
-
-        file.close();
-        temporaryFile.close();
-
-        // Read file data
-        importTemporaryFile(temporaryFile.fileName());
-    }
-    else
+    if (!temporaryFile.open())
     {
         QMessageBox::critical(0, tr("Import failed"), tr("Couldn't create temporary file"));
+        return;
     }
-}
 
-void MainWindow::importTemporaryFile(
-        QString fileName)
-{
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -554,7 +532,76 @@ void MainWindow::importTemporaryFile(
         return;
     }
 
-    QTextStream in(&file);
+    // Copy to temporary file
+    temporaryFile.write(file.readAll());
+    file.close();
+
+    // Read file data
+    temporaryFile.seek(0);
+    import(&temporaryFile);
+
+    // Get hash
+    QCryptographicHash hash(QCryptographicHash::Md5);
+
+    temporaryFile.seek(0);
+    if (!hash.addData(&temporaryFile))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't generate hash"));
+        return;
+    }
+
+    // Get name of file in database
+    QString uniqueName = QString(hash.result().toHex());
+    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+    QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    // If the file is not already in the database
+    if (!QFile(newPath).exists())
+    {
+        if (file.copy(newPath))
+        {
+            QDateTime startTime = m_data.front().dateTime;
+            qint64 duration = startTime.msecsTo(m_data.back().dateTime);
+
+            qint64 samplePeriod = std::numeric_limits< qint64 >::max();
+            for (int i = 1; i < m_data.size(); ++i)
+            {
+                qint64 dt = m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime);
+                if (dt < samplePeriod) samplePeriod = dt;
+            }
+
+            int startLat = (int) (m_data.front().lat * 10000000);
+            int startLon = (int) (m_data.front().lon * 10000000);
+            QDateTime importTime = QDateTime::currentDateTime();
+
+            QSqlQuery query(mDatabase);
+            if (!query.exec(QString("insert into files "
+                                    "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
+                                    "values "
+                                    "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
+                            .arg(uniqueName)
+                            .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                            .arg(duration)
+                            .arg(samplePeriod)
+                            .arg(startLat)
+                            .arg(startLon)
+                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
+            {
+                QSqlError err = query.lastError();
+                QMessageBox::critical(0, tr("Query failed"), err.text());
+            }
+        }
+        else
+        {
+            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't copy temporary file"));
+        }
+    }
+}
+
+void MainWindow::import(
+        QIODevice *device)
+{
+    QTextStream in(device);
 
     // Column enumeration
     typedef enum {
@@ -654,64 +701,6 @@ void MainWindow::importTemporaryFile(
 
     // Initialize plot ranges
     initRange();
-
-    // Go to start of file
-    file.seek(0);
-
-    // Get hash
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    if (hash.addData(&file))
-    {
-        QString uniqueName = QString(hash.result().toHex());
-        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
-        QString newPath = QDir(mDatabasePath).filePath(newName);
-
-        if (!QFile(newPath).exists())
-        {
-            if (file.copy(newPath))
-            {
-                QDateTime startTime = m_data.front().dateTime;
-                qint64 duration = startTime.msecsTo(m_data.back().dateTime);
-
-                QVector< qint64 > dt;
-                for (int i = 1; i < m_data.size(); ++i)
-                {
-                    dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
-                }
-                qSort(dt);
-                qint64 samplePeriod = dt[dt.size() / 2];
-
-                int startLat = (int) (m_data.front().lat * 10000000);
-                int startLon = (int) (m_data.front().lon * 10000000);
-                QDateTime importTime = QDateTime::currentDateTime();
-
-                QSqlQuery query(mDatabase);
-                if (!query.exec(QString("insert into files "
-                                        "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
-                                        "values "
-                                        "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
-                                .arg(uniqueName)
-                                .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
-                                .arg(duration)
-                                .arg(samplePeriod)
-                                .arg(startLat)
-                                .arg(startLon)
-                                .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
-                {
-                    QSqlError err = query.lastError();
-                    QMessageBox::critical(0, tr("Query failed"), err.text());
-                }
-            }
-            else
-            {
-                QMessageBox::critical(0, tr("Import failed"), tr("Couldn't copy temporary file"));
-            }
-        }
-    }
-    else
-    {
-        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't generate hash"));
-    }
 
     emit dataLoaded();
 }

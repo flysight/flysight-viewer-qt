@@ -256,7 +256,7 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    void importTemporaryFile(QString fileName);
+    void import(QIODevice *device);
     void initAltitude();
     void updateVelocity();
     void initAerodynamics();
