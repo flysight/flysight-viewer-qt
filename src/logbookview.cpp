@@ -48,6 +48,8 @@ void LogbookView::setMainWindow(
 
 void LogbookView::updateView()
 {
+    ui->tableWidget->setSortingEnabled(false);
+
     QSqlDatabase db = QSqlDatabase::database("flysight");
     QSqlQuery query(db);
 
@@ -83,6 +85,8 @@ void LogbookView::updateView()
         }
         ++index;
     }
+
+    ui->tableWidget->setSortingEnabled(true);
 }
 
 void LogbookView::onDoubleClick(
