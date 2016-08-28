@@ -14,6 +14,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
+#include <QTemporaryFile>
 #include <QTextStream>
 #include <QThread>
 
@@ -510,23 +511,48 @@ void MainWindow::on_actionImport_triggered()
 void MainWindow::importFile(
         QString fileName)
 {
-    // Copy to local database
-    QDir(mDatabasePath).mkpath("FlySight/Tracks");
-    QString localPath = QDir(mDatabasePath).filePath("FlySight/Tracks/temp.csv");
-    QFile::copy(fileName, localPath);
-
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    QFile file(localPath);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        // TODO: Error message
-        return;
-    }
-
     // Remember last file read
     settings.setValue("folder", QFileInfo(fileName).absoluteFilePath());
+
+    // Create temporary file
+    QTemporaryFile temporaryFile;
+    if (temporaryFile.open())
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly))
+        {
+            // Copy to temporary file
+            temporaryFile.write(file.readAll());
+        }
+        else
+        {
+            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+        }
+
+        file.close();
+        temporaryFile.close();
+
+        // Read file data
+        importTemporaryFile(temporaryFile.fileName());
+    }
+    else
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't create temporary file"));
+    }
+}
+
+void MainWindow::importTemporaryFile(
+        QString fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+        return;
+    }
 
     QTextStream in(&file);
 
@@ -577,14 +603,10 @@ void MainWindow::importFile(
 
     m_data.clear();
 
-    QCryptographicHash hash(QCryptographicHash::Md5);
-
     while (!in.atEnd())
     {
         QString line = in.readLine();
         QStringList cols = line.split(",");
-
-        hash.addData(line.toUtf8());
 
         DataPoint pt;
 
@@ -609,53 +631,6 @@ void MainWindow::importFile(
         m_data.append(pt);
     }
 
-    // Close the file so we can rename it
-    file.close();
-
-    if (!m_data.isEmpty())
-    {
-        QString uniqueName = QString(hash.result().toHex());
-        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
-        QString newPath = QDir(mDatabasePath).filePath(newName);
-
-        if (!QFile(newPath).exists())
-        {
-            QFile::rename(localPath, newPath);
-
-            QDateTime startTime = m_data.front().dateTime;
-            qint64 duration = startTime.msecsTo(m_data.back().dateTime);
-
-            QVector< qint64 > dt;
-            for (int i = 1; i < m_data.size(); ++i)
-            {
-                dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
-            }
-            qSort(dt);
-            qint64 samplePeriod = dt[dt.size() / 2];
-
-            int startLat = (int) (m_data.front().lat * 10000000);
-            int startLon = (int) (m_data.front().lon * 10000000);
-            QDateTime importTime = QDateTime::currentDateTime();
-
-            QSqlQuery query(mDatabase);
-            query.exec(QString("insert into files "
-                               "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
-                               "values "
-                               "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
-                       .arg(uniqueName)
-                       .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
-                       .arg(duration)
-                       .arg(samplePeriod)
-                       .arg(startLat)
-                       .arg(startLon)
-                       .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz")));
-        }
-        else
-        {
-            QFile::remove(localPath);
-        }
-    }
-
     // Initialize time
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -677,7 +652,66 @@ void MainWindow::importFile(
     // Clear optimum
     m_optimal.clear();
 
+    // Initialize plot ranges
     initRange();
+
+    // Go to start of file
+    file.seek(0);
+
+    // Get hash
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    if (hash.addData(&file))
+    {
+        QString uniqueName = QString(hash.result().toHex());
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
+
+        if (!QFile(newPath).exists())
+        {
+            if (file.copy(newPath))
+            {
+                QDateTime startTime = m_data.front().dateTime;
+                qint64 duration = startTime.msecsTo(m_data.back().dateTime);
+
+                QVector< qint64 > dt;
+                for (int i = 1; i < m_data.size(); ++i)
+                {
+                    dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
+                }
+                qSort(dt);
+                qint64 samplePeriod = dt[dt.size() / 2];
+
+                int startLat = (int) (m_data.front().lat * 10000000);
+                int startLon = (int) (m_data.front().lon * 10000000);
+                QDateTime importTime = QDateTime::currentDateTime();
+
+                QSqlQuery query(mDatabase);
+                if (!query.exec(QString("insert into files "
+                                        "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
+                                        "values "
+                                        "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
+                                .arg(uniqueName)
+                                .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                                .arg(duration)
+                                .arg(samplePeriod)
+                                .arg(startLat)
+                                .arg(startLon)
+                                .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
+                {
+                    QSqlError err = query.lastError();
+                    QMessageBox::critical(0, tr("Query failed"), err.text());
+                }
+            }
+            else
+            {
+                QMessageBox::critical(0, tr("Import failed"), tr("Couldn't copy temporary file"));
+            }
+        }
+    }
+    else
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't generate hash"));
+    }
 
     emit dataLoaded();
 }
