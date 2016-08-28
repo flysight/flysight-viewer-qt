@@ -420,6 +420,9 @@ void MainWindow::initLogbookView()
             dockWidget, SLOT(setVisible(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowLogbookView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(databaseChanged()),
+            logbookView, SLOT(updateView()));
 }
 
 void MainWindow::closeEvent(
@@ -590,6 +593,8 @@ void MainWindow::importFile(
                 QSqlError err = query.lastError();
                 QMessageBox::critical(0, tr("Query failed"), err.text());
             }
+
+            emit databaseChanged();
         }
         else
         {

@@ -22,6 +22,9 @@ public:
 private:
     Ui::LogbookView *ui;
     MainWindow      *mMainWindow;
+
+public slots:
+    void updateView();
 };
 
 #endif // LOGBOOKVIEW_H

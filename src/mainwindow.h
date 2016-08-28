@@ -274,6 +274,7 @@ signals:
     void cursorChanged();
     void aeroChanged();
     void rotationChanged(double rotation);
+    void databaseChanged();
 
 public slots:
     void importFile(QString fileName);
