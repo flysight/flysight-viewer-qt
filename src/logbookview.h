@@ -25,6 +25,9 @@ private:
 
 public slots:
     void updateView();
+
+private slots:
+    void onDoubleClick(int row, int column);
 };
 
 #endif // LOGBOOKVIEW_H

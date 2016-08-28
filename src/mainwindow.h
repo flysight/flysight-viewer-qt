@@ -131,6 +131,8 @@ public:
     bool updateReference(double lat, double lon);
     void closeReference();
 
+    void importFromDatabase(const QString &uniqueName);
+
 protected:
     void closeEvent(QCloseEvent *event);
 

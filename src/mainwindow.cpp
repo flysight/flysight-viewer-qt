@@ -603,6 +603,24 @@ void MainWindow::importFile(
     }
 }
 
+void MainWindow::importFromDatabase(
+        const QString &uniqueName)
+{
+    // Get name of file in database
+    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+    QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    QFile file(newPath);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+        return;
+    }
+
+    // Read file data
+    import(&file);
+}
+
 void MainWindow::import(
         QIODevice *device)
 {

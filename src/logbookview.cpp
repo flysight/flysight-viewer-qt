@@ -28,7 +28,11 @@ LogbookView::LogbookView(QWidget *parent) :
     mMainWindow(0)
 {
     ui->setupUi(this);
+
     updateView();
+
+    connect(ui->tableWidget, SIGNAL(cellDoubleClicked(int,int)),
+            this, SLOT(onDoubleClick(int,int)));
 }
 
 LogbookView::~LogbookView()
@@ -79,4 +83,13 @@ void LogbookView::updateView()
         }
         ++index;
     }
+}
+
+void LogbookView::onDoubleClick(
+        int row,
+        int column)
+{
+    Q_UNUSED(column);
+
+    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 0)->text());
 }
