@@ -97,15 +97,18 @@ void LogbookView::updateView()
 
     ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
 
-    ui->tableWidget->setColumnCount(query.record().count());
+    ui->tableWidget->setColumnCount(query.record().count() + 1);
     ui->tableWidget->setRowCount(0);
 
-    ui->tableWidget->setColumnHidden(0, true);  // Hide id column
-    ui->tableWidget->setColumnHidden(1, true);  // Hide file_name column
-    ui->tableWidget->setColumnHidden(5, true);  // Hide start_lat column
-    ui->tableWidget->setColumnHidden(6, true);  // Hide start_lon column
+    ui->tableWidget->setColumnWidth(0, ui->tableWidget->horizontalHeader()->minimumSectionSize());
+
+    ui->tableWidget->setColumnHidden(1, true);  // Hide id column
+    ui->tableWidget->setColumnHidden(2, true);  // Hide file_name column
+    ui->tableWidget->setColumnHidden(6, true);  // Hide start_lat column
+    ui->tableWidget->setColumnHidden(7, true);  // Hide start_lon column
 
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
+                                               << tr("")
                                                << tr("ID")
                                                << tr("File Name")
                                                << tr("Start Time")
@@ -124,14 +127,21 @@ void LogbookView::updateView()
         QDateTime importTime = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
         qint64 duration = query.value(3).toString().toLongLong();
 
-        ui->tableWidget->setItem(index, 0, new IntItem(query.value(0).toString()));             // id
-        ui->tableWidget->setItem(index, 1, new QTableWidgetItem(query.value(1).toString()));    // file_name
-        ui->tableWidget->setItem(index, 2, new TimeItem(startTime));                            // start_time
-        ui->tableWidget->setItem(index, 3, new DurationItem(duration));                         // duration
-        ui->tableWidget->setItem(index, 4, new IntItem(query.value(4).toString()));             // sample_period
-        ui->tableWidget->setItem(index, 5, new IntItem(query.value(5).toString()));             // start_lat
-        ui->tableWidget->setItem(index, 6, new IntItem(query.value(6).toString()));             // start_lon
-        ui->tableWidget->setItem(index, 7, new TimeItem(importTime));                           // import_time
+        if (mMainWindow && mMainWindow->trackName() == query.value(1).toString())
+        {
+            QTableWidgetItem *item = new QTableWidgetItem;
+            item->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+            ui->tableWidget->setItem(index, 0, item);
+        }
+
+        ui->tableWidget->setItem(index, 1, new IntItem(query.value(0).toString()));             // id
+        ui->tableWidget->setItem(index, 2, new QTableWidgetItem(query.value(1).toString()));    // file_name
+        ui->tableWidget->setItem(index, 3, new TimeItem(startTime));                            // start_time
+        ui->tableWidget->setItem(index, 4, new DurationItem(duration));                         // duration
+        ui->tableWidget->setItem(index, 5, new IntItem(query.value(4).toString()));             // sample_period
+        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // start_lat
+        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // start_lon
+        ui->tableWidget->setItem(index, 8, new TimeItem(importTime));                           // import_time
 
         ++index;
     }
@@ -145,5 +155,5 @@ void LogbookView::onDoubleClick(
 {
     Q_UNUSED(column);
 
-    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 1)->text());
+    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 2)->text());
 }

@@ -597,8 +597,6 @@ void MainWindow::importFile(
                 QSqlError err = query.lastError();
                 QMessageBox::critical(0, tr("Query failed"), err.text());
             }
-
-            emit databaseChanged();
         }
         else
         {
@@ -609,6 +607,9 @@ void MainWindow::importFile(
     // Delete temporary file
     temporaryFile.close();
     temporaryFile.remove();
+
+    // Remember current track
+    setTrackName(uniqueName);
 }
 
 void MainWindow::importFromDatabase(
@@ -627,6 +628,16 @@ void MainWindow::importFromDatabase(
 
     // Read file data
     import(&file);
+
+    // Remember current track
+    setTrackName(uniqueName);
+}
+
+void MainWindow::setTrackName(
+        const QString &trackName)
+{
+    mTrackName = trackName;
+    emit databaseChanged();
 }
 
 void MainWindow::import(

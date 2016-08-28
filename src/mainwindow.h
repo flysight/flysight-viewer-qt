@@ -133,6 +133,9 @@ public:
 
     void importFromDatabase(const QString &uniqueName);
 
+    void setTrackName(const QString &trackName);
+    QString trackName() const { return mTrackName; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -239,6 +242,8 @@ private:
 
     QString               mDatabasePath;
     QSqlDatabase          mDatabase;
+
+    QString               mTrackName;
 
     void writeSettings();
     void readSettings();
