@@ -505,10 +505,13 @@ void MainWindow::on_actionImport_triggered()
     QSettings settings("FlySight", "Viewer");
 
     // Get file to import
-    importFile(QFileDialog::getOpenFileName(this,
-                                            tr("Import Track"),
-                                            settings.value("folder").toString(),
-                                            tr("CSV Files (*.csv)")));
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Import Track"),
+                                                    settings.value("folder").toString(),
+                                                    tr("CSV Files (*.csv)"));
+
+    // Import the file
+    if (!fileName.isEmpty()) importFile(fileName);
 }
 
 void MainWindow::importFile(
@@ -561,7 +564,7 @@ void MainWindow::importFile(
     // If the file is not already in the database
     if (!QFile(newPath).exists())
     {
-        if (file.copy(newPath))
+        if (temporaryFile.copy(newPath))
         {
             QDateTime startTime = m_data.front().dateTime;
             qint64 duration = startTime.msecsTo(m_data.back().dateTime);
@@ -602,6 +605,10 @@ void MainWindow::importFile(
             QMessageBox::critical(0, tr("Import failed"), tr("Couldn't copy temporary file"));
         }
     }
+
+    // Delete temporary file
+    temporaryFile.close();
+    temporaryFile.remove();
 }
 
 void MainWindow::importFromDatabase(
