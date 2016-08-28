@@ -105,8 +105,10 @@ void LogbookView::updateView()
 
     ui->tableWidget->setColumnHidden(1, true);  // Hide id column
     ui->tableWidget->setColumnHidden(2, true);  // Hide file_name column
-    ui->tableWidget->setColumnHidden(6, true);  // Hide start_lat column
-    ui->tableWidget->setColumnHidden(7, true);  // Hide start_lon column
+    ui->tableWidget->setColumnHidden(6, true);  // Hide min_lat column
+    ui->tableWidget->setColumnHidden(7, true);  // Hide max_lat column
+    ui->tableWidget->setColumnHidden(8, true);  // Hide min_lon column
+    ui->tableWidget->setColumnHidden(9, true);  // Hide max_lon column
 
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
                                                << tr("")
@@ -115,8 +117,10 @@ void LogbookView::updateView()
                                                << tr("Start Time")
                                                << tr("Duration")
                                                << tr("Sample Period")
-                                               << tr("Latitude")
-                                               << tr("Longitude")
+                                               << tr("Min Latitude")
+                                               << tr("Max Latitude")
+                                               << tr("Min Longitude")
+                                               << tr("Max Longitude")
                                                << tr("Import Time"));
 
     int index = 0;
@@ -125,7 +129,7 @@ void LogbookView::updateView()
         ui->tableWidget->insertRow(ui->tableWidget->rowCount());
 
         QDateTime startTime = QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
-        QDateTime importTime = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
+        QDateTime importTime = QDateTime::fromString(query.value(9).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
         qint64 duration = query.value(3).toString().toLongLong();
 
         if (mMainWindow && mMainWindow->trackName() == query.value(1).toString())
@@ -140,9 +144,11 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 3, new TimeItem(startTime));                            // start_time
         ui->tableWidget->setItem(index, 4, new DurationItem(duration));                         // duration
         ui->tableWidget->setItem(index, 5, new IntItem(query.value(4).toString()));             // sample_period
-        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // start_lat
-        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // start_lon
-        ui->tableWidget->setItem(index, 8, new TimeItem(importTime));                           // import_time
+        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // min_lat
+        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // max_lat
+        ui->tableWidget->setItem(index, 8, new IntItem(query.value(7).toString()));             // min_lon
+        ui->tableWidget->setItem(index, 9, new IntItem(query.value(8).toString()));             // max_lon
+        ui->tableWidget->setItem(index, 10, new TimeItem(importTime));                          // import_time
 
         ++index;
     }

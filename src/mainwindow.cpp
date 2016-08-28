@@ -219,7 +219,7 @@ void MainWindow::initDatabase()
         QMessageBox::critical(0, tr("Failed to open database"), err.text());
     }
 
-/*  CREATE TABLE files (id integer primary key, file_name text, start_time text, duration integer, sample_period integer, start_lat integer, start_lon integer, import_time text) */
+/*  CREATE TABLE files (id integer primary key, file_name text, start_time text, duration integer, sample_period integer, min_lat integer, max_lat integer, min_lon integer, max_lon integer, import_time text) */
 }
 
 void MainWindow::initPlot()
@@ -569,29 +569,43 @@ void MainWindow::importFile(
             QDateTime startTime = m_data.front().dateTime;
             qint64 duration = startTime.msecsTo(m_data.back().dateTime);
 
+            int minLat = 900000000,  maxLat = -900000000;
+            int minLon = 1800000000, maxLon = -1800000000;
+
             QVector< double > dt;
-            for (int i = 1; i < m_data.size(); ++i)
+            for (int i = 0; i < m_data.size(); ++i)
             {
-                dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
+                if (i > 0)
+                {
+                    dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
+                }
+
+                int lat = m_data[i].lat * 10000000;
+                int lon = m_data[i].lon * 10000000;
+
+                if (lat < minLat) minLat = lat;
+                if (lat > maxLat) maxLat = lat;
+                if (lon < minLon) minLon = lon;
+                if (lon > maxLon) maxLon = lon;
             }
             qSort(dt);
             qint64 samplePeriod = dt[dt.size() / 2];
 
-            int startLat = (int) (m_data.front().lat * 10000000);
-            int startLon = (int) (m_data.front().lon * 10000000);
             QDateTime importTime = QDateTime::currentDateTime();
 
             QSqlQuery query(mDatabase);
             if (!query.exec(QString("insert into files "
-                                    "(file_name, start_time, duration, sample_period, start_lat, start_lon, import_time) "
+                                    "(file_name, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
                                     "values "
-                                    "('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
+                                    "('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
                             .arg(uniqueName)
                             .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
                             .arg(duration)
                             .arg(samplePeriod)
-                            .arg(startLat)
-                            .arg(startLon)
+                            .arg(minLat)
+                            .arg(maxLat)
+                            .arg(minLon)
+                            .arg(maxLon)
                             .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
             {
                 QSqlError err = query.lastError();
