@@ -217,9 +217,29 @@ void MainWindow::initDatabase()
     {
         QSqlError err = mDatabase.lastError();
         QMessageBox::critical(0, tr("Failed to open database"), err.text());
+        return;
     }
 
-/*  CREATE TABLE files (id integer primary key, file_name text, start_time text, duration integer, sample_period integer, min_lat integer, max_lat integer, min_lon integer, max_lon integer, import_time text) */
+    if (!mDatabase.tables().contains("files"))
+    {
+        // Create table
+        QSqlQuery query(mDatabase);
+        if (!query.exec(QString("create table files ("
+                                    "id integer primary key, "
+                                    "file_name text, "
+                                    "start_time text, "
+                                    "duration integer, "
+                                    "sample_period integer, "
+                                    "min_lat integer, "
+                                    "max_lat integer, "
+                                    "min_lon integer, "
+                                    "max_lon integer, "
+                                    "import_time text)")))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
 }
 
 void MainWindow::initPlot()
@@ -564,6 +584,8 @@ void MainWindow::importFile(
     // If the file is not already in the database
     if (!QFile(newPath).exists())
     {
+        QDir(mDatabasePath).mkpath("FlySight/Tracks");
+
         if (temporaryFile.copy(newPath))
         {
             QDateTime startTime = m_data.front().dateTime;
