@@ -136,6 +136,8 @@ public:
     void setTrackName(const QString &trackName);
     QString trackName() const { return mTrackName; }
 
+    void setSelectedTracks(QVector< QString > tracks);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -184,6 +186,8 @@ private slots:
 
     void on_actionUndoZoom_triggered();
     void on_actionRedoZoom_triggered();
+
+    void on_actionDeleteTrack_triggered();
 
 private:
     typedef struct {
@@ -244,6 +248,7 @@ private:
     QSqlDatabase          mDatabase;
 
     QString               mTrackName;
+    QVector< QString >    mSelectedTracks;
 
     void writeSettings();
     void readSettings();

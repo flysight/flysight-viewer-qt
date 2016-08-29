@@ -69,6 +69,8 @@ LogbookView::LogbookView(QWidget *parent) :
 
     connect(ui->tableWidget, SIGNAL(cellDoubleClicked(int,int)),
             this, SLOT(onDoubleClick(int,int)));
+    connect(ui->tableWidget, SIGNAL(itemSelectionChanged()),
+            this, SLOT(onSelectionChanged()));
 }
 
 LogbookView::~LogbookView()
@@ -163,4 +165,27 @@ void LogbookView::onDoubleClick(
     Q_UNUSED(column);
 
     mMainWindow->importFromDatabase(ui->tableWidget->item(row, 2)->text());
+}
+
+void LogbookView::onSelectionChanged()
+{
+    QList< QTableWidgetItem* > selectedItems = ui->tableWidget->selectedItems();
+
+    // Get a list of selected rows
+    QSet< int > selectedRows;
+    foreach (QTableWidgetItem *item, selectedItems)
+    {
+        selectedRows.insert(item->row());
+    }
+
+    // Get a list of selected files
+    QVector< QString > selectedFiles;
+    foreach (int row, selectedRows)
+    {
+        QTableWidgetItem *item = ui->tableWidget->item(row, 2);
+        selectedFiles.append(item->text());
+    }
+
+    // Update main window
+    mMainWindow->setSelectedTracks(selectedFiles);
 }

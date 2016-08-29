@@ -28,6 +28,7 @@ public slots:
 
 private slots:
     void onDoubleClick(int row, int column);
+    void onSelectionChanged();
 };
 
 #endif // LOGBOOKVIEW_H

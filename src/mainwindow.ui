@@ -132,10 +132,17 @@
     <addaction name="separator"/>
     <addaction name="actionShowLogbookView"/>
    </widget>
+   <widget class="QMenu" name="menuTrack">
+    <property name="title">
+     <string>Track</string>
+    </property>
+    <addaction name="actionDeleteTrack"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlots"/>
    <addaction name="menuDomain"/>
    <addaction name="menu_Tools"/>
+   <addaction name="menuTrack"/>
    <addaction name="menuWindow"/>
   </widget>
   <action name="actionImport">
@@ -669,6 +676,11 @@
    </property>
    <property name="toolTip">
     <string>Logbook</string>
+   </property>
+  </action>
+  <action name="actionDeleteTrack">
+   <property name="text">
+    <string>Delete</string>
    </property>
   </action>
  </widget>

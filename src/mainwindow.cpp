@@ -654,6 +654,12 @@ void MainWindow::setTrackName(
     emit databaseChanged();
 }
 
+void MainWindow::setSelectedTracks(
+        QVector< QString > tracks)
+{
+    mSelectedTracks = tracks;
+}
+
 void MainWindow::import(
         QIODevice *device)
 {
@@ -1900,6 +1906,45 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+}
+
+void MainWindow::on_actionDeleteTrack_triggered()
+{
+    QString message = tr("Are you sure you want to delete the selected tracks?\n");
+    if (QMessageBox::question(0, tr("FlySight"), message) != QMessageBox::Yes) return;
+
+    foreach (QString uniqueName, mSelectedTracks)
+    {
+        if (uniqueName == mTrackName)
+        {
+            // Clear track data
+            m_data.clear();
+            emit dataChanged();
+
+            // Clear current track name;
+            mTrackName = QString();
+        }
+
+        // Get name of file in database
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
+
+        // Delete the track
+        if (!QFile::remove(newPath))
+        {
+            QMessageBox::critical(0, tr("Operation failed"), tr("Couldn't delete track"));
+        }
+
+        // Remove track from database
+        QSqlQuery query(mDatabase);
+        if (!query.exec(QString("delete from files where file_name='%1'").arg(uniqueName)))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
+
+    emit databaseChanged();
 }
 
 void MainWindow::setScoringMode(
