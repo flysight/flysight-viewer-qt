@@ -683,6 +683,35 @@ void MainWindow::setSelectedTracks(
     mSelectedTracks = tracks;
 }
 
+void MainWindow::setTrackDescription(
+        const QString &trackName,
+        const QString &description)
+{
+    QSqlQuery query(mDatabase);
+
+    // Get the old description
+    if (!query.exec(QString("select description from files where file_name='%2'").arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    // Return now if description is not changed
+    if (!query.next()) return;
+    if (description == query.value(0).toString()) return;
+
+    // Change the decription
+    if (!query.exec(QString("update files set description='%1' where file_name='%2'").arg(description).arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    emit databaseChanged();
+}
+
 void MainWindow::import(
         QIODevice *device)
 {

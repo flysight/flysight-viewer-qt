@@ -8,6 +8,7 @@ namespace Ui {
 }
 
 class MainWindow;
+class QTableWidgetItem;
 
 class LogbookView : public QWidget
 {
@@ -29,6 +30,7 @@ public slots:
 private slots:
     void onDoubleClick(int row, int column);
     void onSelectionChanged();
+    void onItemChanged(QTableWidgetItem *item);
 };
 
 #endif // LOGBOOKVIEW_H

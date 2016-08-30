@@ -137,6 +137,7 @@ public:
     QString trackName() const { return mTrackName; }
 
     void setSelectedTracks(QVector< QString > tracks);
+    void setTrackDescription(const QString &trackName, const QString &description);
 
 protected:
     void closeEvent(QCloseEvent *event);

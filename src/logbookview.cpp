@@ -71,6 +71,8 @@ LogbookView::LogbookView(QWidget *parent) :
             this, SLOT(onDoubleClick(int,int)));
     connect(ui->tableWidget, SIGNAL(itemSelectionChanged()),
             this, SLOT(onSelectionChanged()));
+    connect(ui->tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
+            this, SLOT(onItemChanged(QTableWidgetItem*)));
 }
 
 LogbookView::~LogbookView()
@@ -202,4 +204,18 @@ void LogbookView::onSelectionChanged()
 
     // Update main window
     mMainWindow->setSelectedTracks(selectedFiles);
+}
+
+void LogbookView::onItemChanged(
+        QTableWidgetItem *item)
+{
+    // Return if not editing description
+    if (item->column() != 3) return;
+
+    // Get file name
+    QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 2);
+    if (!nameItem) return;
+
+    // Update description
+    mMainWindow->setTrackDescription(nameItem->text(), item->text());
 }
