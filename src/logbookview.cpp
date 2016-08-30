@@ -141,6 +141,10 @@ void LogbookView::updateView()
             item->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
             ui->tableWidget->setItem(index, 0, item);
         }
+        else
+        {
+            ui->tableWidget->setItem(index, 0, new QTableWidgetItem);
+        }
 
         ui->tableWidget->setItem(index, 1, new IntItem(query.value(0).toString()));             // id
         ui->tableWidget->setItem(index, 2, new QTableWidgetItem(query.value(1).toString()));    // file_name
@@ -153,6 +157,14 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 9, new IntItem(query.value(8).toString()));             // min_lon
         ui->tableWidget->setItem(index, 10, new IntItem(query.value(9).toString()));            // max_lon
         ui->tableWidget->setItem(index, 11, new TimeItem(importTime));                          // import_time
+
+        for (int j = 0; j < 12; ++j)
+        {
+            // Disable editing on every column except description
+            QTableWidgetItem *item = ui->tableWidget->item(index, j);
+            if (j == 3) item->setFlags(item->flags() |  Qt::ItemIsEditable);
+            else        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+        }
 
         ++index;
     }

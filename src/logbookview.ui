@@ -17,7 +17,7 @@
    <item>
     <widget class="QTableWidget" name="tableWidget">
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
