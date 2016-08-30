@@ -227,6 +227,7 @@ void MainWindow::initDatabase()
         if (!query.exec(QString("create table files ("
                                     "id integer primary key, "
                                     "file_name text, "
+                                    "description text, "
                                     "start_time text, "
                                     "duration integer, "
                                     "sample_period integer, "
@@ -617,9 +618,9 @@ void MainWindow::importFile(
 
             QSqlQuery query(mDatabase);
             if (!query.exec(QString("insert into files "
-                                    "(file_name, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
+                                    "(file_name, description, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
                                     "values "
-                                    "('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
+                                    "('%1', '', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
                             .arg(uniqueName)
                             .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
                             .arg(duration)

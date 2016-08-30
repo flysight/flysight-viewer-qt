@@ -107,15 +107,16 @@ void LogbookView::updateView()
 
     ui->tableWidget->setColumnHidden(1, true);  // Hide id column
     ui->tableWidget->setColumnHidden(2, true);  // Hide file_name column
-    ui->tableWidget->setColumnHidden(6, true);  // Hide min_lat column
-    ui->tableWidget->setColumnHidden(7, true);  // Hide max_lat column
-    ui->tableWidget->setColumnHidden(8, true);  // Hide min_lon column
-    ui->tableWidget->setColumnHidden(9, true);  // Hide max_lon column
+    ui->tableWidget->setColumnHidden(7, true);  // Hide min_lat column
+    ui->tableWidget->setColumnHidden(8, true);  // Hide max_lat column
+    ui->tableWidget->setColumnHidden(9, true);  // Hide min_lon column
+    ui->tableWidget->setColumnHidden(10, true);  // Hide max_lon column
 
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
                                                << tr("")
                                                << tr("ID")
                                                << tr("File Name")
+                                               << tr("Description")
                                                << tr("Start Time")
                                                << tr("Duration")
                                                << tr("Sample Period")
@@ -130,9 +131,9 @@ void LogbookView::updateView()
     {
         ui->tableWidget->insertRow(ui->tableWidget->rowCount());
 
-        QDateTime startTime = QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
-        QDateTime importTime = QDateTime::fromString(query.value(9).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
-        qint64 duration = query.value(3).toString().toLongLong();
+        QDateTime startTime = QDateTime::fromString(query.value(3).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
+        QDateTime importTime = QDateTime::fromString(query.value(10).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
+        qint64 duration = query.value(4).toString().toLongLong();
 
         if (mMainWindow && mMainWindow->trackName() == query.value(1).toString())
         {
@@ -143,14 +144,15 @@ void LogbookView::updateView()
 
         ui->tableWidget->setItem(index, 1, new IntItem(query.value(0).toString()));             // id
         ui->tableWidget->setItem(index, 2, new QTableWidgetItem(query.value(1).toString()));    // file_name
-        ui->tableWidget->setItem(index, 3, new TimeItem(startTime));                            // start_time
-        ui->tableWidget->setItem(index, 4, new DurationItem(duration));                         // duration
-        ui->tableWidget->setItem(index, 5, new IntItem(query.value(4).toString()));             // sample_period
-        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // min_lat
-        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // max_lat
-        ui->tableWidget->setItem(index, 8, new IntItem(query.value(7).toString()));             // min_lon
-        ui->tableWidget->setItem(index, 9, new IntItem(query.value(8).toString()));             // max_lon
-        ui->tableWidget->setItem(index, 10, new TimeItem(importTime));                          // import_time
+        ui->tableWidget->setItem(index, 3, new QTableWidgetItem(query.value(2).toString()));    // description
+        ui->tableWidget->setItem(index, 4, new TimeItem(startTime));                            // start_time
+        ui->tableWidget->setItem(index, 5, new DurationItem(duration));                         // duration
+        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // sample_period
+        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // min_lat
+        ui->tableWidget->setItem(index, 8, new IntItem(query.value(7).toString()));             // max_lat
+        ui->tableWidget->setItem(index, 9, new IntItem(query.value(8).toString()));             // min_lon
+        ui->tableWidget->setItem(index, 10, new IntItem(query.value(9).toString()));            // max_lon
+        ui->tableWidget->setItem(index, 11, new TimeItem(importTime));                          // import_time
 
         ++index;
     }
