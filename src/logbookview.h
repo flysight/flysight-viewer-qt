@@ -31,6 +31,7 @@ private slots:
     void onDoubleClick(int row, int column);
     void onSelectionChanged();
     void onItemChanged(QTableWidgetItem *item);
+    void onSearchTextChanged(const QString &text);
 };
 
 #endif // LOGBOOKVIEW_H

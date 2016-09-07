@@ -73,6 +73,8 @@ LogbookView::LogbookView(QWidget *parent) :
             this, SLOT(onSelectionChanged()));
     connect(ui->tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
             this, SLOT(onItemChanged(QTableWidgetItem*)));
+    connect(ui->searchEdit, SIGNAL(textChanged(QString)),
+            this, SLOT(onSearchTextChanged(QString)));
 }
 
 LogbookView::~LogbookView()
@@ -93,7 +95,20 @@ void LogbookView::updateView()
     QSqlDatabase db = QSqlDatabase::database("flysight");
     QSqlQuery query(db);
 
-    if (!query.exec("select * from files"))
+    QString whereText;
+    if (!this->ui->searchEdit->text().isEmpty())
+    {
+        QStringList searchItems = this->ui->searchEdit->text().split(QRegExp("\\s"));
+        for (int i = 0; i < searchItems.length(); ++i)
+        {
+            if (i == 0) whereText += "where ";
+            else        whereText += "and ";
+
+            whereText += "lower(description) like lower('%" + searchItems[i] + "%')";
+        }
+    }
+
+    if (!query.exec(QString("select * from files %1").arg(whereText)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -218,4 +233,11 @@ void LogbookView::onItemChanged(
 
     // Update description
     mMainWindow->setTrackDescription(nameItem->text(), item->text());
+}
+
+void LogbookView::onSearchTextChanged(
+        const QString &text)
+{
+    Q_UNUSED(text);
+    updateView();
 }
