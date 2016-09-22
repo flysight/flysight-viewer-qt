@@ -229,6 +229,11 @@ void WideOpenSpeedScoring::prepareMapView(
     DataPoint dpBottom;
     success = success && getWindowBounds(mMainWindow->data(), dpBottom);
 
+    // Get distance from exit point to reference
+    double exitDist;
+    Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, dp0.lat, dp0.lon, exitDist);
+    success = success && exitDist < mLaneLength * 10;
+
     if (success)
     {
         // Calculate time
