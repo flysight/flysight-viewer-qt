@@ -94,6 +94,9 @@ void WideOpenSpeedForm::updateView()
     DataPoint dpBottom;
     bool success = method->getWindowBounds(mMainWindow->data(), dpBottom);
 
+    // Invalidate finish point
+    method->invalidateFinish();
+
     if (mMainWindow->dataSize() == 0)
     {
         // Update display
@@ -160,6 +163,7 @@ void WideOpenSpeedForm::updateView()
         if (i < mMainWindow->dataSize())
         {
             DataPoint dp = mMainWindow->interpolateDataT(t);
+            method->setFinishPoint(dp);
 
             if (dp.t <= dpBottom.t)
             {
