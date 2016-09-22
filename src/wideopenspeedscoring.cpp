@@ -27,7 +27,8 @@ WideOpenSpeedScoring::WideOpenSpeedScoring(
     mBottom(4500 / METERS_TO_FEET),
     mLaneWidth(500),
     mLaneLength(10000),
-    mMapMode(None)
+    mMapMode(None),
+    mFinishValid(false)
 {
 
 }
@@ -229,63 +230,13 @@ void WideOpenSpeedScoring::prepareMapView(
     DataPoint dpBottom;
     success = success && getWindowBounds(mMainWindow->data(), dpBottom);
 
-    if (success)
-    {
-        // Calculate time
-        int i, start = mMainWindow->findIndexBelowT(0) + 1;
-        double d1, t;
-        DataPoint dp1;
+    // Get distance from exit point to reference
+    double exitDist;
+    Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, dp0.lat, dp0.lon, exitDist);
+    success = success && exitDist < mLaneLength * 10;
 
-        for (i = start; i < mMainWindow->dataSize(); ++i)
-        {
-            const DataPoint &dp2 = mMainWindow->dataPoint(i);
-
-            // Get projected point
-            double lat0, lon0;
-            intercept(woProjLat, woProjLon, mEndLatitude, mEndLongitude, dp2.lat, dp2.lon, lat0, lon0);
-
-            // Distance from top
-            double topDist;
-            Geodesic::WGS84().Inverse(woProjLat, woProjLon, lat0, lon0, topDist);
-
-            // Distance from bottom
-            double bottomDist;
-            Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, lat0, lon0, bottomDist);
-
-            double d2;
-            if (topDist > bottomDist)
-            {
-                d2 = topDist;
-            }
-            else
-            {
-                d2 = mLaneLength - bottomDist;
-            }
-
-            if (i > start && d1 < mLaneLength && d2 >= mLaneLength)
-            {
-                t = dp1.t + (dp2.t - dp1.t) / (d2 - d1) * (mLaneLength - d1);
-                break;
-            }
-
-            d1 = d2;
-            dp1 = dp2;
-        }
-
-        if (i < mMainWindow->dataSize())
-        {
-            DataPoint dp = mMainWindow->interpolateDataT(t);
-
-            if (dp.t > dpBottom.t)
-            {
-                success = false;
-            }
-        }
-        else
-        {
-            success = false;
-        }
-    }
+    // Check if the finish is valid
+    success = success && mFinishValid && mFinishPoint.t < dpBottom.t;
 
     if (mMainWindow->dataSize() == 0)
     {
@@ -475,4 +426,16 @@ void WideOpenSpeedScoring::closeReference()
 {
     setMapMode(None);
     mMainWindow->setFocus();
+}
+
+void WideOpenSpeedScoring::invalidateFinish()
+{
+    mFinishValid = false;
+}
+
+void WideOpenSpeedScoring::setFinishPoint(
+        const DataPoint &dp)
+{
+    mFinishValid = true;
+    mFinishPoint = dp;
 }

@@ -273,20 +273,20 @@ void DataPlot::setMark(
     if (dpStart.dateTime.date() == dpEnd.dateTime.date())
     {
         status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 to %4.%5 UTC</u></p>")
-                .arg(dpStart.dateTime.date().toString(Qt::ISODate))
-                .arg(dpStart.dateTime.time().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.toUTC().date().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.toUTC().time().toString(Qt::ISODate))
                 .arg(QString("%1").arg(dpStart.dateTime.time().msec(), 3, 10, QChar('0')))
-                .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
+                .arg(dpEnd.dateTime.toUTC().time().toString(Qt::ISODate))
                 .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
     }
     else
     {
         status = QString("<p style='color:black;' align='center'><u>%1 %2.%3 to %4 %5.%6 UTC</u></p>")
-                .arg(dpStart.dateTime.date().toString(Qt::ISODate))
-                .arg(dpStart.dateTime.time().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.toUTC().date().toString(Qt::ISODate))
+                .arg(dpStart.dateTime.toUTC().time().toString(Qt::ISODate))
                 .arg(QString("%1").arg(dpStart.dateTime.time().msec(), 3, 10, QChar('0')))
-                .arg(dpEnd.dateTime.date().toString(Qt::ISODate))
-                .arg(dpEnd.dateTime.time().toString(Qt::ISODate))
+                .arg(dpEnd.dateTime.toUTC().date().toString(Qt::ISODate))
+                .arg(dpEnd.dateTime.toUTC().time().toString(Qt::ISODate))
                 .arg(QString("%1").arg(dpEnd.dateTime.time().msec(), 3, 10, QChar('0')));
     }
 
@@ -410,8 +410,8 @@ void DataPlot::setMark(
     status = QString("<table width='300'>");
 
     status += QString("<tr style='color:black;'><td align='center'><u>%1 %2.%3 UTC</u></td></tr>")
-            .arg(dp.dateTime.date().toString(Qt::ISODate))
-            .arg(dp.dateTime.time().toString(Qt::ISODate))
+            .arg(dp.dateTime.toUTC().date().toString(Qt::ISODate))
+            .arg(dp.dateTime.toUTC().time().toString(Qt::ISODate))
             .arg(QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')));
 
     status += QString("<tr style='color:black;'><td align='center'><u>(%1 deg, %2 deg, %3 m)</u></td></tr>")

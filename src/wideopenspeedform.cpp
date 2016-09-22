@@ -86,9 +86,16 @@ void WideOpenSpeedForm::updateView()
     // Find exit point
     DataPoint dp0 = mMainWindow->interpolateDataT(0);
 
+    // Get distance from exit point to reference
+    double exitDist;
+    Geodesic::WGS84().Inverse(endLatitude, endLongitude, dp0.lat, dp0.lon, exitDist);
+
     // Find where we cross the bottom
     DataPoint dpBottom;
     bool success = method->getWindowBounds(mMainWindow->data(), dpBottom);
+
+    // Invalidate finish point
+    method->invalidateFinish();
 
     if (mMainWindow->dataSize() == 0)
     {
@@ -99,6 +106,11 @@ void WideOpenSpeedForm::updateView()
     {
         // Update display
         ui->speedEdit->setText(tr("set exit"));
+    }
+    else if (exitDist > laneLength * 10)
+    {
+        // Update display
+        ui->speedEdit->setText(tr("set reference"));
     }
     else if (!success)
     {
@@ -151,10 +163,11 @@ void WideOpenSpeedForm::updateView()
         if (i < mMainWindow->dataSize())
         {
             DataPoint dp = mMainWindow->interpolateDataT(t);
+            method->setFinishPoint(dp);
 
             if (dp.t <= dpBottom.t)
             {
-                ui->speedEdit->setText(dp.dateTime.toString("hh:mm:ss.zzz"));
+                ui->speedEdit->setText(dp.dateTime.toUTC().toString("hh:mm:ss.zzz"));
             }
             else
             {

@@ -67,11 +67,24 @@ void ScoringView::setMainWindow(
 void ScoringView::updateView()
 {
     // Update forms
-    mPPCForm->updateView();
-    mSpeedForm->updateView();
-    mPerformanceForm->updateView();
-    mWideOpenSpeedForm->updateView();
-    mWideOpenDistanceForm->updateView();
+    switch (mMainWindow->scoringMode())
+    {
+    case MainWindow::PPC:
+        mPPCForm->updateView();
+        break;
+    case MainWindow::Speed:
+        mSpeedForm->updateView();
+        break;
+    case MainWindow::Performance:
+        mPerformanceForm->updateView();
+        break;
+    case MainWindow::WideOpenSpeed:
+        mWideOpenSpeedForm->updateView();
+        break;
+    case MainWindow::WideOpenDistance:
+        mWideOpenDistanceForm->updateView();
+        break;
+    }
 }
 
 void ScoringView::changePage(

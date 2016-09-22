@@ -1480,9 +1480,9 @@ void MainWindow::on_actionExportTrack_triggered()
 
             if (lower <= dp.t && dp.t <= upper)
             {
-                stream << dp.dateTime.date().toString(Qt::ISODate) << "T";
-                stream << dp.dateTime.time().toString(Qt::ISODate) << ".";
-                stream << QString("%1").arg(dp.dateTime.time().msec(), 3, 10, QChar('0')) << "Z,";
+                stream << dp.dateTime.toUTC().date().toString(Qt::ISODate) << "T";
+                stream << dp.dateTime.toUTC().time().toString(Qt::ISODate) << ".";
+                stream << QString("%1").arg(dp.dateTime.toUTC().time().msec(), 3, 10, QChar('0')) << "Z,";
 
                 stream << QString::number(dp.lat, 'f', 7) << ",";
                 stream << QString::number(dp.lon, 'f', 7) << ",";

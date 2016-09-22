@@ -44,6 +44,9 @@ public:
     void readSettings();
     void writeSettings();
 
+    void invalidateFinish();
+    void setFinishPoint(const DataPoint &dp);
+
 private:
     MainWindow *mMainWindow;
 
@@ -57,6 +60,9 @@ private:
     double      mLaneLength;
 
     MapMode     mMapMode;
+
+    bool        mFinishValid;
+    DataPoint   mFinishPoint;
 
     void splitLine(QVector< double > &lat, QVector< double > &lon,
                    double startLat, double startLon,
