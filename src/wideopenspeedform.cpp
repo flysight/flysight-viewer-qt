@@ -167,7 +167,7 @@ void WideOpenSpeedForm::updateView()
 
             if (dp.t <= dpBottom.t)
             {
-                ui->speedEdit->setText(dp.dateTime.toString("hh:mm:ss.zzz"));
+                ui->speedEdit->setText(dp.dateTime.toUTC().toString("hh:mm:ss.zzz"));
             }
             else
             {
