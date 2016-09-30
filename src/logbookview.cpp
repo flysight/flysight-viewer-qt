@@ -75,6 +75,8 @@ LogbookView::LogbookView(QWidget *parent) :
             this, SLOT(onItemChanged(QTableWidgetItem*)));
     connect(ui->searchEdit, SIGNAL(textChanged(QString)),
             this, SLOT(onSearchTextChanged(QString)));
+    connect(ui->searchEdit, SIGNAL(returnPressed()),
+            this, SLOT(onSearchTextReturn()));
 }
 
 LogbookView::~LogbookView()
@@ -240,4 +242,24 @@ void LogbookView::onSearchTextChanged(
 {
     Q_UNUSED(text);
     updateView();
+}
+
+void LogbookView::onSearchTextReturn()
+{
+    // Give focus to the main window
+    mMainWindow->setFocus();
+}
+
+void LogbookView::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape && ui->searchEdit->hasFocus())
+    {
+        // Clear search text
+        ui->searchEdit->clear();
+
+        // Give focus to the main window
+        mMainWindow->setFocus();
+    }
+
+    QWidget::keyPressEvent(event);
 }

@@ -20,6 +20,9 @@ public:
 
     void setMainWindow(MainWindow *mainWindow);
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *);
+
 private:
     Ui::LogbookView *ui;
     MainWindow      *mMainWindow;
@@ -32,6 +35,7 @@ private slots:
     void onSelectionChanged();
     void onItemChanged(QTableWidgetItem *item);
     void onSearchTextChanged(const QString &text);
+    void onSearchTextReturn();
 };
 
 #endif // LOGBOOKVIEW_H
