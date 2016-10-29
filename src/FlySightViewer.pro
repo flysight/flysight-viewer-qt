@@ -141,7 +141,7 @@ win32 {
     LIBS += -lvlc-qt -lvlc-qt-widgets
     LIBS += -lwwwidgets4
 }
-macx {
+else:macx {
     QMAKE_LFLAGS += -F../frameworks
     LIBS         += -framework VLCQtCore
     LIBS         += -framework VLCQtQml
