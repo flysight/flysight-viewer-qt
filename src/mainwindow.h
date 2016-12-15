@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
 
@@ -130,6 +131,14 @@ public:
     bool updateReference(double lat, double lon);
     void closeReference();
 
+    void importFromDatabase(const QString &uniqueName);
+
+    void setTrackName(const QString &trackName);
+    QString trackName() const { return mTrackName; }
+
+    void setSelectedTracks(QVector< QString > tracks);
+    void setTrackDescription(const QString &trackName, const QString &description);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -178,6 +187,8 @@ private slots:
 
     void on_actionUndoZoom_triggered();
     void on_actionRedoZoom_triggered();
+
+    void on_actionDeleteTrack_triggered();
 
 private:
     typedef struct {
@@ -234,8 +245,16 @@ private:
     GroundReference       mGroundReference;
     double                mFixedReference;
 
+    QString               mDatabasePath;
+    QSqlDatabase          mDatabase;
+
+    QString               mTrackName;
+    QVector< QString >    mSelectedTracks;
+
     void writeSettings();
     void readSettings();
+
+    void initDatabase();
 
     void initPlot();
     void initViews();
@@ -245,10 +264,12 @@ private:
     void initLiftDragView();
     void initOrthoView();
     void initPlaybackView();
+    void initLogbookView();
 
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
+    void import(QIODevice *device);
     void initAltitude();
     void updateVelocity();
     void initAerodynamics();
@@ -266,6 +287,7 @@ signals:
     void cursorChanged();
     void aeroChanged();
     void rotationChanged(double rotation);
+    void databaseChanged();
 
 public slots:
     void importFile(QString fileName);

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QCryptographicHash>
 #include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
@@ -9,6 +10,11 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QShortcut>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardPaths>
+#include <QTemporaryFile>
 #include <QTextStream>
 #include <QThread>
 
@@ -21,6 +27,7 @@
 #include "dataview.h"
 #include "importworker.h"
 #include "liftdragplot.h"
+#include "logbookview.h"
 #include "mapview.h"
 #include "orthoview.h"
 #include "performancescoring.h"
@@ -89,6 +96,9 @@ MainWindow::MainWindow(
     // Read settings
     readSettings();
 
+    // Initialize database
+    initDatabase();
+
     // Intitialize plot area
     initPlot();
 
@@ -110,6 +120,9 @@ MainWindow::MainWindow(
 
     // Initialize playback controls
     initPlaybackView();
+
+    // Initialize logbook view
+    initLogbookView();
 
     // Restore window state
     QSettings settings("FlySight", "Viewer");
@@ -163,6 +176,7 @@ void MainWindow::writeSettings()
         settings.setValue("scoringMode", mScoringMode);
         settings.setValue("groundReference", mGroundReference);
         settings.setValue("fixedReference", mFixedReference);
+        settings.setValue("databasePath", mDatabasePath);
     settings.endGroup();
 }
 
@@ -185,7 +199,48 @@ void MainWindow::readSettings()
         mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
     	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
 	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        mDatabasePath = settings.value("databasePath",
+                                       QStandardPaths::writableLocation(
+                                           QStandardPaths::DocumentsLocation)).toString();
     settings.endGroup();
+}
+
+void MainWindow::initDatabase()
+{
+    QDir(mDatabasePath).mkpath("FlySight");
+    QString path = QDir(mDatabasePath).filePath("FlySight/FlySight.db");
+
+    mDatabase = QSqlDatabase::addDatabase("QSQLITE", "flysight");
+    mDatabase.setDatabaseName(path);
+
+    if (!mDatabase.open())
+    {
+        QSqlError err = mDatabase.lastError();
+        QMessageBox::critical(0, tr("Failed to open database"), err.text());
+        return;
+    }
+
+    if (!mDatabase.tables().contains("files"))
+    {
+        // Create table
+        QSqlQuery query(mDatabase);
+        if (!query.exec(QString("create table files ("
+                                    "id integer primary key, "
+                                    "file_name text, "
+                                    "description text, "
+                                    "start_time text, "
+                                    "duration integer, "
+                                    "sample_period integer, "
+                                    "min_lat integer, "
+                                    "max_lat integer, "
+                                    "min_lon integer, "
+                                    "max_lon integer, "
+                                    "import_time text)")))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
 }
 
 void MainWindow::initPlot()
@@ -371,6 +426,26 @@ void MainWindow::initPlaybackView()
             playbackView, SLOT(updateView()));
 }
 
+void MainWindow::initLogbookView()
+{
+    LogbookView *logbookView = new LogbookView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Logbook View"));
+    dockWidget->setWidget(logbookView);
+    dockWidget->setObjectName("logbookView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    logbookView->setMainWindow(this);
+
+    connect(m_ui->actionShowLogbookView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowLogbookView, SLOT(setChecked(bool)));
+
+    connect(this, SIGNAL(databaseChanged()),
+            logbookView, SLOT(updateView()));
+}
+
 void MainWindow::closeEvent(
         QCloseEvent *event)
 {
@@ -451,10 +526,13 @@ void MainWindow::on_actionImport_triggered()
     QSettings settings("FlySight", "Viewer");
 
     // Get file to import
-    importFile(QFileDialog::getOpenFileName(this,
-                                            tr("Import Track"),
-                                            settings.value("folder").toString(),
-                                            tr("CSV Files (*.csv)")));
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Import Track"),
+                                                    settings.value("folder").toString(),
+                                                    tr("CSV Files (*.csv)"));
+
+    // Import the file
+    if (!fileName.isEmpty()) importFile(fileName);
 }
 
 void MainWindow::importFile(
@@ -463,17 +541,181 @@ void MainWindow::importFile(
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        // TODO: Error message
-        return;
-    }
-
     // Remember last file read
     settings.setValue("folder", QFileInfo(fileName).absoluteFilePath());
 
-    QTextStream in(&file);
+    // Create temporary file
+    QTemporaryFile temporaryFile;
+    if (!temporaryFile.open())
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't create temporary file"));
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+        return;
+    }
+
+    // Copy to temporary file
+    temporaryFile.write(file.readAll());
+    file.close();
+
+    // Read file data
+    temporaryFile.seek(0);
+    import(&temporaryFile);
+
+    // Get hash
+    QCryptographicHash hash(QCryptographicHash::Md5);
+
+    temporaryFile.seek(0);
+    if (!hash.addData(&temporaryFile))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't generate hash"));
+        return;
+    }
+
+    // Get name of file in database
+    QString uniqueName = QString(hash.result().toHex());
+    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+    QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    // If the file is not already in the database
+    if (!QFile(newPath).exists())
+    {
+        QDir(mDatabasePath).mkpath("FlySight/Tracks");
+
+        if (temporaryFile.copy(newPath))
+        {
+            QDateTime startTime = m_data.front().dateTime;
+            qint64 duration = startTime.msecsTo(m_data.back().dateTime);
+
+            int minLat = 900000000,  maxLat = -900000000;
+            int minLon = 1800000000, maxLon = -1800000000;
+
+            QVector< double > dt;
+            for (int i = 0; i < m_data.size(); ++i)
+            {
+                if (i > 0)
+                {
+                    dt.push_back(m_data[i - 1].dateTime.msecsTo(m_data[i].dateTime));
+                }
+
+                int lat = m_data[i].lat * 10000000;
+                int lon = m_data[i].lon * 10000000;
+
+                if (lat < minLat) minLat = lat;
+                if (lat > maxLat) maxLat = lat;
+                if (lon < minLon) minLon = lon;
+                if (lon > maxLon) maxLon = lon;
+            }
+            qSort(dt);
+            qint64 samplePeriod = dt[dt.size() / 2];
+
+            QDateTime importTime = QDateTime::currentDateTime();
+
+            QSqlQuery query(mDatabase);
+            if (!query.exec(QString("insert into files "
+                                    "(file_name, description, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
+                                    "values "
+                                    "('%1', '', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
+                            .arg(uniqueName)
+                            .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                            .arg(duration)
+                            .arg(samplePeriod)
+                            .arg(minLat)
+                            .arg(maxLat)
+                            .arg(minLon)
+                            .arg(maxLon)
+                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
+            {
+                QSqlError err = query.lastError();
+                QMessageBox::critical(0, tr("Query failed"), err.text());
+            }
+        }
+        else
+        {
+            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't copy temporary file"));
+        }
+    }
+
+    // Delete temporary file
+    temporaryFile.close();
+    temporaryFile.remove();
+
+    // Remember current track
+    setTrackName(uniqueName);
+}
+
+void MainWindow::importFromDatabase(
+        const QString &uniqueName)
+{
+    // Get name of file in database
+    QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+    QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    QFile file(newPath);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+        return;
+    }
+
+    // Read file data
+    import(&file);
+
+    // Remember current track
+    setTrackName(uniqueName);
+}
+
+void MainWindow::setTrackName(
+        const QString &trackName)
+{
+    mTrackName = trackName;
+    emit databaseChanged();
+}
+
+void MainWindow::setSelectedTracks(
+        QVector< QString > tracks)
+{
+    mSelectedTracks = tracks;
+}
+
+void MainWindow::setTrackDescription(
+        const QString &trackName,
+        const QString &description)
+{
+    QSqlQuery query(mDatabase);
+
+    // Get the old description
+    if (!query.exec(QString("select description from files where file_name='%2'").arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    // Return now if description is not changed
+    if (!query.next()) return;
+    if (description == query.value(0).toString()) return;
+
+    // Change the decription
+    if (!query.exec(QString("update files set description='%1' where file_name='%2'").arg(description).arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    emit databaseChanged();
+}
+
+void MainWindow::import(
+        QIODevice *device)
+{
+    QTextStream in(device);
 
     // Column enumeration
     typedef enum {
@@ -571,6 +813,7 @@ void MainWindow::importFile(
     // Clear optimum
     m_optimal.clear();
 
+    // Initialize plot ranges
     initRange();
 
     emit dataLoaded();
@@ -1715,6 +1958,45 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+}
+
+void MainWindow::on_actionDeleteTrack_triggered()
+{
+    QString message = tr("Are you sure you want to delete the selected tracks?\n");
+    if (QMessageBox::question(0, tr("FlySight"), message) != QMessageBox::Yes) return;
+
+    foreach (QString uniqueName, mSelectedTracks)
+    {
+        if (uniqueName == mTrackName)
+        {
+            // Clear track data
+            m_data.clear();
+            emit dataChanged();
+
+            // Clear current track name;
+            mTrackName = QString();
+        }
+
+        // Get name of file in database
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
+
+        // Delete the track
+        if (!QFile::remove(newPath))
+        {
+            QMessageBox::critical(0, tr("Operation failed"), tr("Couldn't delete track"));
+        }
+
+        // Remove track from database
+        QSqlQuery query(mDatabase);
+        if (!query.exec(QString("delete from files where file_name='%1'").arg(uniqueName)))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
+
+    emit databaseChanged();
 }
 
 void MainWindow::setScoringMode(
