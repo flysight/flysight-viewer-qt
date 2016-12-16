@@ -40,7 +40,6 @@ protected:
     int valueFromText ( const QString & text ) const;
 private:
     WW_DECLARE_PRIVATE(QwwTextSpinBox);
-	Q_DISABLE_COPY(QwwTextSpinBox);
 };
 
 #endif

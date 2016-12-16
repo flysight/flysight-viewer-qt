@@ -59,7 +59,6 @@ private:
     QIcon m_toggleIcon;
     int m_current;
     bool m_animated;
-	Q_DISABLE_COPY(QwwTaskPanel);
 };
 
 

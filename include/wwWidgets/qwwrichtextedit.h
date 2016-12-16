@@ -57,8 +57,6 @@ protected:
   QwwColorButton *colorButton;
 #endif
   void resizeEvent(QResizeEvent *re);
-private:
-  Q_DISABLE_COPY(QwwRichTextEdit);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QwwRichTextEdit::Options)
 #endif

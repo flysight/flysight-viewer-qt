@@ -68,7 +68,7 @@ protected:
 private:
     WW_DECLARE_PRIVATE(QwwLongSpinBox);
     Q_DISABLE_COPY(QwwLongSpinBox);
-	Q_PRIVATE_SLOT(d_func(), void _q_editorTextChanged(const QString &t))
+    Q_PRIVATE_SLOT(d_func(), void _q_editorTextChanged(const QString &t));
 };
 
 #endif // WW_NO_SPINBOX
