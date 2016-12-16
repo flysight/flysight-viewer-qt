@@ -22,9 +22,8 @@ public slots:
 protected:
     void changeEvent(QEvent *e);
 private:
-	Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &))
+    Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &));
     WW_DECLARE_PRIVATE(QwwResetLineEdit);
-	Q_DISABLE_COPY(QwwResetLineEdit);
 };
 
 #endif

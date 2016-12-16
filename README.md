@@ -1,5 +1,10 @@
 # FlySight Viewer
 
+## Libraries
+
+1. VLC-Qt builds can be found here: https://github.com/vlc-qt/vlc-qt/releases. For Qt 5.5, use VLC-Qt 1.0.
+2. wwWidgets is located here: http://www.wysota.eu.org/wwwidgets/#download. For Qt 5 compatibility, wwWidgets must be built from source.
+
 ## Deploying on Mac
 
 1. If this is your first time deploying:

@@ -29,14 +29,14 @@ class QToolButton;
 class QwwFileChooserPrivate;
 class Q_WW_EXPORT QwwFileChooser : public QwwButtonLineEdit {
   Q_OBJECT
+#if QT_VERSION >= 0x040200 && !defined(QT_NO_COMPLETER)
+  Q_ENUMS(QCompleter::CompletionMode)
+  Q_PROPERTY(QCompleter::CompletionMode completionMode READ completionMode WRITE setCompletionMode)
+#endif
   Q_PROPERTY(QFileDialog::FileMode fileMode READ fileMode WRITE setFileMode)
   Q_PROPERTY(QFileDialog::AcceptMode acceptMode READ acceptMode WRITE setAcceptMode)
   Q_PROPERTY(bool usesNativeFileDialog READ usesNativeFileDialog WRITE setUsesNativeFileDialog)
   Q_PROPERTY(QString filter READ filter WRITE setFilter)
-#if QT_VERSION >= 0x040200 && !defined(QT_NO_COMPLETER)
-  Q_PROPERTY(QCompleter::CompletionMode completionMode READ completionMode WRITE setCompletionMode)
-  Q_ENUMS(QCompleter::CompletionMode)
-#endif
 public:
   QwwFileChooser(QWidget *parent=0);
   virtual ~QwwFileChooser(){}
@@ -61,9 +61,8 @@ public slots:
 protected:
   void paintEvent(QPaintEvent *e);
 private:
-  Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &s))
+  Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &s));
   WW_DECLARE_PRIVATE(QwwFileChooser);
-  Q_DISABLE_COPY(QwwFileChooser);
 };
 
 #endif

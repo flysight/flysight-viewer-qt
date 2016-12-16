@@ -44,9 +44,8 @@ protected:
     void paintEvent(QPaintEvent*);
 private:
     WW_DECLARE_PRIVATE(QwwRichTextButton);
-	Q_PRIVATE_SLOT(d_func(), void _q_documentSizeChanged(const QSizeF &))
-	Q_PRIVATE_SLOT(d_func(), void _q_documentDestroyed())
-	Q_DISABLE_COPY(QwwRichTextButton);
+    Q_PRIVATE_SLOT(d_func(), void _q_documentSizeChanged(const QSizeF &));
+    Q_PRIVATE_SLOT(d_func(), void _q_documentDestroyed());
 };
 #endif
 #endif

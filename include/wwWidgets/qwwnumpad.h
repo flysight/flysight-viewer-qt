@@ -33,8 +33,7 @@ signals:
     void asteriskClicked();
 private:
     WW_DECLARE_PRIVATE(QwwNumPad);
-	Q_PRIVATE_SLOT(d_func(), void _q_clicked(int))
-	Q_DISABLE_COPY(QwwNumPad);
+    Q_PRIVATE_SLOT(d_func(), void _q_clicked(int));
 };
 
 #endif

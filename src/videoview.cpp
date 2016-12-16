@@ -4,10 +4,10 @@
 #include <QDir>
 #include <QFileDialog>
 
-#include <vlc-qt/Common.h>
-#include <vlc-qt/Instance.h>
-#include <vlc-qt/Media.h>
-#include <vlc-qt/MediaPlayer.h>
+#include <VLCQtCore/Common.h>
+#include <VLCQtCore/Instance.h>
+#include <VLCQtCore/Media.h>
+#include <VLCQtCore/MediaPlayer.h>
 
 #include "common.h"
 #include "mainwindow.h"

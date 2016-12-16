@@ -38,8 +38,7 @@ public slots:
     void setCurrentRow(int);
 private:
     WW_DECLARE_PRIVATE(QwwListWidget);
-	Q_PRIVATE_SLOT(d_func(), void _q_curCh(QListWidgetItem*))
-	Q_DISABLE_COPY(QwwListWidget);
+    Q_PRIVATE_SLOT(d_func(), void _q_curCh(QListWidgetItem*));
 };
 
 #endif

@@ -64,9 +64,8 @@ protected:
     void dragEnterEvent(QDragEnterEvent *);
     void dropEvent(QDropEvent *);
 private:
-	Q_DISABLE_COPY(QwwColorComboBox);
-	Q_PRIVATE_SLOT(d_func(), void _q_activated(int))
-	Q_PRIVATE_SLOT(d_func(), void _q_popupDialog())
+    Q_PRIVATE_SLOT(d_func(), void _q_activated(int));
+    Q_PRIVATE_SLOT(d_func(), void _q_popupDialog());
     WW_DECLARE_PRIVATE(QwwColorComboBox);
 };
 

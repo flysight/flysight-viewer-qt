@@ -64,7 +64,6 @@ public slots:
     void setUser(const QString &user, const QString &pass=QString::null);
 private:
     WW_DECLARE_PRIVATE(QwwLoginBox);
-	Q_DISABLE_COPY(QwwLoginBox);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QwwLoginBox::Fields)
 

@@ -28,58 +28,54 @@ class QToolButton;
 class QwwButtonLineEditPrivate;
 
 class Q_WW_EXPORT QwwButtonLineEdit : public QLineEdit, public QwwPrivatable {
-	Q_OBJECT
-	Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
-	Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
-	Q_PROPERTY(Position buttonPosition READ buttonPosition WRITE setButtonPosition)
-	Q_PROPERTY(bool buttonVisible READ buttonIsVisible WRITE setButtonVisible)
-	Q_PROPERTY(QString regExp READ regExp WRITE setRegExp)
-	Q_PROPERTY(Qt::FocusPolicy buttonFocusPolicy READ buttonFocusPolicy WRITE setButtonFocusPolicy)
+  Q_OBJECT
+  Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
+  Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
+  Q_ENUMS(Position)
+  Q_PROPERTY(Position buttonPosition READ buttonPosition WRITE setButtonPosition)
+  Q_PROPERTY(bool buttonVisible READ buttonIsVisible WRITE setButtonVisible)
+  Q_PROPERTY(QString regExp READ regExp WRITE setRegExp)
+  Q_PROPERTY(Qt::FocusPolicy buttonFocusPolicy READ buttonFocusPolicy WRITE setButtonFocusPolicy)
 #if QT_VERSION < 0x040700
-	Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
+  Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
 #endif
-	Q_ENUMS(Position)
 public:
-	enum Position { None = 0, RightOutside = 1, RightInside = 2, LeftOutside = 3, LeftInside = 4 };
-	QwwButtonLineEdit(QWidget *parent=0);
-	QwwButtonLineEdit(const QString &contents, QWidget *parent=0);
-	QIcon icon() const;
-	bool autoRaise() const;
-	Position buttonPosition() const;
-	void setButtonPosition(Position pos);
-	bool buttonIsVisible() const;
-	QString regExp() const;
-	Qt::FocusPolicy buttonFocusPolicy() const;
-	void setButtonFocusPolicy(Qt::FocusPolicy);
+    enum Position { None = 0, RightOutside = 1, RightInside = 2, LeftOutside = 3, LeftInside = 4 };
+    QwwButtonLineEdit(QWidget *parent=0);
+    QwwButtonLineEdit(const QString &contents, QWidget *parent=0);
+    QIcon icon() const;
+    bool autoRaise() const;
+    Position buttonPosition() const;
+    void setButtonPosition(Position pos);
+    bool buttonIsVisible() const;
+    QString regExp() const;
+    Qt::FocusPolicy buttonFocusPolicy() const;
+    void setButtonFocusPolicy(Qt::FocusPolicy);
 #if QT_VERSION < 0x040700
-	QString placeholderText() const;
+    QString placeholderText() const;
 #endif
 public slots:
-	void setRegExp(const QString &);
-	void setRegExp(const QRegExp &);
-#if QT_VERSION >= 0x050000
-	void setRegularExpression(const QRegularExpression &);
-#endif
-	void setIcon(const QIcon &);
-	void setAutoRaise(bool);
-	void setButtonVisible(bool);
+    void setRegExp(const QString &);
+    void setRegExp(const QRegExp &);
+    void setIcon(const QIcon &);
+    void setAutoRaise(bool);
+    void setButtonVisible(bool);
 #if QT_VERSION < 0x040700
-	void setPlaceholderText(const QString &);
+    void setPlaceholderText(const QString &);
 #endif
 signals:
-	void buttonClicked();
-	void validatorChanged(const QString&);
+    void buttonClicked();
+    void validatorChanged(const QString&);
 protected:
-	QwwButtonLineEdit(QwwButtonLineEditPrivate &priv, QWidget *parent);
+    QwwButtonLineEdit(QwwButtonLineEditPrivate &priv, QWidget *parent);
 #if QT_VERSION < 0x040700
-	void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *);
 #endif
-	void resizeEvent(QResizeEvent *ev);
-	void actionEvent(QActionEvent *ev);
-	QToolButton *button() const;
+    void resizeEvent(QResizeEvent *ev);
+    void actionEvent(QActionEvent *ev);
+    QToolButton *button() const;
 private:
-	WW_DECLARE_PRIVATE(QwwButtonLineEdit);
-	Q_DISABLE_COPY(QwwButtonLineEdit);
+  WW_DECLARE_PRIVATE(QwwButtonLineEdit);
 };
 
 #endif

@@ -141,7 +141,7 @@ INCLUDEPATH += ../include/GeographicLib
 
 win32 {
     LIBS += -L../lib
-    LIBS += -lvlc-qt -lvlc-qt-widgets
+    LIBS += -lVLCQtCore -l VLCQtQml -lVLCQtWidgets
     LIBS += -lwwwidgets4
 }
 else:macx {
@@ -156,3 +156,5 @@ else {
     LIBS += -lvlc-qt -lvlc-qt-widgets
     LIBS += -lwwwidgets4
 }
+
+DISTFILES +=

@@ -58,7 +58,7 @@ protected:
     virtual void paintSection(QPainter *p, const QRect &rect, const QColor &color);
 private:
     WW_DECLARE_PRIVATE(QwwTwoColorIndicator);
-	Q_DISABLE_COPY(QwwTwoColorIndicator);
+
 };
 
 #endif // WW_NO_TWOCOLORINDICATOR

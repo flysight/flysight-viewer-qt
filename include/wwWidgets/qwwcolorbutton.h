@@ -4,7 +4,7 @@
 // Description:
 //
 //
-// Author: Witold Wysota <wysota@wysota.eu.org>, (C) 2007-2014
+// Author: Witold Wysota <wysota@wysota.eu.org>, (C) 2007
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -50,11 +50,10 @@ protected:
     void dropEvent(QDropEvent*);
 private:
     WW_DECLARE_PRIVATE(QwwColorButton);
-	Q_DISABLE_COPY(QwwColorButton);
-	Q_PRIVATE_SLOT(d_func(), void _q_clicked())
-	Q_PRIVATE_SLOT(d_func(), void _q_activated(const QModelIndex &))
-	Q_PRIVATE_SLOT(d_func(), void _q_colorDialogRequested())
-	Q_PRIVATE_SLOT(d_func(), void _q_setCurrentIndex(const QModelIndex &))
+    Q_PRIVATE_SLOT(d_func(), void _q_clicked());
+    Q_PRIVATE_SLOT(d_func(), void _q_activated(const QModelIndex &));
+    Q_PRIVATE_SLOT(d_func(), void _q_colorDialogRequested());
+    Q_PRIVATE_SLOT(d_func(), void _q_setCurrentIndex(const QModelIndex &));
 };
 
 #endif // WW_NO_COLORBUTTON

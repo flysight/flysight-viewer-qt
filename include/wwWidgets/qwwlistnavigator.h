@@ -28,11 +28,11 @@ class QwwListWidget;
 
 class Q_WW_EXPORT QwwListNavigator : public QAbstractSlider, public QwwPrivatable {
     Q_OBJECT
-	Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
-	Q_PROPERTY(Buttons buttons READ buttons WRITE setButtons)
-	Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
-	Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
-	Q_FLAGS(Buttons)
+    Q_FLAGS(Buttons)
+    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation);
+    Q_PROPERTY(Buttons buttons READ buttons WRITE setButtons);
+    Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise);
+    Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle);
 public:
     enum Button {
         NoButtons = 0,
@@ -69,8 +69,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_valueChanged(int));
     Q_PRIVATE_SLOT(d_func(), void _q_updateLWRange());
     Q_PRIVATE_SLOT(d_func(), void _q_disconnectListWidget());
+private:
     WW_DECLARE_PRIVATE(QwwListNavigator);
-	Q_DISABLE_COPY(QwwListNavigator);
 };
 
 #endif

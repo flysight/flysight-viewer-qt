@@ -20,13 +20,13 @@ class QwwLedPrivate;
 class Q_WW_EXPORT QwwLed : public QWidget, public QwwPrivatable
 {
 Q_OBJECT
-	Q_PROPERTY(QColor color READ color WRITE setColor)
-	Q_PROPERTY(bool checked READ isChecked WRITE setChecked)
-	Q_PROPERTY(Shape shape READ shape WRITE setShape)
-	Q_PROPERTY(int frameWidth READ frameWidth WRITE setFrameWidth)
-	Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-	Q_PROPERTY(int period READ period WRITE setPeriod)
-	Q_ENUMS(Shape)
+Q_ENUMS(Shape)
+Q_PROPERTY(QColor color READ color WRITE setColor)
+Q_PROPERTY(bool checked READ isChecked WRITE setChecked)
+Q_PROPERTY(Shape shape READ shape WRITE setShape)
+Q_PROPERTY(int frameWidth READ frameWidth WRITE setFrameWidth)
+Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
+Q_PROPERTY(int period READ period WRITE setPeriod)
 public:
     enum Shape { Circular, RectangularSunken, RectangularRaised, RectangularPlain};
     QwwLed(QWidget *parent = 0);
@@ -59,7 +59,6 @@ protected:
     void timerEvent(QTimerEvent *te);
 private:
     WW_DECLARE_PRIVATE(QwwLed);
-	Q_DISABLE_COPY(QwwLed);
 };
 
 #endif

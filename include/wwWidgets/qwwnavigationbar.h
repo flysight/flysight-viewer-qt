@@ -63,6 +63,9 @@ public slots:
 protected:
     virtual void actionEvent(QActionEvent *ev);
     bool eventFilter(QObject *, QEvent *);
+private:
+    WW_DECLARE_PRIVATE(QwwNavigationBar);
+    Q_DISABLE_COPY(QwwNavigationBar);
 signals:
     void currentIndexChanged(int);
     void widgetLabelChanged(const QString &);
@@ -71,9 +74,7 @@ signals:
     void widgetLabelChanged(int index, const QString &);
     void widgetIconChanged(int index, const QIcon &);
 private:
-	Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked())
-	WW_DECLARE_PRIVATE(QwwNavigationBar);
-	Q_DISABLE_COPY(QwwNavigationBar)
+    Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked());
 };
 
 #endif
