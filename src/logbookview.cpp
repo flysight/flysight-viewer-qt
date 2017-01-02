@@ -88,6 +88,7 @@ void LogbookView::setMainWindow(
         MainWindow *mainWindow)
 {
     mMainWindow = mainWindow;
+    mMainWindow->setSelectedTracks(QVector< QString >());
 }
 
 void LogbookView::updateView()

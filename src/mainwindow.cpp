@@ -723,6 +723,7 @@ void MainWindow::setSelectedTracks(
         QVector< QString > tracks)
 {
     mSelectedTracks = tracks;
+    m_ui->actionDeleteTrack->setEnabled(!mSelectedTracks.empty());
 }
 
 void MainWindow::setTrackDescription(
