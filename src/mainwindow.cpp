@@ -531,10 +531,49 @@ void MainWindow::on_actionImport_triggered()
                                                           settings.value("folder").toString(),
                                                           tr("CSV Files (*.csv)"));
 
+    // Sort files from oldest to newest
+    qSort(fileNames);
+
     // Import each file
     foreach (QString fileName, fileNames)
     {
         importFile(fileName);
+    }
+}
+
+void MainWindow::on_actionImportFolder_triggered()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get folder to import
+    QString folderName = QFileDialog::getExistingDirectory(this,
+                                                           tr("Import Folder"),
+                                                           settings.value("folder").toString(),
+                                                           QFileDialog::ShowDirsOnly);
+
+    // Import each file
+    importFolder(folderName);
+}
+
+void MainWindow::importFolder(
+        QString folderName)
+{
+    QDir dir(folderName);
+
+    // Import each file in this folder
+    foreach (QString fileName, dir.entryList(QStringList() << "*.csv",
+                                             QDir::Files,
+                                             QDir::Name))
+    {
+        importFile(dir.absoluteFilePath(fileName));
+    }
+
+    // Follow subfolders
+    foreach (QString child, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot,
+                                          QDir::Name))
+    {
+        importFolder(dir.absoluteFilePath(child));
     }
 }
 

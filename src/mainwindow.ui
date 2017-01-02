@@ -46,6 +46,8 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionImport"/>
+    <addaction name="actionImportFolder"/>
+    <addaction name="separator"/>
     <addaction name="actionImportGates"/>
     <addaction name="actionImportVideo"/>
     <addaction name="separator"/>
@@ -684,6 +686,11 @@
   <action name="actionDeleteTrack">
    <property name="text">
     <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionImportFolder">
+   <property name="text">
+    <string>Import Folder...</string>
    </property>
   </action>
  </widget>
