@@ -144,6 +144,7 @@ protected:
 
 private slots:
     void on_actionImport_triggered();
+    void on_actionImportFolder_triggered();
 
     void on_actionElevation_triggered();
     void on_actionVerticalSpeed_triggered();
@@ -290,6 +291,7 @@ signals:
     void databaseChanged();
 
 public slots:
+    void importFolder(QString folderName);
     void importFile(QString fileName);
 
 private slots:
