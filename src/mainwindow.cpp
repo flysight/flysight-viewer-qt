@@ -1447,6 +1447,8 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setGroundReference(mGroundReference);
     dlg.setFixedReference(mFixedReference);
 
+    dlg.setDatabasePath(mDatabasePath);
+
     if (dlg.exec() == QDialog::Accepted)
     {
         if (m_units != dlg.units())
@@ -1547,6 +1549,18 @@ void MainWindow::on_actionPreferences_triggered()
             initAltitude();
 
             emit dataChanged();
+        }
+
+        if (mDatabasePath != dlg.databasePath())
+        {
+            // Change the database path
+            mDatabasePath = dlg.databasePath();
+
+            // Open/create database
+            initDatabase();
+
+            // Update views
+            emit databaseChanged();
         }
     }
 }
