@@ -147,7 +147,10 @@
   </widget>
   <action name="actionImport">
    <property name="text">
-    <string>Import &amp;Track...</string>
+    <string>Import &amp;Tracks...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import Tracks</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>

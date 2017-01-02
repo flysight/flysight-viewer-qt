@@ -526,13 +526,16 @@ void MainWindow::on_actionImport_triggered()
     QSettings settings("FlySight", "Viewer");
 
     // Get file to import
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Import Track"),
-                                                    settings.value("folder").toString(),
-                                                    tr("CSV Files (*.csv)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+                                                          tr("Import Tracks"),
+                                                          settings.value("folder").toString(),
+                                                          tr("CSV Files (*.csv)"));
 
-    // Import the file
-    if (!fileName.isEmpty()) importFile(fileName);
+    // Import each file
+    foreach (QString fileName, fileNames)
+    {
+        importFile(fileName);
+    }
 }
 
 void MainWindow::importFile(
