@@ -66,6 +66,21 @@ ConfigDialog::~ConfigDialog()
     delete ui;
 }
 
+void ConfigDialog::on_browseButton_clicked()
+{
+    // Get new settings file
+    QString rootFolder = QFileDialog::getExistingDirectory(
+                this,
+                "",
+                ui->logbookFolderEdit->text());
+
+    if (!rootFolder.isEmpty())
+    {
+        // Update database path
+        ui->logbookFolderEdit->setText(rootFolder);
+    }
+}
+
 void ConfigDialog::changePage(
         QListWidgetItem *current,
         QListWidgetItem *previous)
@@ -316,4 +331,16 @@ void ConfigDialog::setWindDirection(
 double ConfigDialog::windDirection() const
 {
     return ui->windDirectionEdit->text().toDouble();
+}
+
+void ConfigDialog::setDatabasePath(
+        QString databasePath)
+{
+    // Update database path
+    ui->logbookFolderEdit->setText(databasePath);
+}
+
+QString ConfigDialog::databasePath() const
+{
+    return ui->logbookFolderEdit->text();
 }

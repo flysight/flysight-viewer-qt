@@ -139,6 +139,8 @@ public:
     void setSelectedTracks(QVector< QString > tracks);
     void setTrackDescription(const QString &trackName, const QString &description);
 
+    QString databasePath() const { return mDatabasePath; }
+
 protected:
     void closeEvent(QCloseEvent *event);
 

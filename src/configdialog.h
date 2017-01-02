@@ -71,10 +71,15 @@ public:
     void setWindDirection(double dir);
     double windDirection() const;
 
+    void setDatabasePath(QString databasePath);
+    QString databasePath() const;
+
 private:
     Ui::ConfigDialog *ui;
 
 private slots:
+    void on_browseButton_clicked();
+
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void updatePlots();
 };
