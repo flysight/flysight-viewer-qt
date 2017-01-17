@@ -79,6 +79,7 @@ private:
 
 private slots:
     void on_browseButton_clicked();
+    void on_defaultsButton_clicked();
 
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void updatePlots();

@@ -81,6 +81,30 @@ void ConfigDialog::on_browseButton_clicked()
     }
 }
 
+void ConfigDialog::on_defaultsButton_clicked()
+{
+    MainWindow *mainWindow = (MainWindow *) parent();
+
+    // Color list
+    QStringList colorNames = QColor::colorNames();
+
+    for (int i = 0; i < DataPlot::yaLast; ++i)
+    {
+        if (QComboBox *combo = (QComboBox *) ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR))
+        {
+            PlotValue *yValue = mainWindow->plotArea()->yValue(i);
+            foreach (const QString &colorName, colorNames)
+            {
+                const QColor &color(colorName);
+                if (color == yValue->defaultColor())
+                {
+                    combo->setCurrentText(colorName);
+                }
+            }
+        }
+    }
+}
+
 void ConfigDialog::changePage(
         QListWidgetItem *current,
         QListWidgetItem *previous)
