@@ -84,7 +84,7 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         mVisible = settings.value("visible", mVisible).toBool();
-        mColor = settings.value("color", mColor).value<QColor>();
+        mColor.setRgba(settings.value("rgba", mColor.rgba()).toUInt());
         mMinimum = settings.value("minimum", mMinimum).toDouble();
         mMaximum = settings.value("maximum", mMaximum).toDouble();
         mUseMinimum = settings.value("useMinimum", mUseMinimum).toBool();
@@ -97,7 +97,7 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         settings.setValue("visible", mVisible);
-        settings.setValue("color", mColor);
+        settings.setValue("rgba", mColor.rgba());
         settings.setValue("minimum", mMinimum);
         settings.setValue("maximum", mMaximum);
         settings.setValue("useMinimum", mUseMinimum);
