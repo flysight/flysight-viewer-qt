@@ -31,7 +31,7 @@
        <item>
         <widget class="QStackedWidget" name="pagesWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="general">
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -278,26 +278,37 @@
            <item>
             <widget class="QTableWidget" name="plotTable">
              <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Line thickness:</string>
-               </property>
-              </widget>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Line thickness:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="lineThicknessEdit"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>pixels</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineThicknessEdit"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_3">
+              <widget class="QPushButton" name="defaultsButton">
                <property name="text">
-                <string>pixels</string>
+                <string>Default Colours</string>
                </property>
               </widget>
              </item>

@@ -23,7 +23,8 @@ public:
         Imperial
     } Units;
 
-    PlotValue(bool visible, QColor color): mVisible(visible), mColor(color),
+    PlotValue(bool visible, QColor color): mVisible(visible),
+        mColor(color), mDefaultColor(color),
         mMinimum(0), mMaximum(1), mUseMinimum(false), mUseMaximum(false) {}
 
     virtual const QString titleText() const = 0;
@@ -38,6 +39,7 @@ public:
 
     void setColor(const QColor &color) { mColor = color; }
     const QColor &color() const { return mColor; }
+    const QColor &defaultColor() const { return mDefaultColor; }
 
     double value(const DataPoint &dp, Units units) const
     {
@@ -84,7 +86,7 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         mVisible = settings.value("visible", mVisible).toBool();
-        mColor = settings.value("color", mColor).value<QColor>();
+        mColor.setRgba(settings.value("rgba", mColor.rgba()).toUInt());
         mMinimum = settings.value("minimum", mMinimum).toDouble();
         mMaximum = settings.value("maximum", mMaximum).toDouble();
         mUseMinimum = settings.value("useMinimum", mUseMinimum).toBool();
@@ -97,7 +99,7 @@ public:
         QSettings settings("FlySight", "Viewer");
         settings.beginGroup("plotValue/" + key());
         settings.setValue("visible", mVisible);
-        settings.setValue("color", mColor);
+        settings.setValue("rgba", mColor.rgba());
         settings.setValue("minimum", mMinimum);
         settings.setValue("maximum", mMaximum);
         settings.setValue("useMinimum", mUseMinimum);
@@ -110,6 +112,7 @@ public:
 private:
     bool     mVisible;
     QColor   mColor;
+    QColor   mDefaultColor;
     double   mMinimum, mMaximum;
     bool     mUseMinimum, mUseMaximum;
     QCPAxis *mAxis;
