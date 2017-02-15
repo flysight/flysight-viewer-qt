@@ -25,3 +25,28 @@
   1. Select the new disk image and click Open.
   2. Check that `Image Format` is set to `compressed`.
   3. Click Save.
+
+## Ubuntu Linux
+
+```bash
+sudo apt install libqt5webkit5-dev
+sudo add-apt-repository ppa:ntadej/tano
+sudo apt update
+sudo apt install libvlc-qt-dev
+sudo cp /usr/lib/libVLCQtCore.so /usr/lib/libvlc-qt.so
+sudo cp /usr/lib/libVLCQtWidgets.so /usr/lib/libvlc-qt-widgets.so
+
+export QT_SELECT=qt5
+
+# Download wwWidgets source from: http://www.wysota.eu.org/wwwidgets/#download
+cd wwWidgets
+qmake
+make sub-widgets
+sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so
+sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so.1
+
+# Build FlySightViewer
+cd flysight-viewer-qt/src
+qmake
+make
+```
