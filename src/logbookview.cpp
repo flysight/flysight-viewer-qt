@@ -1,5 +1,5 @@
-#include "LogbookView.h"
-#include "ui_LogbookView.h"
+#include "logbookview.h"
+#include "ui_logbookview.h"
 
 #include <QDateTime>
 #include <QMessageBox>
