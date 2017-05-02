@@ -50,3 +50,18 @@ cd flysight-viewer-qt/src
 qmake
 make
 ```
+
+If you have trouble building FlySight Viewer on Linux, check your Qt version number using the following command:
+
+`qmake --version`
+
+FlySight Viewer requires Qt version 5.5. If you have a different version installed, you will need to follow these steps to build with Qt 5.5:
+
+1. Download Qt 5.5 from https://www.qt.io/download-open-source/. Install to `~/Qt`.
+2. Edit `FlySightViewer.pro` to add the following lines:
+```
+LIBS += -L/home/$USER/Qt/5.5/gcc_64/lib
+INCLUDEPATH += /home/$USER/Qt/5.5/gcc_64/include
+INCLUDEPATH += /home/$USER/Qt/5.5/gcc_64/include/QtCore
+```
+3. Run `make` again.
