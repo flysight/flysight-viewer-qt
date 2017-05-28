@@ -102,6 +102,14 @@ void DataView::mouseMoveEvent(
 
 void DataView::updateView()
 {
+    clearPlottables();
+
+    m_cursors.clear();
+
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
@@ -167,10 +175,6 @@ void DataView::updateView()
             }
         }
     }
-
-    clearPlottables();
-
-    m_cursors.clear();
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     switch (mDirection)
