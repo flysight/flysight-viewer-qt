@@ -74,6 +74,9 @@ void WindPlot::updatePlot()
     clearPlottables();
     clearItems();
 
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
