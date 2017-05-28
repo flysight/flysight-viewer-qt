@@ -107,6 +107,9 @@ void WideOpenDistanceScoring::setMapMode(
 void WideOpenDistanceScoring::prepareDataPlot(
         DataPlot *plot)
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     DataPoint dpBottom;
     bool success = getWindowBounds(mMainWindow->data(), dpBottom);
 
