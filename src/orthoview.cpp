@@ -146,6 +146,16 @@ void OrthoView::endTimer()
 
 void OrthoView::updateView()
 {
+    clearPlottables();
+    clearItems();
+
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
+    double lower = mMainWindow->rangeLower();
+    double upper = mMainWindow->rangeUpper();
+
     // Calculate camera vectors
     QVector3D up(-sin(m_elevation) * cos(m_azimuth),
                  -sin(m_elevation) * sin(m_azimuth),
@@ -154,9 +164,6 @@ void OrthoView::updateView()
                  cos(m_elevation) * sin(m_azimuth),
                  sin(m_elevation));
     QVector3D rt = QVector3D::crossProduct(up, bk);
-
-    double lower = mMainWindow->rangeLower();
-    double upper = mMainWindow->rangeUpper();
 
     QVector< double > t, x, y, z;
 
@@ -226,9 +233,6 @@ void OrthoView::updateView()
             }
         }
     }
-
-    clearPlottables();
-    clearItems();
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
