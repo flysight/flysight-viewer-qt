@@ -141,6 +141,10 @@ void LiftDragPlot::updatePlot()
     xAxis->setLabel(tr("Drag Coefficient"));
     yAxis->setLabel(tr("Lift Coefficient"));
 
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
