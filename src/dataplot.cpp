@@ -530,19 +530,12 @@ void DataPlot::updateYRanges()
 
 void DataPlot::updatePlot()
 {
-    xAxis->setLabel(xValue()->title(mMainWindow->units()));
-
-    QVector< double > x;
-    for (int i = 0; i < mMainWindow->dataSize(); ++i)
-    {
-        const DataPoint &dp = mMainWindow->dataPoint(i);
-        x.append(xValue()->value(dp, mMainWindow->units()));
-    }
-
     clearPlottables();
     clearItems();
 
     m_cursors.clear();
+
+    xAxis->setLabel(xValue()->title(mMainWindow->units()));
 
     // Remove all axes
     while (axisRect()->axisCount(QCPAxis::atLeft) > 0)
@@ -557,11 +550,22 @@ void DataPlot::updatePlot()
         QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
     }
 
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
     // Draw annotations on plot background
     mMainWindow->prepareDataPlot(this);
 
-    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
-    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+    QVector< double > x;
+    for (int i = 0; i < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp = mMainWindow->dataPoint(i);
+        x.append(xValue()->value(dp, mMainWindow->units()));
+    }
 
     // Draw plots
     for (int j = 0; j < yaLast; ++j)
