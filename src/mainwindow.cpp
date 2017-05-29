@@ -25,6 +25,7 @@
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
+#include "flarescoring.h"
 #include "importworker.h"
 #include "liftdragplot.h"
 #include "logbookview.h"
@@ -75,6 +76,7 @@ MainWindow::MainWindow(
     mScoringMethods.append(new PerformanceScoring(this));
     mScoringMethods.append(new WideOpenSpeedScoring(this));
     mScoringMethods.append(new WideOpenDistanceScoring(this));
+    mScoringMethods.append(new FlareScoring(this));
 
     // Read scoring method settings
     for (int i = PPC; i < smLast; ++i)

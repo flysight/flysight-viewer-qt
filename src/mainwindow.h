@@ -39,7 +39,7 @@ public:
     } OptimizationMode;
 
     typedef enum {
-        PPC, Speed, Performance, WideOpenSpeed, WideOpenDistance, smLast
+        PPC, Speed, Performance, WideOpenSpeed, WideOpenDistance, Flare, smLast
     } ScoringMode;
 
     typedef enum {

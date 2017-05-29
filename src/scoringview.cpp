@@ -8,6 +8,7 @@
 #include "speedform.h"
 #include "wideopendistanceform.h"
 #include "wideopenspeedform.h"
+#include "flareform.h"
 
 ScoringView::ScoringView(QWidget *parent) :
     QWidget(parent),
@@ -22,13 +23,15 @@ ScoringView::ScoringView(QWidget *parent) :
     mPerformanceForm = new PerformanceForm(this);
     mWideOpenSpeedForm = new WideOpenSpeedForm(this);
     mWideOpenDistanceForm = new WideOpenDistanceForm(this);
+    mFlareForm = new FlareForm(this);
 
     // Add options to combo box
     ui->modeComboBox->addItem("PPC");
-    ui->modeComboBox->addItem("Speed");
-    ui->modeComboBox->addItem("Records");
+    ui->modeComboBox->addItem("Speed Skydiving");
+    ui->modeComboBox->addItem("Performance Records");
     ui->modeComboBox->addItem("WOWS Speed");
     ui->modeComboBox->addItem("WOWS Distance");
+    ui->modeComboBox->addItem("Maximum Flare");
 
     // Add forms to stacked view
     ui->stackedWidget->addWidget(mPPCForm);
@@ -36,6 +39,7 @@ ScoringView::ScoringView(QWidget *parent) :
     ui->stackedWidget->addWidget(mPerformanceForm);
     ui->stackedWidget->addWidget(mWideOpenSpeedForm);
     ui->stackedWidget->addWidget(mWideOpenDistanceForm);
+    ui->stackedWidget->addWidget(mFlareForm);
 
     // Connect mode combo to stacked widget
     connect(ui->modeComboBox, SIGNAL(activated(int)),
@@ -62,6 +66,7 @@ void ScoringView::setMainWindow(
     mPerformanceForm->setMainWindow(mainWindow);
     mWideOpenSpeedForm->setMainWindow(mainWindow);
     mWideOpenDistanceForm->setMainWindow(mainWindow);
+    mFlareForm->setMainWindow(mainWindow);
 }
 
 void ScoringView::updateView()
@@ -83,6 +88,9 @@ void ScoringView::updateView()
         break;
     case MainWindow::WideOpenDistance:
         mWideOpenDistanceForm->updateView();
+        break;
+    case MainWindow::Flare:
+        mFlareForm->updateView();
         break;
     }
 }
