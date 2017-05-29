@@ -21,6 +21,9 @@ public:
 
     void setMainWindow(MainWindow *mainWindow);
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *);
+
 private:
     Ui::FlareForm *ui;
     MainWindow  *mMainWindow;
@@ -29,6 +32,8 @@ public slots:
     void updateView();
 
 private slots:
+    void onApplyButtonClicked();
+
     void onActualButtonClicked();
     void onOptimalButtonClicked();
     void onOptimizeButtonClicked();

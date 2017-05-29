@@ -17,6 +17,8 @@ FlareForm::FlareForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
     // Connect optimization buttons
     connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
     connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
@@ -47,6 +49,11 @@ void FlareForm::updateView()
     ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
 
     FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Flare);
+
+    const double bottom = method->windowBottom();
+
+    // Update window bounds
+    ui->bottomEdit->setText(QString("%1").arg(bottom));
 
     DataPoint dpBottom, dpTop;
     bool success;
@@ -92,6 +99,30 @@ void FlareForm::updateView()
 
         ui->flareEdit->setText(tr("n/a"));
     }
+}
+
+void FlareForm::onApplyButtonClicked()
+{
+    double bottom = ui->bottomEdit->text().toDouble();
+
+    FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Flare);
+    method->setWindowBottom(bottom);
+
+    mMainWindow->setFocus();
+}
+
+void FlareForm::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        // Reset window bounds
+        updateView();
+
+        // Release focus
+        mMainWindow->setFocus();
+    }
+
+    QWidget::keyPressEvent(event);
 }
 
 void FlareForm::onActualButtonClicked()

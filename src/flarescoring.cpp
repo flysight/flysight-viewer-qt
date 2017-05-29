@@ -5,9 +5,17 @@
 FlareScoring::FlareScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
-    mMainWindow(mainWindow)
+    mMainWindow(mainWindow),
+    mWindowBottom(2000)
 {
 
+}
+
+void FlareScoring::setWindowBottom(
+        double windowBottom)
+{
+    mWindowBottom = windowBottom;
+    emit scoringChanged();
 }
 
 double FlareScoring::score(
@@ -125,7 +133,7 @@ bool FlareScoring::getWindowBounds(
     {
         const DataPoint &dp = result[i];
 
-        if (i == result.size() - 1)
+        if ((i == result.size() - 1) || (dp.z < mWindowBottom))
         {
             dpTop = dpBottom = dpPrev = dp;
         }
@@ -153,11 +161,4 @@ bool FlareScoring::getWindowBounds(
     }
 
     return (result.size() > 0) && (dpTop.hMSL > dpBottom.hMSL);
-}
-
-void FlareScoring::optimize()
-{
-    DataPoint dp0 = mMainWindow->interpolateDataT(0);
-
-    ScoringMethod::optimize(mMainWindow, dp0.z - 1000);
 }

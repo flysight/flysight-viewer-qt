@@ -15,6 +15,36 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Bottom:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="bottomEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>m</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
       <string>Results</string>

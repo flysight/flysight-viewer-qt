@@ -10,6 +10,9 @@ class FlareScoring : public ScoringMethod
 public:
     FlareScoring(MainWindow *mainWindow);
 
+    double windowBottom(void) const { return mWindowBottom; }
+    void setWindowBottom(double windowBottom);
+
     double score(const QVector< DataPoint > &result);
     QString scoreAsText(double score);
 
@@ -18,10 +21,12 @@ public:
     bool getWindowBounds(const QVector< DataPoint > &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
 
-    void optimize();
+    void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
 
 private:
     MainWindow *mMainWindow;
+
+    double      mWindowBottom;
 
 signals:
 
