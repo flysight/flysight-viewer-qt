@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QMap>
 #include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
@@ -144,6 +145,9 @@ public:
     void setSelectedTracks(QVector< QString > tracks);
     void setTrackDescription(const QString &trackName, const QString &description);
 
+    void setTrackChecked(const QString &trackName, bool checked);
+    bool trackChecked(const QString &trackName) const;
+
     QString databasePath() const { return mDatabasePath; }
 
 protected:
@@ -258,6 +262,7 @@ private:
 
     QString               mTrackName;
     QVector< QString >    mSelectedTracks;
+    QSet< QString >       mCheckedTracks;
 
     void writeSettings();
     void readSettings();

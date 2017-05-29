@@ -65,8 +65,6 @@ LogbookView::LogbookView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    updateView();
-
     connect(ui->tableWidget, SIGNAL(cellDoubleClicked(int,int)),
             this, SLOT(onDoubleClick(int,int)));
     connect(ui->tableWidget, SIGNAL(itemSelectionChanged()),
@@ -159,7 +157,7 @@ void LogbookView::updateView()
         QDateTime importTime = QDateTime::fromString(query.value(10).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
         qint64 duration = query.value(4).toString().toLongLong();
 
-        if (mMainWindow && mMainWindow->trackName() == query.value(1).toString())
+        if (mMainWindow->trackName() == query.value(1).toString())
         {
             QTableWidgetItem *item = new QTableWidgetItem;
             item->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -172,7 +170,8 @@ void LogbookView::updateView()
 
         QTableWidgetItem *item = new QTableWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Unchecked);
+        item->setCheckState(mMainWindow->trackChecked(
+                                query.value(1).toString()) ? Qt::Checked : Qt::Unchecked);
         ui->tableWidget->setItem(index, 1, item);
 
         ui->tableWidget->setItem(index, 2, new IntItem(query.value(0).toString()));             // id
@@ -236,15 +235,25 @@ void LogbookView::onSelectionChanged()
 void LogbookView::onItemChanged(
         QTableWidgetItem *item)
 {
-    // Return if not editing description
-    if (item->column() != 4) return;
+    if (item->column() == 1)
+    {
+        // Get file name
+        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
+        if (!nameItem) return;
 
-    // Get file name
-    QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
-    if (!nameItem) return;
+        // Update check state
+        mMainWindow->setTrackChecked(nameItem->text(),
+                                     item->checkState() == Qt::Checked);
+    }
+    else if (item->column() == 4)
+    {
+        // Get file name
+        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
+        if (!nameItem) return;
 
-    // Update description
-    mMainWindow->setTrackDescription(nameItem->text(), item->text());
+        // Update description
+        mMainWindow->setTrackDescription(nameItem->text(), item->text());
+    }
 }
 
 void LogbookView::onSearchTextChanged(

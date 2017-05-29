@@ -438,6 +438,7 @@ void MainWindow::initLogbookView()
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
     logbookView->setMainWindow(this);
+    logbookView->updateView();
 
     connect(m_ui->actionShowLogbookView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
@@ -768,6 +769,20 @@ void MainWindow::setTrackDescription(
     }
 
     emit databaseChanged();
+}
+
+void MainWindow::setTrackChecked(
+        const QString &trackName,
+        bool checked)
+{
+    if (checked) mCheckedTracks.insert(trackName);
+    else         mCheckedTracks.remove(trackName);
+}
+
+bool MainWindow::trackChecked(
+        const QString &trackName) const
+{
+    return mCheckedTracks.contains(trackName);
 }
 
 void MainWindow::import(
