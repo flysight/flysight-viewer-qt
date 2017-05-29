@@ -5,20 +5,27 @@
 FlareScoring::FlareScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
-    mMainWindow(mainWindow),
-    mStartTime(0),
-    mEndTime(0)
+    mMainWindow(mainWindow)
 {
 
 }
 
-void FlareScoring::setRange(
-        double startTime,
-        double endTime)
+double FlareScoring::score(
+        const QVector< DataPoint > &result)
 {
-    mStartTime = startTime;
-    mEndTime = endTime;
-    emit scoringChanged();
+    DataPoint dpBottom, dpTop;
+    if (getWindowBounds(result, dpBottom, dpTop))
+    {
+        return dpTop.hMSL- dpBottom.hMSL;
+    }
+
+    return 0;
+}
+
+QString FlareScoring::scoreAsText(
+        double score)
+{
+    return QString::number(score) + QString(" m");
 }
 
 void FlareScoring::prepareDataPlot(
@@ -27,11 +34,21 @@ void FlareScoring::prepareDataPlot(
     // Return now if plot empty
     if (mMainWindow->dataSize() == 0) return;
 
-    DataPoint dpStart = mMainWindow->interpolateDataT(mStartTime);
-    DataPoint dpEnd = mMainWindow->interpolateDataT(mEndTime);
+    DataPoint dpBottom, dpTop;
+    bool success;
+
+    switch (mMainWindow->windowMode())
+    {
+    case MainWindow::Actual:
+        success = getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+        break;
+    case MainWindow::Optimal:
+        success = getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop);
+        break;
+    }
 
     // Add shading for scoring window
-    if (plot->yValue(DataPlot::Elevation)->visible())
+    if (success && plot->yValue(DataPlot::Elevation)->visible())
     {
         DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
         DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
@@ -42,8 +59,8 @@ void FlareScoring::prepareDataPlot(
         QVector< double > xElev, yElev;
 
         xElev << xMin << xMax;
-        yElev << plot->yValue(DataPlot::Elevation)->value(dpStart, mMainWindow->units())
-              << plot->yValue(DataPlot::Elevation)->value(dpStart, mMainWindow->units());
+        yElev << plot->yValue(DataPlot::Elevation)->value(dpBottom, mMainWindow->units())
+              << plot->yValue(DataPlot::Elevation)->value(dpBottom, mMainWindow->units());
 
         QCPGraph *graph = plot->addGraph(
                     plot->axisRect()->axis(QCPAxis::atBottom),
@@ -52,8 +69,8 @@ void FlareScoring::prepareDataPlot(
         graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
 
         yElev.clear();
-        yElev << plot->yValue(DataPlot::Elevation)->value(dpEnd, mMainWindow->units())
-              << plot->yValue(DataPlot::Elevation)->value(dpEnd, mMainWindow->units());
+        yElev << plot->yValue(DataPlot::Elevation)->value(dpTop, mMainWindow->units())
+              << plot->yValue(DataPlot::Elevation)->value(dpTop, mMainWindow->units());
 
         graph = plot->addGraph(
                     plot->axisRect()->axis(QCPAxis::atBottom),
@@ -74,7 +91,7 @@ void FlareScoring::prepareDataPlot(
         rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
         rect->bottomRight->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
         rect->bottomRight->setCoords(
-                    (plot->xValue()->value(dpStart, mMainWindow->units()) - xMin) / (xMax - xMin),
+                    (plot->xValue()->value(dpBottom, mMainWindow->units()) - xMin) / (xMax - xMin),
                     1.1);
 
         rect = new QCPItemRect(plot);
@@ -86,11 +103,61 @@ void FlareScoring::prepareDataPlot(
         rect->topLeft->setType(QCPItemPosition::ptAxisRectRatio);
         rect->topLeft->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
         rect->topLeft->setCoords(
-                    (plot->xValue()->value(dpEnd, mMainWindow->units()) - xMin) / (xMax - xMin),
+                    (plot->xValue()->value(dpTop, mMainWindow->units()) - xMin) / (xMax - xMin),
                     -0.1);
 
         rect->bottomRight->setType(QCPItemPosition::ptAxisRectRatio);
         rect->bottomRight->setAxes(plot->xAxis, plot->yValue(DataPlot::Elevation)->axis());
         rect->bottomRight->setCoords(1.1, 1.1);
     }
+}
+
+bool FlareScoring::getWindowBounds(
+        const QVector< DataPoint > &result,
+        DataPoint &dpBottom,
+        DataPoint &dpTop)
+{
+    int bottom, top;
+    double hBottom, hTop;
+    DataPoint dpPrev;
+
+    for (int i = result.size() - 1; i >= 0; --i)
+    {
+        const DataPoint &dp = result[i];
+
+        if (i == result.size() - 1)
+        {
+            dpTop = dpBottom = dpPrev = dp;
+        }
+
+        if (dp.hMSL < dpPrev.hMSL)
+        {
+            bottom = i;
+            hBottom = dp.hMSL;
+        }
+        else
+        {
+            bottom = top = i;
+            hBottom = hTop = dp.hMSL;
+        }
+
+        if (hTop - hBottom > dpTop.hMSL - dpBottom.hMSL)
+        {
+            dpTop = result[top];
+            dpBottom = result[bottom];
+        }
+
+        dpPrev = dp;
+
+        if (dp.t < 0) break;
+    }
+
+    return (result.size() > 0) && (dpTop.hMSL > dpBottom.hMSL);
+}
+
+void FlareScoring::optimize()
+{
+    DataPoint dp0 = mMainWindow->interpolateDataT(0);
+
+    ScoringMethod::optimize(mMainWindow, dp0.z - 1000);
 }

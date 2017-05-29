@@ -1,5 +1,5 @@
 #include "flareform.h"
-#include "ui_FlareForm.h"
+#include "ui_flareform.h"
 
 #include <QPushButton>
 
@@ -7,8 +7,8 @@
 #include "dataplot.h"
 #include "datapoint.h"
 #include "mainwindow.h"
-#include "flarescoring.h"
 #include "plotvalue.h"
+#include "FlareScoring.h"
 
 FlareForm::FlareForm(QWidget *parent) :
     QWidget(parent),
@@ -17,8 +17,10 @@ FlareForm::FlareForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->startEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
-    connect(ui->endEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+    // Connect optimization buttons
+    connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
+    connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
+    connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
 }
 
 FlareForm::~FlareForm()
@@ -40,59 +42,75 @@ void FlareForm::setMainWindow(
 
 void FlareForm::updateView()
 {
-    FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Performance);
+    // Update mode selection
+    ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
+    ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);
 
-    const double start = method->startTime();
-    const double end = method->endTime();
+    FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Flare);
 
-    // Update window bounds
-    ui->startEdit->setText(QString("%1").arg(start));
-    ui->endEdit->setText(QString("%1").arg(end));
+    DataPoint dpBottom, dpTop;
+    bool success;
 
-    DataPoint dpStart = mMainWindow->interpolateDataT(start);
-    DataPoint dpEnd = mMainWindow->interpolateDataT(end);
-
-    // Calculate results
-    const double time = dpEnd.t - dpStart.t;
-    const double vDistance = dpStart.z - dpEnd.z;
-    const double hDistance = MainWindow::getDistance(dpStart, dpEnd);
-
-    // Update display
-    ui->timeEdit->setText(QString("%1").arg(time, 0, 'f', 3));
-    ui->vDistanceEdit->setText(QString("%1").arg(vDistance, 0, 'f', 3));
-    ui->hDistanceEdit->setText(QString("%1").arg(hDistance, 0, 'f', 3));
-
-    // Auxiliary values
-    ui->startLatEdit->setText(QString("%1").arg(dpStart.lat, 0, 'f', 7));
-    ui->startLonEdit->setText(QString("%1").arg(dpStart.lon, 0, 'f', 7));
-    ui->startElevEdit->setText(QString("%1").arg(dpStart.hMSL, 0, 'f', 3));
-
-    ui->endLatEdit->setText(QString("%1").arg(dpEnd.lat, 0, 'f', 7));
-    ui->endLonEdit->setText(QString("%1").arg(dpEnd.lon, 0, 'f', 7));
-    ui->endElevEdit->setText(QString("%1").arg(dpEnd.hMSL, 0, 'f', 3));
-}
-
-void FlareForm::onApplyButtonClicked()
-{
-    double start = ui->startEdit->text().toDouble();
-    double end = ui->endEdit->text().toDouble();
-
-    FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Performance);
-    method->setRange(start, end);
-
-    mMainWindow->setFocus();
-}
-
-void FlareForm::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key() == Qt::Key_Escape)
+    switch (mMainWindow->windowMode())
     {
-        // Reset window bounds
-        updateView();
-
-        // Release focus
-        mMainWindow->setFocus();
+    case MainWindow::Actual:
+        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+        break;
+    case MainWindow::Optimal:
+        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop);
+        break;
     }
 
-    QWidget::keyPressEvent(event);
+    if (success)
+    {
+        // Calculate results
+        const double flare = dpTop.hMSL - dpBottom.hMSL;
+
+        // Update display
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            ui->flareEdit->setText(QString("%1").arg(flare));
+            ui->flareUnits->setText(tr("m"));
+        }
+        else
+        {
+            ui->flareEdit->setText(QString("%1").arg(flare * METERS_TO_FEET));
+            ui->flareUnits->setText(tr("ft"));
+        }
+    }
+    else
+    {
+        // Update display
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            ui->flareUnits->setText(tr("m"));
+        }
+        else
+        {
+            ui->flareUnits->setText(tr("ft"));
+        }
+
+        ui->flareEdit->setText(tr("n/a"));
+    }
+}
+
+void FlareForm::onActualButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Actual);
+}
+
+void FlareForm::onOptimalButtonClicked()
+{
+    mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void FlareForm::onOptimizeButtonClicked()
+{
+    FlareScoring *method = (FlareScoring *) mMainWindow->scoringMethod(MainWindow::Flare);
+
+    // Perform optimization
+    method->optimize();
+
+    // Switch to optimal view
+    mMainWindow->setWindowMode(MainWindow::Optimal);
 }

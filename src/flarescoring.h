@@ -10,17 +10,18 @@ class FlareScoring : public ScoringMethod
 public:
     FlareScoring(MainWindow *mainWindow);
 
-    double startTime(void) const { return mStartTime; }
-    double endTime(void) const { return mEndTime; }
-    void setRange(double startTime, double endTime);
+    double score(const QVector< DataPoint > &result);
+    QString scoreAsText(double score);
 
     void prepareDataPlot(DataPlot *plot);
 
+    bool getWindowBounds(const QVector< DataPoint > &result,
+                         DataPoint &dpBottom, DataPoint &dpTop);
+
+    void optimize();
+
 private:
     MainWindow *mMainWindow;
-
-    double      mStartTime;
-    double      mEndTime;
 
 signals:
 
