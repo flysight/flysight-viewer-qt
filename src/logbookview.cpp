@@ -119,20 +119,24 @@ void LogbookView::updateView()
 
     ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
 
-    ui->tableWidget->setColumnCount(query.record().count() + 1);
+    ui->tableWidget->setColumnCount(query.record().count() + 2);
     ui->tableWidget->setRowCount(0);
 
     ui->tableWidget->setColumnWidth(0, ui->tableWidget->horizontalHeader()->minimumSectionSize());
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 
-    ui->tableWidget->setColumnHidden(1, true);  // Hide id column
-    ui->tableWidget->setColumnHidden(2, true);  // Hide file_name column
-    ui->tableWidget->setColumnHidden(7, true);  // Hide min_lat column
-    ui->tableWidget->setColumnHidden(8, true);  // Hide max_lat column
-    ui->tableWidget->setColumnHidden(9, true);  // Hide min_lon column
-    ui->tableWidget->setColumnHidden(10, true);  // Hide max_lon column
+    ui->tableWidget->setColumnWidth(1, 2 * ui->tableWidget->horizontalHeader()->minimumSectionSize());
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+
+    ui->tableWidget->setColumnHidden(2, true);  // Hide id column
+    ui->tableWidget->setColumnHidden(3, true);  // Hide file_name column
+    ui->tableWidget->setColumnHidden(8, true);  // Hide min_lat column
+    ui->tableWidget->setColumnHidden(9, true);  // Hide max_lat column
+    ui->tableWidget->setColumnHidden(10, true);  // Hide min_lon column
+    ui->tableWidget->setColumnHidden(11, true);  // Hide max_lon column
 
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
+                                               << tr("")
                                                << tr("")
                                                << tr("ID")
                                                << tr("File Name")
@@ -166,23 +170,25 @@ void LogbookView::updateView()
             ui->tableWidget->setItem(index, 0, new QTableWidgetItem);
         }
 
-        ui->tableWidget->setItem(index, 1, new IntItem(query.value(0).toString()));             // id
-        ui->tableWidget->setItem(index, 2, new QTableWidgetItem(query.value(1).toString()));    // file_name
-        ui->tableWidget->setItem(index, 3, new QTableWidgetItem(query.value(2).toString()));    // description
-        ui->tableWidget->setItem(index, 4, new TimeItem(startTime));                            // start_time
-        ui->tableWidget->setItem(index, 5, new DurationItem(duration));                         // duration
-        ui->tableWidget->setItem(index, 6, new IntItem(query.value(5).toString()));             // sample_period
-        ui->tableWidget->setItem(index, 7, new IntItem(query.value(6).toString()));             // min_lat
-        ui->tableWidget->setItem(index, 8, new IntItem(query.value(7).toString()));             // max_lat
-        ui->tableWidget->setItem(index, 9, new IntItem(query.value(8).toString()));             // min_lon
-        ui->tableWidget->setItem(index, 10, new IntItem(query.value(9).toString()));            // max_lon
-        ui->tableWidget->setItem(index, 11, new TimeItem(importTime));                          // import_time
+        ui->tableWidget->setItem(index, 1, new QTableWidgetItem);
 
-        for (int j = 0; j < 12; ++j)
+        ui->tableWidget->setItem(index, 2, new IntItem(query.value(0).toString()));             // id
+        ui->tableWidget->setItem(index, 3, new QTableWidgetItem(query.value(1).toString()));    // file_name
+        ui->tableWidget->setItem(index, 4, new QTableWidgetItem(query.value(2).toString()));    // description
+        ui->tableWidget->setItem(index, 5, new TimeItem(startTime));                            // start_time
+        ui->tableWidget->setItem(index, 6, new DurationItem(duration));                         // duration
+        ui->tableWidget->setItem(index, 7, new IntItem(query.value(5).toString()));             // sample_period
+        ui->tableWidget->setItem(index, 8, new IntItem(query.value(6).toString()));             // min_lat
+        ui->tableWidget->setItem(index, 9, new IntItem(query.value(7).toString()));             // max_lat
+        ui->tableWidget->setItem(index, 10, new IntItem(query.value(8).toString()));            // min_lon
+        ui->tableWidget->setItem(index, 11, new IntItem(query.value(9).toString()));            // max_lon
+        ui->tableWidget->setItem(index, 12, new TimeItem(importTime));                          // import_time
+
+        for (int j = 0; j < 13; ++j)
         {
             // Disable editing on every column except description
             QTableWidgetItem *item = ui->tableWidget->item(index, j);
-            if (j == 3) item->setFlags(item->flags() |  Qt::ItemIsEditable);
+            if (j == 4) item->setFlags(item->flags() |  Qt::ItemIsEditable);
             else        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
         }
 
@@ -198,7 +204,7 @@ void LogbookView::onDoubleClick(
 {
     Q_UNUSED(column);
 
-    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 2)->text());
+    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 3)->text());
 }
 
 void LogbookView::onSelectionChanged()
@@ -216,7 +222,7 @@ void LogbookView::onSelectionChanged()
     QVector< QString > selectedFiles;
     foreach (int row, selectedRows)
     {
-        QTableWidgetItem *item = ui->tableWidget->item(row, 2);
+        QTableWidgetItem *item = ui->tableWidget->item(row, 3);
         selectedFiles.append(item->text());
     }
 
@@ -228,10 +234,10 @@ void LogbookView::onItemChanged(
         QTableWidgetItem *item)
 {
     // Return if not editing description
-    if (item->column() != 3) return;
+    if (item->column() != 4) return;
 
     // Get file name
-    QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 2);
+    QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
     if (!nameItem) return;
 
     // Update description
