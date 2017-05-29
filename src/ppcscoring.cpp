@@ -70,6 +70,9 @@ QString PPCScoring::scoreAsText(
 void PPCScoring::prepareDataPlot(
         DataPlot *plot)
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     DataPoint dpBottom, dpTop;
     bool success;
 

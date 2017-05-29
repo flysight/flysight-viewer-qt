@@ -65,6 +65,9 @@ void PlaybackView::play()
 
 void PlaybackView::tick()
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     const DataPoint &dpEnd = mMainWindow->dataPoint(mMainWindow->dataSize() - 1);
 
     if (mMainWindow->rangeUpper() == dpEnd.t)
@@ -96,6 +99,9 @@ void PlaybackView::tick()
 
 void PlaybackView::setPosition(int position)
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     if (!mBusy)
     {
         mBusy = true;

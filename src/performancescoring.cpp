@@ -24,6 +24,9 @@ void PerformanceScoring::setRange(
 void PerformanceScoring::prepareDataPlot(
         DataPlot *plot)
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     DataPoint dpStart = mMainWindow->interpolateDataT(mStartTime);
     DataPoint dpEnd = mMainWindow->interpolateDataT(mEndTime);
 
