@@ -170,7 +170,10 @@ void LogbookView::updateView()
             ui->tableWidget->setItem(index, 0, new QTableWidgetItem);
         }
 
-        ui->tableWidget->setItem(index, 1, new QTableWidgetItem);
+        QTableWidgetItem *item = new QTableWidgetItem;
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Unchecked);
+        ui->tableWidget->setItem(index, 1, item);
 
         ui->tableWidget->setItem(index, 2, new IntItem(query.value(0).toString()));             // id
         ui->tableWidget->setItem(index, 3, new QTableWidgetItem(query.value(1).toString()));    // file_name
