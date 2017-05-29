@@ -777,6 +777,8 @@ void MainWindow::setTrackChecked(
 {
     if (checked) mCheckedTracks.insert(trackName);
     else         mCheckedTracks.remove(trackName);
+
+    emit dataChanged();
 }
 
 bool MainWindow::trackChecked(
