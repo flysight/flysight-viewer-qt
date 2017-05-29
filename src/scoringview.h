@@ -15,6 +15,7 @@ class PPCForm;
 class SpeedForm;
 class WideOpenDistanceForm;
 class WideOpenSpeedForm;
+class FlareForm;
 
 class ScoringView : public QWidget
 {
@@ -34,6 +35,7 @@ private:
     PerformanceForm      *mPerformanceForm;
     WideOpenSpeedForm    *mWideOpenSpeedForm;
     WideOpenDistanceForm *mWideOpenDistanceForm;
+    FlareForm            *mFlareForm;
 
 public slots:
     void updateView();
