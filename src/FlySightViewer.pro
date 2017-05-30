@@ -115,8 +115,7 @@ HEADERS  += mainwindow.h \
     importworker.h \
     logbookview.h \
     flareform.h \
-    flarescoring.h \
-    flarescoringcpp
+    flarescoring.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
