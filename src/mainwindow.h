@@ -138,6 +138,7 @@ public:
     void closeReference();
 
     void importFromDatabase(const QString &uniqueName);
+    void importFromCheckedTrack(const QString &uniqueName);
 
     void setTrackName(const QString &trackName);
     QString trackName() const { return mTrackName; }

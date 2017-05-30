@@ -206,7 +206,18 @@ void LogbookView::onDoubleClick(
 {
     Q_UNUSED(column);
 
-    mMainWindow->importFromDatabase(ui->tableWidget->item(row, 3)->text());
+    // Get file name
+    QTableWidgetItem *nameItem = ui->tableWidget->item(row, 3);
+    if (!nameItem) return;
+
+    if (mMainWindow->trackChecked(nameItem->text()))
+    {
+        mMainWindow->importFromCheckedTrack(nameItem->text());
+    }
+    else
+    {
+        mMainWindow->importFromDatabase(nameItem->text());
+    }
 }
 
 void LogbookView::onSelectionChanged()

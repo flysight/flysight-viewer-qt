@@ -795,19 +795,26 @@ void MainWindow::setTrackChecked(
     {
         DataPoints data;
 
-        // Get name of file in database
-        QString newName = QString("FlySight/Tracks/%1.csv").arg(trackName);
-        QString newPath = QDir(mDatabasePath).filePath(newName);
-
-        QFile file(newPath);
-        if (!file.open(QIODevice::ReadOnly))
+        if (trackName == mTrackName)
         {
-            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
-            return;
+            data = m_data;
         }
+        else
+        {
+            // Get name of file in database
+            QString newName = QString("FlySight/Tracks/%1.csv").arg(trackName);
+            QString newPath = QDir(mDatabasePath).filePath(newName);
 
-        // Read file data
-        import(&file, data);
+            QFile file(newPath);
+            if (!file.open(QIODevice::ReadOnly))
+            {
+                QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+                return;
+            }
+
+            // Read file data
+            import(&file, data);
+        }
 
         mCheckedTracks.insert(trackName, data);
     }
@@ -823,6 +830,24 @@ bool MainWindow::trackChecked(
         const QString &trackName) const
 {
     return mCheckedTracks.contains(trackName);
+}
+
+void MainWindow::importFromCheckedTrack(
+        const QString &uniqueName)
+{
+    // Copy track data
+    m_data = mCheckedTracks[uniqueName];
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange();
+
+    emit dataLoaded();
+
+    // Remember current track
+    setTrackName(uniqueName);
 }
 
 void MainWindow::import(
