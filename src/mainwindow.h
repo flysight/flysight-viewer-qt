@@ -262,7 +262,7 @@ private:
 
     QString               mTrackName;
     QVector< QString >    mSelectedTracks;
-    QSet< QString >       mCheckedTracks;
+    QMap< QString, DataPoints > mCheckedTracks;
 
     void writeSettings();
     void readSettings();
@@ -282,10 +282,10 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    void import(QIODevice *device);
-    void initAltitude();
-    void updateVelocity();
-    void initAerodynamics();
+    void import(QIODevice *device, DataPoints &data);
+    void initAltitude(DataPoints &data);
+    void updateVelocity(DataPoints &data);
+    void initAerodynamics(DataPoints &data);
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 

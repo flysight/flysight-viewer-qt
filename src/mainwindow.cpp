@@ -623,7 +623,15 @@ void MainWindow::importFile(
 
     // Read file data
     temporaryFile.seek(0);
-    import(&temporaryFile);
+    import(&temporaryFile, m_data);
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange();
+
+    emit dataLoaded();
 
     // Get hash
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -722,7 +730,15 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    import(&file);
+    import(&file, m_data);
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange();
+
+    emit dataLoaded();
 
     // Remember current track
     setTrackName(uniqueName);
@@ -775,8 +791,30 @@ void MainWindow::setTrackChecked(
         const QString &trackName,
         bool checked)
 {
-    if (checked) mCheckedTracks.insert(trackName);
-    else         mCheckedTracks.remove(trackName);
+    if (checked)
+    {
+        DataPoints data;
+
+        // Get name of file in database
+        QString newName = QString("FlySight/Tracks/%1.csv").arg(trackName);
+        QString newPath = QDir(mDatabasePath).filePath(newName);
+
+        QFile file(newPath);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+            return;
+        }
+
+        // Read file data
+        import(&file, data);
+
+        mCheckedTracks.insert(trackName, data);
+    }
+    else
+    {
+        mCheckedTracks.remove(trackName);
+    }
 
     emit dataChanged();
 }
@@ -788,7 +826,8 @@ bool MainWindow::trackChecked(
 }
 
 void MainWindow::import(
-        QIODevice *device)
+        QIODevice *device,
+        DataPoints &data)
 {
     QTextStream in(device);
 
@@ -837,7 +876,7 @@ void MainWindow::import(
     // Skip next row
     if (!in.atEnd()) in.readLine();
 
-    m_data.clear();
+    data.clear();
 
     while (!in.atEnd())
     {
@@ -864,14 +903,14 @@ void MainWindow::import(
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
-        m_data.append(pt);
+        data.append(pt);
     }
 
     // Initialize time
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        const DataPoint &dp0 = m_data[m_data.size() - 1];
-        DataPoint &dp = m_data[i];
+        const DataPoint &dp0 = data[data.size() - 1];
+        DataPoint &dp = data[i];
 
         qint64 start = dp0.dateTime.toMSecsSinceEpoch();
         qint64 end = dp.dateTime.toMSecsSinceEpoch();
@@ -880,44 +919,38 @@ void MainWindow::import(
     }
 
     // Altitude above ground
-    initAltitude();
+    initAltitude(data);
 
     // Wind adjustments
-    updateVelocity();
-
-    // Clear optimum
-    m_optimal.clear();
-
-    // Initialize plot ranges
-    initRange();
-
-    emit dataLoaded();
+    updateVelocity(data);
 }
 
-void MainWindow::initAltitude()
+void MainWindow::initAltitude(
+        DataPoints &data)
 {
     if (mGroundReference == Automatic)
     {
-        const DataPoint &dp0 = m_data[m_data.size() - 1];
+        const DataPoint &dp0 = data[data.size() - 1];
         mFixedReference = dp0.hMSL;
     }
 
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
         dp.z = dp.hMSL - mFixedReference;
     }
 }
 
-void MainWindow::updateVelocity()
+void MainWindow::updateVelocity(
+        DataPoints &data)
 {
     if (mWindAdjustment)
     {
         // Wind-adjusted position
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
             const DataPoint &dp0 = interpolateDataT(0);
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             double distance = getDistance(dp0, dp);
             double bearing = getBearing(dp0, dp);
@@ -927,9 +960,9 @@ void MainWindow::updateVelocity()
         }
 
         // Wind-adjusted velocity
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             dp.vx = dp.velE - mWindE;
             dp.vy = dp.velN - mWindN;
@@ -938,10 +971,10 @@ void MainWindow::updateVelocity()
     else
     {
         // Unadjusted position
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
             const DataPoint &dp0 = interpolateDataT(0);
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             double distance = getDistance(dp0, dp);
             double bearing = getBearing(dp0, dp);
@@ -951,9 +984,9 @@ void MainWindow::updateVelocity()
         }
 
         // Unadjusted velocity
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             dp.vx = dp.velE;
             dp.vy = dp.velN;
@@ -963,13 +996,13 @@ void MainWindow::updateVelocity()
     // Distance measurements
     double dist2D = 0, dist3D = 0;
 
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         if (i > 0)
         {
-            const DataPoint &dpPrev = m_data[i - 1];
+            const DataPoint &dpPrev = data[i - 1];
 
             double dx = dp.x - dpPrev.x;
             double dy = dp.y - dpPrev.y;
@@ -988,9 +1021,9 @@ void MainWindow::updateVelocity()
     double prevHeading;
     bool firstHeading = true;
 
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         // Calculate heading
         dp.heading = atan2(dp.vx, dp.vy) / PI * 180;
@@ -1015,9 +1048,9 @@ void MainWindow::updateVelocity()
     }
 
     // Parameters depending on velocity
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         dp.curv = getSlope(i, DataPoint::diveAngle);
         dp.accel = getSlope(i, DataPoint::totalSpeed);
@@ -1025,14 +1058,15 @@ void MainWindow::updateVelocity()
     }
 
     // Initialize aerodynamics
-    initAerodynamics();
+    initAerodynamics(data);
 }
 
-void MainWindow::initAerodynamics()
+void MainWindow::initAerodynamics(
+        DataPoints &data)
 {
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         // Acceleration
         double accelN = getSlope(i, DataPoint::northSpeed);
@@ -1395,7 +1429,14 @@ void MainWindow::on_actionWind_triggered()
     mWindAdjustment = !mWindAdjustment;
     m_ui->actionWind->setChecked(mWindAdjustment);
 
-    updateVelocity();
+    // Update plot data
+    updateVelocity(m_data);
+
+    // Update checked tracks
+    foreach (DataPoints data, mCheckedTracks)
+    {
+        updateVelocity(m_data);
+    }
 
     emit dataChanged();
 }
@@ -1497,7 +1538,14 @@ void MainWindow::on_actionPreferences_triggered()
             m_mass = dlg.mass();
             m_planformArea = dlg.planformArea();
 
-            initAerodynamics();
+            // Update plot data
+            initAerodynamics(m_data);
+
+            // Update checked tracks
+            foreach (DataPoints data, mCheckedTracks)
+            {
+                initAerodynamics(data);
+            }
 
             emit dataChanged();
         }
@@ -1579,7 +1627,14 @@ void MainWindow::on_actionPreferences_triggered()
             mGroundReference = dlg.groundReference();
             mFixedReference = dlg.fixedReference();
 
-            initAltitude();
+            // Update plot data
+            initAltitude(m_data);
+
+            // Update checked tracks
+            foreach (DataPoints data, mCheckedTracks)
+            {
+                initAltitude(data);
+            }
 
             emit dataChanged();
         }
@@ -2020,7 +2075,14 @@ void MainWindow::setWind(
     mWindE = windE;
     mWindN = windN;
 
-    updateVelocity();
+    // Update plot data
+    updateVelocity(m_data);
+
+    // Update checked tracks
+    foreach (DataPoints data, mCheckedTracks)
+    {
+        updateVelocity(data);
+    }
 
     emit dataChanged();
 }
