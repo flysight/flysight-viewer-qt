@@ -2154,7 +2154,7 @@ void MainWindow::closeReference()
 }
 
 void MainWindow::setOptimal(
-        const QVector< DataPoint > &result)
+        const DataPoints &result)
 {
     m_optimal = result;
     emit dataChanged();

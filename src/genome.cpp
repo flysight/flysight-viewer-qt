@@ -115,7 +115,7 @@ void Genome::truncate(
     append(QVector< double >(partSize, last()));
 }
 
-QVector< DataPoint > Genome::simulate(
+MainWindow::DataPoints Genome::simulate(
         double h,
         double a,
         double c,
@@ -134,7 +134,7 @@ QVector< DataPoint > Genome::simulate(
     double dist2D = dp0.dist2D;
     double dist3D = dp0.dist3D;
 
-    QVector< DataPoint > result(1, dp0);
+    MainWindow::DataPoints result(1, dp0);
 
     for (int i = 0; i < size(); ++i)
     {

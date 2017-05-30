@@ -4,6 +4,7 @@
 #include <QVector>
 
 #include "datapoint.h"
+#include "mainwindow.h"
 
 class Genome:
         public QVector< double >
@@ -16,7 +17,7 @@ public:
 
     void mutate(int k, int kMin, double minLift, double maxLift);
     void truncate(int k);
-    QVector< DataPoint > simulate(double h, double a, double c,
+    MainWindow::DataPoints simulate(double h, double a, double c,
                                   double planformArea, double mass,
                                   const DataPoint &dp0, double windowBottom);
 

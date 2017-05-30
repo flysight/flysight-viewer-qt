@@ -369,7 +369,7 @@ void WideOpenSpeedScoring::splitLine(
 }
 
 bool WideOpenSpeedScoring::getWindowBounds(
-        const QVector< DataPoint > &result,
+        const MainWindow::DataPoints &result,
         DataPoint &dpBottom)
 {
     bool foundBottom = false;

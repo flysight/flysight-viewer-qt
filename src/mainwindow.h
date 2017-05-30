@@ -47,10 +47,12 @@ public:
         Automatic, Fixed
     } GroundReference;
 
+    typedef QVector< DataPoint > DataPoints;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    const QVector< DataPoint > &data() const { return m_data; }
+    const DataPoints &data() const { return m_data; }
     int dataSize() const { return m_data.size(); }
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
@@ -107,8 +109,8 @@ public:
     void setMaxLift(double maxLift);
     void setMaxLD(double maxLD);    
 
-    const QVector< DataPoint > &optimal() const { return m_optimal; }
-    void setOptimal(const QVector< DataPoint > &result);
+    const DataPoints &optimal() const { return m_optimal; }
+    void setOptimal(const DataPoints &result);
 
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
@@ -128,8 +130,6 @@ public:
     void setScoringMode(ScoringMode mode);
     ScoringMode scoringMode() const { return mScoringMode; }
     ScoringMethod *scoringMethod(int i) const { return mScoringMethods[i]; }
-
-    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
 
     void prepareDataPlot(DataPlot *plot);
     void prepareMapView(MapView *plot);
@@ -209,8 +209,8 @@ private:
     } ZoomLevel;
 
     Ui::MainWindow       *m_ui;
-    QVector< DataPoint >  m_data;
-    QVector< DataPoint >  m_optimal;
+    DataPoints            m_data;
+    DataPoints            m_optimal;
 
     double                mMarkStart;
     double                mMarkEnd;
@@ -220,7 +220,7 @@ private:
 
     PlotValue::Units      m_units;
 
-    QVector< DataPoint >  m_waypoints;
+    DataPoints            m_waypoints;
 
     Tool                  mTool;
     Tool                  mPrevTool;

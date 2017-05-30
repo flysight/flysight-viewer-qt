@@ -30,7 +30,7 @@ void PPCScoring::setWindow(
 }
 
 double PPCScoring::score(
-        const QVector< DataPoint > &result)
+        const MainWindow::DataPoints &result)
 {
     DataPoint dpBottom, dpTop;
     if (getWindowBounds(result, dpBottom, dpTop))
@@ -152,7 +152,7 @@ void PPCScoring::prepareDataPlot(
 }
 
 bool PPCScoring::getWindowBounds(
-        const QVector< DataPoint > &result,
+        const MainWindow::DataPoints &result,
         DataPoint &dpBottom,
         DataPoint &dpTop)
 {

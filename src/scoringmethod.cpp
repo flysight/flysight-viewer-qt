@@ -64,7 +64,7 @@ void ScoringMethod::optimize(
         }
 
         Genome g(genomeSize, kMin, mainWindow->minLift(), mainWindow->maxLift());
-        const QVector< DataPoint > result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
+        const MainWindow::DataPoints result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
         const double s = score(result);
         genePool.append(Score(s, g));
 
@@ -108,7 +108,7 @@ void ScoringMethod::optimize(
                 }
 
                 Genome g(genomeSize, kMin, mainWindow->minLift(), mainWindow->maxLift());
-                const QVector< DataPoint > result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
+                const MainWindow::DataPoints result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
                 const double s = score(result);
                 newGenePool.append(Score(s, g));
 
@@ -138,7 +138,7 @@ void ScoringMethod::optimize(
                     g.mutate(k, kMin, mainWindow->minLift(), mainWindow->maxLift());
                 }
 
-                const QVector< DataPoint > result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
+                const MainWindow::DataPoints result = g.simulate(dt, a, c, mainWindow->planformArea(), mainWindow->mass(), dp0, windowBottom);
                 const double s = score(result);
                 newGenePool.append(Score(s, g));
 
