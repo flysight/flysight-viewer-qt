@@ -53,6 +53,9 @@ private slots:
     void onOptimizeButtonClicked();
     void onPpcButtonClicked();
     void finished(QNetworkReply *reply);
+    void usersFinished(QNetworkReply *reply);
+    void suitsFinished(QNetworkReply *reply);
+    void placeFinished(QNetworkReply *reply);
     bool getUserDetails(QString *name, QString *countrycode, QString *wingsuit, QString *place);
 };
 
