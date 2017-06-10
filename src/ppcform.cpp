@@ -106,6 +106,7 @@ void PPCForm::updateView()
             ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
             ui->horizontalSpeedUnits->setText(tr("mph"));
         }
+        ui->ppcButton->setEnabled(true);
     }
     else
     {
@@ -213,6 +214,7 @@ void PPCForm::onPpcButtonClicked() {
 
     if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
 
+        ui->faiButton->click();
         ui->ppcButton->setEnabled(false);
 
         int startOffset = mMainWindow->findIndexBelowT(-10.0);
@@ -330,7 +332,7 @@ bool PPCForm::getUserDetails(QString *name, QString *countrycode, QString *wings
     connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
     naManager->get(request);
 
-    DataPoint p = mMainWindow->dataPoint(mMainWindow->findIndexBelowT(0.0));
+    DataPoint p = mMainWindow->dataPoint(mMainWindow->findIndexForLanding());
     request = QNetworkRequest(QUrl("http://api.geonames.org/findNearbyPlaceNameJSON?lat="+QString::number(p.lat)+"&lng="+QString::number(p.lon)+"&username=flysight"));
     request.setRawHeader("User-Agent", "FlySight Viewer");
     request.setRawHeader("Charset", "utf8");
@@ -338,13 +340,21 @@ bool PPCForm::getUserDetails(QString *name, QString *countrycode, QString *wings
     connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(placeFinished(QNetworkReply*)));
     naManager->get(request);
 
+    QRegularExpression re("^([ \u00c0-\u01ffa-zA-Z'\-])+, [A-Z]{3}$");
+
     if (userDetailsDialog.exec() == QDialog::Accepted) {
-        name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
-        countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
-        wingsuit->append(getUserDetailsUI.wingsuitEdit->currentText());
-        place->append(getUserDetailsUI.placeEdit->text());
-        return true;
+        if ( !getUserDetailsUI.placeEdit->text().isEmpty()
+          && !getUserDetailsUI.wingsuitEdit->currentText().isEmpty()
+          && re.match(getUserDetailsUI.nameEdit->currentText()).hasMatch()) {
+            name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
+            countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
+            wingsuit->append(getUserDetailsUI.wingsuitEdit->currentText());
+            place->append(getUserDetailsUI.placeEdit->text());
+            return true;
+        } else
+            QMessageBox(QMessageBox::Critical, "Error", "Invalid Data enetered").exec();
     }
+
     return false;
 }
 
