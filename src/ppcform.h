@@ -2,6 +2,14 @@
 #define PPCFORM_H
 
 #include <QWidget>
+#include <QPushButton>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QMainWindow>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTextCodec>
+#include <QtDebug>
 
 namespace Ui {
     class PPCForm;
@@ -27,6 +35,7 @@ protected:
 private:
     Ui::PPCForm *ui;
     MainWindow  *mMainWindow;
+    QNetworkAccessManager *naManager;
 
 public slots:
     void updateView();
@@ -42,6 +51,9 @@ private slots:
     void onActualButtonClicked();
     void onOptimalButtonClicked();
     void onOptimizeButtonClicked();
+    void onPpcButtonClicked();
+    void finished(QNetworkReply *reply);
+    bool getUserDetails(QString *name, QString *countrycode, QString *wingsuit, QString *place);
 };
 
 

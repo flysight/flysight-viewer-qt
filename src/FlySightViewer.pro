@@ -8,6 +8,8 @@ QT       += core gui printsupport webkitwidgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
+
 TARGET = FlySightViewer
 TEMPLATE = app
 
@@ -123,6 +125,7 @@ FORMS    += mainwindow.ui \
     scoringview.ui \
     playbackview.ui \
     ppcform.ui \
+    getuserdialog.ui \
     speedform.ui \
     performanceform.ui \
     wideopenspeedform.ui \
@@ -162,4 +165,3 @@ else {
     LIBS += -lwwwidgets4
 }
 
-DISTFILES +=
