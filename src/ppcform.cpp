@@ -7,8 +7,7 @@
 #include "mainwindow.h"
 #include "plotvalue.h"
 #include "ppcscoring.h"
-
-#include "ui_getuserdialog.h"
+#include "ppcupload.h"
 
 PPCForm::PPCForm(QWidget *parent) :
     QWidget(parent),
@@ -106,6 +105,8 @@ void PPCForm::updateView()
             ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
             ui->horizontalSpeedUnits->setText(tr("mph"));
         }
+        ui->actualButton->setEnabled(true);
+        ui->optimizeButton->setEnabled(true);
         ui->ppcButton->setEnabled(true);
     }
     else
@@ -125,6 +126,11 @@ void PPCForm::updateView()
         ui->timeEdit->setText(tr("n/a"));
         ui->distanceEdit->setText(tr("n/a"));
         ui->horizontalSpeedEdit->setText(tr("n/a"));
+
+        ui->actualButton->setEnabled(false);
+        ui->optimalButton->setEnabled(false);
+        ui->optimizeButton->setEnabled(false);
+        ui->ppcButton->setEnabled(false);
     }
 }
 
@@ -197,18 +203,18 @@ void PPCForm::onOptimizeButtonClicked()
     // Perform optimization
     method->optimize();
 
+    ui->optimalButton->setEnabled(true);
+
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
 
 void PPCForm::onPpcButtonClicked() {
 
-// HTTPS requires the OpenSSL binaries.
-// On windows thess are libeay32.dll, libssl32.dll and ssleay32.dll available from https://slproweb.com/products/Win32OpenSSL.html
-
     // Return if plot empty
     if (mMainWindow->dataSize() == 0) return;
 
+    PPCUpload *uploader = new PPCUpload(mMainWindow);
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
     DataPoint dpBottom, dpTop;
 
@@ -216,179 +222,16 @@ void PPCForm::onPpcButtonClicked() {
 
         ui->faiButton->click();
         ui->actualButton->click();
-        ui->ppcButton->setEnabled(false);
 
-        int startOffset = mMainWindow->findIndexBelowT(-10.0);
-        int endOffset = mMainWindow->findIndexForLanding();
-
-        QJsonArray times, latitudes, longitudes, altitudes, vSpeeds, hSpeeds, distances;
-        double t0 =  mMainWindow->dataPoint(startOffset).t;
-
-        for (int i = startOffset; i < endOffset; i++) {
-            DataPoint p = mMainWindow->dataPoint(i);
-
-            if (p.t - t0 < 1.0)
-                continue;
-
-            times.append(p.t);
-            latitudes.append(p.lat);
-            longitudes.append(p.lon);
-            altitudes.append(p.z);
-            vSpeeds.append(p.velD);
-            hSpeeds.append(sqrt(p.velE * p.velE + p.velN * p.velN));
-            distances.append(p.dist2D);
-
-            t0 = p.t;
-        }
-
-        QJsonObject profile;
-        profile["distances"] = distances;
-        profile["hSpeeds"] = hSpeeds;
-        profile["vSpeeds"] = vSpeeds;
-        profile["altitudes"] = altitudes;
-        profile["longitudes"] = longitudes;
-        profile["latitudes"] = latitudes;
-        profile["times"] = times;
-
+        const QString type = "WS";
         const double time = dpBottom.t - dpTop.t;
         const double distance = MainWindow::getDistance(dpTop, dpBottom);
         const double horizontalSpeed = distance / time;
         const double verticalSpeed = (method->windowTop() - method->windowBottom()) / time;
-        double windSpeed, windDirection;
-        mMainWindow->getWindSpeedDirection(&windSpeed, &windDirection);
+        const double windowTop = method->windowTop();
+        const double windowBottom = method->windowBottom();
 
-        QString name, countrycode, wingsuit, place;
-        if (!getUserDetails(&name, &countrycode, &wingsuit, &place)) {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Information);
-            msgBox.setText("Upload aborted");
-            msgBox.exec();
-            ui->ppcButton->setEnabled(true);
-            return;
-        }
-
-        QNetworkRequest request= QNetworkRequest(QUrl("https://ppc.paralog.net/uploadtrack-db.php"));
-        request.setRawHeader("User-Agent", "FlySight Viewer");
-        request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
-        request.setRawHeader("Charset", "utf8");
-
-        QString post = "Source=FSV&";
-            post += "Name="+QUrl::toPercentEncoding(name)+"&";
-            post += "CountryCode="+QUrl::toPercentEncoding(countrycode)+"&";
-            post += "Place="+QUrl::toPercentEncoding(place)+"&";
-            post += "QNE="+QString::number(mMainWindow->getQNE())+"&";
-            post += "Equipment="+QUrl::toPercentEncoding(wingsuit)+"&";
-            post += "Timestamp="+mMainWindow->dataPoint(mMainWindow->findIndexBelowT(0.0)).dateTime.toString(Qt::ISODate)+"&";
-            post += "WindowBegin="+QString::number(method->windowTop())+"&";
-            post += "WindowEnd="+QString::number(method->windowBottom())+"&";
-            post += "WindDir="+QString::number(windDirection)+"&";
-            post += "WindSpeed="+QString::number(windSpeed)+"&";
-            post += "Time="+QString::number(time)+"&";
-            post += "Distance="+QString::number(distance)+"&";
-            post += "VerticalSpeed="+QString::number(verticalSpeed)+"&";
-            post += "HorizontalSpeed="+QString::number(horizontalSpeed)+"&";
-            post += "HorizontalSpeed="+QString::number(horizontalSpeed)+"&";
-            post += "Profile="+QJsonDocument(profile).toJson(QJsonDocument::Compact);
-
-        QNetworkAccessManager *naManager = new QNetworkAccessManager(this);
-        connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(finished(QNetworkReply*)));
-        naManager->post(request, post.toAscii());
+        uploader->upload(type, windowTop, windowBottom, time, distance, horizontalSpeed, verticalSpeed);
     }
 }
 
-void PPCForm::finished(QNetworkReply *reply) {
-    if(reply->error() == QNetworkReply::NoError) {
-        QMessageBox(QMessageBox::Information, "Succes", tr("Track submitted successfully.")).exec();
-        QDesktopServices::openUrl(QUrl("https://ppc.paralog.net/showTrack.php&?track="+reply->readAll()));
-    } else
-        QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
-    ui->ppcButton->setEnabled(true);
-}
-
-Ui::Dialog getUserDetailsUI;
-
-bool PPCForm::getUserDetails(QString *name, QString *countrycode, QString *wingsuit, QString *place) {
-    QDialog userDetailsDialog;
-    getUserDetailsUI.setupUi(&userDetailsDialog);
-    userDetailsDialog.adjustSize();
-
-    QNetworkRequest request = QNetworkRequest(QUrl("https://ppc.paralog.net/getusers.php"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    QNetworkAccessManager *naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(usersFinished(QNetworkReply*)));
-    naManager->get(request);
-
-    request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
-    naManager->get(request);
-
-    request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
-    naManager->get(request);
-
-    DataPoint p = mMainWindow->dataPoint(mMainWindow->findIndexForLanding());
-    request = QNetworkRequest(QUrl("http://api.geonames.org/findNearbyPlaceNameJSON?lat="+QString::number(p.lat)+"&lng="+QString::number(p.lon)+"&username=flysight"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(placeFinished(QNetworkReply*)));
-    naManager->get(request);
-
-    QRegularExpression re("^([ \u00c0-\u01ffa-zA-Z'\-])+, [A-Z]{3}$");
-
-    if (userDetailsDialog.exec() == QDialog::Accepted) {
-        if ( !getUserDetailsUI.placeEdit->text().isEmpty()
-          && !getUserDetailsUI.wingsuitEdit->currentText().isEmpty()
-          && re.match(getUserDetailsUI.nameEdit->currentText()).hasMatch()) {
-            name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
-            countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
-            wingsuit->append(getUserDetailsUI.wingsuitEdit->currentText());
-            place->append(getUserDetailsUI.placeEdit->text());
-            return true;
-        } else
-            QMessageBox(QMessageBox::Critical, "Error", "Invalid Data enetered").exec();
-    }
-
-    return false;
-}
-
-void PPCForm::usersFinished(QNetworkReply *reply) {
-
-    if(reply->error() == QNetworkReply::NoError) {
-        QString result = reply->readAll();
-        QStringList users = result.split('\n');
-        for (int i = 0; i < users.length(); i++)
-            getUserDetailsUI.nameEdit->addItem(users.at(i).split('\t').at(0));
-    } else
-        QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
-}
-
-void PPCForm::suitsFinished(QNetworkReply *reply) {
-
-    if(reply->error() == QNetworkReply::NoError) {
-        QString result = reply->readAll();
-        QStringList suits = result.split('\n');
-        for (int i = 0; i < suits.length(); i++)
-            getUserDetailsUI.wingsuitEdit->addItem(suits.at(i).split('\t').at(0));
-    } else
-        QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
-}
-
-void PPCForm::placeFinished(QNetworkReply *reply) {
-
-    if(reply->error() == QNetworkReply::NoError) {
-        QString result = reply->readAll();
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(result.toUtf8());
-        QJsonValue value = jsonResponse.object().value("geonames");
-        QString place = value.toArray().at(0).toObject().value("name").toString();
-        getUserDetailsUI.placeEdit->setText(place);
-    } else
-        QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
-}

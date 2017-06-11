@@ -35,6 +35,16 @@ SOURCES += main.cpp \
     scoringmethod.cpp \
     ppcscoring.cpp \
     speedscoring.cpp \
+    wideopenspeedform.cpp \
+    wideopendistanceform.cpp \
+    wideopendistancescoring.cpp \
+    wideopenspeedscoring.cpp \
+    geographicutil.cpp \
+    importworker.cpp \
+    logbookview.cpp \
+    flareform.cpp \
+    flarescoring.cpp \
+    ppcupload.cpp \
     GeographicLib/Accumulator.cpp \
     GeographicLib/AlbersEqualArea.cpp \
     GeographicLib/AzimuthalEquidistant.cpp \
@@ -74,16 +84,7 @@ SOURCES += main.cpp \
     GeographicLib/Utility.cpp \
     GeographicLib/UTMUPS.cpp \
     performancescoring.cpp \
-    performanceform.cpp \
-    wideopenspeedform.cpp \
-    wideopendistanceform.cpp \
-    wideopendistancescoring.cpp \
-    wideopenspeedscoring.cpp \
-    geographicutil.cpp \
-    importworker.cpp \
-    logbookview.cpp \
-    flareform.cpp \
-    flarescoring.cpp
+    performanceform.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -117,7 +118,8 @@ HEADERS  += mainwindow.h \
     importworker.h \
     logbookview.h \
     flareform.h \
-    flarescoring.h
+    flarescoring.h \
+    ppcupload.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
