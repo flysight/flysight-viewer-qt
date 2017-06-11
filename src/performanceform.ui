@@ -275,6 +275,9 @@
    </item>
    <item>
     <widget class="QPushButton" name="ppcButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Submit to PPC</string>
      </property>

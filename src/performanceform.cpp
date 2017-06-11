@@ -69,11 +69,11 @@ void PerformanceForm::updateView()
     // Auxiliary values
     ui->startLatEdit->setText(QString("%1").arg(dpStart.lat, 0, 'f', 7));
     ui->startLonEdit->setText(QString("%1").arg(dpStart.lon, 0, 'f', 7));
-    ui->startElevEdit->setText(QString("%1").arg(dpStart.hMSL, 0, 'f', 3));
+    ui->startElevEdit->setText(QString("%1").arg(dpStart.z, 0, 'f', 3));
 
     ui->endLatEdit->setText(QString("%1").arg(dpEnd.lat, 0, 'f', 7));
     ui->endLonEdit->setText(QString("%1").arg(dpEnd.lon, 0, 'f', 7));
-    ui->endElevEdit->setText(QString("%1").arg(dpEnd.hMSL, 0, 'f', 3));
+    ui->endElevEdit->setText(QString("%1").arg(dpEnd.z, 0, 'f', 3));
 }
 
 void PerformanceForm::onApplyButtonClicked()
@@ -83,6 +83,8 @@ void PerformanceForm::onApplyButtonClicked()
 
     PerformanceScoring *method = (PerformanceScoring *) mMainWindow->scoringMethod(MainWindow::Performance);
     method->setRange(start, end);
+
+    ui->ppcButton->setEnabled(start < end);
 
     mMainWindow->setFocus();
 }
