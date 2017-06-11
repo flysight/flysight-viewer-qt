@@ -215,6 +215,7 @@ void PPCForm::onPpcButtonClicked() {
     if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
 
         ui->faiButton->click();
+        ui->actualButton->click();
         ui->ppcButton->setEnabled(false);
 
         int startOffset = mMainWindow->findIndexBelowT(-10.0);
