@@ -1,6 +1,7 @@
 #include "ppcupload.h"
-
 #include "ui_getuserdialog.h"
+
+#include <QDebug>
 
 PPCUpload::PPCUpload(MainWindow *mainWindow, QObject *parent) :
     QObject(parent)
@@ -11,13 +12,13 @@ PPCUpload::PPCUpload(MainWindow *mainWindow, QObject *parent) :
 // HTTPS requires the OpenSSL binaries.
 // On windows thess are libeay32.dll, libssl32.dll and ssleay32.dll available from https://slproweb.com/products/Win32OpenSSL.html
 
-void PPCUpload::upload(
-        const QString type,
-        const double windowTop, const double windowBottom,
-        const double time, const double distance, const double horizontalSpeed, const double verticalSpeed) {
+void PPCUpload::upload(const QString type, const double windowTop, const double windowBottom, const double time, const double distance) {
 
-    int startOffset = mMainWindow->findIndexBelowT(-10.0);
-    int endOffset = mMainWindow->findIndexForLanding();
+    const double horizontalSpeed = distance / time;
+    const double verticalSpeed = (windowTop - windowBottom) / time;
+
+    const int startOffset = mMainWindow->findIndexBelowT(-10.0);
+    const int endOffset = mMainWindow->findIndexForLanding();
 
     QJsonArray times, latitudes, longitudes, altitudes, vSpeeds, hSpeeds, distances;
     double t0 =  mMainWindow->dataPoint(startOffset).t;
@@ -51,8 +52,8 @@ void PPCUpload::upload(
     double windSpeed, windDirection;
     mMainWindow->getWindSpeedDirection(&windSpeed, &windDirection);
 
-    QString name, countrycode, wingsuit, place;
-    if (!getUserDetails(&name, &countrycode, &wingsuit, &place)) {
+    QString name, countrycode, equipment, place;
+    if (!getUserDetails(&name, &countrycode, !type.compare("WS"), &equipment, &place)) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Information);
         msgBox.setText("Upload aborted");
@@ -70,7 +71,7 @@ void PPCUpload::upload(
         post += "CountryCode="+QUrl::toPercentEncoding(countrycode)+"&";
         post += "Place="+QUrl::toPercentEncoding(place)+"&";
         post += "QNE="+QString::number(mMainWindow->getQNE())+"&";
-        post += "Equipment="+QUrl::toPercentEncoding(wingsuit)+"&";
+        post += "Equipment="+QUrl::toPercentEncoding(equipment)+"&";
         post += "Type="+type+"&";
         post += "Timestamp="+mMainWindow->dataPoint(mMainWindow->findIndexBelowT(0.0)).dateTime.toString(Qt::ISODate)+"&";
         post += "WindowBegin="+QString::number(windowTop)+"&";
@@ -99,7 +100,7 @@ void PPCUpload::finished(QNetworkReply *reply) {
 
 Ui::Dialog getUserDetailsUI;
 
-bool PPCUpload::getUserDetails(QString *name, QString *countrycode, QString *wingsuit, QString *place) {
+bool PPCUpload::getUserDetails(QString *name, QString *countrycode,bool getEqipment, QString *equipment, QString *place) {
     QDialog userDetailsDialog;
     getUserDetailsUI.setupUi(&userDetailsDialog);
     userDetailsDialog.adjustSize();
@@ -111,19 +112,17 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode, QString *win
     connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(usersFinished(QNetworkReply*)));
     naManager->get(request);
 
-    request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
-    naManager->get(request);
-
-    request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
-    request.setRawHeader("User-Agent", "FlySight Viewer");
-    request.setRawHeader("Charset", "utf8");
-    naManager = new QNetworkAccessManager(this);
-    connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
-    naManager->get(request);
+    if (getEqipment) {
+        request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
+        request.setRawHeader("User-Agent", "FlySight Viewer");
+        request.setRawHeader("Charset", "utf8");
+        naManager = new QNetworkAccessManager(this);
+        connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(suitsFinished(QNetworkReply*)));
+        naManager->get(request);
+    } else {
+        getUserDetailsUI.wingsuitEdit->addItem("n/a");
+        getUserDetailsUI.wingsuitEdit->setEnabled(false);
+    }
 
     DataPoint p = mMainWindow->dataPoint(mMainWindow->findIndexForLanding());
     request = QNetworkRequest(QUrl("http://api.geonames.org/findNearbyPlaceNameJSON?lat="+QString::number(p.lat)+"&lng="+QString::number(p.lon)+"&username=flysight"));
@@ -141,7 +140,7 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode, QString *win
           && re.match(getUserDetailsUI.nameEdit->currentText()).hasMatch()) {
             name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
             countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
-            wingsuit->append(getUserDetailsUI.wingsuitEdit->currentText());
+            equipment->append(getUserDetailsUI.wingsuitEdit->currentText());
             place->append(getUserDetailsUI.placeEdit->text());
             return true;
         } else

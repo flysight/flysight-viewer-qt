@@ -14,10 +14,7 @@ class PPCUpload : public QObject
     Q_OBJECT
 public:
     explicit PPCUpload(MainWindow *mainWindow, QObject *parent = 0);
-    void upload(
-            const QString type,
-            const double windowTop, const double windowBottom,
-            const double time, const double distance, const double horizontalSpeed, const double verticalSpeed);
+    void upload(const QString type, const double windowTop, const double windowBottom, const double time, const double distance);
 
 signals:
 
@@ -30,6 +27,6 @@ private slots:
     void usersFinished(QNetworkReply *reply);
     void suitsFinished(QNetworkReply *reply);
     void placeFinished(QNetworkReply *reply);
-    bool getUserDetails(QString *name, QString *countrycode, QString *wingsuit, QString *place);
+    bool getUserDetails(QString *name, QString *countrycode, bool getEquipment, QString *equipment, QString *place);
 };
 #endif // PPCUPLOAD_H

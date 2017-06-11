@@ -42,6 +42,8 @@ SOURCES += main.cpp \
     geographicutil.cpp \
     importworker.cpp \
     logbookview.cpp \
+    performancescoring.cpp \
+    performanceform.cpp \
     flareform.cpp \
     flarescoring.cpp \
     ppcupload.cpp \
@@ -82,9 +84,7 @@ SOURCES += main.cpp \
     GeographicLib/TransverseMercator.cpp \
     GeographicLib/TransverseMercatorExact.cpp \
     GeographicLib/Utility.cpp \
-    GeographicLib/UTMUPS.cpp \
-    performancescoring.cpp \
-    performanceform.cpp
+    GeographicLib/UTMUPS.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \

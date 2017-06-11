@@ -1,6 +1,8 @@
 #include "ppcform.h"
 #include "ui_ppcform.h"
 
+#include <QDebug>
+
 #include "common.h"
 #include "dataplot.h"
 #include "datapoint.h"
@@ -218,20 +220,16 @@ void PPCForm::onPpcButtonClicked() {
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
     DataPoint dpBottom, dpTop;
 
+    ui->faiButton->click();
+    ui->actualButton->click();
+
     if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
-
-        ui->faiButton->click();
-        ui->actualButton->click();
-
-        const QString type = "WS";
         const double time = dpBottom.t - dpTop.t;
         const double distance = MainWindow::getDistance(dpTop, dpBottom);
-        const double horizontalSpeed = distance / time;
-        const double verticalSpeed = (method->windowTop() - method->windowBottom()) / time;
-        const double windowTop = method->windowTop();
-        const double windowBottom = method->windowBottom();
+        const double windowTop = dpTop.z;
+        const double windowBottom = dpBottom.z;
 
-        uploader->upload(type, windowTop, windowBottom, time, distance, horizontalSpeed, verticalSpeed);
+        uploader->upload("WS", windowTop, windowBottom, time, distance);
     }
 }
 

@@ -33,6 +33,8 @@ public slots:
 
 private slots:
     void onApplyButtonClicked();
+
+    void onPpcButtonClicked();
 };
 
 

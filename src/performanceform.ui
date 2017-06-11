@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>276</width>
-    <height>452</height>
+    <height>479</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -271,6 +271,13 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="ppcButton">
+     <property name="text">
+      <string>Submit to PPC</string>
+     </property>
     </widget>
    </item>
    <item>

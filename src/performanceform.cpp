@@ -1,7 +1,7 @@
 #include "performanceform.h"
 #include "ui_performanceform.h"
 
-#include <QPushButton>
+#include <QDebug>
 
 #include "common.h"
 #include "dataplot.h"
@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "performancescoring.h"
 #include "plotvalue.h"
+#include "ppcupload.h"
 
 PerformanceForm::PerformanceForm(QWidget *parent) :
     QWidget(parent),
@@ -19,6 +20,9 @@ PerformanceForm::PerformanceForm(QWidget *parent) :
 
     connect(ui->startEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->endEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    // Connect PPC button
+    connect(ui->ppcButton, SIGNAL(clicked()), this, SLOT(onPpcButtonClicked()));
 }
 
 PerformanceForm::~PerformanceForm()
@@ -96,3 +100,24 @@ void PerformanceForm::keyPressEvent(QKeyEvent *event)
 
     QWidget::keyPressEvent(event);
 }
+
+void PerformanceForm::onPpcButtonClicked() {
+
+    qDebug() << "Clicked";
+
+    // Return if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    PPCUpload *uploader = new PPCUpload(mMainWindow);
+    PerformanceScoring *method = (PerformanceScoring *) mMainWindow->scoringMethod(MainWindow::Performance);
+    DataPoint dpTop = mMainWindow->interpolateDataT(method->startTime());
+    DataPoint dpBottom = mMainWindow->interpolateDataT(method->endTime());
+
+    const double time = dpBottom.t - dpTop.t;
+    const double distance = MainWindow::getDistance(dpTop, dpBottom);
+    const double windowTop = dpTop.z;
+    const double windowBottom = dpBottom.z;
+
+    uploader->upload("WS", windowTop, windowBottom, time, distance);
+}
+

@@ -156,6 +156,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QPushButton" name="actualButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Actual</string>
        </property>
@@ -169,6 +172,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="optimalButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Optimal</string>
        </property>
@@ -181,8 +187,21 @@
    </item>
    <item>
     <widget class="QPushButton" name="optimizeButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Optimize</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="ppcButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Submit to PPC</string>
      </property>
     </widget>
    </item>
