@@ -44,6 +44,9 @@ void PerformanceForm::setMainWindow(
 
 void PerformanceForm::updateView()
 {
+    // Return if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     PerformanceScoring *method = (PerformanceScoring *) mMainWindow->scoringMethod(MainWindow::Performance);
 
     const double start = method->startTime();
@@ -104,8 +107,6 @@ void PerformanceForm::keyPressEvent(QKeyEvent *event)
 }
 
 void PerformanceForm::onPpcButtonClicked() {
-
-    qDebug() << "Clicked";
 
     // Return if plot empty
     if (mMainWindow->dataSize() == 0) return;
