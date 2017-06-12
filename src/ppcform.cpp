@@ -1,8 +1,6 @@
 #include "ppcform.h"
 #include "ui_ppcform.h"
 
-#include <QDebug>
-
 #include "common.h"
 #include "dataplot.h"
 #include "datapoint.h"

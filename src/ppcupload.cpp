@@ -1,8 +1,6 @@
 #include "ppcupload.h"
 #include "ui_getuserdialog.h"
 
-#include <QDebug>
-
 PPCUpload::PPCUpload(MainWindow *mainWindow, QObject *parent) :
     QObject(parent)
 {

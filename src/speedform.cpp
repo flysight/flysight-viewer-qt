@@ -1,8 +1,6 @@
 #include "speedform.h"
 #include "ui_speedform.h"
 
-#include <QDebug>
-
 #include "common.h"
 #include "datapoint.h"
 #include "mainwindow.h"

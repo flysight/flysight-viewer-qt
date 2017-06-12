@@ -526,15 +526,11 @@ int MainWindow::findIndexForLanding()
 {
     int i = findIndexBelowT(0.0);
 
-    qDebug() << "start: " << i;
-
     while (++i < m_data.size()-1) {
         const DataPoint &p = m_data[i];
         if (p.velE*p.velE + p.velN*p.velN + p.velD < 1.0)
             break;
     }
-
-    qDebug() << "end: " << i;
 
     return i;
 }

@@ -1,8 +1,6 @@
 #include "performanceform.h"
 #include "ui_performanceform.h"
 
-#include <QDebug>
-
 #include "common.h"
 #include "dataplot.h"
 #include "datapoint.h"
