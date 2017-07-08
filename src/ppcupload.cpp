@@ -161,6 +161,9 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode,bool getEqipm
 void PPCUpload::usersFinished(QNetworkReply *reply) {
 
     if(reply->error() == QNetworkReply::NoError) {
+
+        getUserDetailsUI.nameEdit->addItem("");
+
         QString result = reply->readAll();
         QStringList users = result.split('\n');
         for (int i = 0; i < users.length(); i++)
@@ -172,6 +175,9 @@ void PPCUpload::usersFinished(QNetworkReply *reply) {
 void PPCUpload::suitsFinished(QNetworkReply *reply) {
 
     if(reply->error() == QNetworkReply::NoError) {
+
+        getUserDetailsUI.wingsuitEdit->addItem("");
+
         QString result = reply->readAll();
         QStringList suits = result.split('\n');
         for (int i = 0; i < suits.length(); i++)
