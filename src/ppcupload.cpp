@@ -103,7 +103,7 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode,bool getEqipm
     getUserDetailsUI.setupUi(&userDetailsDialog);
     userDetailsDialog.adjustSize();
 
-    QNetworkRequest request = QNetworkRequest(QUrl("https://ppc.paralog.net/getusers.php"));
+    QNetworkRequest request = QNetworkRequest(QUrl("https://ppc.paralog.net/getnames.php"));
     request.setRawHeader("User-Agent", "FlySight Viewer");
     request.setRawHeader("Charset", "utf8");
     QNetworkAccessManager *naManager = new QNetworkAccessManager(this);
@@ -111,7 +111,7 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode,bool getEqipm
     naManager->get(request);
 
     if (getEqipment) {
-        request = QNetworkRequest(QUrl("https://ppc.paralog.net/getclasses.php"));
+        request = QNetworkRequest(QUrl("https://ppc.paralog.net/getsuits.php"));
         request.setRawHeader("User-Agent", "FlySight Viewer");
         request.setRawHeader("Charset", "utf8");
         naManager = new QNetworkAccessManager(this);
@@ -130,22 +130,32 @@ bool PPCUpload::getUserDetails(QString *name, QString *countrycode,bool getEqipm
     connect(naManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(placeFinished(QNetworkReply*)));
     naManager->get(request);
 
-    QRegularExpression re("^([ \u00c0-\u01ffa-zA-Z'\-])+, [A-Z]{3}$");
+    QRegularExpression re("^.+, [A-Z]{3}$");
+    bool rc;
 
-    if (userDetailsDialog.exec() == QDialog::Accepted) {
-        if ( !getUserDetailsUI.placeEdit->text().isEmpty()
-          && !getUserDetailsUI.wingsuitEdit->currentText().isEmpty()
-          && re.match(getUserDetailsUI.nameEdit->currentText()).hasMatch()) {
-            name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
-            countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
-            equipment->append(getUserDetailsUI.wingsuitEdit->currentText());
-            place->append(getUserDetailsUI.placeEdit->text());
-            return true;
-        } else
-            QMessageBox(QMessageBox::Critical, "Error", "Invalid Data enetered").exec();
+    while (rc = (userDetailsDialog.exec() == QDialog::Accepted)) {
+        if ( getUserDetailsUI.wingsuitEdit->currentText().isEmpty()) {
+            QMessageBox(QMessageBox::Critical, "Error", "Wingsuit must not be empty!").exec();
+            continue;
+        }
+        if ( getUserDetailsUI.placeEdit->text().isEmpty()) {
+            QMessageBox(QMessageBox::Critical, "Error", "Place must not be empty!").exec();
+            continue;
+        }
+        if ( !re.match(getUserDetailsUI.nameEdit->currentText()).hasMatch()) {
+            QMessageBox(QMessageBox::Critical, "Error", "Invalid Name/CountryCode!").exec();
+            continue;
+        }
+
+        name->append(getUserDetailsUI.nameEdit->currentText().split(',').at(0));
+        countrycode->append(getUserDetailsUI.nameEdit->currentText().split(',').at(1).trimmed());
+        equipment->append(getUserDetailsUI.wingsuitEdit->currentText());
+        place->append(getUserDetailsUI.placeEdit->text());
+
+        break;
     }
 
-    return false;
+    return rc;
 }
 
 void PPCUpload::usersFinished(QNetworkReply *reply) {
@@ -154,7 +164,7 @@ void PPCUpload::usersFinished(QNetworkReply *reply) {
         QString result = reply->readAll();
         QStringList users = result.split('\n');
         for (int i = 0; i < users.length(); i++)
-            getUserDetailsUI.nameEdit->addItem(users.at(i).split('\t').at(0));
+            getUserDetailsUI.nameEdit->addItem(users.at(i));
     } else
         QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
 }
@@ -165,7 +175,7 @@ void PPCUpload::suitsFinished(QNetworkReply *reply) {
         QString result = reply->readAll();
         QStringList suits = result.split('\n');
         for (int i = 0; i < suits.length(); i++)
-            getUserDetailsUI.wingsuitEdit->addItem(suits.at(i).split('\t').at(0));
+            getUserDetailsUI.wingsuitEdit->addItem(suits.at(i));
     } else
         QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
 }
