@@ -1,4 +1,4 @@
-#include "flarescoring.h"
+#include "FlareScoring.h"
 
 #include "mainwindow.h"
 
