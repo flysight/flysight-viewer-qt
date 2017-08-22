@@ -8,7 +8,7 @@
 #include "datapoint.h"
 #include "mainwindow.h"
 #include "plotvalue.h"
-#include "FlareScoring.h"
+#include "flarescoring.h"
 
 FlareForm::FlareForm(QWidget *parent) :
     QWidget(parent),
