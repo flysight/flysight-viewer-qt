@@ -74,6 +74,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>nameEdit</tabstop>
+  <tabstop>wingsuitEdit</tabstop>
+  <tabstop>placeEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
