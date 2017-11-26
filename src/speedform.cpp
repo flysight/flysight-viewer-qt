@@ -1,13 +1,12 @@
 #include "speedform.h"
 #include "ui_speedform.h"
 
-#include <QPushButton>
-
 #include "common.h"
 #include "datapoint.h"
 #include "mainwindow.h"
 #include "plotvalue.h"
 #include "speedscoring.h"
+#include "ppcupload.h"
 
 SpeedForm::SpeedForm(QWidget *parent) :
     QWidget(parent),
@@ -27,6 +26,9 @@ SpeedForm::SpeedForm(QWidget *parent) :
     connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
     connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
     connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
+
+    // Connect PPC button
+    connect(ui->ppcButton, SIGNAL(clicked()), this, SLOT(onPpcButtonClicked()));
 }
 
 SpeedForm::~SpeedForm()
@@ -91,6 +93,9 @@ void SpeedForm::updateView()
             ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH));
             ui->verticalSpeedUnits->setText(tr("mph"));
         }
+        ui->actualButton->setEnabled(true);
+        ui->optimizeButton->setEnabled(true);
+        ui->ppcButton->setEnabled(true);
     }
     else
     {
@@ -105,6 +110,11 @@ void SpeedForm::updateView()
         }
 
         ui->verticalSpeedEdit->setText(tr("n/a"));
+
+        ui->actualButton->setEnabled(false);
+        ui->optimalButton->setEnabled(false);
+        ui->optimizeButton->setEnabled(false);
+        ui->ppcButton->setEnabled(false);
     }
 }
 
@@ -168,6 +178,31 @@ void SpeedForm::onOptimizeButtonClicked()
     // Perform optimization
     method->optimize();
 
+    ui->optimalButton->setEnabled(true);
+
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
+}
+
+void SpeedForm::onPpcButtonClicked() {
+
+    // Return if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    PPCUpload *uploader = new PPCUpload(mMainWindow);
+    SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
+    DataPoint dpBottom, dpTop;
+
+    ui->faiButton->click();
+    ui->actualButton->click();
+
+    if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
+
+        const double time = dpBottom.t - dpTop.t;
+        const double distance = MainWindow::getDistance(dpTop, dpBottom);
+        const double windowTop = dpTop.z;
+        const double windowBottom = dpBottom.z;
+
+        uploader->upload("SS", windowTop, windowBottom, time, distance);
+    }
 }

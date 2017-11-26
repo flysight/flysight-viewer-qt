@@ -87,6 +87,7 @@ public:
 
     int findIndexBelowT(double t);
     int findIndexAboveT(double t);
+    int findIndexForLanding();
 
     void setWindowMode(WindowMode mode);
     WindowMode windowMode() const { return mWindowMode; }
@@ -117,7 +118,11 @@ public:
     double lineThickness() const { return mLineThickness; }
 
     void setWind(double windE, double windN);
+    void getWind(double *windE, double *windN);
+    void getWindSpeedDirection(double *windSpeed, double *windDirection);
     bool windAdjustment() const { return mWindAdjustment; }
+
+    double getQNE(void) const { return mFixedReference;}
 
     void setScoringMode(ScoringMode mode);
     ScoringMode scoringMode() const { return mScoringMode; }

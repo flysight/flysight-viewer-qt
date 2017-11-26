@@ -1,14 +1,13 @@
 #include "ppcform.h"
 #include "ui_ppcform.h"
 
-#include <QPushButton>
-
 #include "common.h"
 #include "dataplot.h"
 #include "datapoint.h"
 #include "mainwindow.h"
 #include "plotvalue.h"
 #include "ppcscoring.h"
+#include "ppcupload.h"
 
 PPCForm::PPCForm(QWidget *parent) :
     QWidget(parent),
@@ -32,6 +31,9 @@ PPCForm::PPCForm(QWidget *parent) :
     connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
     connect(ui->optimalButton, SIGNAL(clicked()), this, SLOT(onOptimalButtonClicked()));
     connect(ui->optimizeButton, SIGNAL(clicked()), this, SLOT(onOptimizeButtonClicked()));
+
+    // Connect PPC button
+    connect(ui->ppcButton, SIGNAL(clicked()), this, SLOT(onPpcButtonClicked()));
 }
 
 PPCForm::~PPCForm()
@@ -103,6 +105,9 @@ void PPCForm::updateView()
             ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
             ui->horizontalSpeedUnits->setText(tr("mph"));
         }
+        ui->actualButton->setEnabled(true);
+        ui->optimizeButton->setEnabled(true);
+        ui->ppcButton->setEnabled(true);
     }
     else
     {
@@ -121,6 +126,11 @@ void PPCForm::updateView()
         ui->timeEdit->setText(tr("n/a"));
         ui->distanceEdit->setText(tr("n/a"));
         ui->horizontalSpeedEdit->setText(tr("n/a"));
+
+        ui->actualButton->setEnabled(false);
+        ui->optimalButton->setEnabled(false);
+        ui->optimizeButton->setEnabled(false);
+        ui->ppcButton->setEnabled(false);
     }
 }
 
@@ -193,6 +203,31 @@ void PPCForm::onOptimizeButtonClicked()
     // Perform optimization
     method->optimize();
 
+    ui->optimalButton->setEnabled(true);
+
     // Switch to optimal view
     mMainWindow->setWindowMode(MainWindow::Optimal);
 }
+
+void PPCForm::onPpcButtonClicked() {
+
+    // Return if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
+    PPCUpload *uploader = new PPCUpload(mMainWindow);
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    DataPoint dpBottom, dpTop;
+
+    ui->faiButton->click();
+    ui->actualButton->click();
+
+    if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
+        const double time = dpBottom.t - dpTop.t;
+        const double distance = MainWindow::getDistance(dpTop, dpBottom);
+        const double windowTop = dpTop.z;
+        const double windowBottom = dpBottom.z;
+
+        uploader->upload("WS", windowTop, windowBottom, time, distance);
+    }
+}
+

@@ -42,6 +42,8 @@ private slots:
     void onActualButtonClicked();
     void onOptimalButtonClicked();
     void onOptimizeButtonClicked();
+
+    void onPpcButtonClicked();
 };
 
 

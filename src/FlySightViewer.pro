@@ -8,6 +8,8 @@ QT       += core gui printsupport webkitwidgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
+
 TARGET = FlySightViewer
 TEMPLATE = app
 
@@ -33,6 +35,18 @@ SOURCES += main.cpp \
     scoringmethod.cpp \
     ppcscoring.cpp \
     speedscoring.cpp \
+    wideopenspeedform.cpp \
+    wideopendistanceform.cpp \
+    wideopendistancescoring.cpp \
+    wideopenspeedscoring.cpp \
+    geographicutil.cpp \
+    importworker.cpp \
+    logbookview.cpp \
+    performancescoring.cpp \
+    performanceform.cpp \
+    flareform.cpp \
+    flarescoring.cpp \
+    ppcupload.cpp \
     GeographicLib/Accumulator.cpp \
     GeographicLib/AlbersEqualArea.cpp \
     GeographicLib/AzimuthalEquidistant.cpp \
@@ -70,18 +84,7 @@ SOURCES += main.cpp \
     GeographicLib/TransverseMercator.cpp \
     GeographicLib/TransverseMercatorExact.cpp \
     GeographicLib/Utility.cpp \
-    GeographicLib/UTMUPS.cpp \
-    performancescoring.cpp \
-    performanceform.cpp \
-    wideopenspeedform.cpp \
-    wideopendistanceform.cpp \
-    wideopendistancescoring.cpp \
-    wideopenspeedscoring.cpp \
-    geographicutil.cpp \
-    importworker.cpp \
-    logbookview.cpp \
-    flareform.cpp \
-    flarescoring.cpp
+    GeographicLib/UTMUPS.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -115,7 +118,8 @@ HEADERS  += mainwindow.h \
     importworker.h \
     logbookview.h \
     flareform.h \
-    flarescoring.h
+    flarescoring.h \
+    ppcupload.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
@@ -123,6 +127,7 @@ FORMS    += mainwindow.ui \
     scoringview.ui \
     playbackview.ui \
     ppcform.ui \
+    getuserdialog.ui \
     speedform.ui \
     performanceform.ui \
     wideopenspeedform.ui \
@@ -162,4 +167,3 @@ else {
     LIBS += -lwwwidgets4
 }
 
-DISTFILES +=

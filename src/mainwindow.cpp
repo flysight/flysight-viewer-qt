@@ -522,6 +522,19 @@ int MainWindow::findIndexAboveT(
     return above;
 }
 
+int MainWindow::findIndexForLanding()
+{
+    int i = findIndexBelowT(0.0);
+
+    while (++i < m_data.size()-1) {
+        const DataPoint &p = m_data[i];
+        if (p.velE*p.velE + p.velN*p.velN + p.velD < 1.0)
+            break;
+    }
+
+    return i;
+}
+
 void MainWindow::on_actionImport_triggered()
 {
     // Initialize settings object
@@ -1439,9 +1452,9 @@ void MainWindow::on_actionPreferences_triggered()
     const double factor = (m_units == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
     const QString unitText = (m_units == PlotValue::Metric) ? "km/h" : "mph";
 
-    double windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN) * factor;
-    double windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
-    if (windDirection < 0) windDirection += 360;
+    double windSpeed, windDirection;
+    getWindSpeedDirection(&windSpeed, &windDirection);
+    windSpeed *= factor;
 
     dlg.setWindSpeed(windSpeed);
     dlg.setWindUnits(unitText);
@@ -1993,6 +2006,24 @@ void MainWindow::setWind(
     updateVelocity();
 
     emit dataChanged();
+}
+
+void MainWindow::getWind(
+        double *windE,
+        double *windN)
+{
+    *windE = mWindE;
+    *windN = mWindN;
+}
+
+void MainWindow::getWindSpeedDirection(
+        double *windSpeed,
+        double *windDirection)
+{
+    *windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
+    *windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
+    if (*windDirection < 0)
+        *windDirection += 360;
 }
 
 void MainWindow::on_actionUndoZoom_triggered()
