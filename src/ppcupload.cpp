@@ -90,7 +90,7 @@ void PPCUpload::upload(const QString type, const double windowTop, const double 
 
 void PPCUpload::finished(QNetworkReply *reply) {
     if(reply->error() == QNetworkReply::NoError) {
-        QMessageBox(QMessageBox::Information, "Succes", tr("Track submitted successfully.")).exec();
+        QMessageBox(QMessageBox::Information, "Success", tr("Track submitted successfully.")).exec();
         QDesktopServices::openUrl(QUrl("https://ppc.paralog.net/showTrack.php&?track="+reply->readAll()));
     } else
         QMessageBox(QMessageBox::Critical, "Error", reply->errorString()).exec();
