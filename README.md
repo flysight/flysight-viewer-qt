@@ -5,7 +5,12 @@
 1. FlySight Viewer should be built using Qt 5.5.1. Later versions of Qt do not include QWebView, which is used by MapView.
 2. VLC-Qt builds can be found here: https://github.com/vlc-qt/vlc-qt/releases. For Qt 5.5, use VLC-Qt 1.0.
 3. wwWidgets is located here: http://www.wysota.eu.org/wwwidgets/#download. For Qt 5 compatibility, wwWidgets must be built from source.
-4.  HTTPS requires the OpenSSL binaries. On windows these are libeay32.dll, libssl32.dll and ssleay32.dll available from https://slproweb.com/products/Win32OpenSSL.html
+4. HTTPS requires the OpenSSL binaries. To build OpenSSL using MinGW:
+  1. Download and install MSYS2 from http://www.msys2.org/
+  2. Update the package database as indicated in instructions
+  3. Prepare the MSYS2 build environment as shown here: http://wiki.qt.io/MSYS2
+  4. Follow the instructions here to install OpenSSL: http://wiki.qt.io/Compiling_OpenSSL_with_MinGW
+  5. Copy libeay32.dll and ssleay32.dll to the FlySight Viewer distribution folder
 
 ## Deploying on Mac
 

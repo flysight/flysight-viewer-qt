@@ -108,7 +108,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Elevation:</string>
+         <string>Altitude:</string>
         </property>
        </widget>
       </item>
@@ -180,7 +180,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Elevation:</string>
+         <string>Altitude:</string>
         </property>
        </widget>
       </item>
