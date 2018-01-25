@@ -938,22 +938,27 @@ void MainWindow::import(
     }
 
     // Initialize time
-    for (int i = 0; i < data.size(); ++i)
-    {
-        const DataPoint &dp0 = data[data.size() - 1];
-        DataPoint &dp = data[i];
-
-        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
-        qint64 end = dp.dateTime.toMSecsSinceEpoch();
-
-        dp.t = (double) (end - start) / 1000;
-    }
+    initTime(data);
 
     // Altitude above ground
     initAltitude(data);
 
     // Wind adjustments
     updateVelocity(data);
+}
+
+void MainWindow::initTime(
+        DataPoints &data)
+{
+    const DataPoint &dp0 = data[data.size() - 1];
+    qint64 start = dp0.dateTime.toMSecsSinceEpoch();
+
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+        qint64 end = dp.dateTime.toMSecsSinceEpoch();
+        dp.t = (double) (end - start) / 1000;
+    }
 }
 
 void MainWindow::initAltitude(

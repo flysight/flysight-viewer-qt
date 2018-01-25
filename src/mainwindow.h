@@ -285,6 +285,7 @@ private:
                         QAction *actionShow, DataView::Direction direction);
 
     void import(QIODevice *device, DataPoints &data);
+    void initTime(DataPoints &data);
     void initAltitude(DataPoints &data);
     void updateVelocity(DataPoints &data);
     void initAerodynamics(DataPoints &data);
