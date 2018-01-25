@@ -269,6 +269,7 @@ private:
     void readSettings();
 
     void initDatabase();
+    bool setDatabaseValue(QString column, QString value);
 
     void initPlot();
     void initViews();

@@ -1960,6 +1960,7 @@ void MainWindow::setZero(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
+    setDatabaseValue("exit", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2002,6 +2003,7 @@ void MainWindow::setGround(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
+    setDatabaseValue("ground", QString::number(dp0.hMSL, 'f', 3));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2020,6 +2022,7 @@ void MainWindow::setCourse(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
+    setDatabaseValue("course", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2030,6 +2033,34 @@ void MainWindow::setCourse(
     emit dataChanged();
 
     setTool(mPrevTool);
+}
+
+bool MainWindow::setDatabaseValue(
+        QString column,
+        QString value)
+{
+    QSqlQuery query(mDatabase);
+
+    // Get the old value
+    if (!query.exec(QString("select %1 from files where file_name='%2'").arg(column).arg(mTrackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    // Return now if value is not changed
+    if (query.next() && value == query.value(0).toString()) return true;
+
+    // Change the value
+    if (!query.exec(QString("update files set %1='%2' where file_name='%3'").arg(column).arg(value).arg(mTrackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    emit databaseChanged();
 }
 
 void MainWindow::setScoringVisible(
