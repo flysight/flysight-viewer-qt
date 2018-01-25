@@ -627,18 +627,6 @@ void MainWindow::importFile(
     temporaryFile.write(file.readAll());
     file.close();
 
-    // Read file data
-    temporaryFile.seek(0);
-    import(&temporaryFile, m_data);
-
-    // Clear optimum
-    m_optimal.clear();
-
-    // Initialize plot ranges
-    initRange();
-
-    emit dataLoaded();
-
     // Get hash
     QCryptographicHash hash(QCryptographicHash::Md5);
 
@@ -653,6 +641,18 @@ void MainWindow::importFile(
     QString uniqueName = QString(hash.result().toHex());
     QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
     QString newPath = QDir(mDatabasePath).filePath(newName);
+
+    // Read file data
+    temporaryFile.seek(0);
+    import(&temporaryFile, m_data, uniqueName);
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange();
+
+    emit dataLoaded();
 
     // If the file is not already in the database
     if (!QFile(newPath).exists())
@@ -736,7 +736,7 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    import(&file, m_data);
+    import(&file, m_data, uniqueName);
 
     // Clear optimum
     m_optimal.clear();
@@ -819,7 +819,7 @@ void MainWindow::setTrackChecked(
             }
 
             // Read file data
-            import(&file, data);
+            import(&file, data, trackName);
         }
 
         mCheckedTracks.insert(trackName, data);
@@ -858,7 +858,8 @@ void MainWindow::importFromCheckedTrack(
 
 void MainWindow::import(
         QIODevice *device,
-        DataPoints &data)
+        DataPoints &data,
+        QString trackName)
 {
     QTextStream in(device);
 
@@ -938,20 +939,31 @@ void MainWindow::import(
     }
 
     // Initialize time
-    initTime(data);
+    initTime(data, trackName);
 
     // Altitude above ground
-    initAltitude(data);
+    initAltitude(data, trackName);
 
     // Wind adjustments
-    updateVelocity(data);
+    updateVelocity(data, trackName);
 }
 
 void MainWindow::initTime(
-        DataPoints &data)
+        DataPoints &data,
+        QString trackName)
 {
-    const DataPoint &dp0 = data[data.size() - 1];
-    qint64 start = dp0.dateTime.toMSecsSinceEpoch();
+    QString value;
+    qint64 start;
+    if (getDatabaseValue(trackName, "exit", value))
+    {
+        start = QDateTime::fromString(value, "yyyy-MM-dd HH:mm:ss.zzz")
+                .toMSecsSinceEpoch();
+    }
+    else
+    {
+        const DataPoint &dp0 = data[data.size() - 1];
+        start = dp0.dateTime.toMSecsSinceEpoch();
+    }
 
     for (int i = 0; i < data.size(); ++i)
     {
@@ -962,12 +974,21 @@ void MainWindow::initTime(
 }
 
 void MainWindow::initAltitude(
-        DataPoints &data)
+        DataPoints &data,
+        QString trackName)
 {
     if (mGroundReference == Automatic)
     {
-        const DataPoint &dp0 = data[data.size() - 1];
-        mFixedReference = dp0.hMSL;
+        QString value;
+        if (getDatabaseValue(trackName, "ground", value))
+        {
+            mFixedReference = value.toDouble();
+        }
+        else
+        {
+            const DataPoint &dp0 = data[data.size() - 1];
+            mFixedReference = dp0.hMSL;
+        }
     }
 
     for (int i = 0; i < data.size(); ++i)
@@ -978,7 +999,8 @@ void MainWindow::initAltitude(
 }
 
 void MainWindow::updateVelocity(
-        DataPoints &data)
+        DataPoints &data,
+        QString trackName)
 {
     if (mWindAdjustment)
     {
@@ -1053,6 +1075,13 @@ void MainWindow::updateVelocity(
         dp.dist3D = dist3D;
     }
 
+    QString value;
+    double theta0 = 0;
+    if (getDatabaseValue(trackName, "course", value))
+    {
+        theta0 = value.toDouble();
+    }
+
     // Cumulative heading
     double prevHeading;
     bool firstHeading = true;
@@ -1077,7 +1106,7 @@ void MainWindow::updateVelocity(
         }
 
         // Relative heading
-        dp.theta = dp.heading;
+        dp.theta = dp.heading - theta0;
 
         firstHeading = false;
         prevHeading = dp.heading;
@@ -1466,12 +1495,15 @@ void MainWindow::on_actionWind_triggered()
     m_ui->actionWind->setChecked(mWindAdjustment);
 
     // Update plot data
-    updateVelocity(m_data);
+    updateVelocity(m_data, mTrackName);
 
     // Update checked tracks
-    foreach (DataPoints data, mCheckedTracks)
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
     {
-        updateVelocity(m_data);
+        updateVelocity(p.value(), p.key());
     }
 
     emit dataChanged();
@@ -1664,12 +1696,15 @@ void MainWindow::on_actionPreferences_triggered()
             mFixedReference = dlg.fixedReference();
 
             // Update plot data
-            initAltitude(m_data);
+            initAltitude(m_data, mTrackName);
 
             // Update checked tracks
-            foreach (DataPoints data, mCheckedTracks)
+            QMap< QString, DataPoints >::iterator p;
+            for (p = mCheckedTracks.begin();
+                 p != mCheckedTracks.end();
+                 ++p)
             {
-                initAltitude(data);
+                initAltitude(p.value(), p.key());
             }
 
             emit dataChanged();
@@ -1965,7 +2000,7 @@ void MainWindow::setZero(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue("exit", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
+    setDatabaseValue(mTrackName, "exit", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2008,7 +2043,7 @@ void MainWindow::setGround(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue("ground", QString::number(dp0.hMSL, 'f', 3));
+    setDatabaseValue(mTrackName, "ground", QString::number(dp0.hMSL, 'f', 3));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2027,7 +2062,7 @@ void MainWindow::setCourse(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue("course", QString::number(dp0.heading, 'f', 5));
+    setDatabaseValue(mTrackName, "course", QString::number(dp0.heading, 'f', 5));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -2041,13 +2076,15 @@ void MainWindow::setCourse(
 }
 
 bool MainWindow::setDatabaseValue(
+        QString trackName,
         QString column,
         QString value)
 {
     QSqlQuery query(mDatabase);
 
     // Get the old value
-    if (!query.exec(QString("select %1 from files where file_name='%2'").arg(column).arg(mTrackName)))
+    if (!query.exec(QString("select %1 from files where file_name='%2'")
+                    .arg(column).arg(trackName)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -2058,7 +2095,8 @@ bool MainWindow::setDatabaseValue(
     if (query.next() && value == query.value(0).toString()) return true;
 
     // Change the value
-    if (!query.exec(QString("update files set %1='%2' where file_name='%3'").arg(column).arg(value).arg(mTrackName)))
+    if (!query.exec(QString("update files set %1='%2' where file_name='%3'")
+                    .arg(column).arg(value).arg(trackName)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -2066,6 +2104,33 @@ bool MainWindow::setDatabaseValue(
     }
 
     emit databaseChanged();
+}
+
+bool MainWindow::getDatabaseValue(
+        QString trackName,
+        QString column,
+        QString &value)
+{
+    QSqlQuery query(mDatabase);
+
+    // Read value from database
+    if (!query.exec(QString("select %1 from files where file_name='%2'")
+                    .arg(column).arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    // Check if there is a result
+    if (!query.next()) return false;
+
+    // Handle empty results
+    if (query.value(0).toString().isEmpty()) return false;
+
+    // Return the result
+    value = query.value(0).toString();
+    return true;
 }
 
 void MainWindow::setScoringVisible(
@@ -2143,12 +2208,15 @@ void MainWindow::setWind(
     mWindN = windN;
 
     // Update plot data
-    updateVelocity(m_data);
+    updateVelocity(m_data, mTrackName);
 
     // Update checked tracks
-    foreach (DataPoints data, mCheckedTracks)
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
     {
-        updateVelocity(data);
+        updateVelocity(p.value(), p.key());
     }
 
     emit dataChanged();

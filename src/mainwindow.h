@@ -269,7 +269,8 @@ private:
     void readSettings();
 
     void initDatabase();
-    bool setDatabaseValue(QString column, QString value);
+    bool setDatabaseValue(QString trackName, QString column, QString value);
+    bool getDatabaseValue(QString trackName, QString column, QString &value);
 
     void initPlot();
     void initViews();
@@ -284,10 +285,10 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    void import(QIODevice *device, DataPoints &data);
-    void initTime(DataPoints &data);
-    void initAltitude(DataPoints &data);
-    void updateVelocity(DataPoints &data);
+    void import(QIODevice *device, DataPoints &data, QString trackName);
+    void initTime(DataPoints &data, QString trackName);
+    void initAltitude(DataPoints &data, QString trackName);
+    void updateVelocity(DataPoints &data, QString trackName);
     void initAerodynamics(DataPoints &data);
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
