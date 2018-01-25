@@ -243,6 +243,12 @@ void MainWindow::initDatabase()
             QMessageBox::critical(0, tr("Query failed"), err.text());
         }
     }
+
+    // Add new columns
+    QSqlQuery query(mDatabase);
+    query.exec("alter table files add column exit text");
+    query.exec("alter table files add column ground real");
+    query.exec("alter table files add column course text");
 }
 
 void MainWindow::initPlot()
