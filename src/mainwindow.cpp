@@ -248,7 +248,7 @@ void MainWindow::initDatabase()
     QSqlQuery query(mDatabase);
     query.exec("alter table files add column exit text");
     query.exec("alter table files add column ground real");
-    query.exec("alter table files add column course text");
+    query.exec("alter table files add column course real");
 }
 
 void MainWindow::initPlot()
@@ -2022,7 +2022,7 @@ void MainWindow::setCourse(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue("course", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
+    setDatabaseValue("course", QString::number(dp0.heading, 'f', 5));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
