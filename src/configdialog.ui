@@ -31,7 +31,7 @@
        <item>
         <widget class="QStackedWidget" name="pagesWidget">
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="general">
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -94,11 +94,28 @@
             </layout>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox">
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>200</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="import_2">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QGroupBox" name="groupBox_2">
              <property name="title">
               <string>Ground reference</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_4">
+             <layout class="QGridLayout" name="gridLayout_7">
               <item row="0" column="0">
                <widget class="QRadioButton" name="autoReferenceButton">
                 <property name="text">
@@ -127,14 +144,14 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer">
+            <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>200</height>
+               <height>172</height>
               </size>
              </property>
             </spacer>
@@ -278,7 +295,7 @@
            <item>
             <widget class="QTableWidget" name="plotTable">
              <attribute name="verticalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
             </widget>
            </item>

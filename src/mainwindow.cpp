@@ -977,24 +977,21 @@ void MainWindow::initAltitude(
         DataPoints &data,
         QString trackName)
 {
+    double ground;
     if (mGroundReference == Automatic)
     {
-        QString value;
-        if (getDatabaseValue(trackName, "ground", value))
-        {
-            mFixedReference = value.toDouble();
-        }
-        else
-        {
-            const DataPoint &dp0 = data[data.size() - 1];
-            mFixedReference = dp0.hMSL;
-        }
+        const DataPoint &dp0 = data[data.size() - 1];
+        ground = dp0.hMSL;
+    }
+    else
+    {
+        ground = mFixedReference;
     }
 
     for (int i = 0; i < data.size(); ++i)
     {
         DataPoint &dp = data[i];
-        dp.z = dp.hMSL - mFixedReference;
+        dp.z = dp.hMSL - ground;
     }
 }
 
@@ -1694,20 +1691,6 @@ void MainWindow::on_actionPreferences_triggered()
         {
             mGroundReference = dlg.groundReference();
             mFixedReference = dlg.fixedReference();
-
-            // Update plot data
-            initAltitude(m_data, mTrackName);
-
-            // Update checked tracks
-            QMap< QString, DataPoints >::iterator p;
-            for (p = mCheckedTracks.begin();
-                 p != mCheckedTracks.end();
-                 ++p)
-            {
-                initAltitude(p.value(), p.key());
-            }
-
-            emit dataChanged();
         }
 
         if (mDatabasePath != dlg.databasePath())
