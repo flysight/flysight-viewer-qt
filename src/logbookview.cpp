@@ -11,15 +11,15 @@
 
 #include "mainwindow.h"
 
-class IntItem : public QTableWidgetItem
+class RealItem : public QTableWidgetItem
 {
 public:
-    IntItem(const QString &text, int type = Type):
+    RealItem(const QString &text, int type = Type):
         QTableWidgetItem(text, type) {}
 
     bool operator<(const QTableWidgetItem &rhs) const
     {
-        return (this->text().toInt() < rhs.text().toInt());
+        return (this->text().toDouble() < rhs.text().toDouble());
     }
 };
 
@@ -174,16 +174,16 @@ void LogbookView::updateView()
                                 query.value(1).toString()) ? Qt::Checked : Qt::Unchecked);
         ui->tableWidget->setItem(index, 1, item);
 
-        ui->tableWidget->setItem(index, 2, new IntItem(query.value(0).toString()));             // id
+        ui->tableWidget->setItem(index, 2, new RealItem(query.value(0).toString()));             // id
         ui->tableWidget->setItem(index, 3, new QTableWidgetItem(query.value(1).toString()));    // file_name
         ui->tableWidget->setItem(index, 4, new QTableWidgetItem(query.value(2).toString()));    // description
         ui->tableWidget->setItem(index, 5, new TimeItem(startTime));                            // start_time
         ui->tableWidget->setItem(index, 6, new DurationItem(duration));                         // duration
-        ui->tableWidget->setItem(index, 7, new IntItem(query.value(5).toString()));             // sample_period
-        ui->tableWidget->setItem(index, 8, new IntItem(query.value(6).toString()));             // min_lat
-        ui->tableWidget->setItem(index, 9, new IntItem(query.value(7).toString()));             // max_lat
-        ui->tableWidget->setItem(index, 10, new IntItem(query.value(8).toString()));            // min_lon
-        ui->tableWidget->setItem(index, 11, new IntItem(query.value(9).toString()));            // max_lon
+        ui->tableWidget->setItem(index, 7, new RealItem(query.value(5).toString()));             // sample_period
+        ui->tableWidget->setItem(index, 8, new RealItem(query.value(6).toString()));             // min_lat
+        ui->tableWidget->setItem(index, 9, new RealItem(query.value(7).toString()));             // max_lat
+        ui->tableWidget->setItem(index, 10, new RealItem(query.value(8).toString()));            // min_lon
+        ui->tableWidget->setItem(index, 11, new RealItem(query.value(9).toString()));            // max_lon
         ui->tableWidget->setItem(index, 12, new TimeItem(importTime));                          // import_time
 
         for (int j = 0; j < 13; ++j)
