@@ -27,6 +27,8 @@ private:
     Ui::LogbookView *ui;
     MainWindow      *mMainWindow;
 
+    bool             suspendItemChanged;
+
 public slots:
     void updateView();
 

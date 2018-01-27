@@ -61,7 +61,8 @@ public:
 LogbookView::LogbookView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::LogbookView),
-    mMainWindow(0)
+    mMainWindow(0),
+    suspendItemChanged(false)
 {
     ui->setupUi(this);
 
@@ -91,6 +92,8 @@ void LogbookView::setMainWindow(
 
 void LogbookView::updateView()
 {
+    suspendItemChanged = true;
+
     ui->tableWidget->setSortingEnabled(false);
 
     QSqlDatabase db = QSqlDatabase::database("flysight");
@@ -132,6 +135,7 @@ void LogbookView::updateView()
     ui->tableWidget->setColumnHidden(9, true);  // Hide max_lat column
     ui->tableWidget->setColumnHidden(10, true);  // Hide min_lon column
     ui->tableWidget->setColumnHidden(11, true);  // Hide max_lon column
+    ui->tableWidget->setColumnHidden(15, true);  // Hide course column
 
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
                                                << tr("")
@@ -146,7 +150,10 @@ void LogbookView::updateView()
                                                << tr("Max Latitude")
                                                << tr("Min Longitude")
                                                << tr("Max Longitude")
-                                               << tr("Import Time"));
+                                               << tr("Import Time")
+                                               << tr("Exit Time")
+                                               << tr("Ground Elev")
+                                               << tr("Course Angle"));
 
     int index = 0;
     while (query.next())
@@ -155,6 +162,7 @@ void LogbookView::updateView()
 
         QDateTime startTime = QDateTime::fromString(query.value(3).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
         QDateTime importTime = QDateTime::fromString(query.value(10).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
+        QDateTime exitTime = QDateTime::fromString(query.value(11).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
         qint64 duration = query.value(4).toString().toLongLong();
 
         if (mMainWindow->trackName() == query.value(1).toString())
@@ -185,19 +193,24 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 10, new RealItem(query.value(8).toString()));            // min_lon
         ui->tableWidget->setItem(index, 11, new RealItem(query.value(9).toString()));            // max_lon
         ui->tableWidget->setItem(index, 12, new TimeItem(importTime));                          // import_time
+        ui->tableWidget->setItem(index, 13, new TimeItem(exitTime));                            // exit_time
+        ui->tableWidget->setItem(index, 14, new RealItem(query.value(12).toString()));           // ground
+        ui->tableWidget->setItem(index, 15, new RealItem(query.value(13).toString()));           // course
 
-        for (int j = 0; j < 13; ++j)
+        for (int j = 0; j < 16; ++j)
         {
-            // Disable editing on every column except description
+            // Disable editing on every column except description and ground
             QTableWidgetItem *item = ui->tableWidget->item(index, j);
-            if (j == 4) item->setFlags(item->flags() |  Qt::ItemIsEditable);
-            else        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            if (j == 4 || j == 14) item->setFlags(item->flags() |  Qt::ItemIsEditable);
+            else                   item->setFlags(item->flags() & ~Qt::ItemIsEditable);
         }
 
         ++index;
     }
 
     ui->tableWidget->setSortingEnabled(true);
+
+    suspendItemChanged = false;
 }
 
 void LogbookView::onDoubleClick(
@@ -246,6 +259,8 @@ void LogbookView::onSelectionChanged()
 void LogbookView::onItemChanged(
         QTableWidgetItem *item)
 {
+    if (suspendItemChanged) return;
+
     if (item->column() == 1)
     {
         // Get file name
@@ -264,6 +279,15 @@ void LogbookView::onItemChanged(
 
         // Update description
         mMainWindow->setTrackDescription(nameItem->text(), item->text());
+    }
+    else if (item->column() == 14)
+    {
+        // Get file name
+        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
+        if (!nameItem) return;
+
+        // Update ground elevation
+        mMainWindow->setTrackGround(nameItem->text(), item->text().toDouble());
     }
 }
 

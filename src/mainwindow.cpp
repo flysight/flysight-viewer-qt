@@ -2111,9 +2111,9 @@ bool MainWindow::setDatabaseValue(
 {
     QSqlQuery query(mDatabase);
 
-    // Get the old value
-    if (!query.exec(QString("select %1 from files where file_name='%2'")
-                    .arg(column).arg(trackName)))
+    // Check the old value
+    if (!query.exec(QString("select %1 from files where (file_name='%2' and %3='%4')")
+                    .arg(column).arg(trackName).arg(column).arg(value)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -2121,7 +2121,7 @@ bool MainWindow::setDatabaseValue(
     }
 
     // Return now if value is not changed
-    if (query.next() && value == query.value(0).toString()) return true;
+    if (query.next()) return true;
 
     // Change the value
     if (!query.exec(QString("update files set %1='%2' where file_name='%3'")
