@@ -66,6 +66,8 @@ public:
     void setGround(double t);
     void setCourse(double t);
 
+    void setTrackGround(QString trackName, double ground);
+
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
 
@@ -297,6 +299,8 @@ private:
 
     void updateBottomActions();
     void updateLeftActions();
+
+    void updateGround(DataPoints &data, double ground);
 
 signals:
     void dataLoaded();

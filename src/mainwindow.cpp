@@ -2043,17 +2043,46 @@ void MainWindow::setGround(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue(mTrackName, "ground", QString::number(dp0.hMSL, 'f', 3));
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.z -= dp0.z;
-    }
-
-    emit dataChanged();
+    setTrackGround(mTrackName, dp0.hMSL);
 
     setTool(mPrevTool);
+}
+
+void MainWindow::setTrackGround(
+        QString trackName,
+        double ground)
+{
+    setDatabaseValue(trackName, "ground", QString::number(ground, 'f', 3));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateGround(m_data, ground);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateGround(p.value(), ground);
+        }
+    }
+}
+
+void MainWindow::updateGround(
+        DataPoints &data,
+        double ground)
+{
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+        dp.z = dp.hMSL - ground;
+    }
 }
 
 void MainWindow::setCourse(
