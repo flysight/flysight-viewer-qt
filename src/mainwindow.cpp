@@ -2129,6 +2129,58 @@ void MainWindow::setTrackGround(
     }
 }
 
+void MainWindow::setTrackWindSpeed(
+        QString trackName,
+        double windSpeed)
+{
+    setDatabaseValue(trackName, "wind_speed", QString::number(windSpeed, 'f', 2));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateVelocity(m_data, mTrackName, false);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateVelocity(p.value(), p.key(), false);
+        }
+    }
+}
+
+void MainWindow::setTrackWindDir(
+        QString trackName,
+        double windDir)
+{
+    setDatabaseValue(trackName, "wind_dir", QString::number(windDir, 'f', 5));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateVelocity(m_data, mTrackName, false);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateVelocity(p.value(), p.key(), false);
+        }
+    }
+}
+
 void MainWindow::updateGround(
         DataPoints &data,
         double ground)

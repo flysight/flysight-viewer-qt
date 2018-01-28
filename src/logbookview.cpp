@@ -280,33 +280,35 @@ void LogbookView::onItemChanged(
 {
     if (suspendItemChanged) return;
 
+    // Get file name
+    QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
+    if (!nameItem) return;
+
     if (item->column() == 1)
     {
-        // Get file name
-        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
-        if (!nameItem) return;
-
         // Update check state
         mMainWindow->setTrackChecked(nameItem->text(),
                                      item->checkState() == Qt::Checked);
     }
     else if (item->column() == 4)
     {
-        // Get file name
-        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
-        if (!nameItem) return;
-
         // Update description
         mMainWindow->setTrackDescription(nameItem->text(), item->text());
     }
     else if (item->column() == 14)
     {
-        // Get file name
-        QTableWidgetItem *nameItem = ui->tableWidget->item(item->row(), 3);
-        if (!nameItem) return;
-
         // Update ground elevation
         mMainWindow->setTrackGround(nameItem->text(), item->text().toDouble());
+    }
+    else if (item->column() == 16)
+    {
+        // Update wind speed
+        mMainWindow->setTrackWindSpeed(nameItem->text(), item->text().toDouble());
+    }
+    else if (item->column() == 17)
+    {
+        // Update wind direction
+        mMainWindow->setTrackWindDir(nameItem->text(), item->text().toDouble());
     }
 }
 

@@ -67,6 +67,8 @@ public:
     void setCourse(double t);
 
     void setTrackGround(QString trackName, double ground);
+    void setTrackWindSpeed(QString trackName, double windSpeed);
+    void setTrackWindDir(QString trackName, double windDIr);
 
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
