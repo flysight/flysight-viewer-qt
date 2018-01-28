@@ -642,9 +642,33 @@ void MainWindow::importFile(
     QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
     QString newPath = QDir(mDatabasePath).filePath(newName);
 
+    QSqlQuery query(mDatabase);
+
+    // Check if the file is in the database
+    if (!query.exec(QString("select * from files where file_name='%1'")
+                    .arg(uniqueName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    bool isPresent = query.next();
+
+    // Add an empty record if the file is not in the database
+    if (!isPresent)
+    {
+        if (!query.exec(QString("insert into files (file_name) values ('%1')")
+                      .arg(uniqueName)))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
+
     // Read file data
     temporaryFile.seek(0);
-    import(&temporaryFile, m_data, uniqueName);
+    import(&temporaryFile, m_data, uniqueName, true);
 
     // Clear optimum
     m_optimal.clear();
@@ -655,7 +679,7 @@ void MainWindow::importFile(
     emit dataLoaded();
 
     // If the file is not already in the database
-    if (!QFile(newPath).exists())
+    if (!isPresent)
     {
         QDir(mDatabasePath).mkpath("FlySight/Tracks");
 
@@ -688,12 +712,17 @@ void MainWindow::importFile(
 
             QDateTime importTime = QDateTime::currentDateTime();
 
-            QSqlQuery query(mDatabase);
-            if (!query.exec(QString("insert into files "
-                                    "(file_name, description, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
-                                    "values "
-                                    "('%1', '', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
-                            .arg(uniqueName)
+            if (!query.exec(QString("update files set "
+                                    "description='', "
+                                    "start_time='%1', "
+                                    "duration=%2, "
+                                    "sample_period=%3, "
+                                    "min_lat=%4, "
+                                    "max_lat=%5, "
+                                    "min_lon=%6, "
+                                    "max_lon=%7, "
+                                    "import_time='%8' "
+                                    "where file_name='%9'")
                             .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
                             .arg(duration)
                             .arg(samplePeriod)
@@ -701,7 +730,8 @@ void MainWindow::importFile(
                             .arg(maxLat)
                             .arg(minLon)
                             .arg(maxLon)
-                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
+                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                            .arg(uniqueName)))
             {
                 QSqlError err = query.lastError();
                 QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -736,7 +766,7 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    import(&file, m_data, uniqueName);
+    import(&file, m_data, uniqueName, false);
 
     // Clear optimum
     m_optimal.clear();
@@ -770,8 +800,9 @@ void MainWindow::setTrackDescription(
 {
     QSqlQuery query(mDatabase);
 
-    // Get the old description
-    if (!query.exec(QString("select description from files where file_name='%2'").arg(trackName)))
+    // Check the old description
+    if (!query.exec(QString("select * from files where (file_name='%1' and description='%2')")
+                    .arg(trackName).arg(description)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -779,11 +810,11 @@ void MainWindow::setTrackDescription(
     }
 
     // Return now if description is not changed
-    if (!query.next()) return;
-    if (description == query.value(0).toString()) return;
+    if (query.next()) return;
 
     // Change the decription
-    if (!query.exec(QString("update files set description='%1' where file_name='%2'").arg(description).arg(trackName)))
+    if (!query.exec(QString("update files set description='%1' where file_name='%2'")
+                    .arg(description).arg(trackName)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -819,7 +850,7 @@ void MainWindow::setTrackChecked(
             }
 
             // Read file data
-            import(&file, data, trackName);
+            import(&file, data, trackName, false);
         }
 
         mCheckedTracks.insert(trackName, data);
@@ -859,7 +890,8 @@ void MainWindow::importFromCheckedTrack(
 void MainWindow::import(
         QIODevice *device,
         DataPoints &data,
-        QString trackName)
+        QString trackName,
+        bool initDatabase)
 {
     QTextStream in(device);
 
@@ -939,18 +971,19 @@ void MainWindow::import(
     }
 
     // Initialize time
-    initTime(data, trackName);
+    initTime(data, trackName, initDatabase);
 
     // Altitude above ground
-    initAltitude(data, trackName);
+    initAltitude(data, trackName, initDatabase);
 
     // Wind adjustments
-    updateVelocity(data, trackName);
+    updateVelocity(data, trackName, initDatabase);
 }
 
 void MainWindow::initTime(
         DataPoints &data,
-        QString trackName)
+        QString trackName,
+        bool initDatabase)
 {
     QString value;
     qint64 start;
@@ -965,6 +998,12 @@ void MainWindow::initTime(
         start = dp0.dateTime.toMSecsSinceEpoch();
     }
 
+    if (initDatabase)
+    {
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(start);
+        setDatabaseValue(trackName, "exit", dt.toString("yyyy-MM-dd HH:mm:ss.zzz"));
+    }
+
     for (int i = 0; i < data.size(); ++i)
     {
         DataPoint &dp = data[i];
@@ -975,10 +1014,16 @@ void MainWindow::initTime(
 
 void MainWindow::initAltitude(
         DataPoints &data,
-        QString trackName)
+        QString trackName,
+        bool initDatabase)
 {
+    QString value;
     double ground;
-    if (mGroundReference == Automatic)
+    if (getDatabaseValue(trackName, "ground", value))
+    {
+        ground = value.toDouble();
+    }
+    else if (mGroundReference == Automatic)
     {
         const DataPoint &dp0 = data[data.size() - 1];
         ground = dp0.hMSL;
@@ -986,6 +1031,11 @@ void MainWindow::initAltitude(
     else
     {
         ground = mFixedReference;
+    }
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "ground", QString::number(ground, 'f', 3));
     }
 
     for (int i = 0; i < data.size(); ++i)
@@ -997,7 +1047,8 @@ void MainWindow::initAltitude(
 
 void MainWindow::updateVelocity(
         DataPoints &data,
-        QString trackName)
+        QString trackName,
+        bool initDatabase)
 {
     if (mWindAdjustment)
     {
@@ -1073,10 +1124,19 @@ void MainWindow::updateVelocity(
     }
 
     QString value;
-    double theta0 = 0;
+    double theta0;
     if (getDatabaseValue(trackName, "course", value))
     {
         theta0 = value.toDouble();
+    }
+    else
+    {
+        theta0 = 0;
+    }
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "course", QString::number(theta0, 'f', 5));
     }
 
     // Cumulative heading
@@ -1492,7 +1552,7 @@ void MainWindow::on_actionWind_triggered()
     m_ui->actionWind->setChecked(mWindAdjustment);
 
     // Update plot data
-    updateVelocity(m_data, mTrackName);
+    updateVelocity(m_data, mTrackName, false);
 
     // Update checked tracks
     QMap< QString, DataPoints >::iterator p;
@@ -1500,7 +1560,7 @@ void MainWindow::on_actionWind_triggered()
          p != mCheckedTracks.end();
          ++p)
     {
-        updateVelocity(p.value(), p.key());
+        updateVelocity(p.value(), p.key(), false);
     }
 
     emit dataChanged();
@@ -2095,8 +2155,8 @@ bool MainWindow::setDatabaseValue(
     QSqlQuery query(mDatabase);
 
     // Check the old value
-    if (!query.exec(QString("select %1 from files where (file_name='%2' and %3='%4')")
-                    .arg(column).arg(trackName).arg(column).arg(value)))
+    if (!query.exec(QString("select * from files where (file_name='%1' and %2='%3')")
+                    .arg(trackName).arg(column).arg(value)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -2116,6 +2176,7 @@ bool MainWindow::setDatabaseValue(
     }
 
     emit databaseChanged();
+    return true;
 }
 
 bool MainWindow::getDatabaseValue(
@@ -2220,7 +2281,7 @@ void MainWindow::setWind(
     mWindN = windN;
 
     // Update plot data
-    updateVelocity(m_data, mTrackName);
+    updateVelocity(m_data, mTrackName, false);
 
     // Update checked tracks
     QMap< QString, DataPoints >::iterator p;
@@ -2228,7 +2289,7 @@ void MainWindow::setWind(
          p != mCheckedTracks.end();
          ++p)
     {
-        updateVelocity(p.value(), p.key());
+        updateVelocity(p.value(), p.key(), false);
     }
 
     emit dataChanged();

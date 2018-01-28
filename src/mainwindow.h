@@ -287,10 +287,10 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    void import(QIODevice *device, DataPoints &data, QString trackName);
-    void initTime(DataPoints &data, QString trackName);
-    void initAltitude(DataPoints &data, QString trackName);
-    void updateVelocity(DataPoints &data, QString trackName);
+    void import(QIODevice *device, DataPoints &data, QString trackName, bool initDatabase);
+    void initTime(DataPoints &data, QString trackName, bool initDatabase);
+    void initAltitude(DataPoints &data, QString trackName, bool initDatabase);
+    void updateVelocity(DataPoints &data, QString trackName, bool initDatabase);
     void initAerodynamics(DataPoints &data);
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
