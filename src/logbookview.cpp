@@ -27,7 +27,7 @@ class TimeItem : public QTableWidgetItem
 {
 public:
     TimeItem(const QDateTime &dateTime, int type = Type):
-        QTableWidgetItem(dateTime.toUTC().toString("yyyy/MM/dd h:mm A"), type)
+        QTableWidgetItem(dateTime.toLocalTime().toString("yyyy/MM/dd h:mm A"), type)
     {
         setData(Qt::UserRole, dateTime);
     }
