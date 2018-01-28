@@ -168,8 +168,13 @@ void LogbookView::updateView()
         qint64 duration = query.value(4).toString().toLongLong();
         double ground = query.value(12).toString().toDouble();
         double course = query.value(13).toString().toDouble();
-        double windSpeed = query.value(14).toString().toDouble();
-        double windDir = query.value(15).toString().toDouble();
+
+        double windE = query.value(14).toString().toDouble();
+        double windN = query.value(15).toString().toDouble();
+
+        double windSpeed = sqrt(windE * windE + windN * windN);
+        double windDir = atan2(-windE, -windN) / PI * 180;
+        if (windDir < 0) windDir += 360;
 
         if (mMainWindow->trackName() == query.value(1).toString())
         {
@@ -203,7 +208,7 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 14, new RealItem(QString::number(ground, 'f', 3)));     // ground
         ui->tableWidget->setItem(index, 15, new RealItem(QString::number(course, 'f', 5)));     // course
         ui->tableWidget->setItem(index, 16, new RealItem(QString::number(windSpeed, 'f', 2)));  // wind_speed
-        ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 5)));    // wind_dir
+        ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 2)));    // wind_dir
 
         for (int j = 0; j < 18; ++j)
         {
