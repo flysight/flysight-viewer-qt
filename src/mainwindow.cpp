@@ -1054,8 +1054,20 @@ void MainWindow::updateVelocity(
         QString trackName,
         bool initDatabase)
 {
+    double windSpeed, windDir;
+    getWindSpeedDirection(&windSpeed, &windDir);
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "wind_speed", QString::number(windSpeed, 'f', 2));
+        setDatabaseValue(trackName, "wind_dir", QString::number(windDir, 'f', 5));
+    }
+
     if (mWindAdjustment)
     {
+        double windE = -windSpeed * sin(windDir / 180 * PI);
+        double windN = -windSpeed * cos(windDir / 180 * PI);
+
         // Wind-adjusted position
         for (int i = 0; i < data.size(); ++i)
         {
@@ -1065,8 +1077,8 @@ void MainWindow::updateVelocity(
             double distance = getDistance(dp0, dp);
             double bearing = getBearing(dp0, dp);
 
-            dp.x = distance * sin(bearing) - mWindE * dp.t;
-            dp.y = distance * cos(bearing) - mWindN * dp.t;
+            dp.x = distance * sin(bearing) - windE * dp.t;
+            dp.y = distance * cos(bearing) - windN * dp.t;
         }
 
         // Wind-adjusted velocity
@@ -1074,8 +1086,8 @@ void MainWindow::updateVelocity(
         {
             DataPoint &dp = data[i];
 
-            dp.vx = dp.velE - mWindE;
-            dp.vy = dp.velN - mWindN;
+            dp.vx = dp.velE - windE;
+            dp.vy = dp.velN - windN;
         }
     }
     else
@@ -1639,8 +1651,9 @@ void MainWindow::on_actionPreferences_triggered()
     const double factor = (m_units == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
     const QString unitText = (m_units == PlotValue::Metric) ? "km/h" : "mph";
 
-    double windSpeed, windDirection;
-    getWindSpeedDirection(&windSpeed, &windDirection);
+    double windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
+    double windDirection = atan2(-mWindE, -mWindN) / PI * 180;
+    if (windDirection < 0) windDirection += 360;
     windSpeed *= factor;
 
     dlg.setWindSpeed(windSpeed);
@@ -2341,8 +2354,12 @@ void MainWindow::setWind(
         double windE,
         double windN)
 {
-    mWindE = windE;
-    mWindN = windN;
+    double windSpeed = sqrt(windE * windE + windN * windN);
+    double windDir = atan2(-windE, -windN) / PI * 180;
+    if (windDir < 0) windDir += 360;
+
+    setDatabaseValue(mTrackName, "wind_speed", QString::number(windSpeed, 'f', 2));
+    setDatabaseValue(mTrackName, "wind_dir", QString::number(windDir, 'f', 5));
 
     // Update plot data
     updateVelocity(m_data, mTrackName, false);
@@ -2359,22 +2376,23 @@ void MainWindow::setWind(
     emit dataChanged();
 }
 
-void MainWindow::getWind(
-        double *windE,
-        double *windN)
-{
-    *windE = mWindE;
-    *windN = mWindN;
-}
-
 void MainWindow::getWindSpeedDirection(
         double *windSpeed,
         double *windDirection)
 {
-    *windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
-    *windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
-    if (*windDirection < 0)
-        *windDirection += 360;
+    QString strSpeed, strDir;
+    if (getDatabaseValue(mTrackName, "wind_speed", strSpeed)
+            && getDatabaseValue(mTrackName, "wind_dir", strDir))
+    {
+        *windSpeed = strSpeed.toDouble();
+        *windDirection = strDir.toDouble();
+    }
+    else
+    {
+        *windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
+        *windDirection = atan2(-mWindE, -mWindN) / PI * 180;
+        if (*windDirection < 0) *windDirection += 360;
+    }
 }
 
 void MainWindow::on_actionUndoZoom_triggered()
