@@ -27,7 +27,7 @@ class TimeItem : public QTableWidgetItem
 {
 public:
     TimeItem(const QDateTime &dateTime, int type = Type):
-        QTableWidgetItem(dateTime.toString("yyyy/MM/dd h:mm A"), type)
+        QTableWidgetItem(dateTime.toUTC().toString("yyyy/MM/dd h:mm A"), type)
     {
         setData(Qt::UserRole, dateTime);
     }
@@ -160,9 +160,9 @@ void LogbookView::updateView()
     {
         ui->tableWidget->insertRow(ui->tableWidget->rowCount());
 
-        QDateTime startTime = QDateTime::fromString(query.value(3).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
-        QDateTime importTime = QDateTime::fromString(query.value(10).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
-        QDateTime exitTime = QDateTime::fromString(query.value(11).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
+        QDateTime startTime = QDateTime::fromString(query.value(3).toString(), Qt::ISODate);
+        QDateTime importTime = QDateTime::fromString(query.value(10).toString(), Qt::ISODate);
+        QDateTime exitTime = QDateTime::fromString(query.value(11).toString(), Qt::ISODate);
         qint64 duration = query.value(4).toString().toLongLong();
 
         if (mMainWindow->trackName() == query.value(1).toString())

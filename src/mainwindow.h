@@ -301,6 +301,7 @@ private:
     void updateLeftActions();
 
     void updateGround(DataPoints &data, double ground);
+    QString dateTimeToUTC(const QDateTime &dt);
 
 signals:
     void dataLoaded();

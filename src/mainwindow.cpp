@@ -723,14 +723,14 @@ void MainWindow::importFile(
                                     "max_lon=%7, "
                                     "import_time='%8' "
                                     "where file_name='%9'")
-                            .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                            .arg(dateTimeToUTC(startTime))
                             .arg(duration)
                             .arg(samplePeriod)
                             .arg(minLat)
                             .arg(maxLat)
                             .arg(minLon)
                             .arg(maxLon)
-                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+                            .arg(dateTimeToUTC(importTime))
                             .arg(uniqueName)))
             {
                 QSqlError err = query.lastError();
@@ -989,7 +989,7 @@ void MainWindow::initTime(
     qint64 start;
     if (getDatabaseValue(trackName, "exit", value))
     {
-        start = QDateTime::fromString(value, "yyyy-MM-dd HH:mm:ss.zzz")
+        start = QDateTime::fromString(value, Qt::ISODate)
                 .toMSecsSinceEpoch();
     }
     else
@@ -1000,8 +1000,8 @@ void MainWindow::initTime(
 
     if (initDatabase)
     {
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(start);
-        setDatabaseValue(trackName, "exit", dt.toString("yyyy-MM-dd HH:mm:ss.zzz"));
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(start, Qt::UTC);
+        setDatabaseValue(trackName, "exit", dateTimeToUTC(dt));
     }
 
     for (int i = 0; i < data.size(); ++i)
@@ -1981,9 +1981,7 @@ void MainWindow::on_actionExportTrack_triggered()
 
             if (lower <= dp.t && dp.t <= upper)
             {
-                stream << dp.dateTime.toUTC().date().toString(Qt::ISODate) << "T";
-                stream << dp.dateTime.toUTC().time().toString(Qt::ISODate) << ".";
-                stream << QString("%1").arg(dp.dateTime.toUTC().time().msec(), 3, 10, QChar('0')) << "Z,";
+                stream << dateTimeToUTC(dp.dateTime) << ",";
 
                 stream << QString::number(dp.lat, 'f', 7) << ",";
                 stream << QString::number(dp.lon, 'f', 7) << ",";
@@ -2011,6 +2009,16 @@ void MainWindow::on_actionExportTrack_triggered()
             }
         }
     }
+}
+
+QString MainWindow::dateTimeToUTC(
+        const QDateTime &dt)
+{
+    QString ret;
+    ret += dt.toUTC().date().toString(Qt::ISODate) + "T";
+    ret += dt.toUTC().time().toString(Qt::ISODate) + ".";
+    ret += QString("%1").arg(dt.toUTC().time().msec(), 3, 10, QChar('0')) + "Z";
+    return ret;
 }
 
 void MainWindow::setRange(
@@ -2043,7 +2051,7 @@ void MainWindow::setZero(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-    setDatabaseValue(mTrackName, "exit", dp0.dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz"));
+    setDatabaseValue(mTrackName, "exit", dateTimeToUTC(dp0.dateTime));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
