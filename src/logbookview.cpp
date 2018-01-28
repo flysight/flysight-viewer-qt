@@ -164,6 +164,8 @@ void LogbookView::updateView()
         QDateTime importTime = QDateTime::fromString(query.value(10).toString(), Qt::ISODate);
         QDateTime exitTime = QDateTime::fromString(query.value(11).toString(), Qt::ISODate);
         qint64 duration = query.value(4).toString().toLongLong();
+        double ground = query.value(12).toString().toDouble();
+        double course = query.value(13).toString().toDouble();
 
         if (mMainWindow->trackName() == query.value(1).toString())
         {
@@ -194,8 +196,8 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 11, new RealItem(query.value(9).toString()));            // max_lon
         ui->tableWidget->setItem(index, 12, new TimeItem(importTime));                          // import_time
         ui->tableWidget->setItem(index, 13, new TimeItem(exitTime));                            // exit_time
-        ui->tableWidget->setItem(index, 14, new RealItem(query.value(12).toString()));           // ground
-        ui->tableWidget->setItem(index, 15, new RealItem(query.value(13).toString()));           // course
+        ui->tableWidget->setItem(index, 14, new RealItem(QString::number(ground, 'f', 3)));     // ground
+        ui->tableWidget->setItem(index, 15, new RealItem(QString::number(course, 'f', 5)));     // course
 
         for (int j = 0; j < 16; ++j)
         {
