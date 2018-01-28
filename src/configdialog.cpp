@@ -34,8 +34,6 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
                 QStringList() << tr("Aerodynamics"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Plots"));
-    ui->contentsWidget->addItems(
-                QStringList() << tr("Wind"));
 
     // Add units
     ui->unitsCombo->addItems(
