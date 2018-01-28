@@ -153,7 +153,9 @@ void LogbookView::updateView()
                                                << tr("Import Time")
                                                << tr("Exit Time")
                                                << tr("Ground Elev")
-                                               << tr("Course Angle"));
+                                               << tr("Course Angle")
+                                               << tr("Wind Speed")
+                                               << tr("Wind Dir"));
 
     int index = 0;
     while (query.next())
@@ -166,6 +168,8 @@ void LogbookView::updateView()
         qint64 duration = query.value(4).toString().toLongLong();
         double ground = query.value(12).toString().toDouble();
         double course = query.value(13).toString().toDouble();
+        double windSpeed = query.value(14).toString().toDouble();
+        double windDir = query.value(15).toString().toDouble();
 
         if (mMainWindow->trackName() == query.value(1).toString())
         {
@@ -198,13 +202,26 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 13, new TimeItem(exitTime));                            // exit_time
         ui->tableWidget->setItem(index, 14, new RealItem(QString::number(ground, 'f', 3)));     // ground
         ui->tableWidget->setItem(index, 15, new RealItem(QString::number(course, 'f', 5)));     // course
+        ui->tableWidget->setItem(index, 16, new RealItem(QString::number(windSpeed, 'f', 2)));  // wind_speed
+        ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 5)));    // wind_dir
 
-        for (int j = 0; j < 16; ++j)
+        for (int j = 0; j < 18; ++j)
         {
-            // Disable editing on every column except description and ground
+            // Enable/disable editing
             QTableWidgetItem *item = ui->tableWidget->item(index, j);
-            if (j == 4 || j == 14) item->setFlags(item->flags() |  Qt::ItemIsEditable);
-            else                   item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+
+            switch (j)
+            {
+            case 4:  // description
+            case 14: // ground
+            case 16: // wind_speed
+            case 17: // wind_dir
+                item->setFlags(item->flags() |  Qt::ItemIsEditable);
+                break;
+            default:
+                item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+                break;
+            }
         }
 
         ++index;

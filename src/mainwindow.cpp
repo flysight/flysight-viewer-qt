@@ -244,11 +244,15 @@ void MainWindow::initDatabase()
         }
     }
 
-    // Add new columns
+    // Add exit, ground and course
     QSqlQuery query(mDatabase);
     query.exec("alter table files add column exit text");
     query.exec("alter table files add column ground real");
     query.exec("alter table files add column course real");
+
+    // Add wind speed and direction
+    query.exec("alter table files add column wind_speed real");
+    query.exec("alter table files add column wind_dir real");
 }
 
 void MainWindow::initPlot()
