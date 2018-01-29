@@ -1055,7 +1055,7 @@ void MainWindow::updateVelocity(
         bool initDatabase)
 {
     double windE, windN;
-    getWind(&windE, &windN);
+    getWind(trackName, &windE, &windN);
 
     if (initDatabase)
     {
@@ -2144,7 +2144,7 @@ void MainWindow::setTrackWindSpeed(
         double windSpeed)
 {
     double windSpeedOld, windDir;
-    getWindSpeedDirection(&windSpeedOld, &windDir);
+    getWindSpeedDirection(trackName, &windSpeedOld, &windDir);
 
     double windE, windN;
     windE = -windSpeed * sin(windDir / 180 * PI);
@@ -2178,7 +2178,7 @@ void MainWindow::setTrackWindDir(
         double windDir)
 {
     double windSpeed, windDirOld;
-    getWindSpeedDirection(&windSpeed, &windDirOld);
+    getWindSpeedDirection(trackName, &windSpeed, &windDirOld);
 
     double windE, windN;
     windE = -windSpeed * sin(windDir / 180 * PI);
@@ -2386,12 +2386,13 @@ void MainWindow::setWind(
 }
 
 void MainWindow::getWind(
+        QString trackName,
         double *windE,
         double *windN)
 {
     QString strE, strN;
-    if (getDatabaseValue(mTrackName, "wind_e", strE)
-            && getDatabaseValue(mTrackName, "wind_n", strN))
+    if (getDatabaseValue(trackName, "wind_e", strE)
+            && getDatabaseValue(trackName, "wind_n", strN))
     {
         *windE = strE.toDouble();
         *windN = strN.toDouble();
@@ -2404,11 +2405,12 @@ void MainWindow::getWind(
 }
 
 void MainWindow::getWindSpeedDirection(
+        QString trackName,
         double *windSpeed,
         double *windDirection)
 {
     double windE, windN;
-    getWind(&windE, &windN);
+    getWind(trackName, &windE, &windN);
 
     *windSpeed = sqrt(windE * windE + windN * windN);
     *windDirection = atan2(-windE, -windN) / PI * 180;

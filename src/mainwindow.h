@@ -125,8 +125,8 @@ public:
     double lineThickness() const { return mLineThickness; }
 
     void setWind(double windE, double windN);
-    void getWind(double *windE, double *windN);
-    void getWindSpeedDirection(double *windSpeed, double *windDirection);
+    void getWind(QString trackName, double *windE, double *windN);
+    void getWindSpeedDirection(QString trackName, double *windSpeed, double *windDirection);
     bool windAdjustment() const { return mWindAdjustment; }
 
     double getQNE(void) const { return mFixedReference;}
