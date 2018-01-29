@@ -208,7 +208,7 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 14, new RealItem(QString::number(ground, 'f', 3)));     // ground
         ui->tableWidget->setItem(index, 15, new RealItem(QString::number(course, 'f', 5)));     // course
         ui->tableWidget->setItem(index, 16, new RealItem(QString::number(windSpeed, 'f', 2)));  // wind_speed
-        ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 2)));    // wind_dir
+        ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 5)));    // wind_dir
 
         for (int j = 0; j < 18; ++j)
         {
