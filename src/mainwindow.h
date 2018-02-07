@@ -231,6 +231,7 @@ private:
     Tool                  mPrevTool;
 
     ZoomLevel             mZoomLevel;
+    ZoomLevel             mZoomLevelPrev;
     QStack< ZoomLevel >   mZoomLevelUndo;
     QStack< ZoomLevel >   mZoomLevelRedo;
 
@@ -268,6 +269,8 @@ private:
     QString               mTrackName;
     QVector< QString >    mSelectedTracks;
     QMap< QString, DataPoints > mCheckedTracks;
+
+    QTimer               *zoomTimer;
 
     void writeSettings();
     void readSettings();
@@ -319,6 +322,7 @@ public slots:
 
 private slots:
     void setScoringVisible(bool visible);
+    void saveZoom();
 };
 
 #endif // MAINWINDOW_H

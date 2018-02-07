@@ -150,6 +150,13 @@ MainWindow::MainWindow(
 
     // Start worker thread
     thread->start();
+
+    // Set up zoom timer
+    zoomTimer = new QTimer(this);
+    zoomTimer->setSingleShot(true);
+    zoomTimer->setInterval(1000);
+
+    connect(zoomTimer, SIGNAL(timeout()), this, SLOT(saveZoom()));
 }
 
 MainWindow::~MainWindow()
@@ -2039,13 +2046,23 @@ void MainWindow::setRange(
         double lower,
         double upper)
 {
-    mZoomLevelUndo.push(mZoomLevel);
-    mZoomLevelRedo.clear();
+    if (!zoomTimer->isActive())
+    {
+        mZoomLevelPrev = mZoomLevel;
+    }
+    zoomTimer->start();
 
     mZoomLevel.rangeLower = qMin(lower, upper);
     mZoomLevel.rangeUpper = qMax(lower, upper);
 
     emit dataChanged();
+}
+
+void MainWindow::saveZoom()
+{
+    // Save zoom level to undo
+    mZoomLevelUndo.push(mZoomLevelPrev);
+    mZoomLevelRedo.clear();
 
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
