@@ -156,6 +156,11 @@ MainWindow::MainWindow(
     zoomTimer->setSingleShot(true);
 
     connect(zoomTimer, SIGNAL(timeout()), this, SLOT(saveZoom()));
+
+    // Disable zoom undo/redo controls
+    m_ui->actionUndoZoom->setEnabled(false);
+    m_ui->actionRedoZoom->setEnabled(false);
+    m_ui->actionZoomToExtent->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -1408,9 +1413,12 @@ void MainWindow::initRange(
 
     emit dataChanged();
 
-    // Enable controls
+    // Disable undo/redo zoom controls
     m_ui->actionUndoZoom->setEnabled(false);
     m_ui->actionRedoZoom->setEnabled(false);
+
+    // Enable zoom to extent
+    m_ui->actionZoomToExtent->setEnabled(!m_data.isEmpty());
 }
 
 void MainWindow::on_actionElevation_triggered()
