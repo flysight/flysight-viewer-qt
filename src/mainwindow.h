@@ -208,6 +208,8 @@ private slots:
 
     void on_actionDeleteTrack_triggered();
 
+    void on_actionChangeUnits_triggered();
+
 private:
     typedef struct {
         double rangeLower;

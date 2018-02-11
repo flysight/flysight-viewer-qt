@@ -115,6 +115,7 @@
     <addaction name="actionSetCourse"/>
     <addaction name="separator"/>
     <addaction name="actionWind"/>
+    <addaction name="actionChangeUnits"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -700,6 +701,14 @@
    </property>
    <property name="shortcut">
     <string>Shift+Z</string>
+   </property>
+  </action>
+  <action name="actionChangeUnits">
+   <property name="text">
+    <string>Change &amp;Units</string>
+   </property>
+   <property name="shortcut">
+    <string>U</string>
    </property>
   </action>
  </widget>

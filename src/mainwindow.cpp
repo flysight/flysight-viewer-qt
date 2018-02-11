@@ -2574,6 +2574,21 @@ void MainWindow::on_actionDeleteTrack_triggered()
     emit databaseChanged();
 }
 
+void MainWindow::on_actionChangeUnits_triggered()
+{
+    switch (m_units)
+    {
+    case PlotValue::Metric:
+        m_units = PlotValue::Imperial;
+        break;
+    case PlotValue::Imperial:
+        m_units = PlotValue::Metric;
+        break;
+    }
+
+    emit dataChanged();
+}
+
 void MainWindow::setScoringMode(
         ScoringMode mode)
 {
