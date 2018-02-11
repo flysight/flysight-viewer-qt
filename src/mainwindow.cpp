@@ -154,7 +154,6 @@ MainWindow::MainWindow(
     // Set up zoom timer
     zoomTimer = new QTimer(this);
     zoomTimer->setSingleShot(true);
-    zoomTimer->setInterval(1000);
 
     connect(zoomTimer, SIGNAL(timeout()), this, SLOT(saveZoom()));
 }
@@ -2065,13 +2064,22 @@ QString MainWindow::dateTimeToUTC(
 
 void MainWindow::setRange(
         double lower,
-        double upper)
+        double upper,
+        bool immediate)
 {
     if (!zoomTimer->isActive())
     {
         mZoomLevelPrev = mZoomLevel;
     }
-    zoomTimer->start();
+
+    if (immediate)
+    {
+        zoomTimer->start(0);
+    }
+    else
+    {
+        zoomTimer->start(1000);
+    }
 
     mZoomLevel.rangeLower = qMin(lower, upper);
     mZoomLevel.rangeUpper = qMax(lower, upper);
@@ -2485,6 +2493,27 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+}
+
+void MainWindow::on_actionZoomToExtent_triggered()
+{
+    double lower, upper;
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        const DataPoint &dp = m_data[i];
+
+        if (i == 0)
+        {
+            lower = upper = dp.t;
+        }
+        else
+        {
+            if (dp.t < lower) lower = dp.t;
+            if (dp.t > upper) upper = dp.t;
+        }
+    }
+
+    setRange(lower, upper, true);
 }
 
 void MainWindow::on_actionDeleteTrack_triggered()

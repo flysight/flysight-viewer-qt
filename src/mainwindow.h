@@ -58,7 +58,7 @@ public:
 
     PlotValue::Units units() const { return m_units; }
 
-    void setRange(double lower, double upper);
+    void setRange(double lower, double upper, bool immediate = false);
     double rangeLower() const { return mZoomLevel.rangeLower; }
     double rangeUpper() const { return mZoomLevel.rangeUpper; }
 
@@ -204,6 +204,7 @@ private slots:
 
     void on_actionUndoZoom_triggered();
     void on_actionRedoZoom_triggered();
+    void on_actionZoomToExtent_triggered();
 
     void on_actionDeleteTrack_triggered();
 
