@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>21</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -104,6 +104,7 @@
     </property>
     <addaction name="actionUndoZoom"/>
     <addaction name="actionRedoZoom"/>
+    <addaction name="actionZoomToExtent"/>
     <addaction name="separator"/>
     <addaction name="actionPan"/>
     <addaction name="actionZoom"/>
@@ -691,6 +692,14 @@
   <action name="actionImportFolder">
    <property name="text">
     <string>Import Folder...</string>
+   </property>
+  </action>
+  <action name="actionZoomToExtent">
+   <property name="text">
+    <string>Zoom To Extent</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Z</string>
    </property>
   </action>
  </widget>

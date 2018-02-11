@@ -472,7 +472,7 @@ void WideOpenDistanceScoring::splitLine(
 }
 
 bool WideOpenDistanceScoring::getWindowBounds(
-        const QVector< DataPoint > &result,
+        const MainWindow::DataPoints &result,
         DataPoint &dpBottom)
 {
     bool foundBottom = false;

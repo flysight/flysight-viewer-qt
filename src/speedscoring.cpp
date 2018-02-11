@@ -22,7 +22,7 @@ void SpeedScoring::setWindow(
 }
 
 double SpeedScoring::score(
-        const QVector< DataPoint > &result)
+        const MainWindow::DataPoints &result)
 {
     DataPoint dpBottom, dpTop;
     if (getWindowBounds(result, dpBottom, dpTop))
@@ -126,7 +126,7 @@ void SpeedScoring::prepareDataPlot(
 }
 
 bool SpeedScoring::getWindowBounds(
-        const QVector< DataPoint > &result,
+        const MainWindow::DataPoints &result,
         DataPoint &dpBottom,
         DataPoint &dpTop)
 {

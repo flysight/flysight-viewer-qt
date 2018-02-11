@@ -19,7 +19,7 @@ void FlareScoring::setWindowBottom(
 }
 
 double FlareScoring::score(
-        const QVector< DataPoint > &result)
+        const MainWindow::DataPoints &result)
 {
     DataPoint dpBottom, dpTop;
     if (getWindowBounds(result, dpBottom, dpTop))
@@ -121,7 +121,7 @@ void FlareScoring::prepareDataPlot(
 }
 
 bool FlareScoring::getWindowBounds(
-        const QVector< DataPoint > &result,
+        const MainWindow::DataPoints &result,
         DataPoint &dpBottom,
         DataPoint &dpTop)
 {

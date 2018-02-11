@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QMap>
 #include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
@@ -46,22 +47,28 @@ public:
         Automatic, Fixed
     } GroundReference;
 
+    typedef QVector< DataPoint > DataPoints;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    const QVector< DataPoint > &data() const { return m_data; }
+    const DataPoints &data() const { return m_data; }
     int dataSize() const { return m_data.size(); }
     const DataPoint &dataPoint(int i) const { return m_data[i]; }
 
     PlotValue::Units units() const { return m_units; }
 
-    void setRange(double lower, double upper);
+    void setRange(double lower, double upper, bool immediate = false);
     double rangeLower() const { return mZoomLevel.rangeLower; }
     double rangeUpper() const { return mZoomLevel.rangeUpper; }
 
     void setZero(double t);
     void setGround(double t);
     void setCourse(double t);
+
+    void setTrackGround(QString trackName, double ground);
+    void setTrackWindSpeed(QString trackName, double windSpeed);
+    void setTrackWindDir(QString trackName, double windDIr);
 
     void setTool(Tool tool);
     Tool tool() const { return mTool; }
@@ -106,8 +113,8 @@ public:
     void setMaxLift(double maxLift);
     void setMaxLD(double maxLD);    
 
-    const QVector< DataPoint > &optimal() const { return m_optimal; }
-    void setOptimal(const QVector< DataPoint > &result);
+    const DataPoints &optimal() const { return m_optimal; }
+    void setOptimal(const DataPoints &result);
 
     int optimalSize() const { return m_optimal.size(); }
     const DataPoint &optimalPoint(int i) const { return m_optimal[i]; }
@@ -118,8 +125,8 @@ public:
     double lineThickness() const { return mLineThickness; }
 
     void setWind(double windE, double windN);
-    void getWind(double *windE, double *windN);
-    void getWindSpeedDirection(double *windSpeed, double *windDirection);
+    void getWind(QString trackName, double *windE, double *windN);
+    void getWindSpeedDirection(QString trackName, double *windSpeed, double *windDirection);
     bool windAdjustment() const { return mWindAdjustment; }
 
     double getQNE(void) const { return mFixedReference;}
@@ -128,8 +135,6 @@ public:
     ScoringMode scoringMode() const { return mScoringMode; }
     ScoringMethod *scoringMethod(int i) const { return mScoringMethods[i]; }
 
-    bool getWindowBounds(const QVector< DataPoint > result, DataPoint &dpBottom, DataPoint &dpTop);
-
     void prepareDataPlot(DataPlot *plot);
     void prepareMapView(MapView *plot);
 
@@ -137,12 +142,16 @@ public:
     void closeReference();
 
     void importFromDatabase(const QString &uniqueName);
+    void importFromCheckedTrack(const QString &uniqueName);
 
     void setTrackName(const QString &trackName);
     QString trackName() const { return mTrackName; }
 
     void setSelectedTracks(QVector< QString > tracks);
     void setTrackDescription(const QString &trackName, const QString &description);
+
+    void setTrackChecked(const QString &trackName, bool checked);
+    bool trackChecked(const QString &trackName) const;
 
     QString databasePath() const { return mDatabasePath; }
 
@@ -195,6 +204,7 @@ private slots:
 
     void on_actionUndoZoom_triggered();
     void on_actionRedoZoom_triggered();
+    void on_actionZoomToExtent_triggered();
 
     void on_actionDeleteTrack_triggered();
 
@@ -205,8 +215,8 @@ private:
     } ZoomLevel;
 
     Ui::MainWindow       *m_ui;
-    QVector< DataPoint >  m_data;
-    QVector< DataPoint >  m_optimal;
+    DataPoints            m_data;
+    DataPoints            m_optimal;
 
     double                mMarkStart;
     double                mMarkEnd;
@@ -216,12 +226,13 @@ private:
 
     PlotValue::Units      m_units;
 
-    QVector< DataPoint >  m_waypoints;
+    DataPoints            m_waypoints;
 
     Tool                  mTool;
     Tool                  mPrevTool;
 
     ZoomLevel             mZoomLevel;
+    ZoomLevel             mZoomLevelPrev;
     QStack< ZoomLevel >   mZoomLevelUndo;
     QStack< ZoomLevel >   mZoomLevelRedo;
 
@@ -258,11 +269,17 @@ private:
 
     QString               mTrackName;
     QVector< QString >    mSelectedTracks;
+    QMap< QString, DataPoints > mCheckedTracks;
+
+    QTimer               *zoomTimer;
 
     void writeSettings();
     void readSettings();
 
     void initDatabase();
+    bool setDatabaseValue(QString trackName, QString column, QString value);
+    bool getDatabaseValue(QString trackName, QString column, QString &value);
+    void saveZoomToDatabase();
 
     void initPlot();
     void initViews();
@@ -277,17 +294,21 @@ private:
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
 
-    void import(QIODevice *device);
-    void initAltitude();
-    void updateVelocity();
-    void initAerodynamics();
+    void import(QIODevice *device, DataPoints &data, QString trackName, bool initDatabase);
+    void initTime(DataPoints &data, QString trackName, bool initDatabase);
+    void initAltitude(DataPoints &data, QString trackName, bool initDatabase);
+    void updateVelocity(DataPoints &data, QString trackName, bool initDatabase);
+    void initAerodynamics(DataPoints &data);
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
-    void initRange();
+    void initRange(QString trackName);
 
     void updateBottomActions();
     void updateLeftActions();
+
+    void updateGround(DataPoints &data, double ground);
+    QString dateTimeToUTC(const QDateTime &dt);
 
 signals:
     void dataLoaded();
@@ -303,6 +324,7 @@ public slots:
 
 private slots:
     void setScoringVisible(bool visible);
+    void saveZoom();
 };
 
 #endif // MAINWINDOW_H

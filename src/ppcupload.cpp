@@ -48,7 +48,7 @@ void PPCUpload::upload(const QString type, const double windowTop, const double 
     profile["times"] = times;
 
     double windSpeed, windDirection;
-    mMainWindow->getWindSpeedDirection(&windSpeed, &windDirection);
+    mMainWindow->getWindSpeedDirection(mMainWindow->trackName(), &windSpeed, &windDirection);
 
     QString name, countrycode, equipment, place;
     if (!getUserDetails(&name, &countrycode, !type.compare("WS"), &equipment, &place)) {

@@ -150,6 +150,17 @@ MainWindow::MainWindow(
 
     // Start worker thread
     thread->start();
+
+    // Set up zoom timer
+    zoomTimer = new QTimer(this);
+    zoomTimer->setSingleShot(true);
+
+    connect(zoomTimer, SIGNAL(timeout()), this, SLOT(saveZoom()));
+
+    // Disable zoom undo/redo controls
+    m_ui->actionUndoZoom->setEnabled(false);
+    m_ui->actionRedoZoom->setEnabled(false);
+    m_ui->actionZoomToExtent->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -243,6 +254,20 @@ void MainWindow::initDatabase()
             QMessageBox::critical(0, tr("Query failed"), err.text());
         }
     }
+
+    // Add exit, ground and course
+    QSqlQuery query(mDatabase);
+    query.exec("alter table files add column exit text");
+    query.exec("alter table files add column ground real");
+    query.exec("alter table files add column course real");
+
+    // Add wind speed and direction
+    query.exec("alter table files add column wind_e real");
+    query.exec("alter table files add column wind_n real");
+
+    // Add zoom range
+    query.exec("alter table files add column t_min real");
+    query.exec("alter table files add column t_max real");
 }
 
 void MainWindow::initPlot()
@@ -438,6 +463,7 @@ void MainWindow::initLogbookView()
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
 
     logbookView->setMainWindow(this);
+    logbookView->updateView();
 
     connect(m_ui->actionShowLogbookView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
@@ -620,10 +646,6 @@ void MainWindow::importFile(
     temporaryFile.write(file.readAll());
     file.close();
 
-    // Read file data
-    temporaryFile.seek(0);
-    import(&temporaryFile);
-
     // Get hash
     QCryptographicHash hash(QCryptographicHash::Md5);
 
@@ -639,8 +661,44 @@ void MainWindow::importFile(
     QString newName = QString("FlySight/Tracks/%1.csv").arg(uniqueName);
     QString newPath = QDir(mDatabasePath).filePath(newName);
 
+    QSqlQuery query(mDatabase);
+
+    // Check if the file is in the database
+    if (!query.exec(QString("select * from files where file_name='%1'")
+                    .arg(uniqueName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return;
+    }
+
+    bool isPresent = query.next();
+
+    // Add an empty record if the file is not in the database
+    if (!isPresent)
+    {
+        if (!query.exec(QString("insert into files (file_name) values ('%1')")
+                      .arg(uniqueName)))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+    }
+
+    // Read file data
+    temporaryFile.seek(0);
+    import(&temporaryFile, m_data, uniqueName, true);
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange(uniqueName);
+
+    emit dataLoaded();
+
     // If the file is not already in the database
-    if (!QFile(newPath).exists())
+    if (!isPresent)
     {
         QDir(mDatabasePath).mkpath("FlySight/Tracks");
 
@@ -673,20 +731,26 @@ void MainWindow::importFile(
 
             QDateTime importTime = QDateTime::currentDateTime();
 
-            QSqlQuery query(mDatabase);
-            if (!query.exec(QString("insert into files "
-                                    "(file_name, description, start_time, duration, sample_period, min_lat, max_lat, min_lon, max_lon, import_time) "
-                                    "values "
-                                    "('%1', '', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9')")
-                            .arg(uniqueName)
-                            .arg(startTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))
+            if (!query.exec(QString("update files set "
+                                    "description='', "
+                                    "start_time='%1', "
+                                    "duration=%2, "
+                                    "sample_period=%3, "
+                                    "min_lat=%4, "
+                                    "max_lat=%5, "
+                                    "min_lon=%6, "
+                                    "max_lon=%7, "
+                                    "import_time='%8' "
+                                    "where file_name='%9'")
+                            .arg(dateTimeToUTC(startTime))
                             .arg(duration)
                             .arg(samplePeriod)
                             .arg(minLat)
                             .arg(maxLat)
                             .arg(minLon)
                             .arg(maxLon)
-                            .arg(importTime.toString("yyyy-MM-dd HH:mm:ss.zzz"))))
+                            .arg(dateTimeToUTC(importTime))
+                            .arg(uniqueName)))
             {
                 QSqlError err = query.lastError();
                 QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -721,7 +785,15 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    import(&file);
+    import(&file, m_data, uniqueName, false);
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange(uniqueName);
+
+    emit dataLoaded();
 
     // Remember current track
     setTrackName(uniqueName);
@@ -747,8 +819,9 @@ void MainWindow::setTrackDescription(
 {
     QSqlQuery query(mDatabase);
 
-    // Get the old description
-    if (!query.exec(QString("select description from files where file_name='%2'").arg(trackName)))
+    // Check the old description
+    if (!query.exec(QString("select * from files where (file_name='%1' and description='%2')")
+                    .arg(trackName).arg(description)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -756,11 +829,11 @@ void MainWindow::setTrackDescription(
     }
 
     // Return now if description is not changed
-    if (!query.next()) return;
-    if (description == query.value(0).toString()) return;
+    if (query.next()) return;
 
     // Change the decription
-    if (!query.exec(QString("update files set description='%1' where file_name='%2'").arg(description).arg(trackName)))
+    if (!query.exec(QString("update files set description='%1' where file_name='%2'")
+                    .arg(description).arg(trackName)))
     {
         QSqlError err = query.lastError();
         QMessageBox::critical(0, tr("Query failed"), err.text());
@@ -770,8 +843,74 @@ void MainWindow::setTrackDescription(
     emit databaseChanged();
 }
 
+void MainWindow::setTrackChecked(
+        const QString &trackName,
+        bool checked)
+{
+    if (checked)
+    {
+        DataPoints data;
+
+        if (trackName == mTrackName)
+        {
+            data = m_data;
+        }
+        else
+        {
+            // Get name of file in database
+            QString newName = QString("FlySight/Tracks/%1.csv").arg(trackName);
+            QString newPath = QDir(mDatabasePath).filePath(newName);
+
+            QFile file(newPath);
+            if (!file.open(QIODevice::ReadOnly))
+            {
+                QMessageBox::critical(0, tr("Import failed"), tr("Couldn't read file"));
+                return;
+            }
+
+            // Read file data
+            import(&file, data, trackName, false);
+        }
+
+        mCheckedTracks.insert(trackName, data);
+    }
+    else
+    {
+        mCheckedTracks.remove(trackName);
+    }
+
+    emit dataChanged();
+}
+
+bool MainWindow::trackChecked(
+        const QString &trackName) const
+{
+    return mCheckedTracks.contains(trackName);
+}
+
+void MainWindow::importFromCheckedTrack(
+        const QString &uniqueName)
+{
+    // Copy track data
+    m_data = mCheckedTracks[uniqueName];
+
+    // Clear optimum
+    m_optimal.clear();
+
+    // Initialize plot ranges
+    initRange(uniqueName);
+
+    emit dataLoaded();
+
+    // Remember current track
+    setTrackName(uniqueName);
+}
+
 void MainWindow::import(
-        QIODevice *device)
+        QIODevice *device,
+        DataPoints &data,
+        QString trackName,
+        bool initDatabase)
 {
     QTextStream in(device);
 
@@ -820,7 +959,7 @@ void MainWindow::import(
     // Skip next row
     if (!in.atEnd()) in.readLine();
 
-    m_data.clear();
+    data.clear();
 
     while (!in.atEnd())
     {
@@ -847,84 +986,129 @@ void MainWindow::import(
 
         pt.numSV = cols[colMap[NumSV]].toDouble();
 
-        m_data.append(pt);
+        data.append(pt);
     }
 
     // Initialize time
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        const DataPoint &dp0 = m_data[m_data.size() - 1];
-        DataPoint &dp = m_data[i];
-
-        qint64 start = dp0.dateTime.toMSecsSinceEpoch();
-        qint64 end = dp.dateTime.toMSecsSinceEpoch();
-
-        dp.t = (double) (end - start) / 1000;
-    }
+    initTime(data, trackName, initDatabase);
 
     // Altitude above ground
-    initAltitude();
+    initAltitude(data, trackName, initDatabase);
 
     // Wind adjustments
-    updateVelocity();
-
-    // Clear optimum
-    m_optimal.clear();
-
-    // Initialize plot ranges
-    initRange();
-
-    emit dataLoaded();
+    updateVelocity(data, trackName, initDatabase);
 }
 
-void MainWindow::initAltitude()
+void MainWindow::initTime(
+        DataPoints &data,
+        QString trackName,
+        bool initDatabase)
 {
-    if (mGroundReference == Automatic)
+    QString value;
+    qint64 start;
+    if (getDatabaseValue(trackName, "exit", value))
     {
-        const DataPoint &dp0 = m_data[m_data.size() - 1];
-        mFixedReference = dp0.hMSL;
+        start = QDateTime::fromString(value, Qt::ISODate)
+                .toMSecsSinceEpoch();
+    }
+    else
+    {
+        const DataPoint &dp0 = data[data.size() - 1];
+        start = dp0.dateTime.toMSecsSinceEpoch();
     }
 
-    for (int i = 0; i < m_data.size(); ++i)
+    if (initDatabase)
     {
-        DataPoint &dp = m_data[i];
-        dp.z = dp.hMSL - mFixedReference;
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(start, Qt::UTC);
+        setDatabaseValue(trackName, "exit", dateTimeToUTC(dt));
+    }
+
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+        qint64 end = dp.dateTime.toMSecsSinceEpoch();
+        dp.t = (double) (end - start) / 1000;
     }
 }
 
-void MainWindow::updateVelocity()
+void MainWindow::initAltitude(
+        DataPoints &data,
+        QString trackName,
+        bool initDatabase)
 {
+    QString value;
+    double ground;
+    if (getDatabaseValue(trackName, "ground", value))
+    {
+        ground = value.toDouble();
+    }
+    else if (mGroundReference == Automatic)
+    {
+        const DataPoint &dp0 = data[data.size() - 1];
+        ground = dp0.hMSL;
+    }
+    else
+    {
+        ground = mFixedReference;
+    }
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "ground", QString::number(ground, 'f', 3));
+    }
+
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+        dp.z = dp.hMSL - ground;
+    }
+}
+
+void MainWindow::updateVelocity(
+        DataPoints &data,
+        QString trackName,
+        bool initDatabase)
+{
+    double windE, windN;
+    getWind(trackName, &windE, &windN);
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "wind_e", QString::number(windE, 'f', 2));
+        setDatabaseValue(trackName, "wind_n", QString::number(windN, 'f', 2));
+    }
+
     if (mWindAdjustment)
     {
         // Wind-adjusted position
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
             const DataPoint &dp0 = interpolateDataT(0);
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             double distance = getDistance(dp0, dp);
             double bearing = getBearing(dp0, dp);
 
-            dp.x = distance * sin(bearing) - mWindE * dp.t;
-            dp.y = distance * cos(bearing) - mWindN * dp.t;
+            dp.x = distance * sin(bearing) - windE * dp.t;
+            dp.y = distance * cos(bearing) - windN * dp.t;
         }
 
         // Wind-adjusted velocity
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
-            dp.vx = dp.velE - mWindE;
-            dp.vy = dp.velN - mWindN;
+            dp.vx = dp.velE - windE;
+            dp.vy = dp.velN - windN;
         }
     }
     else
     {
         // Unadjusted position
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
             const DataPoint &dp0 = interpolateDataT(0);
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             double distance = getDistance(dp0, dp);
             double bearing = getBearing(dp0, dp);
@@ -934,9 +1118,9 @@ void MainWindow::updateVelocity()
         }
 
         // Unadjusted velocity
-        for (int i = 0; i < m_data.size(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
-            DataPoint &dp = m_data[i];
+            DataPoint &dp = data[i];
 
             dp.vx = dp.velE;
             dp.vy = dp.velN;
@@ -946,13 +1130,13 @@ void MainWindow::updateVelocity()
     // Distance measurements
     double dist2D = 0, dist3D = 0;
 
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         if (i > 0)
         {
-            const DataPoint &dpPrev = m_data[i - 1];
+            const DataPoint &dpPrev = data[i - 1];
 
             double dx = dp.x - dpPrev.x;
             double dy = dp.y - dpPrev.y;
@@ -967,13 +1151,29 @@ void MainWindow::updateVelocity()
         dp.dist3D = dist3D;
     }
 
+    QString value;
+    double theta0;
+    if (getDatabaseValue(trackName, "course", value))
+    {
+        theta0 = value.toDouble();
+    }
+    else
+    {
+        theta0 = 0;
+    }
+
+    if (initDatabase)
+    {
+        setDatabaseValue(trackName, "course", QString::number(theta0, 'f', 5));
+    }
+
     // Cumulative heading
     double prevHeading;
     bool firstHeading = true;
 
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         // Calculate heading
         dp.heading = atan2(dp.vx, dp.vy) / PI * 180;
@@ -991,16 +1191,16 @@ void MainWindow::updateVelocity()
         }
 
         // Relative heading
-        dp.theta = dp.heading;
+        dp.theta = dp.heading - theta0;
 
         firstHeading = false;
         prevHeading = dp.heading;
     }
 
     // Parameters depending on velocity
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         dp.curv = getSlope(i, DataPoint::diveAngle);
         dp.accel = getSlope(i, DataPoint::totalSpeed);
@@ -1008,14 +1208,15 @@ void MainWindow::updateVelocity()
     }
 
     // Initialize aerodynamics
-    initAerodynamics();
+    initAerodynamics(data);
 }
 
-void MainWindow::initAerodynamics()
+void MainWindow::initAerodynamics(
+        DataPoints &data)
 {
-    for (int i = 0; i < m_data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
-        DataPoint &dp = m_data[i];
+        DataPoint &dp = data[i];
 
         // Acceleration
         double accelN = getSlope(i, DataPoint::northSpeed);
@@ -1167,37 +1368,57 @@ void MainWindow::clearMark()
     emit cursorChanged();
 }
 
-void MainWindow::initRange()
+void MainWindow::initRange(
+        QString trackName)
 {
-    double lower, upper;
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (i == 0)
-        {
-            lower = upper = dp.t;
-        }
-        else
-        {
-            if (dp.t < lower) lower = dp.t;
-            if (dp.t > upper) upper = dp.t;
-        }
-    }
-
     // Clear zoom stack
     mZoomLevelUndo.clear();
     mZoomLevelRedo.clear();
 
-    mZoomLevel.rangeLower = qMin(lower, upper);
-    mZoomLevel.rangeUpper = qMax(lower, upper);
+    QString strMin, strMax;
+    if (getDatabaseValue(trackName, "t_min", strMin)
+            && getDatabaseValue(trackName, "t_max", strMax))
+    {
+        const DataPoint &dp0 = m_data[0];
+        mZoomLevel.rangeLower = dp0.t + dp0.dateTime.msecsTo(
+                    QDateTime::fromString(strMin, Qt::ISODate)) / 1000.;
+        mZoomLevel.rangeUpper = dp0.t + dp0.dateTime.msecsTo(
+                    QDateTime::fromString(strMax, Qt::ISODate)) / 1000.;
+    }
+    else if (!m_data.isEmpty())
+    {
+        double lower, upper;
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp = m_data[i];
+
+            if (i == 0)
+            {
+                lower = upper = dp.t;
+            }
+            else
+            {
+                if (dp.t < lower) lower = dp.t;
+                if (dp.t > upper) upper = dp.t;
+            }
+        }
+
+        mZoomLevel.rangeLower = qMin(lower, upper);
+        mZoomLevel.rangeUpper = qMax(lower, upper);
+    }
+    else
+    {
+        mZoomLevel.rangeLower = mZoomLevel.rangeUpper = 0;
+    }
 
     emit dataChanged();
 
-    // Enable controls
+    // Disable undo/redo zoom controls
     m_ui->actionUndoZoom->setEnabled(false);
     m_ui->actionRedoZoom->setEnabled(false);
+
+    // Enable zoom to extent
+    m_ui->actionZoomToExtent->setEnabled(!m_data.isEmpty());
 }
 
 void MainWindow::on_actionElevation_triggered()
@@ -1378,7 +1599,17 @@ void MainWindow::on_actionWind_triggered()
     mWindAdjustment = !mWindAdjustment;
     m_ui->actionWind->setChecked(mWindAdjustment);
 
-    updateVelocity();
+    // Update plot data
+    updateVelocity(m_data, mTrackName, false);
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        updateVelocity(p.value(), p.key(), false);
+    }
 
     emit dataChanged();
 }
@@ -1452,8 +1683,9 @@ void MainWindow::on_actionPreferences_triggered()
     const double factor = (m_units == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
     const QString unitText = (m_units == PlotValue::Metric) ? "km/h" : "mph";
 
-    double windSpeed, windDirection;
-    getWindSpeedDirection(&windSpeed, &windDirection);
+    double windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
+    double windDirection = atan2(-mWindE, -mWindN) / PI * 180;
+    if (windDirection < 0) windDirection += 360;
     windSpeed *= factor;
 
     dlg.setWindSpeed(windSpeed);
@@ -1480,7 +1712,14 @@ void MainWindow::on_actionPreferences_triggered()
             m_mass = dlg.mass();
             m_planformArea = dlg.planformArea();
 
-            initAerodynamics();
+            // Update plot data
+            initAerodynamics(m_data);
+
+            // Update checked tracks
+            foreach (DataPoints data, mCheckedTracks)
+            {
+                initAerodynamics(data);
+            }
 
             emit dataChanged();
         }
@@ -1561,10 +1800,6 @@ void MainWindow::on_actionPreferences_triggered()
         {
             mGroundReference = dlg.groundReference();
             mFixedReference = dlg.fixedReference();
-
-            initAltitude();
-
-            emit dataChanged();
         }
 
         if (mDatabasePath != dlg.databasePath())
@@ -1795,9 +2030,7 @@ void MainWindow::on_actionExportTrack_triggered()
 
             if (lower <= dp.t && dp.t <= upper)
             {
-                stream << dp.dateTime.toUTC().date().toString(Qt::ISODate) << "T";
-                stream << dp.dateTime.toUTC().time().toString(Qt::ISODate) << ".";
-                stream << QString("%1").arg(dp.dateTime.toUTC().time().msec(), 3, 10, QChar('0')) << "Z,";
+                stream << dateTimeToUTC(dp.dateTime) << ",";
 
                 stream << QString::number(dp.lat, 'f', 7) << ",";
                 stream << QString::number(dp.lon, 'f', 7) << ",";
@@ -1827,21 +2060,53 @@ void MainWindow::on_actionExportTrack_triggered()
     }
 }
 
+QString MainWindow::dateTimeToUTC(
+        const QDateTime &dt)
+{
+    QString ret;
+    ret += dt.toUTC().date().toString(Qt::ISODate) + "T";
+    ret += dt.toUTC().time().toString(Qt::ISODate) + ".";
+    ret += QString("%1").arg(dt.toUTC().time().msec(), 3, 10, QChar('0')) + "Z";
+    return ret;
+}
+
 void MainWindow::setRange(
         double lower,
-        double upper)
+        double upper,
+        bool immediate)
 {
-    mZoomLevelUndo.push(mZoomLevel);
-    mZoomLevelRedo.clear();
+    if (!zoomTimer->isActive())
+    {
+        mZoomLevelPrev = mZoomLevel;
+    }
+
+    if (immediate)
+    {
+        zoomTimer->start(0);
+    }
+    else
+    {
+        zoomTimer->start(1000);
+    }
 
     mZoomLevel.rangeLower = qMin(lower, upper);
     mZoomLevel.rangeUpper = qMax(lower, upper);
 
     emit dataChanged();
+}
+
+void MainWindow::saveZoom()
+{
+    // Save zoom level to undo
+    mZoomLevelUndo.push(mZoomLevelPrev);
+    mZoomLevelRedo.clear();
 
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    saveZoomToDatabase();
 }
 
 void MainWindow::setRotation(
@@ -1857,6 +2122,7 @@ void MainWindow::setZero(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
+    setDatabaseValue(mTrackName, "exit", dateTimeToUTC(dp0.dateTime));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -1899,16 +2165,114 @@ void MainWindow::setGround(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-        dp.z -= dp0.z;
-    }
-
-    emit dataChanged();
+    setTrackGround(mTrackName, dp0.hMSL);
 
     setTool(mPrevTool);
+}
+
+void MainWindow::setTrackGround(
+        QString trackName,
+        double ground)
+{
+    setDatabaseValue(trackName, "ground", QString::number(ground, 'f', 3));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateGround(m_data, ground);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateGround(p.value(), ground);
+        }
+    }
+}
+
+void MainWindow::setTrackWindSpeed(
+        QString trackName,
+        double windSpeed)
+{
+    double windSpeedOld, windDir;
+    getWindSpeedDirection(trackName, &windSpeedOld, &windDir);
+
+    double windE, windN;
+    windE = -windSpeed * sin(windDir / 180 * PI);
+    windN = -windSpeed * cos(windDir / 180 * PI);
+
+    setDatabaseValue(trackName, "wind_e", QString::number(windE, 'f', 2));
+    setDatabaseValue(trackName, "wind_n", QString::number(windN, 'f', 2));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateVelocity(m_data, mTrackName, false);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateVelocity(p.value(), p.key(), false);
+        }
+    }
+}
+
+void MainWindow::setTrackWindDir(
+        QString trackName,
+        double windDir)
+{
+    double windSpeed, windDirOld;
+    getWindSpeedDirection(trackName, &windSpeed, &windDirOld);
+
+    double windE, windN;
+    windE = -windSpeed * sin(windDir / 180 * PI);
+    windN = -windSpeed * cos(windDir / 180 * PI);
+
+    setDatabaseValue(trackName, "wind_e", QString::number(windE, 'f', 2));
+    setDatabaseValue(trackName, "wind_n", QString::number(windN, 'f', 2));
+
+    // Update current track
+    if (trackName == mTrackName)
+    {
+        updateVelocity(m_data, mTrackName, false);
+        emit dataChanged();
+    }
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        if (trackName == p.key())
+        {
+            updateVelocity(p.value(), p.key(), false);
+        }
+    }
+}
+
+void MainWindow::updateGround(
+        DataPoints &data,
+        double ground)
+{
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+        dp.z = dp.hMSL - ground;
+    }
 }
 
 void MainWindow::setCourse(
@@ -1917,6 +2281,7 @@ void MainWindow::setCourse(
     if (m_data.isEmpty()) return;
 
     DataPoint dp0 = interpolateDataT(t);
+    setDatabaseValue(mTrackName, "course", QString::number(dp0.heading, 'f', 5));
 
     for (int i = 0; i < m_data.size(); ++i)
     {
@@ -1927,6 +2292,65 @@ void MainWindow::setCourse(
     emit dataChanged();
 
     setTool(mPrevTool);
+}
+
+bool MainWindow::setDatabaseValue(
+        QString trackName,
+        QString column,
+        QString value)
+{
+    QSqlQuery query(mDatabase);
+
+    // Check the old value
+    if (!query.exec(QString("select * from files where (file_name='%1' and %2='%3')")
+                    .arg(trackName).arg(column).arg(value)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    // Return now if value is not changed
+    if (query.next()) return true;
+
+    // Change the value
+    if (!query.exec(QString("update files set %1='%2' where file_name='%3'")
+                    .arg(column).arg(value).arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    emit databaseChanged();
+    return true;
+}
+
+bool MainWindow::getDatabaseValue(
+        QString trackName,
+        QString column,
+        QString &value)
+{
+    QSqlQuery query(mDatabase);
+
+    // Read value from database
+    if (!query.exec(QString("select %1 from files where file_name='%2'")
+                    .arg(column).arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return false;
+    }
+
+    // Check if there is a result
+    if (!query.next()) return false;
+
+    // Handle empty results
+    if (query.value(0).toString().isEmpty()) return false;
+
+    // Return the result
+    value = query.value(0).toString();
+    return true;
 }
 
 void MainWindow::setScoringVisible(
@@ -2000,30 +2424,54 @@ void MainWindow::setWind(
         double windE,
         double windN)
 {
-    mWindE = windE;
-    mWindN = windN;
+    setDatabaseValue(mTrackName, "wind_e", QString::number(windE, 'f', 2));
+    setDatabaseValue(mTrackName, "wind_n", QString::number(windN, 'f', 2));
 
-    updateVelocity();
+    // Update plot data
+    updateVelocity(m_data, mTrackName, false);
+
+    // Update checked tracks
+    QMap< QString, DataPoints >::iterator p;
+    for (p = mCheckedTracks.begin();
+         p != mCheckedTracks.end();
+         ++p)
+    {
+        updateVelocity(p.value(), p.key(), false);
+    }
 
     emit dataChanged();
 }
 
 void MainWindow::getWind(
+        QString trackName,
         double *windE,
         double *windN)
 {
-    *windE = mWindE;
-    *windN = mWindN;
+    QString strE, strN;
+    if (getDatabaseValue(trackName, "wind_e", strE)
+            && getDatabaseValue(trackName, "wind_n", strN))
+    {
+        *windE = strE.toDouble();
+        *windN = strN.toDouble();
+    }
+    else
+    {
+        *windE = mWindE;
+        *windN = mWindN;
+    }
 }
 
 void MainWindow::getWindSpeedDirection(
+        QString trackName,
         double *windSpeed,
         double *windDirection)
 {
-    *windSpeed = sqrt(mWindE * mWindE + mWindN * mWindN);
-    *windDirection = atan2(-mWindE, -mWindN) / M_PI * 180;
-    if (*windDirection < 0)
-        *windDirection += 360;
+    double windE, windN;
+    getWind(trackName, &windE, &windN);
+
+    *windSpeed = sqrt(windE * windE + windN * windN);
+    *windDirection = atan2(-windE, -windN) / PI * 180;
+    if (*windDirection < 0) *windDirection += 360;
 }
 
 void MainWindow::on_actionUndoZoom_triggered()
@@ -2036,6 +2484,9 @@ void MainWindow::on_actionUndoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    saveZoomToDatabase();
 }
 
 void MainWindow::on_actionRedoZoom_triggered()
@@ -2048,6 +2499,40 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    saveZoomToDatabase();
+}
+
+void MainWindow::saveZoomToDatabase()
+{
+    DataPoint dp = interpolateDataT(mZoomLevel.rangeLower);
+    setDatabaseValue(mTrackName, "t_min", dateTimeToUTC(dp.dateTime));
+    dp = interpolateDataT(mZoomLevel.rangeUpper);
+    setDatabaseValue(mTrackName, "t_max", dateTimeToUTC(dp.dateTime));
+
+    emit databaseChanged();
+}
+
+void MainWindow::on_actionZoomToExtent_triggered()
+{
+    double lower, upper;
+    for (int i = 0; i < m_data.size(); ++i)
+    {
+        const DataPoint &dp = m_data[i];
+
+        if (i == 0)
+        {
+            lower = upper = dp.t;
+        }
+        else
+        {
+            if (dp.t < lower) lower = dp.t;
+            if (dp.t > upper) upper = dp.t;
+        }
+    }
+
+    setRange(lower, upper, true);
 }
 
 void MainWindow::on_actionDeleteTrack_triggered()
@@ -2137,7 +2622,7 @@ void MainWindow::closeReference()
 }
 
 void MainWindow::setOptimal(
-        const QVector< DataPoint > &result)
+        const DataPoints &result)
 {
     m_optimal = result;
     emit dataChanged();

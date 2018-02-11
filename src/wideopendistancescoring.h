@@ -38,7 +38,7 @@ public:
     bool updateReference(double lat, double lon);
     void closeReference();
 
-    bool getWindowBounds(const QVector< DataPoint > &result,
+    bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom);
 
     void readSettings();

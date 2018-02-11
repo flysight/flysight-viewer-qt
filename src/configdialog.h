@@ -83,6 +83,7 @@ private slots:
 
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void updatePlots();
+    void updateReference();
 };
 
 #endif // CONFIGDIALOG_H

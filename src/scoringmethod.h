@@ -26,7 +26,7 @@ class ScoringMethod : public QObject
 public:
     explicit ScoringMethod(QObject *parent = 0);
 
-    virtual double score(const QVector< DataPoint > &result) { return 0; }
+    virtual double score(const MainWindow::DataPoints &result) { return 0; }
     virtual QString scoreAsText(double score) { return QString(); }
 
     virtual void prepareDataPlot(DataPlot *plot) {}

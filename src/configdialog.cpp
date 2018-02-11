@@ -29,11 +29,11 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
     ui->contentsWidget->addItems(
                 QStringList() << tr("General"));
     ui->contentsWidget->addItems(
+                QStringList() << tr("Import"));
+    ui->contentsWidget->addItems(
                 QStringList() << tr("Aerodynamics"));
     ui->contentsWidget->addItems(
                 QStringList() << tr("Plots"));
-    ui->contentsWidget->addItems(
-                QStringList() << tr("Wind"));
 
     // Add units
     ui->unitsCombo->addItems(
@@ -50,6 +50,12 @@ ConfigDialog::ConfigDialog(MainWindow *mainWindow) :
     connect(ui->contentsWidget,
             SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
             this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
+
+    // Update reference when selection is changed
+    connect(ui->autoReferenceButton, SIGNAL(clicked(bool)),
+            this, SLOT(updateReference()));
+    connect(ui->fixedReferenceButton, SIGNAL(clicked(bool)),
+            this, SLOT(updateReference()));
 
     // Go to first page
     ui->contentsWidget->setCurrentRow(0);
@@ -175,6 +181,12 @@ void ConfigDialog::updatePlots()
     ui->plotTable->setVerticalHeaderLabels(verticalHeaderLabels);
 }
 
+void ConfigDialog::updateReference()
+{
+        ui->fixedReferenceEdit->setEnabled(ui->fixedReferenceButton->isChecked());
+    ui->fixedReferenceUnits->setEnabled(ui->fixedReferenceButton->isChecked());
+}
+
 void ConfigDialog::setUnits(
         PlotValue::Units units)
 {
@@ -191,6 +203,7 @@ void ConfigDialog::setGroundReference(
 {
     ui->autoReferenceButton->setChecked(ref == MainWindow::Automatic);
     ui->fixedReferenceButton->setChecked(ref == MainWindow::Fixed);
+    updateReference();
 }
 
 double ConfigDialog::fixedReference() const
