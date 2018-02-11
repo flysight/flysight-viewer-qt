@@ -279,6 +279,7 @@ private:
     void initDatabase();
     bool setDatabaseValue(QString trackName, QString column, QString value);
     bool getDatabaseValue(QString trackName, QString column, QString &value);
+    void saveZoomToDatabase();
 
     void initPlot();
     void initViews();

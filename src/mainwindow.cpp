@@ -2106,12 +2106,7 @@ void MainWindow::saveZoom()
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
 
     // Save zoom level to database
-    DataPoint dp = interpolateDataT(mZoomLevel.rangeLower);
-    setDatabaseValue(mTrackName, "t_min", dateTimeToUTC(dp.dateTime));
-    dp = interpolateDataT(mZoomLevel.rangeUpper);
-    setDatabaseValue(mTrackName, "t_max", dateTimeToUTC(dp.dateTime));
-
-    emit databaseChanged();
+    saveZoomToDatabase();
 }
 
 void MainWindow::setRotation(
@@ -2489,6 +2484,9 @@ void MainWindow::on_actionUndoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    saveZoomToDatabase();
 }
 
 void MainWindow::on_actionRedoZoom_triggered()
@@ -2501,6 +2499,19 @@ void MainWindow::on_actionRedoZoom_triggered()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    saveZoomToDatabase();
+}
+
+void MainWindow::saveZoomToDatabase()
+{
+    DataPoint dp = interpolateDataT(mZoomLevel.rangeLower);
+    setDatabaseValue(mTrackName, "t_min", dateTimeToUTC(dp.dateTime));
+    dp = interpolateDataT(mZoomLevel.rangeUpper);
+    setDatabaseValue(mTrackName, "t_max", dateTimeToUTC(dp.dateTime));
+
+    emit databaseChanged();
 }
 
 void MainWindow::on_actionZoomToExtent_triggered()
