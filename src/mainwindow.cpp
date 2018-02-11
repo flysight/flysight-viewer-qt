@@ -260,6 +260,10 @@ void MainWindow::initDatabase()
     // Add wind speed and direction
     query.exec("alter table files add column wind_e real");
     query.exec("alter table files add column wind_n real");
+
+    // Add zoom range
+    query.exec("alter table files add column t_min real");
+    query.exec("alter table files add column t_max real");
 }
 
 void MainWindow::initPlot()
@@ -685,7 +689,7 @@ void MainWindow::importFile(
     m_optimal.clear();
 
     // Initialize plot ranges
-    initRange();
+    initRange(uniqueName);
 
     emit dataLoaded();
 
@@ -783,7 +787,7 @@ void MainWindow::importFromDatabase(
     m_optimal.clear();
 
     // Initialize plot ranges
-    initRange();
+    initRange(uniqueName);
 
     emit dataLoaded();
 
@@ -890,7 +894,7 @@ void MainWindow::importFromCheckedTrack(
     m_optimal.clear();
 
     // Initialize plot ranges
-    initRange();
+    initRange(uniqueName);
 
     emit dataLoaded();
 
@@ -1360,31 +1364,48 @@ void MainWindow::clearMark()
     emit cursorChanged();
 }
 
-void MainWindow::initRange()
+void MainWindow::initRange(
+        QString trackName)
 {
-    double lower, upper;
-
-    for (int i = 0; i < m_data.size(); ++i)
-    {
-        DataPoint &dp = m_data[i];
-
-        if (i == 0)
-        {
-            lower = upper = dp.t;
-        }
-        else
-        {
-            if (dp.t < lower) lower = dp.t;
-            if (dp.t > upper) upper = dp.t;
-        }
-    }
-
     // Clear zoom stack
     mZoomLevelUndo.clear();
     mZoomLevelRedo.clear();
 
-    mZoomLevel.rangeLower = qMin(lower, upper);
-    mZoomLevel.rangeUpper = qMax(lower, upper);
+    QString strMin, strMax;
+    if (getDatabaseValue(trackName, "t_min", strMin)
+            && getDatabaseValue(trackName, "t_max", strMax))
+    {
+        const DataPoint &dp0 = m_data[0];
+        mZoomLevel.rangeLower = dp0.t + dp0.dateTime.msecsTo(
+                    QDateTime::fromString(strMin, Qt::ISODate)) / 1000.;
+        mZoomLevel.rangeUpper = dp0.t + dp0.dateTime.msecsTo(
+                    QDateTime::fromString(strMax, Qt::ISODate)) / 1000.;
+    }
+    else if (!m_data.isEmpty())
+    {
+        double lower, upper;
+        for (int i = 0; i < m_data.size(); ++i)
+        {
+            const DataPoint &dp = m_data[i];
+
+            if (i == 0)
+            {
+                lower = upper = dp.t;
+            }
+            else
+            {
+                if (dp.t < lower) lower = dp.t;
+                if (dp.t > upper) upper = dp.t;
+            }
+        }
+
+        mZoomLevel.rangeLower = qMin(lower, upper);
+        mZoomLevel.rangeUpper = qMax(lower, upper);
+    }
+    else
+    {
+        mZoomLevel.rangeLower = mZoomLevel.rangeUpper = 0;
+    }
 
     emit dataChanged();
 
@@ -2067,6 +2088,12 @@ void MainWindow::saveZoom()
     // Enable controls
     m_ui->actionUndoZoom->setEnabled(!mZoomLevelUndo.empty());
     m_ui->actionRedoZoom->setEnabled(!mZoomLevelRedo.empty());
+
+    // Save zoom level to database
+    DataPoint dp = interpolateDataT(mZoomLevel.rangeLower);
+    setDatabaseValue(mTrackName, "t_min", dateTimeToUTC(dp.dateTime));
+    dp = interpolateDataT(mZoomLevel.rangeUpper);
+    setDatabaseValue(mTrackName, "t_max", dateTimeToUTC(dp.dateTime));
 }
 
 void MainWindow::setRotation(

@@ -300,7 +300,7 @@ private:
 
     double getSlope(const int center, double (*value)(const DataPoint &)) const;
 
-    void initRange();
+    void initRange(QString trackName);
 
     void updateBottomActions();
     void updateLeftActions();
