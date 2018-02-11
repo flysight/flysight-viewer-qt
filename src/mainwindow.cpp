@@ -2094,6 +2094,8 @@ void MainWindow::saveZoom()
     setDatabaseValue(mTrackName, "t_min", dateTimeToUTC(dp.dateTime));
     dp = interpolateDataT(mZoomLevel.rangeUpper);
     setDatabaseValue(mTrackName, "t_max", dateTimeToUTC(dp.dateTime));
+
+    emit databaseChanged();
 }
 
 void MainWindow::setRotation(

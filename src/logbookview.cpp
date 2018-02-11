@@ -137,6 +137,9 @@ void LogbookView::updateView()
     ui->tableWidget->setColumnHidden(11, true);  // Hide max_lon column
     ui->tableWidget->setColumnHidden(15, true);  // Hide course column
 
+    ui->tableWidget->setColumnHidden(18, true);  // Hide min_t column
+    ui->tableWidget->setColumnHidden(19, true);  // Hide max_t column
+
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()
                                                << tr("")
                                                << tr("")
@@ -155,7 +158,9 @@ void LogbookView::updateView()
                                                << tr("Ground Elev")
                                                << tr("Course Angle")
                                                << tr("Wind Speed")
-                                               << tr("Wind Dir"));
+                                               << tr("Wind Dir")
+                                               << tr("Range Lower")
+                                               << tr("Range Upper"));
 
     int index = 0;
     while (query.next())
@@ -175,6 +180,9 @@ void LogbookView::updateView()
         double windSpeed = sqrt(windE * windE + windN * windN);
         double windDir = atan2(-windE, -windN) / PI * 180;
         if (windDir < 0) windDir += 360;
+
+        QDateTime rangeLower = QDateTime::fromString(query.value(16).toString(), Qt::ISODate);
+        QDateTime rangeUpper = QDateTime::fromString(query.value(17).toString(), Qt::ISODate);
 
         if (mMainWindow->trackName() == query.value(1).toString())
         {
@@ -209,8 +217,10 @@ void LogbookView::updateView()
         ui->tableWidget->setItem(index, 15, new RealItem(QString::number(course, 'f', 5)));     // course
         ui->tableWidget->setItem(index, 16, new RealItem(QString::number(windSpeed, 'f', 2)));  // wind_speed
         ui->tableWidget->setItem(index, 17, new RealItem(QString::number(windDir, 'f', 5)));    // wind_dir
+        ui->tableWidget->setItem(index, 18, new TimeItem(rangeLower));                          // t_min
+        ui->tableWidget->setItem(index, 19, new TimeItem(rangeUpper));                          // t_max
 
-        for (int j = 0; j < 18; ++j)
+        for (int j = 0; j < ui->tableWidget->columnCount(); ++j)
         {
             // Enable/disable editing
             QTableWidgetItem *item = ui->tableWidget->item(index, j);
