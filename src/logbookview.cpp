@@ -129,6 +129,7 @@ void LogbookView::updateView()
     ui->tableWidget->setColumnWidth(1, 2 * ui->tableWidget->horizontalHeader()->minimumSectionSize());
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
 
+    ui->tableWidget->setColumnHidden(1, true);  // Hide checked column
     ui->tableWidget->setColumnHidden(2, true);  // Hide id column
     ui->tableWidget->setColumnHidden(3, true);  // Hide file_name column
     ui->tableWidget->setColumnHidden(8, true);  // Hide min_lat column
