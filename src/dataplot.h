@@ -67,8 +67,9 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 private:
-    QPoint m_cursorPos;
-    QPoint m_beginPos;
+    int m_xCursor, m_yCursor;
+    int m_xBegin, m_yBegin;
+    bool m_cursorValid;
 
     bool m_dragging;
 
