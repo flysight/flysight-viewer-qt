@@ -678,20 +678,19 @@ void DataPlot::updateCursor()
 
             m_cursors.push_back(graph);
         }
-    }
 
-    double xCursor = xAxis->coordToPixel(m_tCursor);
-
-    MainWindow::Tool tool = mMainWindow->tool();
-    if (axisRect()->rect().contains(xCursor, m_yCursor))
-    {
-        if (m_dragging && tool == MainWindow::Measure)
+        double xCursor = xAxis->coordToPixel(m_tCursor);
+        if (axisRect()->rect().contains(xCursor, m_yCursor))
         {
-            setMark(m_tBegin, m_tCursor);
-        }
-        else
-        {
-            setMark(m_tCursor);
+            MainWindow::Tool tool = mMainWindow->tool();
+            if (m_dragging && tool == MainWindow::Measure)
+            {
+                setMark(m_tBegin, m_tCursor);
+            }
+            else
+            {
+                setMark(m_tCursor);
+            }
         }
     }
     else
