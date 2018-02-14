@@ -132,46 +132,57 @@ void DataView::updateView()
         {
             t.append(dp.t);
 
+            double xx, yy, zz;
+            double uu, vv;
+
             if (mMainWindow->units() == PlotValue::Metric)
             {
-                x.append(dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation()));
-                y.append(dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation()));
-                z.append(dp.z);
+                xx = dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation());
+                yy = dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation());
+                zz = dp.z;
+                uu = dp.x;
+                vv = dp.y;
             }
             else
             {
-                x.append((dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
-                y.append((dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
-                z.append((dp.z) * METERS_TO_FEET);
+                xx = (dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation())) * METERS_TO_FEET;
+                yy = (dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation())) * METERS_TO_FEET;
+                zz = dp.z * METERS_TO_FEET;
+                uu = dp.x * METERS_TO_FEET;
+                vv = dp.y * METERS_TO_FEET;
             }
+
+            x.append(xx);
+            y.append(yy);
+            z.append(zz);
 
             if (first)
             {
-                xMin = xMax = x.back();
-                yMin = yMax = y.back();
-                zMin = zMax = z.back();
+                xMin = xMax = xx;
+                yMin = yMax = yy;
+                zMin = zMax = zz;
 
-                uMin = uMax = dp.x;
-                vMin = vMax = dp.y;
+                uMin = uMax = uu;
+                vMin = vMax = vv;
 
                 first = false;
             }
             else
             {
-                if (x.back() < xMin) xMin = x.back();
-                if (x.back() > xMax) xMax = x.back();
+                if (xx < xMin) xMin = xx;
+                if (xx > xMax) xMax = xx;
 
-                if (y.back() < yMin) yMin = y.back();
-                if (y.back() > yMax) yMax = y.back();
+                if (yy < yMin) yMin = yy;
+                if (yy > yMax) yMax = yy;
 
-                if (z.back() < zMin) zMin = z.back();
-                if (z.back() > zMax) zMax = z.back();
+                if (zz < zMin) zMin = zz;
+                if (zz > zMax) zMax = zz;
 
-                if (dp.x < uMin) uMin = dp.x;
-                if (dp.x > uMax) uMax = dp.x;
+                if (uu < uMin) uMin = uu;
+                if (uu > uMax) uMax = uu;
 
-                if (dp.y < vMin) vMin = dp.y;
-                if (dp.y > vMax) vMax = dp.y;
+                if (vv < vMin) vMin = vv;
+                if (vv > vMax) vMax = vv;
             }
         }
     }
