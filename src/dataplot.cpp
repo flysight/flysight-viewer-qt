@@ -178,11 +178,14 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            setMark(m_tBegin, m_tCursor);
+            DataPoint dpStart = interpolateDataX(m_tBegin);
+            DataPoint dpEnd = interpolateDataX(m_tCursor);
+            mMainWindow->setMark(dpStart.t, dpEnd.t);
         }
         else
         {
-            setMark(m_tCursor);
+            DataPoint dp = interpolateDataX(m_tCursor);
+            mMainWindow->setMark(dp.t);
         }
     }
     else
@@ -273,8 +276,6 @@ void DataPlot::setMark(
 {
     DataPoint dpStart = interpolateDataX(start);
     DataPoint dpEnd = interpolateDataX(end);
-
-    mMainWindow->setMark(dpStart.t, dpEnd.t);
 
     if (mMainWindow->dataSize() == 0) return;
 
@@ -413,7 +414,6 @@ void DataPlot::setMark(
     if (mMainWindow->dataSize() == 0) return;
 
     DataPoint dp = interpolateDataX(mark);
-    mMainWindow->setMark(dp.t);
 
     QString status;
     status = QString("<table width='300'>");
@@ -678,6 +678,25 @@ void DataPlot::updateCursor()
 
             m_cursors.push_back(graph);
         }
+    }
+
+    double xCursor = xAxis->coordToPixel(m_tCursor);
+
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (axisRect()->rect().contains(xCursor, m_yCursor))
+    {
+        if (m_dragging && tool == MainWindow::Measure)
+        {
+            setMark(m_tBegin, m_tCursor);
+        }
+        else
+        {
+            setMark(m_tCursor);
+        }
+    }
+    else
+    {
+        QToolTip::hideText();
     }
 
     replot();
