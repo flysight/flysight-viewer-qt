@@ -7,7 +7,8 @@ DataPlot::DataPlot(QWidget *parent) :
     QCustomPlot(parent),
     mMainWindow(0),
     m_dragging(false),
-    m_xAxisType(Time)
+    m_xAxisType(Time),
+    m_cursorValid(false)
 {
     // Initialize window
     setMouseTracking(true);
@@ -103,7 +104,8 @@ void DataPlot::mousePressEvent(
 {
     if (axisRect()->rect().contains(event->pos()))
     {
-        m_beginPos = event->pos();
+        m_tBegin = xAxis->pixelToCoord(event->pos().x());
+        m_yBegin = event->pos().y();
         m_dragging = true;
         update();
     }
@@ -119,9 +121,9 @@ void DataPlot::mouseReleaseEvent(
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && tool == MainWindow::Zoom)
     {
-        QCPRange range(qMin(xAxis->pixelToCoord(m_beginPos.x()),
+        QCPRange range(qMin(m_tBegin,
                             xAxis->pixelToCoord(endPos.x())),
-                       qMax(xAxis->pixelToCoord(m_beginPos.x()),
+                       qMax(m_tBegin,
                             xAxis->pixelToCoord(endPos.x())));
 
         setRange(range);
@@ -154,32 +156,36 @@ void DataPlot::mouseReleaseEvent(
 void DataPlot::mouseMoveEvent(
         QMouseEvent *event)
 {
-    m_cursorPos = event->pos();
+    m_tCursor = xAxis->pixelToCoord(event->pos().x());
+    m_yCursor = event->pos().y();
+    m_cursorValid = true;
 
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && tool == MainWindow::Pan)
     {
         QCPRange range = xAxis->range();
 
-        double diff = xAxis->pixelToCoord(m_beginPos.x())
-                - xAxis->pixelToCoord(m_cursorPos.x());
+        double diff = m_tBegin - m_tCursor;
         range = QCPRange(range.lower + diff, range.upper + diff);
 
         setRange(range);
 
-        m_beginPos = m_cursorPos;
+        m_tBegin = m_tCursor;
+        m_yBegin = m_yCursor;
     }
 
     if (axisRect()->rect().contains(event->pos()))
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            setMark(xAxis->pixelToCoord(m_beginPos.x()),
-                    xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dpStart = interpolateDataX(m_tBegin);
+            DataPoint dpEnd = interpolateDataX(m_tCursor);
+            mMainWindow->setMark(dpStart.t, dpEnd.t);
         }
         else
         {
-            setMark(xAxis->pixelToCoord(m_cursorPos.x()));
+            DataPoint dp = interpolateDataX(m_tCursor);
+            mMainWindow->setMark(dp.t);
         }
     }
     else
@@ -216,7 +222,7 @@ void DataPlot::leaveEvent(
         QEvent *)
 {
     mMainWindow->clearMark();
-    m_cursorPos = QPoint();
+    m_cursorValid = false;
     update();
 }
 
@@ -225,35 +231,41 @@ void DataPlot::paintEvent(
 {
     QCustomPlot::paintEvent(event);
 
+    if (!m_cursorValid) return;
+
+    double xCursor = xAxis->coordToPixel(m_tCursor);
+
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && (tool == MainWindow::Zoom || tool == MainWindow::Measure))
     {
         QPainter painter(this);
 
+        double xBegin = xAxis->coordToPixel(m_tBegin);
+
         painter.setPen(QPen(Qt::black));
-        painter.drawLine(m_beginPos.x(), axisRect()->rect().top(), m_beginPos.x(), axisRect()->rect().bottom());
-        if (axisRect()->rect().left() <= m_cursorPos.x() && m_cursorPos.x() <= axisRect()->rect().right())
+        painter.drawLine(xBegin, axisRect()->rect().top(), xBegin, axisRect()->rect().bottom());
+        if (axisRect()->rect().left() <= xCursor && xCursor <= axisRect()->rect().right())
         {
-            painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
+            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
         }
 
         QRect shading(
-                    qMin(m_beginPos.x(), m_cursorPos.x()),
+                    qMin(xBegin, xCursor),
                     axisRect()->rect().top(),
-                    qAbs(m_beginPos.x() - m_cursorPos.x()),
+                    qAbs(xBegin - xCursor),
                     axisRect()->rect().height());
 
         painter.fillRect(shading & axisRect()->rect(), QColor(181, 217, 42, 64));
     }
     else
     {
-        if (axisRect()->rect().contains(m_cursorPos))
+        if (axisRect()->rect().contains(xCursor, m_yCursor))
         {
             QPainter painter(this);
 
             painter.setPen(QPen(Qt::black));
-            painter.drawLine(m_cursorPos.x(), axisRect()->rect().top(), m_cursorPos.x(), axisRect()->rect().bottom());
-            painter.drawLine(axisRect()->rect().left(), m_cursorPos.y(), axisRect()->rect().right(), m_cursorPos.y());
+            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
+            painter.drawLine(axisRect()->rect().left(), m_yCursor, axisRect()->rect().right(), m_yCursor);
         }
     }
 }
@@ -264,8 +276,6 @@ void DataPlot::setMark(
 {
     DataPoint dpStart = interpolateDataX(start);
     DataPoint dpEnd = interpolateDataX(end);
-
-    mMainWindow->setMark(dpStart.t, dpEnd.t);
 
     if (mMainWindow->dataSize() == 0) return;
 
@@ -404,7 +414,6 @@ void DataPlot::setMark(
     if (mMainWindow->dataSize() == 0) return;
 
     DataPoint dp = interpolateDataX(mark);
-    mMainWindow->setMark(dp.t);
 
     QString status;
     status = QString("<table width='300'>");
@@ -671,6 +680,25 @@ void DataPlot::updateCursor()
         }
     }
 
+    double xCursor = xAxis->coordToPixel(m_tCursor);
+
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (axisRect()->rect().contains(xCursor, m_yCursor))
+    {
+        if (m_dragging && tool == MainWindow::Measure)
+        {
+            setMark(m_tBegin, m_tCursor);
+        }
+        else
+        {
+            setMark(m_tCursor);
+        }
+    }
+    else
+    {
+        QToolTip::hideText();
+    }
+
     replot();
 }
 
@@ -749,10 +777,16 @@ void DataPlot::setXAxisType(
     DataPoint dpLower = interpolateDataX(range.lower);
     DataPoint dpUpper = interpolateDataX(range.upper);
 
+    DataPoint dpCursor = interpolateDataX(m_tCursor);
+    DataPoint dpBegin = interpolateDataX(m_tBegin);
+
     m_xAxisType = xAxisType;
 
     xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
                              xValue()->value(dpUpper, mMainWindow->units())));
+
+    m_tCursor = xValue()->value(dpCursor, mMainWindow->units());
+    m_tBegin = xValue()->value(dpBegin, mMainWindow->units());
 
     updatePlot();
 }
