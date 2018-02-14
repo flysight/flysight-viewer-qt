@@ -104,7 +104,7 @@ void DataPlot::mousePressEvent(
 {
     if (axisRect()->rect().contains(event->pos()))
     {
-        m_xBegin = event->pos().x();
+        m_tBegin = xAxis->pixelToCoord(event->pos().x());
         m_yBegin = event->pos().y();
         m_dragging = true;
         update();
@@ -121,9 +121,9 @@ void DataPlot::mouseReleaseEvent(
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && tool == MainWindow::Zoom)
     {
-        QCPRange range(qMin(xAxis->pixelToCoord(m_xBegin),
+        QCPRange range(qMin(m_tBegin,
                             xAxis->pixelToCoord(endPos.x())),
-                       qMax(xAxis->pixelToCoord(m_xBegin),
+                       qMax(m_tBegin,
                             xAxis->pixelToCoord(endPos.x())));
 
         setRange(range);
@@ -156,7 +156,7 @@ void DataPlot::mouseReleaseEvent(
 void DataPlot::mouseMoveEvent(
         QMouseEvent *event)
 {
-    m_xCursor = event->pos().x();
+    m_tCursor = xAxis->pixelToCoord(event->pos().x());
     m_yCursor = event->pos().y();
     m_cursorValid = true;
 
@@ -165,13 +165,12 @@ void DataPlot::mouseMoveEvent(
     {
         QCPRange range = xAxis->range();
 
-        double diff = xAxis->pixelToCoord(m_xBegin)
-                - xAxis->pixelToCoord(m_xCursor);
+        double diff = m_tBegin - m_tCursor;
         range = QCPRange(range.lower + diff, range.upper + diff);
 
         setRange(range);
 
-        m_xBegin = m_xCursor;
+        m_tBegin = m_tCursor;
         m_yBegin = m_yCursor;
     }
 
@@ -179,12 +178,11 @@ void DataPlot::mouseMoveEvent(
     {
         if (m_dragging && tool == MainWindow::Measure)
         {
-            setMark(xAxis->pixelToCoord(m_xBegin),
-                    xAxis->pixelToCoord(m_xCursor));
+            setMark(m_tBegin, m_tCursor);
         }
         else
         {
-            setMark(xAxis->pixelToCoord(m_xCursor));
+            setMark(m_tCursor);
         }
     }
     else
@@ -232,34 +230,38 @@ void DataPlot::paintEvent(
 
     if (!m_cursorValid) return;
 
+    double xCursor = xAxis->coordToPixel(m_tCursor);
+
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && (tool == MainWindow::Zoom || tool == MainWindow::Measure))
     {
         QPainter painter(this);
 
+        double xBegin = xAxis->coordToPixel(m_tBegin);
+
         painter.setPen(QPen(Qt::black));
-        painter.drawLine(m_xBegin, axisRect()->rect().top(), m_xBegin, axisRect()->rect().bottom());
-        if (axisRect()->rect().left() <= m_xCursor && m_yCursor <= axisRect()->rect().right())
+        painter.drawLine(xBegin, axisRect()->rect().top(), xBegin, axisRect()->rect().bottom());
+        if (axisRect()->rect().left() <= xCursor && xCursor <= axisRect()->rect().right())
         {
-            painter.drawLine(m_xCursor, axisRect()->rect().top(), m_xCursor, axisRect()->rect().bottom());
+            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
         }
 
         QRect shading(
-                    qMin(m_xBegin, m_xCursor),
+                    qMin(xBegin, xCursor),
                     axisRect()->rect().top(),
-                    qAbs(m_xBegin - m_xCursor),
+                    qAbs(xBegin - xCursor),
                     axisRect()->rect().height());
 
         painter.fillRect(shading & axisRect()->rect(), QColor(181, 217, 42, 64));
     }
     else
     {
-        if (axisRect()->rect().contains(m_xCursor, m_yCursor))
+        if (axisRect()->rect().contains(xCursor, m_yCursor))
         {
             QPainter painter(this);
 
             painter.setPen(QPen(Qt::black));
-            painter.drawLine(m_xCursor, axisRect()->rect().top(), m_xCursor, axisRect()->rect().bottom());
+            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
             painter.drawLine(axisRect()->rect().left(), m_yCursor, axisRect()->rect().right(), m_yCursor);
         }
     }
