@@ -758,10 +758,16 @@ void DataPlot::setXAxisType(
     DataPoint dpLower = interpolateDataX(range.lower);
     DataPoint dpUpper = interpolateDataX(range.upper);
 
+    DataPoint dpCursor = interpolateDataX(m_tCursor);
+    DataPoint dpBegin = interpolateDataX(m_tBegin);
+
     m_xAxisType = xAxisType;
 
     xAxis->setRange(QCPRange(xValue()->value(dpLower, mMainWindow->units()),
                              xValue()->value(dpUpper, mMainWindow->units())));
+
+    m_tCursor = xValue()->value(dpCursor, mMainWindow->units());
+    m_tBegin = xValue()->value(dpBegin, mMainWindow->units());
 
     updatePlot();
 }
