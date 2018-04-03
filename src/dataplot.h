@@ -79,7 +79,6 @@ private:
     XAxisType             m_xAxisType;
 
     QVector< PlotValue* > m_yValues;
-    QVector< QCPGraph* >  m_cursors;
 
     void updateYRanges();
     void setRange(const QCPRange &range);
@@ -99,6 +98,7 @@ private:
 
 public slots:
     void updatePlot();
+    void updateRange();
     void updateCursor();
 };
 

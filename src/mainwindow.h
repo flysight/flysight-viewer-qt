@@ -315,6 +315,7 @@ private:
 signals:
     void dataLoaded();
     void dataChanged();
+    void rangeChanged();
     void cursorChanged();
     void aeroChanged();
     void rotationChanged(double rotation);

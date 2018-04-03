@@ -10,6 +10,9 @@ DataPlot::DataPlot(QWidget *parent) :
     m_xAxisType(Time),
     m_cursorValid(false)
 {
+    // Create cursor layer
+    addLayer("cursor", layer("main"), limAbove);
+
     // Initialize window
     setMouseTracking(true);
     setCursor(QCursor(Qt::ArrowCursor));
@@ -542,8 +545,6 @@ void DataPlot::updatePlot()
     clearPlottables();
     clearItems();
 
-    m_cursors.clear();
-
     xAxis->setLabel(xValue()->title(mMainWindow->units()));
 
     // Remove all axes
@@ -556,7 +557,7 @@ void DataPlot::updatePlot()
     for (int j = 0; j < yaLast; ++j)
     {
         if (!yValue(j)->visible()) continue;
-        QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
+        yValue(j)->addAxis(this, mMainWindow->units());
     }
 
     // Return now if plot empty
@@ -565,9 +566,6 @@ void DataPlot::updatePlot()
     // Get plot range
     DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
     DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
-
-    // Draw annotations on plot background
-    mMainWindow->prepareDataPlot(this);
 
     QVector< double > x;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
@@ -613,15 +611,6 @@ void DataPlot::updatePlot()
         }
     }
 
-    // Set x-axis range
-    if (mMainWindow->dataSize() > 0)
-    {
-        const double xMin = xValue()->value(dpLower, mMainWindow->units());
-        const double xMax = xValue()->value(dpUpper, mMainWindow->units());
-
-        xAxis->setRange(QCPRange(xMin, xMax));
-    }
-
     if (mMainWindow->windAdjustment())
     {
         // Add label to indicate wind correction
@@ -639,19 +628,48 @@ void DataPlot::updatePlot()
         textLabel->setPadding(QMargins(2, 2, 2, 2));
     }
 
+    updateRange();
+}
+
+void DataPlot::updateRange()
+{
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
+    const double xMin = xValue()->value(dpLower, mMainWindow->units());
+    const double xMax = xValue()->value(dpUpper, mMainWindow->units());
+
+    // Set x-axis range
+    xAxis->setRange(QCPRange(xMin, xMax));
+
+    // Set y-axis ranges
     updateYRanges();
 
+    // Draw annotations on plot background
+    mMainWindow->prepareDataPlot(this);
+
+    // Update cursors
     updateCursor();
 }
 
 void DataPlot::updateCursor()
 {
-    for (int i = 0; i < m_cursors.size(); ++i)
-    {
-        removeGraph(m_cursors[i]);
-    }
+    setCurrentLayer("cursor");
 
-    m_cursors.clear();
+    foreach (QCPLayerable *l, currentLayer()->children())
+    {
+        if (qobject_cast<QCPAbstractPlottable*>(l))
+        {
+            removePlottable((QCPAbstractPlottable*) l);
+        }
+        if (qobject_cast<QCPAbstractItem*>(l))
+        {
+            removeItem((QCPAbstractItem*) l);
+        }
+    }
 
     // Draw mark
     if (mMainWindow->markActive())
@@ -675,8 +693,6 @@ void DataPlot::updateCursor()
             graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
             graph->setLineStyle(QCPGraph::lsNone);
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
-
-            m_cursors.push_back(graph);
         }
 
         double xCursor = xAxis->coordToPixel(m_tCursor);
@@ -697,6 +713,8 @@ void DataPlot::updateCursor()
     {
         QToolTip::hideText();
     }
+
+    setCurrentLayer("main");
 
     replot();
 }
