@@ -170,7 +170,7 @@ void DataPlot::mouseMoveEvent(
 
         setRange(range);
 
-        m_tBegin = m_tCursor;
+        m_tCursor = m_tBegin;
         m_yBegin = m_yCursor;
     }
 
