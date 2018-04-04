@@ -65,8 +65,6 @@ protected:
 
     void leaveEvent(QEvent *);
 
-    void paintEvent(QPaintEvent *event);
-
 private:
     double m_tCursor, m_tBegin;
     int m_yCursor, m_yBegin;
