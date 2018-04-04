@@ -1,9 +1,10 @@
 #ifndef DATAPLOT_H
 #define DATAPLOT_H
 
+#include "QCustomPlot/qcustomplot.h"
+
 #include "datapoint.h"
 #include "plotvalue.h"
-#include "qcustomplot.h"
 
 class MainWindow;
 
@@ -64,8 +65,6 @@ protected:
 
     void leaveEvent(QEvent *);
 
-    void paintEvent(QPaintEvent *event);
-
 private:
     double m_tCursor, m_tBegin;
     int m_yCursor, m_yBegin;
@@ -79,7 +78,6 @@ private:
     XAxisType             m_xAxisType;
 
     QVector< PlotValue* > m_yValues;
-    QVector< QCPGraph* >  m_cursors;
 
     void updateYRanges();
     void setRange(const QCPRange &range);
@@ -99,6 +97,7 @@ private:
 
 public slots:
     void updatePlot();
+    void updateRange();
     void updateCursor();
 };
 

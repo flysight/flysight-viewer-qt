@@ -279,6 +279,8 @@ void MainWindow::initPlot()
 
     connect(this, SIGNAL(dataChanged()),
             m_ui->plotArea, SLOT(updatePlot()));
+    connect(this, SIGNAL(rangeChanged()),
+            m_ui->plotArea, SLOT(updateRange()));
     connect(this, SIGNAL(cursorChanged()),
             m_ui->plotArea, SLOT(updateCursor()));
 }
@@ -312,6 +314,8 @@ void MainWindow::initSingleView(
 
     connect(this, SIGNAL(dataChanged()),
             dataView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged()),
+            dataView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
@@ -337,6 +341,8 @@ void MainWindow::initMapView()
             mapView, SLOT(initView()));
     connect(this, SIGNAL(dataChanged()),
             mapView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged()),
+            mapView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             mapView, SLOT(updateView()));
 }
@@ -358,6 +364,8 @@ void MainWindow::initWindView()
             m_ui->actionShowWindView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            windPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(rangeChanged()),
             windPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             windPlot, SLOT(updatePlot()));
@@ -383,6 +391,8 @@ void MainWindow::initScoringView()
 
     connect(this, SIGNAL(dataChanged()),
             mScoringView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged()),
+            mScoringView, SLOT(updateView()));
 }
 
 void MainWindow::initLiftDragView()
@@ -402,6 +412,8 @@ void MainWindow::initLiftDragView()
             m_ui->actionShowLiftDragView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(rangeChanged()),
             liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             liftDragPlot, SLOT(updatePlot()));
@@ -427,6 +439,8 @@ void MainWindow::initOrthoView()
 
     connect(this, SIGNAL(dataChanged()),
             orthoView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged()),
+            orthoView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             orthoView, SLOT(updateView()));
 }
@@ -448,6 +462,8 @@ void MainWindow::initPlaybackView()
             m_ui->actionShowPlaybackView, SLOT(setChecked(bool)));
 
     connect(this, SIGNAL(dataChanged()),
+            playbackView, SLOT(updateView()));
+    connect(this, SIGNAL(rangeChanged()),
             playbackView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             playbackView, SLOT(updateView()));
@@ -2092,7 +2108,7 @@ void MainWindow::setRange(
     mZoomLevel.rangeLower = qMin(lower, upper);
     mZoomLevel.rangeUpper = qMax(lower, upper);
 
-    emit dataChanged();
+    emit rangeChanged();
 }
 
 void MainWindow::saveZoom()
@@ -2599,10 +2615,26 @@ void MainWindow::setScoringMode(
 void MainWindow::prepareDataPlot(
         DataPlot *plot)
 {
+    plot->setCurrentLayer("background");
+
+    foreach (QCPLayerable *l, plot->currentLayer()->children())
+    {
+        if (qobject_cast<QCPAbstractPlottable*>(l))
+        {
+            plot->removePlottable((QCPAbstractPlottable*) l);
+        }
+        if (qobject_cast<QCPAbstractItem*>(l))
+        {
+            plot->removeItem((QCPAbstractItem*) l);
+        }
+    }
+
     if (mScoringView->isVisible())
     {
         mScoringMethods[mScoringMode]->prepareDataPlot(plot);
     }
+
+    plot->setCurrentLayer("main");
 }
 
 void MainWindow::prepareMapView(

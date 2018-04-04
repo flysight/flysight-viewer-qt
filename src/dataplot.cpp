@@ -107,7 +107,7 @@ void DataPlot::mousePressEvent(
         m_tBegin = xAxis->pixelToCoord(event->pos().x());
         m_yBegin = event->pos().y();
         m_dragging = true;
-        update();
+        updateCursor();
     }
 
     QCustomPlot::mousePressEvent(event);
@@ -147,7 +147,7 @@ void DataPlot::mouseReleaseEvent(
     if (m_dragging)
     {
         m_dragging = false;
-        replot();
+        updateCursor();
     }
 
     QCustomPlot::mouseReleaseEvent(event);
@@ -158,7 +158,7 @@ void DataPlot::mouseMoveEvent(
 {
     m_tCursor = xAxis->pixelToCoord(event->pos().x());
     m_yCursor = event->pos().y();
-    m_cursorValid = true;
+    m_cursorValid = m_dragging || axisRect()->rect().contains(event->pos());
 
     MainWindow::Tool tool = mMainWindow->tool();
     if (m_dragging && tool == MainWindow::Pan)
@@ -170,7 +170,7 @@ void DataPlot::mouseMoveEvent(
 
         setRange(range);
 
-        m_tBegin = m_tCursor;
+        m_tCursor = m_tBegin;
         m_yBegin = m_yCursor;
     }
 
@@ -224,50 +224,6 @@ void DataPlot::leaveEvent(
     mMainWindow->clearMark();
     m_cursorValid = false;
     update();
-}
-
-void DataPlot::paintEvent(
-        QPaintEvent *event)
-{
-    QCustomPlot::paintEvent(event);
-
-    if (!m_cursorValid) return;
-
-    double xCursor = xAxis->coordToPixel(m_tCursor);
-
-    MainWindow::Tool tool = mMainWindow->tool();
-    if (m_dragging && (tool == MainWindow::Zoom || tool == MainWindow::Measure))
-    {
-        QPainter painter(this);
-
-        double xBegin = xAxis->coordToPixel(m_tBegin);
-
-        painter.setPen(QPen(Qt::black));
-        painter.drawLine(xBegin, axisRect()->rect().top(), xBegin, axisRect()->rect().bottom());
-        if (axisRect()->rect().left() <= xCursor && xCursor <= axisRect()->rect().right())
-        {
-            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
-        }
-
-        QRect shading(
-                    qMin(xBegin, xCursor),
-                    axisRect()->rect().top(),
-                    qAbs(xBegin - xCursor),
-                    axisRect()->rect().height());
-
-        painter.fillRect(shading & axisRect()->rect(), QColor(181, 217, 42, 64));
-    }
-    else
-    {
-        if (axisRect()->rect().contains(xCursor, m_yCursor))
-        {
-            QPainter painter(this);
-
-            painter.setPen(QPen(Qt::black));
-            painter.drawLine(xCursor, axisRect()->rect().top(), xCursor, axisRect()->rect().bottom());
-            painter.drawLine(axisRect()->rect().left(), m_yCursor, axisRect()->rect().right(), m_yCursor);
-        }
-    }
 }
 
 void DataPlot::setMark(
@@ -542,8 +498,6 @@ void DataPlot::updatePlot()
     clearPlottables();
     clearItems();
 
-    m_cursors.clear();
-
     xAxis->setLabel(xValue()->title(mMainWindow->units()));
 
     // Remove all axes
@@ -556,7 +510,7 @@ void DataPlot::updatePlot()
     for (int j = 0; j < yaLast; ++j)
     {
         if (!yValue(j)->visible()) continue;
-        QCPAxis *axis = yValue(j)->addAxis(this, mMainWindow->units());
+        yValue(j)->addAxis(this, mMainWindow->units());
     }
 
     // Return now if plot empty
@@ -565,9 +519,6 @@ void DataPlot::updatePlot()
     // Get plot range
     DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
     DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
-
-    // Draw annotations on plot background
-    mMainWindow->prepareDataPlot(this);
 
     QVector< double > x;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
@@ -613,20 +564,10 @@ void DataPlot::updatePlot()
         }
     }
 
-    // Set x-axis range
-    if (mMainWindow->dataSize() > 0)
-    {
-        const double xMin = xValue()->value(dpLower, mMainWindow->units());
-        const double xMax = xValue()->value(dpUpper, mMainWindow->units());
-
-        xAxis->setRange(QCPRange(xMin, xMax));
-    }
-
     if (mMainWindow->windAdjustment())
     {
         // Add label to indicate wind correction
         QCPItemText *textLabel = new QCPItemText(this);
-        addItem(textLabel);
 
         textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignRight);
         textLabel->setTextAlignment(Qt::AlignRight);
@@ -639,23 +580,52 @@ void DataPlot::updatePlot()
         textLabel->setPadding(QMargins(2, 2, 2, 2));
     }
 
+    updateRange();
+}
+
+void DataPlot::updateRange()
+{
+    if (mMainWindow->dataSize() == 0) return;
+
+    // Get plot range
+    DataPoint dpLower = mMainWindow->interpolateDataT(mMainWindow->rangeLower());
+    DataPoint dpUpper = mMainWindow->interpolateDataT(mMainWindow->rangeUpper());
+
+    const double xMin = xValue()->value(dpLower, mMainWindow->units());
+    const double xMax = xValue()->value(dpUpper, mMainWindow->units());
+
+    // Set x-axis range
+    xAxis->setRange(QCPRange(xMin, xMax));
+
+    // Set y-axis ranges
     updateYRanges();
 
+    // Draw annotations on plot background
+    mMainWindow->prepareDataPlot(this);
+
+    // Update cursors
     updateCursor();
 }
 
 void DataPlot::updateCursor()
 {
-    for (int i = 0; i < m_cursors.size(); ++i)
+    setCurrentLayer("overlay");
+
+    foreach (QCPLayerable *l, currentLayer()->children())
     {
-        removeGraph(m_cursors[i]);
+        if (qobject_cast<QCPAbstractPlottable*>(l))
+        {
+            removePlottable((QCPAbstractPlottable*) l);
+        }
+        if (qobject_cast<QCPAbstractItem*>(l))
+        {
+            removeItem((QCPAbstractItem*) l);
+        }
     }
 
-    m_cursors.clear();
-
-    // Draw mark
     if (mMainWindow->markActive())
     {
+        // Draw marks
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
         QVector< double > xMark, yMark;
@@ -675,10 +645,9 @@ void DataPlot::updateCursor()
             graph->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
             graph->setLineStyle(QCPGraph::lsNone);
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
-
-            m_cursors.push_back(graph);
         }
 
+        // Update hover text
         double xCursor = xAxis->coordToPixel(m_tCursor);
         if (axisRect()->rect().contains(xCursor, m_yCursor))
         {
@@ -697,6 +666,53 @@ void DataPlot::updateCursor()
     {
         QToolTip::hideText();
     }
+
+    MainWindow::Tool tool = mMainWindow->tool();
+    if (!m_cursorValid)
+    {
+        // Draw nothing
+    }
+    else if (m_dragging && (tool == MainWindow::Zoom || tool == MainWindow::Measure))
+    {
+        // Draw shading
+        QCPItemRect *rect = new QCPItemRect(this);
+
+        rect->setPen(Qt::NoPen);
+        rect->setBrush(QColor(181, 217, 42, 64));
+
+        rect->topLeft->setType(QCPItemPosition::ptPlotCoords);
+        rect->topLeft->setAxes(xAxis, yAxis);
+        rect->topLeft->setCoords(m_tBegin, yAxis->range().upper);
+
+        rect->bottomRight->setType(QCPItemPosition::ptPlotCoords);
+        rect->bottomRight->setAxes(xAxis, yAxis);
+        rect->bottomRight->setCoords(m_tCursor, yAxis->range().lower);
+
+        QCPItemLine *line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::black));
+        line->start->setCoords(m_tBegin, yAxis->range().lower);
+        line->end->setCoords(m_tBegin, yAxis->range().upper);
+
+        line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::black));
+        line->start->setCoords(m_tCursor, yAxis->range().lower);
+        line->end->setCoords(m_tCursor, yAxis->range().upper);
+    }
+    else
+    {
+        // Draw crosshairs
+        QCPItemLine *line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::black));
+        line->start->setCoords(xAxis->range().lower, yAxis->pixelToCoord(m_yCursor));
+        line->end->setCoords(xAxis->range().upper, yAxis->pixelToCoord(m_yCursor));
+
+        line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::black));
+        line->start->setCoords(m_tCursor, yAxis->range().lower);
+        line->end->setCoords(m_tCursor, yAxis->range().upper);
+    }
+
+    setCurrentLayer("main");
 
     replot();
 }

@@ -1,7 +1,7 @@
 #ifndef ORTHOVIEW_H
 #define ORTHOVIEW_H
 
-#include "qcustomplot.h"
+#include "QCustomPlot/qcustomplot.h"
 
 class MainWindow;
 class QTimer;

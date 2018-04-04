@@ -87,27 +87,27 @@ void OrthoView::mouseMoveEvent(
 
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
     {
-        const QCPCurveDataMap *data = curve->data();
+        QSharedPointer<QCPCurveDataContainer> data = curve->data();
 
         double resultTime;
         double resultDistance = std::numeric_limits<double>::max();
 
-        for (QCPCurveDataMap::const_iterator it = data->constBegin();
+        for (QCPCurveDataContainer::const_iterator it = data->constBegin();
              it != data->constEnd() && (it + 1) != data->constEnd();
              ++ it)
         {
-            QPointF pt1 = QPointF(xAxis->coordToPixel(it.value().key),
-                                  yAxis->coordToPixel(it.value().value));
-            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1).value().key),
-                                  yAxis->coordToPixel((it + 1).value().value));
+            QPointF pt1 = QPointF(xAxis->coordToPixel(it->key),
+                                  yAxis->coordToPixel(it->value));
+            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1)->key),
+                                  yAxis->coordToPixel((it + 1)->value));
 
             double mu;
             double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
 
             if (dist < resultDistance)
             {
-                double t1 = it.value().t;
-                double t2 = (it + 1).value().t;
+                double t1 = it->t;
+                double t2 = (it + 1)->t;
 
                 resultTime = t1 + mu * (t2 - t1);
                 resultDistance = dist;
@@ -237,7 +237,6 @@ void OrthoView::updateView()
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
     curve->setPen(QPen(Qt::black, mMainWindow->lineThickness()));
-    addPlottable(curve);
 
     QVector3D mid((uMin + uMax) / 2,
                   (vMin + vMax) / 2,
@@ -329,7 +328,6 @@ void OrthoView::updateView()
     {
         // Add label to show zoom
         QCPItemText *textLabel = new QCPItemText(this);
-        addItem(textLabel);
 
         QPainter painter(this);
         double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();
@@ -407,28 +405,24 @@ void OrthoView::addOrientation()
     ys.append(corner.y() + 5 * valPerMM * o.y());
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
-    addPlottable(curve);
     curve->setData(ts, xs, ys);
     curve->setPen(QPen(Qt::green, mMainWindow->lineThickness()));
     curve->setBrush(QBrush(QColor(0, 255, 0, 64)));
 
     // Add arrows
     QCPItemLine *arrow = new QCPItemLine(this);
-    addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * x.toPointF());
     if (QVector2D(x - o).length() > MIN_ARROW_LEN)
         arrow->setHead(QCPLineEnding::esSpikeArrow);
 
     arrow = new QCPItemLine(this);
-    addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * y.toPointF());
     if (QVector2D(y - o).length() > MIN_ARROW_LEN)
         arrow->setHead(QCPLineEnding::esSpikeArrow);
 
     arrow = new QCPItemLine(this);
-    addItem(arrow);
     arrow->start->setCoords(corner + 5 * valPerMM * o.toPointF());
     arrow->end->setCoords(corner + 5 * valPerMM * z.toPointF());
     if (QVector2D(z - o).length() > MIN_ARROW_LEN)
