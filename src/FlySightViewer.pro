@@ -15,7 +15,6 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     mainwindow.cpp \
-    qcustomplot.cpp \
     dataplot.cpp \
     dataview.cpp \
     waypoint.cpp \
@@ -84,10 +83,10 @@ SOURCES += main.cpp \
     GeographicLib/TransverseMercator.cpp \
     GeographicLib/TransverseMercatorExact.cpp \
     GeographicLib/Utility.cpp \
-    GeographicLib/UTMUPS.cpp
+    GeographicLib/UTMUPS.cpp \
+    QCustomPlot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
-    qcustomplot.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
@@ -119,7 +118,8 @@ HEADERS  += mainwindow.h \
     logbookview.h \
     flareform.h \
     flarescoring.h \
-    ppcupload.h
+    ppcupload.h \
+    QCustomPlot/qcustomplot.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

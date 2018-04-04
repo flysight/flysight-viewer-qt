@@ -74,23 +74,23 @@ void LiftDragPlot::mouseMoveEvent(
     }
     else if (QCPCurve *graph = qobject_cast<QCPCurve *>(plottable(0)))
     {
-        const QCPCurveDataMap *data = graph->data();
+        QSharedPointer<QCPCurveDataContainer> data = graph->data();
 
         double resultTime;
         double resultDistance = std::numeric_limits<double>::max();
 
-        for (QCPCurveDataMap::const_iterator it = data->constBegin();
+        for (QCPCurveDataContainer::const_iterator it = data->constBegin();
              it != data->constEnd();
              ++it)
         {
-            QVector2D pt = QVector2D(xAxis->coordToPixel(it.value().key),
-                                     yAxis->coordToPixel(it.value().value));
+            QVector2D pt = QVector2D(xAxis->coordToPixel(it->key),
+                                     yAxis->coordToPixel(it->value));
 
             double dist = pt.distanceToPoint(QVector2D(event->pos()));
 
             if (dist < resultDistance)
             {
-                resultTime = it.value().t;
+                resultTime = it->t;
                 resultDistance = dist;
             }
         }
@@ -195,7 +195,6 @@ void LiftDragPlot::updatePlot()
     curve->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
     curve->setLineStyle(QCPCurve::lsNone);
     curve->setScatterStyle(QCPScatterStyle::ssDisc);
-    addPlottable(curve);
 
     setViewRange(xMax, yMax);
 
@@ -294,7 +293,6 @@ void LiftDragPlot::updatePlot()
     curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
     curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
-    addPlottable(curve);
 
     // Draw dot at maximum L/D
     x.clear();
@@ -311,7 +309,6 @@ void LiftDragPlot::updatePlot()
 
     // Add label to show equation for saved curve
     QCPItemText *textLabel = new QCPItemText(this);
-    addItem(textLabel);
 
     QPainter painter(this);
     double mmPerPix = (double) painter.device()->widthMM() / painter.device()->width();

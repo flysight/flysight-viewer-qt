@@ -615,7 +615,6 @@ void DataPlot::updatePlot()
     {
         // Add label to indicate wind correction
         QCPItemText *textLabel = new QCPItemText(this);
-        addItem(textLabel);
 
         textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignRight);
         textLabel->setTextAlignment(Qt::AlignRight);

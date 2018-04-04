@@ -1,7 +1,7 @@
 #ifndef DATAVIEW_H
 #define DATAVIEW_H
 
-#include "qcustomplot.h"
+#include "QCustomPlot/qcustomplot.h"
 
 class MainWindow;
 

@@ -31,27 +31,27 @@ void WindPlot::mouseMoveEvent(
 {
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
     {
-        const QCPCurveDataMap *data = curve->data();
+        QSharedPointer<QCPCurveDataContainer> data = curve->data();
 
         double resultTime;
         double resultDistance = std::numeric_limits<double>::max();
 
-        for (QCPCurveDataMap::const_iterator it = data->constBegin();
+        for (QCPCurveDataContainer::const_iterator it = data->constBegin();
              it != data->constEnd() && (it + 1) != data->constEnd();
              ++ it)
         {
-            QPointF pt1 = QPointF(xAxis->coordToPixel(it.value().key),
-                                  yAxis->coordToPixel(it.value().value));
-            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1).value().key),
-                                  yAxis->coordToPixel((it + 1).value().value));
+            QPointF pt1 = QPointF(xAxis->coordToPixel(it->key),
+                                  yAxis->coordToPixel(it->value));
+            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1)->key),
+                                  yAxis->coordToPixel((it + 1)->value));
 
             double mu;
             double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
 
             if (dist < resultDistance)
             {
-                double t1 = it.value().t;
-                double t2 = (it + 1).value().t;
+                double t1 = it->t;
+                double t2 = (it + 1)->t;
 
                 resultTime = t1 + mu * (t2 - t1);
                 resultDistance = dist;
@@ -126,7 +126,6 @@ void WindPlot::updatePlot()
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
     curve->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
-    addPlottable(curve);
 
     setViewRange(xMin, xMax, yMin, yMax);
 
@@ -207,11 +206,9 @@ void WindPlot::updatePlot()
     curve = new QCPCurve(xAxis, yAxis);
     curve->setData(tCircle, xCircle, yCircle);
     curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
-    addPlottable(curve);
 
     // Add label to show best fit
     QCPItemText *textLabel = new QCPItemText(this);
-    addItem(textLabel);
 
     const double factor = (mMainWindow->units() == PlotValue::Metric) ? MPS_TO_KMH : MPS_TO_MPH;
     const QString units = (mMainWindow->units() == PlotValue::Metric) ? "km/h" : "mph";

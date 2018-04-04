@@ -1,9 +1,10 @@
 #ifndef DATAPLOT_H
 #define DATAPLOT_H
 
+#include "QCustomPlot/qcustomplot.h"
+
 #include "datapoint.h"
 #include "plotvalue.h"
-#include "qcustomplot.h"
 
 class MainWindow;
 

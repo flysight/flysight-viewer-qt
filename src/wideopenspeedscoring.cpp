@@ -136,7 +136,6 @@ void WideOpenSpeedScoring::prepareDataPlot(
         graph->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
 
         QCPItemRect *rect = new QCPItemRect(plot);
-        plot->addItem(rect);
 
         rect->setPen(QPen(QBrush(Qt::lightGray), mMainWindow->lineThickness(), Qt::DashLine));
         rect->setBrush(QColor(0, 0, 0, 8));

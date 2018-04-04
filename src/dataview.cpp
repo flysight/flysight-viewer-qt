@@ -62,27 +62,27 @@ void DataView::mouseMoveEvent(
 
     if (QCPCurve *curve = qobject_cast<QCPCurve *>(plottable(0)))
     {
-        const QCPCurveDataMap *data = curve->data();
+        QSharedPointer<QCPCurveDataContainer> data = curve->data();
 
         double resultTime;
         double resultDistance = std::numeric_limits<double>::max();
 
-        for (QCPCurveDataMap::const_iterator it = data->constBegin();
+        for (QCPCurveDataContainer::const_iterator it = data->constBegin();
              it != data->constEnd() && (it + 1) != data->constEnd();
              ++ it)
         {
-            QPointF pt1 = QPointF(xAxis->coordToPixel(it.value().key),
-                                  yAxis->coordToPixel(it.value().value));
-            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1).value().key),
-                                  yAxis->coordToPixel((it + 1).value().value));
+            QPointF pt1 = QPointF(xAxis->coordToPixel(it->key),
+                                  yAxis->coordToPixel(it->value));
+            QPointF pt2 = QPointF(xAxis->coordToPixel((it + 1)->key),
+                                  yAxis->coordToPixel((it + 1)->value));
 
             double mu;
             double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
 
             if (dist < resultDistance)
             {
-                double t1 = it.value().t;
-                double t2 = (it + 1).value().t;
+                double t1 = it->t;
+                double t2 = (it + 1)->t;
 
                 resultTime = t1 + mu * (t2 - t1);
                 resultDistance = dist;
@@ -203,8 +203,6 @@ void DataView::updateView()
         curve->setPen(QPen(Qt::red, mMainWindow->lineThickness()));
         break;
     }
-
-    addPlottable(curve);
 
     double uMid = (uMin + uMax) / 2;
     double vMid = (vMin + vMax) / 2;
@@ -387,7 +385,6 @@ void DataView::addNorthArrow()
     removeItem(0);
 
     QCPItemLine *arrow = new QCPItemLine(this);
-    addItem(arrow);
     arrow->start->setCoords(south);
     arrow->end->setCoords(north);
     arrow->setHead(QCPLineEnding::esSpikeArrow);

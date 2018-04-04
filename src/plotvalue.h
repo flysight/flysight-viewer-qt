@@ -5,8 +5,9 @@
 #include <QSettings>
 #include <QString>
 
+#include "QCustomPlot/qcustomplot.h"
+
 #include "datapoint.h"
-#include "qcustomplot.h"
 
 #define METERS_TO_FEET 3.28084
 #define MPS_TO_MPH     2.23694

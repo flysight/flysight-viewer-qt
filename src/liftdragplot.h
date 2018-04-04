@@ -1,7 +1,7 @@
 #ifndef LIFTDRAGPLOT_H
 #define LIFTDRAGPLOT_H
 
-#include "qcustomplot.h"
+#include "QCustomPlot/qcustomplot.h"
 
 class MainWindow;
 
