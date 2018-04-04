@@ -11,7 +11,7 @@ DataPlot::DataPlot(QWidget *parent) :
     m_cursorValid(false)
 {
     // Create cursor layer
-    addLayer("cursor", layer("main"), limAbove);
+    addLayer("overlay", layer("main"), limAbove);
 
     // Initialize window
     setMouseTracking(true);
@@ -656,7 +656,7 @@ void DataPlot::updateRange()
 
 void DataPlot::updateCursor()
 {
-    setCurrentLayer("cursor");
+    setCurrentLayer("overlay");
 
     foreach (QCPLayerable *l, currentLayer()->children())
     {
