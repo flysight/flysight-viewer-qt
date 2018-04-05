@@ -640,7 +640,7 @@ void DataPlot::updateCursor()
         {
             removePlottable((QCPAbstractPlottable*) l);
         }
-        if (qobject_cast<QCPAbstractItem*>(l))
+        else if (qobject_cast<QCPAbstractItem*>(l))
         {
             removeItem((QCPAbstractItem*) l);
         }
