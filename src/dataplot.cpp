@@ -127,8 +127,8 @@ void DataPlot::mousePressEvent(
 {
     if (axisRect()->rect().contains(event->pos()))
     {
-        m_tBegin = xAxis->pixelToCoord(event->pos().x());
-        m_yBegin = event->pos().y();
+        m_tBegin = m_tCursor = xAxis->pixelToCoord(event->pos().x());
+        m_yBegin = m_yCursor = event->pos().y();
         m_dragging = true;
         updateCursor();
     }
