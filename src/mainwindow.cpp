@@ -2646,7 +2646,7 @@ void MainWindow::prepareDataPlot(
         {
             plot->removePlottable((QCPAbstractPlottable*) l);
         }
-        if (qobject_cast<QCPAbstractItem*>(l))
+        else if (qobject_cast<QCPAbstractItem*>(l))
         {
             plot->removeItem((QCPAbstractItem*) l);
         }
