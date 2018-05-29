@@ -23,19 +23,27 @@
 
 #include "mapview.h"
 
+#include <QFile>
 #include <QVector>
 #include <QWebFrame>
 #include <QWebElement>
 
 #include "common.h"
 #include "mainwindow.h"
+#include "secrets.h"
 
 MapView::MapView(QWidget *parent) :
     QWebView(parent),
     mMainWindow(0),
     mDragging(false)
 {
-    setUrl(QUrl("qrc:/html/mapview.html"));
+    QFile file(":/html/mapview.html");
+    if (file.open(QIODevice::ReadOnly))
+    {
+        QString html = file.readAll();
+        html.replace("GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY);
+        setHtml(html);
+    }
 }
 
 QSize MapView::sizeHint() const
