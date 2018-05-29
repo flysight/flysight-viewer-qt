@@ -31,3 +31,6 @@ build*/
 
 # Mac files
 .DS_Store
+
+# Header file with keys
+secrets.h
