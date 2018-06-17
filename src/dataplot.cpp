@@ -207,6 +207,9 @@ void DataPlot::mouseMoveEvent(
         }
         else
         {
+            if (mMainWindow->dataSize() == 0)
+                return;
+
             DataPoint dp = interpolateDataX(m_tCursor);
             mMainWindow->setMark(dp.t);
         }
