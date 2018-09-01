@@ -1034,6 +1034,9 @@ void MainWindow::import(
     // Altitude above ground
     initAltitude(data, trackName, initDatabase);
 
+    // Raw acceleration
+    initAcceleration(data);
+
     // Wind adjustments
     updateVelocity(data, trackName, initDatabase);
 }
@@ -1100,6 +1103,34 @@ void MainWindow::initAltitude(
     {
         DataPoint &dp = data[i];
         dp.z = dp.hMSL - ground;
+    }
+}
+
+void MainWindow::initAcceleration(
+        DataPoints &data)
+{
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+
+        // Acceleration
+        double accelN = getSlope(i, DataPoint::northSpeedRaw);
+        double accelE = getSlope(i, DataPoint::eastSpeedRaw);
+        double accelD = getSlope(i, DataPoint::verticalSpeed);
+
+        // Calculate acceleration in direction of flight
+        const double vh = sqrt(dp.velN * dp.velN + dp.velE * dp.velE);
+        dp.ax = (accelN * dp.velN + accelE * dp.velE) / vh;
+        const double dragN = dp.ax * dp.velN / vh;
+        const double dragE = dp.ax * dp.velE / vh;
+
+        // Calculate acceleration perpendicular to flight
+        const double perpN = accelN - dragN;
+        const double perpE = accelE - dragE;
+        dp.ay = sqrt(perpN * perpN + perpE * perpE);
+
+        // Calculate vertical acceleration
+        dp.az = accelD;
     }
 }
 
@@ -1514,6 +1545,9 @@ void MainWindow::updateLeftActions()
     m_ui->actionSpeedAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::SpeedAccuracy));
     m_ui->actionNumberOfSatellites->setChecked(m_ui->plotArea->plotVisible(DataPlot::NumberOfSatellites));
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
+    m_ui->actionAccForward->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccForward));
+    m_ui->actionAccRight->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccRight));
+    m_ui->actionAccDown->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccDown));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
@@ -1566,6 +1600,21 @@ void MainWindow::on_actionNumberOfSatellites_triggered()
 void MainWindow::on_actionAcceleration_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::Acceleration);
+}
+
+void MainWindow::on_actionAccForward_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AccForward);
+}
+
+void MainWindow::on_actionAccRight_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AccRight);
+}
+
+void MainWindow::on_actionAccDown_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AccDown);
 }
 
 void MainWindow::on_actionTotalEnergy_triggered()

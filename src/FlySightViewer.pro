@@ -119,7 +119,8 @@ HEADERS  += mainwindow.h \
     flareform.h \
     flarescoring.h \
     ppcupload.h \
-    QCustomPlot/qcustomplot.h
+    QCustomPlot/qcustomplot.h \
+    secrets.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \

@@ -84,6 +84,9 @@
     <addaction name="actionNumberOfSatellites"/>
     <addaction name="separator"/>
     <addaction name="actionAcceleration"/>
+    <addaction name="actionAccForward"/>
+    <addaction name="actionAccRight"/>
+    <addaction name="actionAccDown"/>
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
     <addaction name="separator"/>
@@ -709,6 +712,30 @@
    </property>
    <property name="shortcut">
     <string>U</string>
+   </property>
+  </action>
+  <action name="actionAccForward">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Forward</string>
+   </property>
+  </action>
+  <action name="actionAccRight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Right</string>
+   </property>
+  </action>
+  <action name="actionAccDown">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Down</string>
    </property>
   </action>
  </widget>

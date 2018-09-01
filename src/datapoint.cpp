@@ -63,6 +63,10 @@ DataPoint DataPoint::interpolate(
     ret.curv = p1.curv + a * (p2.curv - p1.curv);
     ret.accel = p1.accel + a * (p2.accel - p1.accel);
 
+    ret.ax = p1.ax + a * (p2.ax - p1.ax);
+    ret.ay = p1.ay + a * (p2.ay - p1.ay);
+    ret.az = p1.az + a * (p2.az - p1.az);
+
     ret.lift = p1.lift + a * (p2.lift - p1.lift);
     ret.drag = p1.drag + a * (p2.drag - p1.drag);
 

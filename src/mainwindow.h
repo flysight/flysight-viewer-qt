@@ -197,6 +197,9 @@ private slots:
     void on_actionSpeedAccuracy_triggered();
     void on_actionNumberOfSatellites_triggered();
     void on_actionAcceleration_triggered();
+    void on_actionAccForward_triggered();
+    void on_actionAccRight_triggered();
+    void on_actionAccDown_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
     void on_actionLift_triggered();
@@ -322,6 +325,7 @@ private:
     void import(QIODevice *device, DataPoints &data, QString trackName, bool initDatabase);
     void initTime(DataPoints &data, QString trackName, bool initDatabase);
     void initAltitude(DataPoints &data, QString trackName, bool initDatabase);
+    void initAcceleration(DataPoints &data);
     void updateVelocity(DataPoints &data, QString trackName, bool initDatabase);
     void initAerodynamics(DataPoints &data);
 

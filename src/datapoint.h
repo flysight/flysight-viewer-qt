@@ -65,6 +65,10 @@ public:
     double      curv;
     double      accel;
 
+    double      ax;
+    double      ay;
+    double      az;
+
     double      lift;
     double      drag;
 
@@ -91,6 +95,16 @@ public:
     static double eastSpeed(const DataPoint &dp)
     {
         return dp.vx;
+    }
+
+    static double northSpeedRaw(const DataPoint &dp)
+    {
+        return dp.velN;
+    }
+
+    static double eastSpeedRaw(const DataPoint &dp)
+    {
+        return dp.velE;
     }
 
     static double verticalSpeed(const DataPoint &dp)
@@ -163,6 +177,21 @@ public:
     static double acceleration(const DataPoint &dp)
     {
         return dp.accel;
+    }
+
+    static double accForward(const DataPoint &dp)
+    {
+        return dp.ax;
+    }
+
+    static double accRight(const DataPoint &dp)
+    {
+        return dp.ay;
+    }
+
+    static double accDown(const DataPoint &dp)
+    {
+        return dp.az;
     }
 
     static double totalEnergy(const DataPoint &dp)

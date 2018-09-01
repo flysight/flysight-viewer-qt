@@ -97,6 +97,9 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotCourse);
     m_yValues.append(new PlotCourseRate);
     m_yValues.append(new PlotCourseAccuracy);
+    m_yValues.append(new PlotAccForward);
+    m_yValues.append(new PlotAccRight);
+    m_yValues.append(new PlotAccDown);
 
     foreach (PlotValue *v, m_yValues)
     {
