@@ -1121,13 +1121,9 @@ void MainWindow::initAcceleration(
         // Calculate acceleration in direction of flight
         const double vh = sqrt(dp.velN * dp.velN + dp.velE * dp.velE);
         dp.ax = (accelN * dp.velN + accelE * dp.velE) / vh;
-        const double dragN = dp.ax * dp.velN / vh;
-        const double dragE = dp.ax * dp.velE / vh;
 
         // Calculate acceleration perpendicular to flight
-        const double perpN = accelN - dragN;
-        const double perpE = accelE - dragE;
-        dp.ay = sqrt(perpN * perpN + perpE * perpE);
+        dp.ay = (accelE * dp.velN - accelN * dp.velE) / vh;
 
         // Calculate vertical acceleration
         dp.az = accelD;
