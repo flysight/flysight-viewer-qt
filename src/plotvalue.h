@@ -529,6 +529,75 @@ public:
     bool hasOptimal() const { return true; }
 };
 
+class PlotAccForward: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAccForward(): PlotValue(false, Qt::darkRed) {}
+    const QString titleText() const
+    {
+        return tr("Acceleration Forward");
+    }
+    const QString unitText(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("m/s^2");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::accForward(dp);
+    }
+
+    bool hasOptimal() const { return true; }
+};
+
+class PlotAccRight: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAccRight(): PlotValue(false, Qt::darkGreen) {}
+    const QString titleText() const
+    {
+        return tr("Acceleration Right");
+    }
+    const QString unitText(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("m/s^2");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::accRight(dp);
+    }
+
+    bool hasOptimal() const { return true; }
+};
+
+class PlotAccDown: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAccDown(): PlotValue(false, Qt::darkBlue) {}
+    const QString titleText() const
+    {
+        return tr("Acceleration Down");
+    }
+    const QString unitText(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("m/s^2");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::accDown(dp);
+    }
+
+    bool hasOptimal() const { return true; }
+};
+
 class PlotTotalEnergy: public PlotValue
 {
     Q_OBJECT

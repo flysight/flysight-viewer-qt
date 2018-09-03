@@ -63,6 +63,14 @@
     <property name="title">
      <string>&amp;Left</string>
     </property>
+    <widget class="QMenu" name="menuRaw_Acceleration">
+     <property name="title">
+      <string>Acceleration (Local)</string>
+     </property>
+     <addaction name="actionAccForward"/>
+     <addaction name="actionAccRight"/>
+     <addaction name="actionAccDown"/>
+    </widget>
     <addaction name="actionElevation"/>
     <addaction name="separator"/>
     <addaction name="actionHorizontalSpeed"/>
@@ -84,6 +92,7 @@
     <addaction name="actionNumberOfSatellites"/>
     <addaction name="separator"/>
     <addaction name="actionAcceleration"/>
+    <addaction name="menuRaw_Acceleration"/>
     <addaction name="actionTotalEnergy"/>
     <addaction name="actionEnergyRate"/>
     <addaction name="separator"/>
@@ -709,6 +718,30 @@
    </property>
    <property name="shortcut">
     <string>U</string>
+   </property>
+  </action>
+  <action name="actionAccForward">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Forward</string>
+   </property>
+  </action>
+  <action name="actionAccRight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Right</string>
+   </property>
+  </action>
+  <action name="actionAccDown">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Down</string>
    </property>
   </action>
  </widget>

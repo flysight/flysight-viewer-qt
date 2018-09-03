@@ -62,6 +62,9 @@ public:
         Course,
         CourseRate,
         CourseAccuracy,
+        AccForward,
+        AccRight,
+        AccDown,
         yaLast
     } YAxisType;
 
