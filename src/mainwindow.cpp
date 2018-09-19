@@ -1127,6 +1127,9 @@ void MainWindow::initAcceleration(
 
         // Calculate vertical acceleration
         dp.az = accelD;
+
+        // Calculate total acceleration
+        dp.amag = sqrt(accelN * accelN + accelE * accelE + accelD * accelD);
     }
 }
 
@@ -1331,8 +1334,8 @@ double MainWindow::getSlope(
         const int center,
         double (*value)(const DataPoint &)) const
 {
-    int iMin = qMax (0, center - 2);
-    int iMax = qMin (m_data.size () - 1, center + 2);
+    int iMin = qMax (0, center - 4);
+    int iMax = qMin (m_data.size () - 1, center + 4);
 
     double sumx = 0, sumy = 0, sumxx = 0, sumxy = 0;
 
@@ -1544,6 +1547,7 @@ void MainWindow::updateLeftActions()
     m_ui->actionAccForward->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccForward));
     m_ui->actionAccRight->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccRight));
     m_ui->actionAccDown->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccDown));
+    m_ui->actionAccMagnitude->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccMagnitude));
     m_ui->actionTotalEnergy->setChecked(m_ui->plotArea->plotVisible(DataPlot::TotalEnergy));
     m_ui->actionEnergyRate->setChecked(m_ui->plotArea->plotVisible(DataPlot::EnergyRate));
     m_ui->actionLift->setChecked(m_ui->plotArea->plotVisible(DataPlot::Lift));
@@ -1611,6 +1615,11 @@ void MainWindow::on_actionAccRight_triggered()
 void MainWindow::on_actionAccDown_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::AccDown);
+}
+
+void MainWindow::on_actionAccMagnitude_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::AccMagnitude);
 }
 
 void MainWindow::on_actionTotalEnergy_triggered()

@@ -65,6 +65,7 @@ public:
         AccForward,
         AccRight,
         AccDown,
+        AccMagnitude,
         yaLast
     } YAxisType;
 

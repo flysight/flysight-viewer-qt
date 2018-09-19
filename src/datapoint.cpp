@@ -66,6 +66,7 @@ DataPoint DataPoint::interpolate(
     ret.ax = p1.ax + a * (p2.ax - p1.ax);
     ret.ay = p1.ay + a * (p2.ay - p1.ay);
     ret.az = p1.az + a * (p2.az - p1.az);
+    ret.amag = p1.amag + a * (p2.amag - p1.amag);
 
     ret.lift = p1.lift + a * (p2.lift - p1.lift);
     ret.drag = p1.drag + a * (p2.drag - p1.drag);

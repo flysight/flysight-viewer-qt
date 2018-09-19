@@ -200,6 +200,7 @@ private slots:
     void on_actionAccForward_triggered();
     void on_actionAccRight_triggered();
     void on_actionAccDown_triggered();
+    void on_actionAccMagnitude_triggered();
     void on_actionTotalEnergy_triggered();
     void on_actionEnergyRate_triggered();
     void on_actionLift_triggered();

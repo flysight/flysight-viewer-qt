@@ -68,6 +68,7 @@ public:
     double      ax;
     double      ay;
     double      az;
+    double      amag;
 
     double      lift;
     double      drag;
@@ -192,6 +193,11 @@ public:
     static double accDown(const DataPoint &dp)
     {
         return dp.az;
+    }
+
+    static double accMagnitude(const DataPoint &dp)
+    {
+        return dp.amag;
     }
 
     static double totalEnergy(const DataPoint &dp)
