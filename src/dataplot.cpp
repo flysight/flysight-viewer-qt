@@ -100,6 +100,7 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotAccForward);
     m_yValues.append(new PlotAccRight);
     m_yValues.append(new PlotAccDown);
+    m_yValues.append(new PlotAccMagnitude);
 
     foreach (PlotValue *v, m_yValues)
     {

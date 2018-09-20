@@ -70,6 +70,7 @@
      <addaction name="actionAccForward"/>
      <addaction name="actionAccRight"/>
      <addaction name="actionAccDown"/>
+     <addaction name="actionAccMagnitude"/>
     </widget>
     <addaction name="actionElevation"/>
     <addaction name="separator"/>
@@ -742,6 +743,17 @@
    </property>
    <property name="text">
     <string>Acceleration Down</string>
+   </property>
+  </action>
+  <action name="actionAccMagnitude">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Acceleration Magnitude</string>
+   </property>
+   <property name="toolTip">
+    <string>Acceleration Magnitude</string>
    </property>
   </action>
  </widget>

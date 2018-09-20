@@ -598,6 +598,29 @@ public:
     bool hasOptimal() const { return true; }
 };
 
+class PlotAccMagnitude: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotAccMagnitude(): PlotValue(false, Qt::gray) {}
+    const QString titleText() const
+    {
+        return tr("Acceleration Magnitude");
+    }
+    const QString unitText(Units units) const
+    {
+        Q_UNUSED(units);
+        return tr("m/s^2");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::accMagnitude(dp);
+    }
+
+    bool hasOptimal() const { return true; }
+};
+
 class PlotTotalEnergy: public PlotValue
 {
     Q_OBJECT
