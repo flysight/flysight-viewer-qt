@@ -1047,7 +1047,7 @@ void MainWindow::import(
 void MainWindow::initTime(
         DataPoints &data)
 {
-    const DataPoint &dp0 = data[data.size() - 1];
+    const DataPoint &dp0 = data[0];
     qint64 start = dp0.dateTime.toMSecsSinceEpoch();
 
     for (int i = 0; i < data.size(); ++i)
@@ -1103,7 +1103,7 @@ void MainWindow::initExit(
 
         if (!foundExit)
         {
-            const DataPoint &dp0 = data[data.size() - 1];
+            const DataPoint &dp0 = data[0];
             start = dp0.dateTime.toMSecsSinceEpoch();
         }
     }
