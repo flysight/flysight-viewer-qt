@@ -324,7 +324,8 @@ private:
                         QAction *actionShow, DataView::Direction direction);
 
     void import(QIODevice *device, DataPoints &data, QString trackName, bool initDatabase);
-    void initTime(DataPoints &data, QString trackName, bool initDatabase);
+    void initTime(DataPoints &data);
+    void initExit(DataPoints &data, QString trackName, bool initDatabase);
     void initAltitude(DataPoints &data, QString trackName, bool initDatabase);
     void initAcceleration(DataPoints &data);
     void updateVelocity(DataPoints &data, QString trackName, bool initDatabase);
