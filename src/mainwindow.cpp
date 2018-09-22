@@ -1074,24 +1074,30 @@ void MainWindow::initExit(
     {
         bool foundExit = false;
 
-        for (int i = 1; i < data.size(); ++i)
+        for (int i = 1; i < data.size() && !foundExit; ++i)
         {
             const DataPoint &dp1 = data[i - 1];
             const DataPoint &dp2 = data[i];
 
-            double a = (5 - dp1.az) / (dp2.az - dp1.az);
-            if (0 <= a && a < 1)
-            {
-                double vAcc = dp1.vAcc + a * (dp2.vAcc - dp1.vAcc);
-                if (vAcc < 10)
-                {
-                    foundExit = true;
-                    qint64 t1 = dp1.dateTime.toMSecsSinceEpoch();
-                    qint64 t2 = dp2.dateTime.toMSecsSinceEpoch();
-                    start = t1 + a * (t2 - t1);
-                    break;
-                }
-            }
+            // Get interpolation coefficient
+            const double a = (A_GRAVITY - dp1.velD) / (dp2.velD - dp1.velD);
+
+            // Check vertical speed
+            if (a < 0 || 1 < a) continue;
+
+            // Check accuracy
+            const double vAcc = dp1.vAcc + a * (dp2.vAcc - dp1.vAcc);
+            if (vAcc > 10) continue;
+
+            // Check acceleration
+            const double az = dp1.az + a * (dp2.az - dp1.az);
+            if (az < A_GRAVITY / 2) continue;
+
+            // Determine exit
+            const qint64 t1 = dp1.dateTime.toMSecsSinceEpoch();
+            const qint64 t2 = dp2.dateTime.toMSecsSinceEpoch();
+            start = t1 + a * (t2 - t1) - 1000.;
+            foundExit = true;
         }
 
         if (!foundExit)
