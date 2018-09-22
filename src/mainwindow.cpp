@@ -1080,7 +1080,8 @@ void MainWindow::initExit(
             const DataPoint &dp2 = data[i];
 
             // Get interpolation coefficient
-            const double a = (A_GRAVITY - dp1.velD) / (dp2.velD - dp1.velD);
+            const double velD = A_GRAVITY;
+            const double a = (velD - dp1.velD) / (dp2.velD - dp1.velD);
 
             // Check vertical speed
             if (a < 0 || 1 < a) continue;
@@ -1091,12 +1092,12 @@ void MainWindow::initExit(
 
             // Check acceleration
             const double az = dp1.az + a * (dp2.az - dp1.az);
-            if (az < A_GRAVITY / 2) continue;
+            if (az < A_GRAVITY / 5.) continue;
 
             // Determine exit
             const qint64 t1 = dp1.dateTime.toMSecsSinceEpoch();
             const qint64 t2 = dp2.dateTime.toMSecsSinceEpoch();
-            start = t1 + a * (t2 - t1) - 1000.;
+            start = t1 + a * (t2 - t1) - velD / az * 1000.;
             foundExit = true;
         }
 
