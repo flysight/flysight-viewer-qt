@@ -33,9 +33,8 @@ class SpeedScoring : public ScoringMethod
 public:
     SpeedScoring(MainWindow *mainWindow);
 
-    double windowTop(void) const { return mWindowTop; }
     double windowBottom(void) const { return mWindowBottom; }
-    void setWindow(double windowBottom, double windowTop);
+    void setWindow(double windowBottom);
 
     double score(const MainWindow::DataPoints &result);
     QString scoreAsText(double score);
@@ -50,7 +49,6 @@ public:
 private:
     MainWindow *mMainWindow;
 
-    double      mWindowTop;
     double      mWindowBottom;
 
 signals:
