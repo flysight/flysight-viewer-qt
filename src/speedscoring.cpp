@@ -25,6 +25,8 @@
 
 #include "mainwindow.h"
 
+#define TIME_DELTA 0.005
+
 SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
@@ -149,41 +151,40 @@ bool SpeedScoring::getWindowBounds(
         DataPoint &dpTop)
 {
     bool found = false;
-    int i0 = result.size() - 1;
+    int iStart = result.size() - 1;
     double maxScore = 0;
 
-    for (int i3 = result.size() - 1; i3 >= 0; --i3)
+    for (int iEnd = result.size() - 1; iEnd >= 0; --iEnd)
     {
-        const DataPoint &dp3 = result[i3];
-        const double t1 = dp3.t - 3;
+        // Get end point
+        const DataPoint &dpEnd = result[iEnd];
+        const double tStart = dpEnd.t - 3;
 
-        for (; i0 >= 0; --i0)
+        // Move start point back
+        for (; iStart >= 0; --iStart)
         {
-            const DataPoint &dp0 = result[i0];
-            if (dp0.t < t1) break;
+            const DataPoint &dpStart = result[iStart];
+            if (dpStart.t < tStart + TIME_DELTA) break;
         }
 
-        if (i0 < 0) break;
+        // If no start point is found
+        if (iStart < 0) break;
 
-        if (dp3.z >= mWindowBottom)
+        // Check window conditions
+        const DataPoint &dpStart = result[iStart];
+        if (dpStart.t < 0) break;
+        if (dpEnd.z < mWindowBottom) continue;
+        if (dpStart.t < tStart - TIME_DELTA) continue;
+
+        // Calculate score
+        const double thisScore = (dpStart.z - dpEnd.z) / (dpEnd.t - dpStart.t);
+        if (thisScore > maxScore)
         {
-            // Calculate top of window
-            const DataPoint &dp0 = result[i0];
-            const DataPoint &dp2 = result[i0 + 1];
-            DataPoint dp1 = DataPoint::interpolate(
-                        dp0, dp2, (t1 - dp0.t) / (dp2.t - dp0.t));
-
-            const double thisScore = (dp1.z - dp3.z) / (dp3.t - dp1.t);
-            if (thisScore > maxScore)
-            {
-                dpBottom = dp3;
-                dpTop = dp1;
-                maxScore = thisScore;
-                found = true;
-            }
+            dpBottom = dpEnd;
+            dpTop = dpStart;
+            maxScore = thisScore;
+            found = true;
         }
-
-        if (result[i0].t < 0) break;
     }
 
     return found;
