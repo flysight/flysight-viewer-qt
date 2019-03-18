@@ -25,22 +25,21 @@
 
 #include "mainwindow.h"
 
+#define TIME_DELTA 0.005
+
 SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
-    mWindowTop(2700),
     mWindowBottom(1700)
 {
 
 }
 
 void SpeedScoring::setWindow(
-        double windowBottom,
-        double windowTop)
+        double windowBottom)
 {
     mWindowBottom = windowBottom;
-    mWindowTop = windowTop;
     emit scoringChanged();
 }
 
@@ -50,7 +49,7 @@ double SpeedScoring::score(
     DataPoint dpBottom, dpTop;
     if (getWindowBounds(result, dpBottom, dpTop))
     {
-        return (mWindowTop - mWindowBottom) / (dpBottom.t - dpTop.t);
+        return (dpTop.z - dpBottom.z) / (dpBottom.t - dpTop.t);
     }
 
     return 0;
@@ -151,50 +150,42 @@ bool SpeedScoring::getWindowBounds(
         DataPoint &dpBottom,
         DataPoint &dpTop)
 {
-    bool foundBottom = false;
-    bool foundTop = false;
-    int bottom, top;
+    bool found = false;
+    int iStart = result.size() - 1;
+    double maxScore = 0;
 
-    for (int i = result.size() - 1; i >= 0; --i)
+    for (int iEnd = result.size() - 1; iEnd >= 0; --iEnd)
     {
-        const DataPoint &dp = result[i];
+        // Get end point
+        const DataPoint &dpEnd = result[iEnd];
+        const double tStart = dpEnd.t - 3;
 
-        if (dp.z < mWindowBottom)
+        // Move start point back
+        for (; iStart >= 0; --iStart)
         {
-            bottom = i;
-            foundBottom = true;
+            const DataPoint &dpStart = result[iStart];
+            if (dpStart.t < tStart + TIME_DELTA) break;
         }
 
-        if (dp.z < mWindowTop)
+        // If no start point is found
+        if (iStart < 0) break;
+
+        // Check window conditions
+        const DataPoint &dpStart = result[iStart];
+        if (dpStart.t < 0) break;
+        if (dpEnd.z < mWindowBottom) continue;
+        if (dpStart.t < tStart - TIME_DELTA) continue;
+
+        // Calculate score
+        const double thisScore = (dpStart.z - dpEnd.z) / (dpEnd.t - dpStart.t);
+        if (thisScore > maxScore)
         {
-            top = i;
-            foundTop = false;
+            dpBottom = dpEnd;
+            dpTop = dpStart;
+            maxScore = thisScore;
+            found = true;
         }
-
-        if (dp.z > mWindowTop)
-        {
-            foundTop = true;
-        }
-
-        if (dp.t < 0) break;
     }
 
-    if (foundBottom && foundTop)
-    {
-        // Calculate bottom of window
-        const DataPoint &dp1 = result[bottom - 1];
-        const DataPoint &dp2 = result[bottom];
-        dpBottom = DataPoint::interpolate(dp1, dp2, (mWindowBottom - dp1.z) / (dp2.z - dp1.z));
-
-        // Calculate top of window
-        const DataPoint &dp3 = result[top - 1];
-        const DataPoint &dp4 = result[top];
-        dpTop = DataPoint::interpolate(dp3, dp4, (mWindowTop - dp3.z) / (dp4.z - dp3.z));
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return found;
 }

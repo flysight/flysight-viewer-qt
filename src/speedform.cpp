@@ -42,7 +42,6 @@ SpeedForm::SpeedForm(QWidget *parent) :
     connect(ui->upButton, SIGNAL(clicked()), this, SLOT(onUpButtonClicked()));
     connect(ui->downButton, SIGNAL(clicked()), this, SLOT(onDownButtonClicked()));
 
-    connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
 
     // Connect optimization buttons
@@ -80,11 +79,9 @@ void SpeedForm::updateView()
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
 
     const double bottom = method->windowBottom();
-    const double top = method->windowTop();
 
     // Update window bounds
     ui->bottomEdit->setText(QString("%1").arg(bottom));
-    ui->topEdit->setText(QString("%1").arg(top));
 
     DataPoint dpBottom, dpTop;
     bool success;
@@ -103,7 +100,7 @@ void SpeedForm::updateView()
     {
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
-        const double verticalSpeed = (top - bottom) / time;
+        const double verticalSpeed = (dpTop.z - dpBottom.z) / time;
 
         // Update display
         if (mMainWindow->units() == PlotValue::Metric)
@@ -144,16 +141,15 @@ void SpeedForm::updateView()
 void SpeedForm::onFAIButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(1700, 2700);
+    method->setWindow(1700);
 }
 
 void SpeedForm::onApplyButtonClicked()
 {
     double bottom = ui->bottomEdit->text().toDouble();
-    double top = ui->topEdit->text().toDouble();
 
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(bottom, top);
+    method->setWindow(bottom);
 
     mMainWindow->setFocus();
 }
@@ -161,13 +157,13 @@ void SpeedForm::onApplyButtonClicked()
 void SpeedForm::onUpButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(method->windowBottom() + 10, method->windowTop() + 10);
+    method->setWindow(method->windowBottom() + 10);
 }
 
 void SpeedForm::onDownButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(method->windowBottom() - 10, method->windowTop() - 10);
+    method->setWindow(method->windowBottom() - 10);
 }
 
 void SpeedForm::keyPressEvent(QKeyEvent *event)
