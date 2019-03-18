@@ -168,3 +168,6 @@ else {
     LIBS += -lwwwidgets4
 }
 
+macx {
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+}
