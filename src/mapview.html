@@ -20,7 +20,13 @@
                     center: new google.maps.LatLng(51.0500, -114.0667),
                     zoom: 8,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    panControl: true
+                    panControl: true,
+                    zoomControl: true,
+                    mapTypeControl: true,
+                    scaleControl: true,
+                    streetViewControl: false,
+                    rotateControl: false,
+                    fullscreenControl: false
                 };
 
                 map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
