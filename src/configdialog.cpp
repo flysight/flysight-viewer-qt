@@ -26,8 +26,8 @@
 
 #include <QComboBox>
 #include <QSettings>
-#include <QwwColorComboBox>
 
+#include "colorcombobox.h"
 #include "dataplot.h"
 #include "mainwindow.h"
 
@@ -167,16 +167,8 @@ void ConfigDialog::updatePlots()
 
         if (!ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR))
         {
-            QwwColorComboBox *combo = new QwwColorComboBox();
-            foreach (const QString &colorName, colorNames)
-            {
-                const QColor &color(colorName);
-                combo->addColor(color, colorName);
-                if (color == yValue->color())
-                {
-                    combo->setCurrentText(colorName);
-                }
-            }
+            ColorComboBox *combo = new ColorComboBox;
+            combo->setColor(yValue->color());
             ui->plotTable->setCellWidget(i, PLOT_COLUMN_COLOUR, combo);
         }
 
@@ -326,8 +318,9 @@ int ConfigDialog::simulationTime() const
 QColor ConfigDialog::plotColor(
         int i) const
 {
-    QComboBox *combo = (QComboBox *) ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR);
-    return QColor(combo->currentText());
+    ColorComboBox *combo;
+    combo = static_cast< ColorComboBox* >(ui->plotTable->cellWidget(i, PLOT_COLUMN_COLOUR));
+    return combo->color();
 }
 
 double ConfigDialog::plotMinimum(

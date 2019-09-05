@@ -14,6 +14,7 @@ TARGET = FlySightViewer
 TEMPLATE = app
 
 SOURCES += main.cpp \
+    colorcombobox.cpp \
     mainwindow.cpp \
     dataplot.cpp \
     dataview.cpp \
@@ -87,6 +88,7 @@ SOURCES += main.cpp \
     QCustomPlot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
+    colorcombobox.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
@@ -147,25 +149,21 @@ RESOURCES += \
     resource.qrc
 
 INCLUDEPATH += ../include
-INCLUDEPATH += ../include/wwWidgets
 INCLUDEPATH += ../include/GeographicLib
 
 win32 {
     LIBS += -L../lib
     LIBS += -lVLCQtCore -l VLCQtQml -lVLCQtWidgets
-    LIBS += -lwwwidgets4
 }
 else:macx {
     QMAKE_LFLAGS += -F../frameworks
     LIBS         += -framework VLCQtCore
     LIBS         += -framework VLCQtQml
     LIBS         += -framework VLCQtWidgets
-    LIBS         += -framework wwwidgets4
 }
 else {
     LIBS += -L/usr/local/lib
     LIBS += -lvlc-qt -lvlc-qt-widgets
-    LIBS += -lwwwidgets4
 }
 
 macx {
