@@ -83,7 +83,7 @@ void PerformanceForm::updateView()
     // Calculate results
     const double time = dpEnd.t - dpStart.t;
     const double vDistance = dpStart.z - dpEnd.z;
-    const double hDistance = MainWindow::getDistance(dpStart, dpEnd);
+    const double hDistance = mMainWindow->getDistance(dpStart, dpEnd);
 
     // Update display
     ui->timeEdit->setText(QString("%1").arg(time, 0, 'f', 3));
@@ -138,7 +138,7 @@ void PerformanceForm::onPpcButtonClicked() {
     DataPoint dpBottom = mMainWindow->interpolateDataT(method->endTime());
 
     const double time = dpBottom.t - dpTop.t;
-    const double distance = MainWindow::getDistance(dpTop, dpBottom);
+    const double distance = mMainWindow->getDistance(dpTop, dpBottom);
     const double windowTop = dpTop.z;
     const double windowBottom = dpBottom.z;
 
