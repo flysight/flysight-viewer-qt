@@ -1269,6 +1269,20 @@ void MainWindow::updateVelocity(
         dp.dist3D = dist3D;
     }
 
+    // Adjust for exit
+    DataPoint dp0 = interpolateDataT(0);
+
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+
+        dp.x -= dp0.x;
+        dp.y -= dp0.y;
+
+        dp.dist2D -= dp0.dist2D;
+        dp.dist3D -= dp0.dist3D;
+    }
+
     QString value;
     double theta0;
     if (getDatabaseValue(trackName, "course", value))
