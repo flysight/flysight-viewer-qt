@@ -108,7 +108,7 @@ void PPCForm::updateView()
     {
         // Calculate results
         const double time = dpBottom.t - dpTop.t;
-        const double distance = MainWindow::getDistance(dpTop, dpBottom);
+        const double distance = mMainWindow->getDistance(dpTop, dpBottom);
         const double horizontalSpeed = distance / time;
 
         // Update display
@@ -246,7 +246,7 @@ void PPCForm::onPpcButtonClicked() {
 
     if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
         const double time = dpBottom.t - dpTop.t;
-        const double distance = MainWindow::getDistance(dpTop, dpBottom);
+        const double distance = mMainWindow->getDistance(dpTop, dpBottom);
         const double windowTop = dpTop.z;
         const double windowBottom = dpBottom.z;
 

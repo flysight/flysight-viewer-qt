@@ -63,9 +63,9 @@ double PPCScoring::score(
         case Time:
             return dpBottom.t - dpTop.t;
         case Distance:
-            return MainWindow::getDistance(dpTop, dpBottom);
+            return mMainWindow->getDistance(dpTop, dpBottom);
         default: // Speed
-            return MainWindow::getDistance(dpTop, dpBottom) / (dpBottom.t - dpTop.t);
+            return mMainWindow->getDistance(dpTop, dpBottom) / (dpBottom.t - dpTop.t);
         }
     }
 

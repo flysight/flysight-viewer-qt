@@ -1269,6 +1269,20 @@ void MainWindow::updateVelocity(
         dp.dist3D = dist3D;
     }
 
+    // Adjust for exit
+    DataPoint dp0 = interpolateDataT(0);
+
+    for (int i = 0; i < data.size(); ++i)
+    {
+        DataPoint &dp = data[i];
+
+        dp.x -= dp0.x;
+        dp.y -= dp0.y;
+
+        dp.dist2D -= dp0.dist2D;
+        dp.dist3D -= dp0.dist3D;
+    }
+
     QString value;
     double theta0;
     if (getDatabaseValue(trackName, "course", value))
@@ -1407,7 +1421,7 @@ double MainWindow::getDistance(
         const DataPoint &dp1,
         const DataPoint &dp2)
 {
-    if (dp1.hasGeodetic && dp2.hasGeodetic)
+    if (!mWindAdjustment && dp1.hasGeodetic && dp2.hasGeodetic)
     {
         const Geodesic &geod = Geodesic::WGS84();
         double s12;
@@ -1429,12 +1443,22 @@ double MainWindow::getBearing(
         const DataPoint &dp1,
         const DataPoint &dp2)
 {
-    const Geodesic &geod = Geodesic::WGS84();
-    double azi1, azi2;
+    if (!mWindAdjustment && dp1.hasGeodetic && dp2.hasGeodetic)
+    {
+        const Geodesic &geod = Geodesic::WGS84();
+        double azi1, azi2;
 
-    geod.Inverse(dp1.lat, dp1.lon, dp2.lat, dp2.lon, azi1, azi2);
+        geod.Inverse(dp1.lat, dp1.lon, dp2.lat, dp2.lon, azi1, azi2);
 
-    return azi1 / 180 * PI;
+        return azi1 / 180 * PI;
+    }
+    else
+    {
+        const double dx = dp2.x - dp1.x;
+        const double dy = dp2.y - dp1.y;
+
+        return atan2(dx, dy);
+    }
 }
 
 void MainWindow::setMark(
