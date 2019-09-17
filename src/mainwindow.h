@@ -319,6 +319,7 @@ private:
     void initOrthoView();
     void initPlaybackView();
     void initLogbookView();
+    void initSimulationView();
 
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);

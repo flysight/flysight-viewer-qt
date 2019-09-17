@@ -18,6 +18,7 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     dataplot.cpp \
     dataview.cpp \
+    simulationview.cpp \
     waypoint.cpp \
     datapoint.cpp \
     configdialog.cpp \
@@ -92,6 +93,7 @@ HEADERS  += mainwindow.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
+    simulationview.h \
     waypoint.h \
     plotvalue.h \
     configdialog.h \
@@ -126,6 +128,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
+    simulationview.ui \
     videoview.ui \
     scoringview.ui \
     playbackview.ui \

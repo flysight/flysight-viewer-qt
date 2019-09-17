@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>17</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -143,6 +143,7 @@
     <addaction name="actionShowLiftDragView"/>
     <addaction name="separator"/>
     <addaction name="actionShowPlaybackView"/>
+    <addaction name="actionShowSimulationView"/>
     <addaction name="separator"/>
     <addaction name="actionShowLogbookView"/>
    </widget>
@@ -754,6 +755,17 @@
    </property>
    <property name="toolTip">
     <string>Acceleration Magnitude</string>
+   </property>
+  </action>
+  <action name="actionShowSimulationView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sim&amp;ulation</string>
+   </property>
+   <property name="toolTip">
+    <string>Simulation</string>
    </property>
   </action>
  </widget>

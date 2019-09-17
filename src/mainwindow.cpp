@@ -58,6 +58,7 @@
 #include "playbackview.h"
 #include "ppcscoring.h"
 #include "scoringview.h"
+#include "simulationview.h"
 #include "speedscoring.h"
 #include "videoview.h"
 #include "wideopendistancescoring.h"
@@ -148,6 +149,9 @@ MainWindow::MainWindow(
 
     // Initialize logbook view
     initLogbookView();
+
+    // Initialize simulation view
+    initSimulationView();
 
     // Restore window state
     QSettings settings("FlySight", "Viewer");
@@ -511,6 +515,23 @@ void MainWindow::initLogbookView()
 
     connect(this, SIGNAL(databaseChanged()),
             logbookView, SLOT(updateView()));
+}
+
+void MainWindow::initSimulationView()
+{
+    SimulationView *simulationView = new SimulationView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Simulation View"));
+    dockWidget->setWidget(simulationView);
+    dockWidget->setObjectName("simulationView");
+    dockWidget->setVisible(false);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+
+    simulationView->setMainWindow(this);
+
+    connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowSimulationView, SLOT(setChecked(bool)));
 }
 
 void MainWindow::closeEvent(
