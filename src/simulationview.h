@@ -29,7 +29,7 @@ private:
 
 private slots:
     void on_browseButton_clicked();
-    void on_reloadButton_clicked();
+    void on_processButton_clicked();
 };
 
 #endif // SIMULATIONVIEW_H
