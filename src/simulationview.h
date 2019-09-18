@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "config.h"
+
 namespace Ui {
 class SimulationView;
 }
@@ -22,6 +24,12 @@ public:
 private:
     Ui::SimulationView *ui;
     MainWindow         *mMainWindow;
+
+    Config mConfig;
+
+private slots:
+    void on_browseButton_clicked();
+    void on_reloadButton_clicked();
 };
 
 #endif // SIMULATIONVIEW_H

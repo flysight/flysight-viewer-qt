@@ -15,6 +15,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     colorcombobox.cpp \
+    config.cpp \
     mainwindow.cpp \
     dataplot.cpp \
     dataview.cpp \
@@ -90,6 +91,7 @@ SOURCES += main.cpp \
 
 HEADERS  += mainwindow.h \
     colorcombobox.h \
+    config.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
