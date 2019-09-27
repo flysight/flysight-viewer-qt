@@ -20,6 +20,8 @@ SOURCES += main.cpp \
     dataplot.cpp \
     dataview.cpp \
     simulationview.cpp \
+    tone.cpp \
+    ubx.cpp \
     waypoint.cpp \
     datapoint.cpp \
     configdialog.cpp \
@@ -96,6 +98,8 @@ HEADERS  += mainwindow.h \
     dataplot.h \
     dataview.h \
     simulationview.h \
+    tone.h \
+    ubx.h \
     waypoint.h \
     plotvalue.h \
     configdialog.h \
