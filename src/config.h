@@ -1,6 +1,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <stdint.h>
+
 #include <QList>
 
 #define TONE_RATE_ONE_HZ 65
@@ -25,64 +27,64 @@ public:
 
     typedef struct
     {
-        int          elev;
-        unsigned int type;
+        int32_t elev;
+        uint8_t type;
         QString      filename;
     }
     UBX_alarm_t;
 
     typedef struct
     {
-        int top;
-        int bottom;
+        int32_t top;
+        int32_t bottom;
     }
     UBX_window_t;
 
     typedef struct
     {
-        unsigned int mode;
-        unsigned int units;
-        unsigned int decimals;
+        uint8_t mode;
+        uint8_t units;
+        int32_t decimals;
     }
     UBX_speech_t;
 
-    unsigned int Tone_volume;
-    unsigned int Tone_sp_volume;
+    uint16_t  Tone_volume;
+    uint16_t  Tone_sp_volume;
 
-    unsigned int UBX_model;
-    unsigned int UBX_rate;
-    unsigned int UBX_mode;
-    int          UBX_min;
-    int          UBX_max;
+    uint8_t   UBX_model;
+    uint16_t  UBX_rate;
+    uint8_t   UBX_mode;
+    int32_t   UBX_min;
+    int32_t   UBX_max;
 
-    unsigned int UBX_mode_2;
-    int          UBX_min_2;
-    int          UBX_max_2;
-    int          UBX_min_rate;
-    int          UBX_max_rate;
-    unsigned int UBX_flatline;
-    unsigned int UBX_limits;
-    unsigned int UBX_use_sas;
+    uint8_t   UBX_mode_2;
+    int32_t   UBX_min_2;
+    int32_t   UBX_max_2;
+    int32_t   UBX_min_rate;
+    int32_t   UBX_max_rate;
+    uint8_t   UBX_flatline;
+    uint8_t   UBX_limits;
+    uint8_t   UBX_use_sas;
 
-    unsigned int UBX_threshold;
-    unsigned int UBX_hThreshold;
+    int32_t   UBX_threshold;
+    int32_t   UBX_hThreshold;
 
     QList< UBX_alarm_t > UBX_alarms;
-    unsigned int UBX_alarm_window_above;
-    unsigned int UBX_alarm_window_below;
+    int32_t  UBX_alarm_window_above;
+    int32_t  UBX_alarm_window_below;
 
     QList< UBX_speech_t > UBX_speech;
-    unsigned int UBX_sp_rate;
+    uint16_t  UBX_sp_rate;
 
-    unsigned int UBX_alt_units;
-    unsigned int UBX_alt_step;
+    uint8_t   UBX_alt_units;
+    int32_t   UBX_alt_step;
 
-    unsigned int UBX_init_mode;
-    QString      UBX_init_filename;
+    uint8_t   UBX_init_mode;
+    QString   UBX_init_filename;
 
     QList< UBX_window_t > UBX_windows;
 
-    int          UBX_dz_elev;
+    int32_t   UBX_dz_elev;
 };
 
 #endif // CONFIGURATION_H

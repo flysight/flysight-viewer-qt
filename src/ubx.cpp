@@ -10,7 +10,7 @@
 
 #define UBX_INVALID_VALUE   0x7fffffffL
 
-#define UBX_ALT_MIN         1500UL // Minimum announced altitude (m)
+#define UBX_ALT_MIN         1500L // Minimum announced altitude (m)
 
 #define UBX_HAS_FIX         0x01
 #define UBX_FIRST_FIX       0x02
