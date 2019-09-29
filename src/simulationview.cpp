@@ -16,6 +16,11 @@ SimulationView::SimulationView(QWidget *parent) :
     mUBX(mConfig, mTone)
 {
     ui->setupUi(this);
+
+    // Initialize configuration file name
+    QSettings settings("FlySight", "Viewer");
+    QString fileName = settings.value("configFolder").toString();
+    ui->fileName->setText(fileName);
 }
 
 SimulationView::~SimulationView()
