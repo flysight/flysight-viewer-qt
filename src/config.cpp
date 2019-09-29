@@ -137,7 +137,7 @@ void Config::readSingle(
         }
         if (!name.compare("Alarm_File") && UBX_alarms.length() <= UBX_MAX_ALARMS)
         {
-            UBX_alarms.last().filename = result;
+            UBX_alarms.last().filename = result.left(8);
         }
 
         if (!name.compare("Win_Top") && UBX_windows.length() < UBX_MAX_WINDOWS)
