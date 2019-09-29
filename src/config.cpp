@@ -57,7 +57,7 @@ void Config::reset()
 void Config::readSingle(
         QString fileName)
 {
-    bool first = false;
+    int first = 0;
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
