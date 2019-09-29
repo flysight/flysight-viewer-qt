@@ -137,7 +137,6 @@ void Config::readSingle(
         }
         if (!name.compare("Alarm_File") && UBX_alarms.length() <= UBX_MAX_ALARMS)
         {
-            result[8] = '\0';
             UBX_alarms.last().filename = result;
         }
 
@@ -179,7 +178,6 @@ void Config::readSingle(
         }
         if (!name.compare("Sp_Dec") && UBX_speech.length() <= UBX_MAX_SPEECH)
         {
-            result[8] = '\0';
             UBX_speech.last().decimals = val;
         }
     }
