@@ -512,6 +512,7 @@ void UBX::updateAlarms(UBX_saved_t *current)
                     break;
                 }
 
+                *UBX_speech_ptr = 0;
                 break;
             }
         }
