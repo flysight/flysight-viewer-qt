@@ -310,6 +310,8 @@ void MainWindow::initPlot()
             m_ui->plotArea, SLOT(updateRange()));
     connect(this, SIGNAL(cursorChanged()),
             m_ui->plotArea, SLOT(updateCursor()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            m_ui->plotArea, SLOT(updateCursor()));
 }
 
 void MainWindow::initViews()

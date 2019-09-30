@@ -665,6 +665,40 @@ void DataPlot::updateCursor()
         }
     }
 
+    if (true)
+    {
+        // Draw marks
+        const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+        const double markCoord = xValue()->value(dp, mMainWindow->units());
+        const double markPixel = (int) (xAxis->coordToPixel(markCoord) + 0.5);
+
+        QVector< double > xMark, yMark;
+        xMark.append(xAxis->pixelToCoord(markPixel));
+
+        for (int j = 0; j < yaLast; ++j)
+        {
+            if (!yValue(j)->visible()) continue;
+
+            yMark.clear();
+            yMark.append(yValue(j)->value(dp, mMainWindow->units()));
+
+            QCPAxis *axis = yValue(j)->axis();
+            QCPGraph *graph = addGraph(xAxis, axis);
+
+            graph->setData(xMark, yMark);
+            graph->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPScatterStyle::ssDisc);
+        }
+
+        // Draw vertical line
+        QCPItemLine *line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::lightGray));
+        line->start->setCoords(xMark.first(), yAxis->range().lower);
+        line->end->setCoords(xMark.first(), yAxis->range().upper);
+    }
+
     if (mMainWindow->markActive())
     {
         // Draw marks
