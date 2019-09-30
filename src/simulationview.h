@@ -13,6 +13,9 @@ class SimulationView;
 
 class DataPoint;
 class MainWindow;
+class VlcInstance;
+class VlcMedia;
+class VlcMediaPlayer;
 
 class SimulationView : public QWidget
 {
@@ -22,6 +25,8 @@ public:
     explicit SimulationView(QWidget *parent = 0);
     ~SimulationView();
 
+    virtual QSize sizeHint() const;
+
     void setMainWindow(MainWindow *mainWindow);
 
     const Config &config() const { return mConfig; }
@@ -30,15 +35,31 @@ private:
     Ui::SimulationView *ui;
     MainWindow         *mMainWindow;
 
-    Config mConfig;
-    Tone mTone;
-    UBX mUBX;
+    Config             mConfig;
+    Tone               mTone;
+    UBX                mUBX;
 
-    void reset();
+    VlcInstance        *mInstance;
+    VlcMedia           *mMedia;
+    VlcMediaPlayer     *mPlayer;
+
+    bool               mBusy;
+
+    void setMedia(const QString &fileName);
+
+public slots:
+    void play();
+    void updateView();
 
 private slots:
     void on_browseButton_clicked();
     void on_processButton_clicked();
+
+    void stateChanged();
+    void timeChanged(int position);
+    void lengthChanged(int duration);
+    void setPosition(int position);
+    void setScrubPosition(int position);
 };
 
 #endif // SIMULATIONVIEW_H

@@ -6,6 +6,11 @@
 #include <QSettings>
 #include <QTextStream>
 
+#include <VLCQtCore/Common.h>
+#include <VLCQtCore/Instance.h>
+#include <VLCQtCore/Media.h>
+#include <VLCQtCore/MediaPlayer.h>
+
 #include "mainwindow.h"
 
 SimulationView::SimulationView(QWidget *parent) :
@@ -13,7 +18,9 @@ SimulationView::SimulationView(QWidget *parent) :
     ui(new Ui::SimulationView),
     mMainWindow(0),
     mTone(mConfig),
-    mUBX(mConfig, mTone)
+    mUBX(mConfig, mTone),
+    mMedia(0),
+    mBusy(false)
 {
     ui->setupUi(this);
 
@@ -21,11 +28,43 @@ SimulationView::SimulationView(QWidget *parent) :
     QSettings settings("FlySight", "Viewer");
     QString fileName = settings.value("configFolder").toString();
     ui->fileName->setText(fileName);
+
+    ui->playButton->setEnabled(false);
+    ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    connect(ui->playButton, SIGNAL(clicked()), this, SLOT(play()));
+
+    ui->positionSlider->setEnabled(false);
+    ui->positionSlider->setRange(0, 0);
+    ui->positionSlider->setSingleStep(200);
+    ui->positionSlider->setPageStep(2000);
+    connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
+
+    ui->scrubDial->setEnabled(false);
+    ui->scrubDial->setRange(0, 1000);
+    ui->scrubDial->setSingleStep(30);
+    ui->scrubDial->setPageStep(300);
+    connect(ui->scrubDial, SIGNAL(valueChanged(int)), this, SLOT(setScrubPosition(int)));
+
+    mInstance = new VlcInstance(VlcCommon::args(), this);
+    mPlayer = new VlcMediaPlayer(mInstance);
+
+    connect(mPlayer, SIGNAL(stateChanged()), this, SLOT(stateChanged()));
+    connect(mPlayer, SIGNAL(timeChanged(int)), this, SLOT(timeChanged(int)));
+    connect(mPlayer, SIGNAL(lengthChanged(int)), this, SLOT(lengthChanged(int)));
 }
 
 SimulationView::~SimulationView()
 {
+    delete mPlayer;
+    delete mMedia;
+    delete mInstance;
     delete ui;
+}
+
+QSize SimulationView::sizeHint() const
+{
+    // Keeps windows from being intialized as very short
+    return QSize(400, 139);
 }
 
 void SimulationView::setMainWindow(
@@ -69,7 +108,8 @@ void SimulationView::on_processButton_clicked()
     }
 
     // Reset the simulation
-    reset();
+    mTone.reset();
+    mUBX.reset();
 
     // Return now if there's no data
     if (mMainWindow->dataSize() == 0) return;
@@ -142,10 +182,122 @@ void SimulationView::on_processButton_clicked()
     }
 
     file.close();
+
+    setMedia(desktop + "/temp.wav");
 }
 
-void SimulationView::reset()
+void SimulationView::setMedia(const QString &fileName)
 {
-    mTone.reset();
-    mUBX.reset();
+    // Set media
+    mMedia = new VlcMedia(fileName, true, mInstance);
+    mPlayer->open(mMedia);
+
+    // Update buttons
+    ui->playButton->setEnabled(true);
+    ui->positionSlider->setEnabled(true);
+    ui->scrubDial->setEnabled(true);
+}
+
+void SimulationView::play()
+{
+    switch(mPlayer->state())
+    {
+    case Vlc::Playing:
+        mPlayer->pause();
+        break;
+    default:
+        mPlayer->play();
+        break;
+    }
+}
+
+void SimulationView::stateChanged()
+{
+    switch(mPlayer->state())
+    {
+    case Vlc::Playing:
+        ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        break;
+    default:
+        ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        break;
+    }
+}
+
+void SimulationView::timeChanged(int position)
+{
+    mBusy = true;
+
+    // Update controls
+    ui->positionSlider->setValue(position);
+    ui->scrubDial->setValue(position % 1000);
+
+    // Update text label
+    double time = (double) position / 1000;
+
+    if (mMainWindow->dataSize() > 0)
+    {
+        const DataPoint &dp0 = mMainWindow->data()[0];
+        time += dp0.t;
+    }
+
+    ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
+
+    // Update other views
+    mMainWindow->setMark(time);
+
+    mBusy = false;
+}
+
+void SimulationView::lengthChanged(int duration)
+{
+    ui->positionSlider->setRange(0, duration);
+}
+
+void SimulationView::setPosition(int position)
+{
+    if (!mBusy)
+    {
+        // Update video position
+        mPlayer->setTime(position);
+        timeChanged(position);
+    }
+}
+
+void SimulationView::setScrubPosition(int position)
+{
+    if (!mBusy)
+    {
+        int oldPosition = mPlayer->time();
+        int newPosition = oldPosition - oldPosition % 1000 + position;
+
+        while (newPosition <= oldPosition - 500) newPosition += 1000;
+        while (newPosition >  oldPosition + 500) newPosition -= 1000;
+
+        // Update video position
+        mPlayer->setTime(newPosition);
+        timeChanged(newPosition);
+    }
+}
+
+void SimulationView::updateView()
+{
+    if (!mBusy && mMainWindow->markActive())
+    {
+        const DataPoint &dp0 = mMainWindow->data()[0];
+
+        // Get marked point
+        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
+
+        // Get playback position
+        int position = (dpEnd.t - dp0.t) * 1000;
+
+        // If playback position is within video bounds
+        if (0 <= position && position <= mPlayer->length())
+        {
+            // Update video position
+            mPlayer->setTime(position);
+            timeChanged(position);
+        }
+    }
 }

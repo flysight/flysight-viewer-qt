@@ -528,6 +528,12 @@ void MainWindow::initSimulationView()
 
     simulationView->setMainWindow(this);
 
+    // Set up notifications for simulation view
+    connect(this, SIGNAL(dataChanged()),
+            simulationView, SLOT(updateView()));
+    connect(this, SIGNAL(cursorChanged()),
+            simulationView, SLOT(updateView()));
+
     connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
