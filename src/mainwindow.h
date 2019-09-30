@@ -113,6 +113,9 @@ public:
     void setMark(double mark);
     void clearMark();
 
+    void setMediaCursor(double mediaCursor);
+    double mediaCursor() const { return mMediaCursor; }
+
     DataPoint interpolateDataT(double t);
 
     int findIndexBelowT(double t);
@@ -251,6 +254,8 @@ private:
     double                mMarkEnd;
     bool                  mMarkActive;
 
+    double                mMediaCursor;
+
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
@@ -347,6 +352,7 @@ signals:
     void dataChanged();
     void rangeChanged();
     void cursorChanged();
+    void mediaCursorChanged();
     void aeroChanged();
     void rotationChanged(double rotation);
     void databaseChanged();

@@ -531,7 +531,7 @@ void MainWindow::initSimulationView()
     // Set up notifications for simulation view
     connect(this, SIGNAL(dataChanged()),
             simulationView, SLOT(updateView()));
-    connect(this, SIGNAL(cursorChanged()),
+    connect(this, SIGNAL(mediaCursorChanged()),
             simulationView, SLOT(updateView()));
 
     connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
@@ -1537,6 +1537,14 @@ void MainWindow::clearMark()
     emit cursorChanged();
 }
 
+void MainWindow::setMediaCursor(
+        double mediaCursor)
+{
+    mMediaCursor = mediaCursor;
+
+    emit mediaCursorChanged();
+}
+
 void MainWindow::initRange(
         QString trackName)
 {
@@ -2041,7 +2049,7 @@ void MainWindow::on_actionImportVideo_triggered()
         // Set up notifications for video view
         connect(this, SIGNAL(dataChanged()),
                 videoView, SLOT(updateView()));
-        connect(this, SIGNAL(cursorChanged()),
+        connect(this, SIGNAL(mediaCursorChanged()),
                 videoView, SLOT(updateView()));
 
         // Associate view with this file

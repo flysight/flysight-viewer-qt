@@ -244,7 +244,7 @@ void SimulationView::timeChanged(int position)
     ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
 
     // Update other views
-    mMainWindow->setMark(time);
+    mMainWindow->setMediaCursor(time);
 
     mBusy = false;
 }
@@ -282,22 +282,20 @@ void SimulationView::setScrubPosition(int position)
 
 void SimulationView::updateView()
 {
-    if (!mBusy && mMainWindow->markActive())
+    if (mBusy) return;
+
+    // Get media cursor
+    const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+    const DataPoint &dp0 = mMainWindow->data()[0];
+
+    // Get playback position
+    int position = (dp.t - dp0.t) * 1000;
+
+    // If playback position is within video bounds
+    if (0 <= position && position <= mPlayer->length())
     {
-        const DataPoint &dp0 = mMainWindow->data()[0];
-
-        // Get marked point
-        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
-
-        // Get playback position
-        int position = (dpEnd.t - dp0.t) * 1000;
-
-        // If playback position is within video bounds
-        if (0 <= position && position <= mPlayer->length())
-        {
-            // Update video position
-            mPlayer->setTime(position);
-            timeChanged(position);
-        }
+        // Update video position
+        mPlayer->setTime(position);
+        timeChanged(position);
     }
 }
