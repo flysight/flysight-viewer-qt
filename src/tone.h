@@ -68,6 +68,8 @@ private:
     uint8_t  mFlags;
     uint8_t  mHold;
 
+    uint32_t mWavSamples;
+
     uint16_t mToneTimer;
     uint16_t mPhase;
     uint8_t  mSampleCount;

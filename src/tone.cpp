@@ -189,7 +189,9 @@ void Tone::readFile(uint16_t size)
     uint16_t i;
     uint8_t  val;
 
+    size = MIN(size, mWavSamples);
     br = mFile.read((char *) &mBuffer[mWrite % TONE_BUFFER_LEN], size);
+    mWavSamples -= br;
 
     for (i = 0; i < br; ++i)
     {
@@ -200,7 +202,7 @@ void Tone::readFile(uint16_t size)
 
     mWrite += br;
 
-    if (br != size)
+    if (mWavSamples == 0)
     {
         mFlags &= ~TONE_FLAGS_LOAD;
     }
@@ -334,6 +336,9 @@ void Tone::play(QString filename)
 
         if (mFile.open(QIODevice::ReadOnly))
         {
+            mFile.seek(40);
+            mFile.read((char *) &mWavSamples, sizeof(mWavSamples));
+
             mFile.seek(44);
 
             start(TONE_MODE_WAV);
