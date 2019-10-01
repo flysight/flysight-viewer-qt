@@ -130,7 +130,7 @@ uint8_t Tone::sample()
 
 void Tone::update()
 {
-    if (!mHold && 0x10000 - mToneTimer < mRate)
+    if (!mHold && 0x10000 - mToneTimer <= mRate)
     {
         mFlags |= TONE_FLAGS_BEEP;
     }
