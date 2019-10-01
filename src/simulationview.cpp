@@ -222,9 +222,8 @@ void SimulationView::on_processButton_clicked()
     qint64 msNextSample = dpStart.dateTime.msecsTo(dpNext.dateTime);
     qint64 msNextTick = 0;
 
-    QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QFile file(desktop + "/temp.wav");
-    file.open(QIODevice::ReadWrite);
+    mAudioFile.open();
+    mAudioFile.resize(0);
 
     const unsigned char header[] =
     {
@@ -242,17 +241,17 @@ void SimulationView::on_processButton_clicked()
         0x64, 0x61, 0x74, 0x61  // Subchunk2ID = "data"
     };
 
-    file.write((const char *) header, 40);
+    mAudioFile.write((const char *) header, 40);
 
     uint32_t numSamples32 = (uint32_t) numSamples;
-    file.write((char *) &numSamples32, 4);
+    mAudioFile.write((char *) &numSamples32, 4);
 
     for (qint64 s = 0; s < numSamples; ++s)
     {
         qint64 ms = s * 256 / 8000;
 
         uint8_t sample = mTone.sample();
-        file.write((char *) &sample, 1);
+        mAudioFile.write((char *) &sample, 1);
 
         if (ms >= msNextSample)
         {
@@ -276,9 +275,9 @@ void SimulationView::on_processButton_clicked()
         ui->progressBar->setValue(static_cast<int>(100 * (s + 1) / numSamples));
     }
 
-    file.close();
+    mAudioFile.close();
 
-    setMedia(desktop + "/temp.wav");
+    setMedia(mAudioFile.fileName());
 }
 
 void SimulationView::setMedia(const QString &fileName)

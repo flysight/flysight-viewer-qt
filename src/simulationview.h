@@ -1,6 +1,7 @@
 #ifndef SIMULATIONVIEW_H
 #define SIMULATIONVIEW_H
 
+#include <QTemporaryFile>
 #include <QWidget>
 
 #include "config.h"
@@ -48,6 +49,8 @@ private:
     VlcMediaPlayer     *mPlayer;
 
     bool               mBusy;
+
+    QTemporaryFile     mAudioFile;
 
     void setMedia(const QString &fileName);
 
