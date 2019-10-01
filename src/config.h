@@ -85,6 +85,8 @@ public:
     QList< UBX_window_t > UBX_windows;
 
     int32_t   UBX_dz_elev;
+
+    QString   mAudioFolder;
 };
 
 #endif // CONFIGURATION_H

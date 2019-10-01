@@ -52,6 +52,8 @@ void Config::reset()
     UBX_windows.clear();
 
     UBX_dz_elev       = 0;
+
+    mAudioFolder      = QString(":/audio");
 }
 
 void Config::readSingle(
@@ -60,11 +62,7 @@ void Config::readSingle(
     int first = 0;
 
     QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        QMessageBox::critical(0, QT_TR_NOOP("Import failed"), QT_TR_NOOP("Couldn't read file"));
-        return;
-    }
+    if (!file.open(QIODevice::ReadOnly)) return;
 
     while (!file.atEnd())
     {

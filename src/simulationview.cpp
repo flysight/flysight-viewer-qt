@@ -24,10 +24,27 @@ SimulationView::SimulationView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Initialize configuration file name
+    // Initialize file names
     QSettings settings("FlySight", "Viewer");
-    QString fileName = settings.value("configFolder").toString();
-    ui->fileName->setText(fileName);
+    QString fileName = settings.value("rootConfig").toString();
+    ui->rootFileName->setText(fileName);
+
+    fileName = settings.value("selectedConfig").toString();
+    ui->selectedFileName->setText(fileName);
+
+    fileName = settings.value("audioFolder").toString();
+    ui->audioFolderName->setText(fileName);
+
+    // Initialize check boxes
+    bool checked = settings.value("useSelectedConfig").toBool();
+    ui->selectedCheckBox->setChecked(checked);
+    ui->selectedFileName->setEnabled(checked);
+    ui->selectedBrowseButton->setEnabled(checked);
+
+    checked = settings.value("useAudioFolder").toBool();
+    ui->audioCheckBox->setChecked(checked);
+    ui->audioFolderName->setEnabled(checked);
+    ui->audioBrowseButton->setEnabled(checked);
 
     ui->playButton->setEnabled(false);
     ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -85,24 +102,82 @@ void SimulationView::hideEvent(
     mMainWindow->mediaCursorRemoveRef();
 }
 
-void SimulationView::on_browseButton_clicked()
+void SimulationView::on_rootBrowseButton_clicked()
 {
     // Initialize settings object
     QSettings settings("FlySight", "Viewer");
 
-    // Get last file read
-    QString rootFolder = settings.value("configFolder").toString();
-
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open configuration"), rootFolder);
+    // Get configuration file name
+    QString settingsPath = settings.value("rootConfig").toString();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open configuration"), settingsPath);
 
     if (!fileName.isEmpty())
     {
         // Update file name
-        ui->fileName->setText(fileName);
+        ui->rootFileName->setText(fileName);
 
         // Remember last file read
-        settings.setValue("configFolder", QFileInfo(fileName).absoluteFilePath());
+        settings.setValue("rootConfig", QFileInfo(fileName).absoluteFilePath());
     }
+}
+
+void SimulationView::on_selectedBrowseButton_clicked()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get configuration file name
+    QString settingsPath = settings.value("selectedConfig").toString();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open configuration"), settingsPath);
+
+    if (!fileName.isEmpty())
+    {
+        // Update file name
+        ui->selectedFileName->setText(fileName);
+
+        // Remember last file read
+        settings.setValue("selectedConfig", QFileInfo(fileName).absoluteFilePath());
+    }
+}
+
+void SimulationView::on_audioBrowseButton_clicked()
+{
+    // Initialize settings object
+    QSettings settings("FlySight", "Viewer");
+
+    // Get audio folder name
+    QString settingsPath = settings.value("audioFolder").toString();
+    QString dirName = QFileDialog::getExistingDirectory(this, tr("Open audio folder"), settingsPath);
+
+    if (!dirName.isEmpty())
+    {
+        // Update file name
+        ui->audioFolderName->setText(dirName);
+
+        // Remember last file read
+        settings.setValue("audioFolder", QFileInfo(dirName).absoluteFilePath());
+    }
+}
+
+void SimulationView::on_selectedCheckBox_stateChanged(int state)
+{
+    const bool checked = state == Qt::Checked;
+
+    ui->selectedFileName->setEnabled(checked);
+    ui->selectedBrowseButton->setEnabled(checked);
+
+    QSettings settings("FlySight", "Viewer");
+    settings.setValue("useSelectedConfig", checked);
+}
+
+void SimulationView::on_audioCheckBox_stateChanged(int state)
+{
+    const bool checked = state == Qt::Checked;
+    ui->audioFolderName->setEnabled(checked);
+    ui->audioBrowseButton->setEnabled(checked);
+
+    QSettings settings("FlySight", "Viewer");
+    settings.setValue("useAudioFolder", checked);
 }
 
 void SimulationView::on_processButton_clicked()
@@ -110,13 +185,21 @@ void SimulationView::on_processButton_clicked()
     // Reset configuration
     mConfig.reset();
 
-    // Get file name
-    QString fileName = ui->fileName->text();
+    // Read root configuration
+    QString fileName = ui->rootFileName->text();
+    mConfig.readSingle(fileName);
 
-    if (!fileName.isEmpty())
+    // Read selected configuration
+    if (ui->selectedCheckBox->isChecked())
     {
-        // Read the file
+        QString fileName = ui->selectedFileName->text();
         mConfig.readSingle(fileName);
+    }
+
+    // Copy audio folder name
+    if (ui->audioCheckBox->isChecked())
+    {
+        mConfig.mAudioFolder = ui->audioFolderName->text();
     }
 
     // Reset the simulation

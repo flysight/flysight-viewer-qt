@@ -330,7 +330,7 @@ void Tone::play(QString filename)
     {
         stop();
 
-        mFile.setFileName(QString(":/audio/") + filename);
+        mFile.setFileName(mConfig.mAudioFolder + QString("/") + filename);
 
         if (mFile.open(QIODevice::ReadOnly))
         {

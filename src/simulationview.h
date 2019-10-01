@@ -57,7 +57,13 @@ public slots:
     void pauseMedia();
 
 private slots:
-    void on_browseButton_clicked();
+    void on_rootBrowseButton_clicked();
+    void on_selectedBrowseButton_clicked();
+    void on_audioBrowseButton_clicked();
+
+    void on_selectedCheckBox_stateChanged(int state);
+    void on_audioCheckBox_stateChanged(int state);
+
     void on_processButton_clicked();
 
     void stateChanged();
