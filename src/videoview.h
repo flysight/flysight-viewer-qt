@@ -67,6 +67,7 @@ private:
 public slots:
     void play();
     void updateView();
+    void pauseMedia();
     void zero();
 
 private slots:

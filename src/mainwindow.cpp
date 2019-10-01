@@ -536,6 +536,8 @@ void MainWindow::initSimulationView()
             simulationView, SLOT(updateView()));
     connect(this, SIGNAL(mediaCursorChanged()),
             simulationView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaPaused()),
+            simulationView, SLOT(pauseMedia()));
 
     connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
@@ -1562,6 +1564,12 @@ void MainWindow::mediaCursorRemoveRef()
     emit mediaCursorChanged();
 }
 
+
+void MainWindow::pauseMedia()
+{
+    emit mediaPaused();
+}
+
 void MainWindow::initRange(
         QString trackName)
 {
@@ -2068,6 +2076,8 @@ void MainWindow::on_actionImportVideo_triggered()
                 videoView, SLOT(updateView()));
         connect(this, SIGNAL(mediaCursorChanged()),
                 videoView, SLOT(updateView()));
+        connect(this, SIGNAL(mediaPaused()),
+                videoView, SLOT(pauseMedia()));
 
         // Associate view with this file
         videoView->setMedia(fileName);

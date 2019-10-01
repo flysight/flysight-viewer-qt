@@ -218,6 +218,7 @@ void SimulationView::play()
         mPlayer->pause();
         break;
     default:
+        mMainWindow->pauseMedia();
         mPlayer->play();
         break;
     }
@@ -310,4 +311,9 @@ void SimulationView::updateView()
         mPlayer->setTime(position);
         timeChanged(position);
     }
+}
+
+void SimulationView::pauseMedia()
+{
+    mPlayer->pause();
 }

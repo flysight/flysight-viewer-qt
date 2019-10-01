@@ -120,6 +120,8 @@ public:
     void mediaCursorRemoveRef();
     int mediaCursorRef() const { return mMediaCursorRef; }
 
+    void pauseMedia();
+
     DataPoint interpolateDataT(double t);
 
     int findIndexBelowT(double t);
@@ -358,6 +360,7 @@ signals:
     void rangeChanged();
     void cursorChanged();
     void mediaCursorChanged();
+    void mediaPaused();
     void aeroChanged();
     void rotationChanged(double rotation);
     void databaseChanged();

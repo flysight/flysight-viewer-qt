@@ -54,6 +54,7 @@ private:
 public slots:
     void play();
     void updateView();
+    void pauseMedia();
 
 private slots:
     void on_browseButton_clicked();

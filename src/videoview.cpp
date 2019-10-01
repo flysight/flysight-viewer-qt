@@ -120,6 +120,7 @@ void VideoView::play()
         mPlayer->pause();
         break;
     default:
+        mMainWindow->pauseMedia();
         mPlayer->play();
         break;
     }
@@ -213,4 +214,9 @@ void VideoView::updateView()
         mPlayer->setTime(position);
         timeChanged(position);
     }
+}
+
+void VideoView::pauseMedia()
+{
+    mPlayer->pause();
 }
