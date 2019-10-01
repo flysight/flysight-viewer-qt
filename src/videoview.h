@@ -49,6 +49,10 @@ public:
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
     void setMedia(const QString &fileName);
 
+protected:
+    void showEvent(QShowEvent *event);
+    void hideEvent(QHideEvent *event);
+
 private:
     Ui::VideoView  *ui;
     MainWindow     *mMainWindow;

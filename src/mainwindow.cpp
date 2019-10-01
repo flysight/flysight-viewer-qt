@@ -73,6 +73,7 @@ MainWindow::MainWindow(
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     mMarkActive(false),
+    mMediaCursorRef(0),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
     mWindowMode(Actual),
@@ -1543,6 +1544,20 @@ void MainWindow::setMediaCursor(
         double mediaCursor)
 {
     mMediaCursor = mediaCursor;
+
+    emit mediaCursorChanged();
+}
+
+void MainWindow::mediaCursorAddRef()
+{
+    ++mMediaCursorRef;
+
+    emit mediaCursorChanged();
+}
+
+void MainWindow::mediaCursorRemoveRef()
+{
+    --mMediaCursorRef;
 
     emit mediaCursorChanged();
 }

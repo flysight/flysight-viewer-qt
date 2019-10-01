@@ -100,6 +100,18 @@ void VideoView::setMedia(const QString &fileName)
     ui->scrubDial->setEnabled(true);
 }
 
+void VideoView::showEvent(
+        QShowEvent *event)
+{
+    mMainWindow->mediaCursorAddRef();
+}
+
+void VideoView::hideEvent(
+        QHideEvent *event)
+{
+    mMainWindow->mediaCursorRemoveRef();
+}
+
 void VideoView::play()
 {
     switch(mPlayer->state())

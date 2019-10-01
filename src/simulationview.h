@@ -31,6 +31,10 @@ public:
 
     const Config &config() const { return mConfig; }
 
+protected:
+    void showEvent(QShowEvent *event);
+    void hideEvent(QHideEvent *event);
+
 private:
     Ui::SimulationView *ui;
     MainWindow         *mMainWindow;

@@ -665,7 +665,7 @@ void DataPlot::updateCursor()
         }
     }
 
-    if (true)
+    if (mMainWindow->mediaCursorRef() > 0)
     {
         // Draw marks
         const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());

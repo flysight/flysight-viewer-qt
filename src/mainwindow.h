@@ -116,6 +116,10 @@ public:
     void setMediaCursor(double mediaCursor);
     double mediaCursor() const { return mMediaCursor; }
 
+    void mediaCursorAddRef();
+    void mediaCursorRemoveRef();
+    int mediaCursorRef() const { return mMediaCursorRef; }
+
     DataPoint interpolateDataT(double t);
 
     int findIndexBelowT(double t);
@@ -255,6 +259,7 @@ private:
     bool                  mMarkActive;
 
     double                mMediaCursor;
+    int                   mMediaCursorRef;
 
     double                m_viewDataRotation;
 

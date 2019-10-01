@@ -73,6 +73,18 @@ void SimulationView::setMainWindow(
     mMainWindow = mainWindow;
 }
 
+void SimulationView::showEvent(
+        QShowEvent *event)
+{
+    mMainWindow->mediaCursorAddRef();
+}
+
+void SimulationView::hideEvent(
+        QHideEvent *event)
+{
+    mMainWindow->mediaCursorRemoveRef();
+}
+
 void SimulationView::on_browseButton_clicked()
 {
     // Initialize settings object
