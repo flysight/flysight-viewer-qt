@@ -1,6 +1,7 @@
 #include "simulationview.h"
 #include "ui_simulationview.h"
 
+#include <QDir>
 #include <QFile>
 #include <QFileDialog>
 #include <QSettings>
@@ -20,7 +21,8 @@ SimulationView::SimulationView(QWidget *parent) :
     mTone(mConfig),
     mUBX(mConfig, mTone),
     mMedia(0),
-    mBusy(false)
+    mBusy(false),
+    mAudioFile(QDir::temp().absoluteFilePath("FlySightViewer-XXXXXX.wav"))
 {
     ui->setupUi(this);
 
@@ -68,6 +70,10 @@ SimulationView::SimulationView(QWidget *parent) :
     connect(mPlayer, SIGNAL(stateChanged()), this, SLOT(stateChanged()));
     connect(mPlayer, SIGNAL(timeChanged(int)), this, SLOT(timeChanged(int)));
     connect(mPlayer, SIGNAL(lengthChanged(int)), this, SLOT(lengthChanged(int)));
+
+    mAudioFile.open();
+    mAudioFile.close();
+    ui->outputFileName->setText(mAudioFile.fileName());
 }
 
 SimulationView::~SimulationView()
