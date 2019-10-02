@@ -368,7 +368,10 @@ void UBX::speakValue(UBX_saved_t *current)
     case 4: // Total speed
         UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, (current->speed * 1024) / speed_mul, 2, 1, 0);
         break;
-    case 5: // Altitude
+    case 11: // Dive angle
+        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, 100 * atan2(current->velD, current->gSpeed) / M_PI * 180, 2, 1, 0);
+        break;
+    case 12: // Altitude
         if (mConfig.UBX_speech[UBX_cur_speech].units == UBX_UNITS_KMH)
         {
             step_size = 10000 * mConfig.UBX_speech[UBX_cur_speech].decimals;
@@ -382,9 +385,6 @@ void UBX::speakValue(UBX_saved_t *current)
         UBX_speech_ptr = numberToSpeech(step * mConfig.UBX_speech[UBX_cur_speech].decimals, UBX_speech_ptr);
         end_ptr = UBX_speech_ptr;
         UBX_speech_ptr = UBX_speech_buf + 2;
-        break;
-    case 11: // Dive angle
-        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, 100 * atan2(current->velD, current->gSpeed) / M_PI * 180, 2, 1, 0);
         break;
     }
 
@@ -412,8 +412,9 @@ void UBX::speakValue(UBX_saved_t *current)
     case 2: // Glide ratio
     case 3: // Inverse glide ratio
     case 4: // Total speed
+    case 11: // Dive angle
         break;
-    case 5: // Altitude
+    case 12: // Altitude
         *(end_ptr++) = (mConfig.UBX_speech[UBX_cur_speech].units == UBX_UNITS_KMH) ? 'm' : 'f';
         break;
     }
@@ -739,11 +740,11 @@ void UBX::task()
                     case 4:
                         mTone.play("speed.wav");
                         break;
-                    case 5:
-                        mTone.play("alt.wav");
-                        break;
                     case 11:
                         mTone.play("dive.wav");
+                        break;
+                    case 12:
+                        mTone.play("alt.wav");
                         break;
                 }
             }
