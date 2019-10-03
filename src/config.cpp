@@ -10,11 +10,6 @@
 
 Config::Config()
 {
-    reset();
-}
-
-void Config::reset()
-{
     Tone_volume       = 2;
     Tone_sp_volume    = 0;
 

@@ -22,8 +22,6 @@ class Tone
 public:
     Tone(const Config &config);
 
-    void reset();
-
     uint8_t sample();
 
     void init();

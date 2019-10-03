@@ -12,7 +12,6 @@ class UBX
 public:
     UBX(const Config &config, Tone &tone);
 
-    void reset();
     void receiveMessage(const DataPoint &dp);
     void task();
 

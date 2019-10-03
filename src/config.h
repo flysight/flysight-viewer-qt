@@ -22,7 +22,6 @@ class Config
 public:
     Config();
 
-    void reset();
     void readSingle(QString fileName);
 
     typedef struct

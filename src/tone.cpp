@@ -59,11 +59,6 @@ const uint8_t Tone::mSineTable[] =
 Tone::Tone(const Config &config):
     mConfig(config)
 {
-
-}
-
-void Tone::reset()
-{
     mState = TONE_STATE_IDLE;
 
     mNextIndex = 0;

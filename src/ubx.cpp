@@ -30,11 +30,6 @@ UBX::UBX(
     mConfig(config),
     mTone(tone)
 {
-
-}
-
-void UBX::reset()
-{
     mCurSpeech = 0;
 
     mSpCounter = 0;

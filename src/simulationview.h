@@ -30,8 +30,6 @@ public:
 
     void setMainWindow(MainWindow *mainWindow);
 
-    const Config &config() const { return mConfig; }
-
 protected:
     void showEvent(QShowEvent *event);
     void hideEvent(QHideEvent *event);
@@ -39,10 +37,6 @@ protected:
 private:
     Ui::SimulationView *ui;
     MainWindow         *mMainWindow;
-
-    Config             mConfig;
-    Tone               mTone;
-    UBX                mUBX;
 
     VlcInstance        *mInstance;
     VlcMedia           *mMedia;

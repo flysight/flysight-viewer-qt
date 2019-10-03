@@ -18,8 +18,6 @@ SimulationView::SimulationView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SimulationView),
     mMainWindow(0),
-    mTone(mConfig),
-    mUBX(mConfig, mTone),
     mMedia(0),
     mBusy(false),
     mAudioFile(QDir::temp().absoluteFilePath("FlySightViewer-XXXXXX.wav"))
@@ -188,29 +186,26 @@ void SimulationView::on_audioCheckBox_stateChanged(int state)
 
 void SimulationView::on_processButton_clicked()
 {
-    // Reset configuration
-    mConfig.reset();
+    Config config;
+    Tone   tone(config);
+    UBX    ubx(config, tone);
 
     // Read root configuration
     QString fileName = ui->rootFileName->text();
-    mConfig.readSingle(fileName);
+    config.readSingle(fileName);
 
     // Read selected configuration
     if (ui->selectedCheckBox->isChecked())
     {
         QString fileName = ui->selectedFileName->text();
-        mConfig.readSingle(fileName);
+        config.readSingle(fileName);
     }
 
     // Copy audio folder name
     if (ui->audioCheckBox->isChecked())
     {
-        mConfig.mAudioFolder = ui->audioFolderName->text();
+        config.mAudioFolder = ui->audioFolderName->text();
     }
-
-    // Reset the simulation
-    mTone.reset();
-    mUBX.reset();
 
     // Return now if there's no data
     if (mMainWindow->dataSize() == 0) return;
@@ -256,12 +251,12 @@ void SimulationView::on_processButton_clicked()
     {
         qint64 ms = s * 256 / 8000;
 
-        uint8_t sample = mTone.sample();
+        uint8_t sample = tone.sample();
         mAudioFile.write((char *) &sample, 1);
 
         if (ms >= msNextSample)
         {
-            mUBX.receiveMessage(dpNext);
+            ubx.receiveMessage(dpNext);
 
             dpNext = mMainWindow->dataPoint(++iNextSample);
             msNextSample = dpStart.dateTime.msecsTo(dpNext.dateTime);
@@ -269,10 +264,10 @@ void SimulationView::on_processButton_clicked()
 
         if (ms >= msNextTick)
         {
-            mTone.update();
+            tone.update();
 
-            mUBX.task();
-            mTone.task();
+            ubx.task();
+            tone.task();
 
             ++msNextTick;
         }
