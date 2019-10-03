@@ -17,7 +17,7 @@
 #define UBX_SAY_ALTITUDE    0x04
 #define UBX_VERTICAL_ACC    0x08
 
-const uint16_t UBX::UBX_sas_table[12] =
+const uint16_t UBX::mSasTable[12] =
 {
     1024, 1077, 1135, 1197,
     1265, 1338, 1418, 1505,
@@ -35,21 +35,21 @@ UBX::UBX(
 
 void UBX::reset()
 {
-    UBX_cur_speech = 0;
+    mCurSpeech = 0;
 
-    UBX_sp_counter = 0;
+    mSpCounter = 0;
 
-    UBX_flags = 0;
-    UBX_prev_flags = 0;
+    mFlags = 0;
+    mPrevFlags = 0;
 
-    UBX_suppress_tone = 0;
+    mSuppressTone = 0;
 
-    UBX_speech_buf[0] = '\0';
-    UBX_speech_ptr = UBX_speech_buf;
+    mSpeechBuf[0] = '\0';
+    mSpeechPtr = mSpeechBuf;
 
-    UBX_flags = UBX_FIRST_FIX;
+    mFlags = UBX_FIRST_FIX;
 
-    UBX_x0 = UBX_INVALID_VALUE;
+    mVal[0] = UBX_INVALID_VALUE;
 }
 
 char *UBX::writeInt32ToBuf(
@@ -190,19 +190,19 @@ void UBX::getValues(
     {
         if (current->hMSL < 0)
         {
-            speed_mul = UBX_sas_table[0];
+            speed_mul = mSasTable[0];
         }
         else if (current->hMSL >= 11534336L)
         {
-            speed_mul = UBX_sas_table[11];
+            speed_mul = mSasTable[11];
         }
         else
         {
             int32_t h = current->hMSL / 1024	;
             uint16_t i = h / 1024;
             uint16_t j = h % 1024;
-            uint16_t y1 = UBX_sas_table[i];
-            uint16_t y2 = UBX_sas_table[i + 1];
+            uint16_t y1 = mSasTable[i];
+            uint16_t y2 = mSasTable[i + 1];
             speed_mul = y1 + ((y2 - y1) * j) / 1024;
         }
     }
@@ -307,24 +307,24 @@ void UBX::speakValue(UBX_saved_t *current)
     {
         if (current->hMSL < 0)
         {
-            speed_mul = UBX_sas_table[0];
+            speed_mul = mSasTable[0];
         }
         else if (current->hMSL >= 11534336L)
         {
-            speed_mul = UBX_sas_table[11];
+            speed_mul = mSasTable[11];
         }
         else
         {
             int32_t h = current->hMSL / 1024	;
             uint16_t i = h / 1024;
             uint16_t j = h % 1024;
-            uint16_t y1 = UBX_sas_table[i];
-            uint16_t y2 = UBX_sas_table[i + 1];
+            uint16_t y1 = mSasTable[i];
+            uint16_t y2 = mSasTable[i + 1];
             speed_mul = y1 + ((y2 - y1) * j) / 1024;
         }
     }
 
-    switch (mConfig.UBX_speech[UBX_cur_speech].units)
+    switch (mConfig.UBX_speech[mCurSpeech].units)
     {
     case UBX_UNITS_KMH:
         speed_mul = (uint16_t) (((uint32_t) speed_mul * 18204) / 65536);
@@ -336,76 +336,76 @@ void UBX::speakValue(UBX_saved_t *current)
 
     // Step 0: Initialize speech pointers, leaving room at the end for one unit character
 
-    UBX_speech_ptr = UBX_speech_buf + sizeof(UBX_speech_buf) - 1;
-    end_ptr = UBX_speech_ptr;
+    mSpeechPtr = mSpeechBuf + sizeof(mSpeechBuf) - 1;
+    end_ptr = mSpeechPtr;
 
     // Step 1: Get speech value with 2 decimal places
 
-    switch (mConfig.UBX_speech[UBX_cur_speech].mode)
+    switch (mConfig.UBX_speech[mCurSpeech].mode)
     {
     case 0: // Horizontal speed
-        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, (current->gSpeed * 1024) / speed_mul, 2, 1, 0);
+        mSpeechPtr = writeInt32ToBuf(mSpeechPtr, (current->gSpeed * 1024) / speed_mul, 2, 1, 0);
         break;
     case 1: // Vertical speed
-        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, (current->velD * 1024) / speed_mul, 2, 1, 0);
+        mSpeechPtr = writeInt32ToBuf(mSpeechPtr, (current->velD * 1024) / speed_mul, 2, 1, 0);
         break;
     case 2: // Glide ratio
         if (current->velD != 0)
         {
-            UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, 100 * (int32_t) current->gSpeed / current->velD, 2, 1, 0);
+            mSpeechPtr = writeInt32ToBuf(mSpeechPtr, 100 * (int32_t) current->gSpeed / current->velD, 2, 1, 0);
         }
         break;
     case 3: // Inverse glide ratio
         if (current->gSpeed != 0)
         {
-            UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, 100 * (int32_t) current->velD / current->gSpeed, 2, 1, 0);
+            mSpeechPtr = writeInt32ToBuf(mSpeechPtr, 100 * (int32_t) current->velD / current->gSpeed, 2, 1, 0);
         }
         else
         {
-            *(--UBX_speech_ptr) = 0;
+            *(--mSpeechPtr) = 0;
         }
         break;
     case 4: // Total speed
-        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, (current->speed * 1024) / speed_mul, 2, 1, 0);
+        mSpeechPtr = writeInt32ToBuf(mSpeechPtr, (current->speed * 1024) / speed_mul, 2, 1, 0);
         break;
     case 11: // Dive angle
-        UBX_speech_ptr = writeInt32ToBuf(UBX_speech_ptr, 100 * atan2(current->velD, current->gSpeed) / M_PI * 180, 2, 1, 0);
+        mSpeechPtr = writeInt32ToBuf(mSpeechPtr, 100 * atan2(current->velD, current->gSpeed) / M_PI * 180, 2, 1, 0);
         break;
     case 12: // Altitude
-        if (mConfig.UBX_speech[UBX_cur_speech].units == UBX_UNITS_KMH)
+        if (mConfig.UBX_speech[mCurSpeech].units == UBX_UNITS_KMH)
         {
-            step_size = 10000 * mConfig.UBX_speech[UBX_cur_speech].decimals;
+            step_size = 10000 * mConfig.UBX_speech[mCurSpeech].decimals;
         }
         else
         {
-            step_size = 3048 * mConfig.UBX_speech[UBX_cur_speech].decimals;
+            step_size = 3048 * mConfig.UBX_speech[mCurSpeech].decimals;
         }
         step = ((current->hMSL - mConfig.UBX_dz_elev) * 10 + step_size / 2) / step_size;
-        UBX_speech_ptr = UBX_speech_buf + 2;
-        UBX_speech_ptr = numberToSpeech(step * mConfig.UBX_speech[UBX_cur_speech].decimals, UBX_speech_ptr);
-        end_ptr = UBX_speech_ptr;
-        UBX_speech_ptr = UBX_speech_buf + 2;
+        mSpeechPtr = mSpeechBuf + 2;
+        mSpeechPtr = numberToSpeech(step * mConfig.UBX_speech[mCurSpeech].decimals, mSpeechPtr);
+        end_ptr = mSpeechPtr;
+        mSpeechPtr = mSpeechBuf + 2;
         break;
     }
 
     // Step 1.5: Include label
     if (mConfig.UBX_speech.length() > 1)
     {
-        *(--UBX_speech_ptr) = mConfig.UBX_speech[UBX_cur_speech].mode + 1;
-        *(--UBX_speech_ptr) = '>';
+        *(--mSpeechPtr) = mConfig.UBX_speech[mCurSpeech].mode + 1;
+        *(--mSpeechPtr) = '>';
     }
 
     // Step 2: Truncate to the desired number of decimal places
 
-    if (mConfig.UBX_speech[UBX_cur_speech].mode != 5)
+    if (mConfig.UBX_speech[mCurSpeech].mode != 5)
     {
-        if (mConfig.UBX_speech[UBX_cur_speech].decimals == 0) end_ptr -= 4;
-        else end_ptr -= 3 - mConfig.UBX_speech[UBX_cur_speech].decimals;
+        if (mConfig.UBX_speech[mCurSpeech].decimals == 0) end_ptr -= 4;
+        else end_ptr -= 3 - mConfig.UBX_speech[mCurSpeech].decimals;
     }
 
     // Step 3: Add units if needed, e.g., *(end_ptr++) = 'k';
 
-    switch (mConfig.UBX_speech[UBX_cur_speech].mode)
+    switch (mConfig.UBX_speech[mCurSpeech].mode)
     {
     case 0: // Horizontal speed
     case 1: // Vertical speed
@@ -415,7 +415,7 @@ void UBX::speakValue(UBX_saved_t *current)
     case 11: // Dive angle
         break;
     case 12: // Altitude
-        *(end_ptr++) = (mConfig.UBX_speech[UBX_cur_speech].units == UBX_UNITS_KMH) ? 'm' : 'f';
+        *(end_ptr++) = (mConfig.UBX_speech[mCurSpeech].units == UBX_UNITS_KMH) ? 'm' : 'f';
         break;
     }
 
@@ -477,19 +477,19 @@ void UBX::updateAlarms(UBX_saved_t *current)
         }
     }
 
-    if (suppress_tone && !UBX_suppress_tone)
+    if (suppress_tone && !mSuppressTone)
     {
-        *UBX_speech_ptr = 0;
+        *mSpeechPtr = 0;
         mTone.setRate(0);
         mTone.stop();
     }
 
-    UBX_suppress_tone = suppress_tone;
+    mSuppressTone = suppress_tone;
 
-    if (UBX_prev_flags & UBX_HAS_FIX)
+    if (mPrevFlags & UBX_HAS_FIX)
     {
-        int32_t min = MIN(UBX_prevHMSL, current->hMSL);
-        int32_t max = MAX(UBX_prevHMSL, current->hMSL);
+        int32_t min = MIN(mPrevHMSL, current->hMSL);
+        int32_t max = MAX(mPrevHMSL, current->hMSL);
 
         for (i = 0; i < mConfig.UBX_alarms.length(); ++i)
         {
@@ -513,27 +513,27 @@ void UBX::updateAlarms(UBX_saved_t *current)
                     break;
                 }
 
-                *UBX_speech_ptr = 0;
+                *mSpeechPtr = 0;
                 break;
             }
         }
 
         if ((mConfig.UBX_alt_step > 0) &&
             (i == mConfig.UBX_alarms.length()) &&
-            (UBX_prevHMSL - mConfig.UBX_dz_elev >= UBX_ALT_MIN * 1000) &&
-            (*UBX_speech_ptr == 0) &&
-            !(UBX_flags & UBX_SAY_ALTITUDE) &&
+            (mPrevHMSL - mConfig.UBX_dz_elev >= UBX_ALT_MIN * 1000) &&
+            (*mSpeechPtr == 0) &&
+            !(mFlags & UBX_SAY_ALTITUDE) &&
             !suppress_alt)
         {
             if ((step_elev >= min && step_elev < max) &&
                 ABS(current->velD) >= mConfig.UBX_threshold &&
                 current->gSpeed >= mConfig.UBX_hThreshold)
             {
-                UBX_speech_ptr = UBX_speech_buf;
-                UBX_speech_ptr = numberToSpeech(step * mConfig.UBX_alt_step, UBX_speech_ptr);
-                *(UBX_speech_ptr++) = (mConfig.UBX_alt_units == UBX_UNITS_METERS) ? 'm' : 'f';
-                *(UBX_speech_ptr++) = 0;
-                UBX_speech_ptr = UBX_speech_buf;
+                mSpeechPtr = mSpeechBuf;
+                mSpeechPtr = numberToSpeech(step * mConfig.UBX_alt_step, mSpeechPtr);
+                *(mSpeechPtr++) = (mConfig.UBX_alt_units == UBX_UNITS_METERS) ? 'm' : 'f';
+                *(mSpeechPtr++) = 0;
+                mSpeechPtr = mSpeechBuf;
             }
         }
     }
@@ -558,15 +558,15 @@ void UBX::updateTones(UBX_saved_t *current)
     }
     else if (mConfig.UBX_mode_2 == 9)
     {
-        UBX_x2 = UBX_x1;
-        UBX_x1 = UBX_x0;
-        UBX_x0 = val_1;
+        mVal[2] = mVal[1];
+        mVal[1] = mVal[0];
+        mVal[0] = val_1;
 
-        if (UBX_x0 != UBX_INVALID_VALUE &&
-            UBX_x1 != UBX_INVALID_VALUE &&
-            UBX_x2 != UBX_INVALID_VALUE)
+        if (mVal[0] != UBX_INVALID_VALUE &&
+            mVal[1] != UBX_INVALID_VALUE &&
+            mVal[2] != UBX_INVALID_VALUE)
         {
-            val_2 = (int32_t) 1000 * (UBX_x2 - UBX_x0) / (int32_t) (2 * mConfig.UBX_rate);
+            val_2 = (int32_t) 1000 * (mVal[2] - mVal[0]) / (int32_t) (2 * mConfig.UBX_rate);
             val_2 = (int32_t) 10000 * ABS(val_2) / ABS(max_1 - min_1);
         }
     }
@@ -575,7 +575,7 @@ void UBX::updateTones(UBX_saved_t *current)
         getValues(current, mConfig.UBX_mode_2, &val_2, &min_2, &max_2);
     }
 
-    if (!UBX_suppress_tone)
+    if (!mSuppressTone)
     {
         if (ABS(current->velD) >= mConfig.UBX_threshold &&
             current->gSpeed >= mConfig.UBX_hThreshold)
@@ -584,26 +584,26 @@ void UBX::updateTones(UBX_saved_t *current)
 
             if (mConfig.UBX_sp_rate != 0 &&
                 mConfig.UBX_speech.length() != 0 &&
-                UBX_sp_counter >= mConfig.UBX_sp_rate &&
-                (*UBX_speech_ptr == 0) &&
-                !(UBX_flags & UBX_SAY_ALTITUDE))
+                mSpCounter >= mConfig.UBX_sp_rate &&
+                (*mSpeechPtr == 0) &&
+                !(mFlags & UBX_SAY_ALTITUDE))
             {
                 for (i = 0; i < mConfig.UBX_speech.length(); ++i)
                 {
-                    if ((mConfig.UBX_speech[UBX_cur_speech].mode != 5) ||
+                    if ((mConfig.UBX_speech[mCurSpeech].mode != 5) ||
                         (current->hMSL - mConfig.UBX_dz_elev >= UBX_ALT_MIN * 1000))
                     {
                         speakValue(current);
-                        UBX_cur_speech = (UBX_cur_speech + 1) % mConfig.UBX_speech.length();
+                        mCurSpeech = (mCurSpeech + 1) % mConfig.UBX_speech.length();
                         break;
                     }
                     else
                     {
-                        UBX_cur_speech = (UBX_cur_speech + 1) % mConfig.UBX_speech.length();
+                        mCurSpeech = (mCurSpeech + 1) % mConfig.UBX_speech.length();
                     }
                 }
 
-                UBX_sp_counter = 0;
+                mSpCounter = 0;
             }
         }
         else
@@ -612,30 +612,30 @@ void UBX::updateTones(UBX_saved_t *current)
         }
     }
 
-    if (UBX_sp_counter < mConfig.UBX_sp_rate)
+    if (mSpCounter < mConfig.UBX_sp_rate)
     {
-        UBX_sp_counter += mConfig.UBX_rate;
+        mSpCounter += mConfig.UBX_rate;
     }
 }
 
 void UBX::receiveMessage(UBX_saved_t *current)
 {
-    UBX_flags |= UBX_HAS_FIX;
+    mFlags |= UBX_HAS_FIX;
 
     updateAlarms(current);
     updateTones(current);
 
     if (current->vAcc < 10000)
     {
-        UBX_flags |= UBX_VERTICAL_ACC;
+        mFlags |= UBX_VERTICAL_ACC;
     }
     else
     {
-        UBX_flags &= ~UBX_VERTICAL_ACC;
+        mFlags &= ~UBX_VERTICAL_ACC;
     }
 
-    UBX_prev_flags = UBX_flags;
-    UBX_prevHMSL = current->hMSL;
+    mPrevFlags = mFlags;
+    mPrevHMSL = current->hMSL;
 }
 
 void UBX::receiveMessage(
@@ -680,50 +680,50 @@ void UBX::receiveMessage(
 
 void UBX::task()
 {
-    if (*UBX_speech_ptr)
+    if (*mSpeechPtr)
     {
         if (mTone.isIdle())
         {
             mTone.hold();
 
-            if (*UBX_speech_ptr == '-')
+            if (*mSpeechPtr == '-')
             {
                 mTone.play("minus.wav");
             }
-            else if (*UBX_speech_ptr == '.')
+            else if (*mSpeechPtr == '.')
             {
                 mTone.play("dot.wav");
             }
-            else if (*UBX_speech_ptr == 'h')
+            else if (*mSpeechPtr == 'h')
             {
                 mTone.play("00.wav");
             }
-            else if (*UBX_speech_ptr == 'k')
+            else if (*mSpeechPtr == 'k')
             {
                 mTone.play("000.wav");
             }
-            else if (*UBX_speech_ptr == 'm')
+            else if (*mSpeechPtr == 'm')
             {
                 mTone.play("meters.wav");
             }
-            else if (*UBX_speech_ptr == 'f')
+            else if (*mSpeechPtr == 'f')
             {
                 mTone.play("feet.wav");
             }
-            else if (*UBX_speech_ptr == 't')
+            else if (*mSpeechPtr == 't')
             {
-                ++UBX_speech_ptr;
-                mTone.play(QString("1") + QString(*UBX_speech_ptr) + QString(".wav"));
+                ++mSpeechPtr;
+                mTone.play(QString("1") + QString(*mSpeechPtr) + QString(".wav"));
             }
-            else if (*UBX_speech_ptr == 'x')
+            else if (*mSpeechPtr == 'x')
             {
-                ++UBX_speech_ptr;
-                mTone.play(QString(*UBX_speech_ptr) + QString("0") + QString(".wav"));
+                ++mSpeechPtr;
+                mTone.play(QString(*mSpeechPtr) + QString("0") + QString(".wav"));
             }
-            else if (*UBX_speech_ptr == '>')
+            else if (*mSpeechPtr == '>')
             {
-                ++UBX_speech_ptr;
-                switch ((*UBX_speech_ptr) - 1)
+                ++mSpeechPtr;
+                switch ((*mSpeechPtr) - 1)
                 {
                     case 0:
                         mTone.play("horz.wav");
@@ -750,43 +750,43 @@ void UBX::task()
             }
             else
             {
-                mTone.play(QString(*UBX_speech_ptr) + QString(".wav"));
+                mTone.play(QString(*mSpeechPtr) + QString(".wav"));
             }
 
-            ++UBX_speech_ptr;
+            ++mSpeechPtr;
         }
     }
     else
     {
         mTone.release();
 
-        if ((UBX_flags & UBX_FIRST_FIX) && mTone.isIdle())
+        if ((mFlags & UBX_FIRST_FIX) && mTone.isIdle())
         {
-            UBX_flags &= ~UBX_FIRST_FIX;
+            mFlags &= ~UBX_FIRST_FIX;
             mTone.beep(TONE_MAX_PITCH - 1, 0, TONE_LENGTH_125_MS);
         }
 
-        if ((UBX_flags & UBX_SAY_ALTITUDE) &&
-            (UBX_flags & UBX_HAS_FIX) &&
-            (UBX_flags & UBX_VERTICAL_ACC) &&
+        if ((mFlags & UBX_SAY_ALTITUDE) &&
+            (mFlags & UBX_HAS_FIX) &&
+            (mFlags & UBX_VERTICAL_ACC) &&
             mTone.isIdle())
         {
-            UBX_flags &= ~UBX_SAY_ALTITUDE;
-            UBX_speech_ptr = UBX_speech_buf;
+            mFlags &= ~UBX_SAY_ALTITUDE;
+            mSpeechPtr = mSpeechBuf;
 
             if (mConfig.UBX_alt_units == UBX_UNITS_METERS)
             {
-                UBX_speech_ptr = numberToSpeech((UBX_prevHMSL - mConfig.UBX_dz_elev) / 1000, UBX_speech_ptr);
-                *(UBX_speech_ptr++) = 'm';
+                mSpeechPtr = numberToSpeech((mPrevHMSL - mConfig.UBX_dz_elev) / 1000, mSpeechPtr);
+                *(mSpeechPtr++) = 'm';
             }
             else
             {
-                UBX_speech_ptr = numberToSpeech((UBX_prevHMSL - mConfig.UBX_dz_elev) * 10 / 3048, UBX_speech_ptr);
-                *(UBX_speech_ptr++) = 'f';
+                mSpeechPtr = numberToSpeech((mPrevHMSL - mConfig.UBX_dz_elev) * 10 / 3048, mSpeechPtr);
+                *(mSpeechPtr++) = 'f';
             }
 
-            *(UBX_speech_ptr++) = 0;
-            UBX_speech_ptr = UBX_speech_buf;
+            *(mSpeechPtr++) = 0;
+            mSpeechPtr = mSpeechBuf;
         }
     }
 }

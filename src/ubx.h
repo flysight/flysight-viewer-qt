@@ -50,26 +50,23 @@ private:
     const Config &mConfig;
     Tone &mTone;
 
-    static const uint16_t UBX_sas_table[12];
+    uint8_t  mCurSpeech;
 
-    uint8_t  UBX_cur_speech;
+    uint16_t mSpCounter;
 
-    uint16_t UBX_sp_counter;
+    uint8_t  mFlags;
+    uint8_t  mPrevFlags;
 
-    uint8_t  UBX_flags;
-    uint8_t  UBX_prev_flags;
+    int32_t  mPrevHMSL;
 
-    int32_t  UBX_prevHMSL;
+    uint8_t  mSuppressTone;
 
-    uint8_t  UBX_suppress_tone;
+    char     mSpeechBuf[16];
+    char     *mSpeechPtr;
 
-    char     UBX_speech_buf[16];
-    char     *UBX_speech_ptr;
+    int32_t  mVal[3];
 
-    int32_t  UBX_x0;
-    int32_t  UBX_x1;
-    int32_t  UBX_x2;
-
+    static const uint16_t mSasTable[12];
 
     char *writeInt32ToBuf(char *ptr, int32_t val, int8_t dec, int8_t dot, char delimiter);
     void setTone(int32_t val_1, int32_t min_1, int32_t max_1, int32_t val_2, int32_t min_2, int32_t max_2);
