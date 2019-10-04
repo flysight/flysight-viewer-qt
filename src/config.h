@@ -13,6 +13,7 @@
 
 #define UBX_UNITS_KMH    0
 #define UBX_UNITS_MPH    1
+#define UBX_UNITS_KN     2
 
 #define UBX_UNITS_METERS 0
 #define UBX_UNITS_FEET   1
@@ -80,6 +81,13 @@ public:
 
     uint8_t   UBX_init_mode;
     QString   UBX_init_filename;
+
+    int32_t   UBX_lat;
+    int32_t   UBX_lon;
+    int16_t   UBX_bearing;
+    uint16_t  UBX_end_nav;
+    uint16_t  UBX_max_dist;
+    uint16_t  UBX_min_angle;
 
     QList< UBX_window_t > UBX_windows;
 

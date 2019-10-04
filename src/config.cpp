@@ -44,6 +44,13 @@ Config::Config()
     UBX_init_mode     = 0;
     UBX_init_filename.clear();
 
+    UBX_lat           = 0;
+    UBX_lon           = 0;
+    UBX_bearing       = 0;
+    UBX_end_nav       = 0;
+    UBX_max_dist      = 10000;
+    UBX_min_angle     = 5;
+
     UBX_windows.clear();
 
     UBX_dz_elev       = 0;
@@ -79,12 +86,12 @@ void Config::readSingle(
         #define HANDLE_VALUE(s,w,r,t) \
             if ((t) && !name.compare(s)) { (w) = (r); }
 
-        HANDLE_VALUE("Mode",      UBX_mode,         val, (val >= 0 && val <= 4) || (val == 11));
+        HANDLE_VALUE("Mode",      UBX_mode,         val, (val >= 0 && val <= 7) || (val == 11));
         HANDLE_VALUE("Min",       UBX_min,          val, true);
         HANDLE_VALUE("Max",       UBX_max,          val, true);
         HANDLE_VALUE("Limits",    UBX_limits,       val, val >= 0 && val <= 2);
         HANDLE_VALUE("Volume",    Tone_volume,      8 - val, val >= 0 && val <= 8);
-        HANDLE_VALUE("Mode_2",    UBX_mode_2,       val, (val >= 0 && val <= 4) || (val >= 8 && val <= 9) || (val == 11));
+        HANDLE_VALUE("Mode_2",    UBX_mode_2,       val, (val >= 0 && val <= 9) || (val == 11));
         HANDLE_VALUE("Min_Val_2", UBX_min_2,        val, true);
         HANDLE_VALUE("Max_Val_2", UBX_max_2,        val, true);
         HANDLE_VALUE("Min_Rate",  UBX_min_rate,     val * TONE_RATE_ONE_HZ / 100, val >= 0);
@@ -99,6 +106,12 @@ void Config::readSingle(
         HANDLE_VALUE("Window",    UBX_alarm_window_below, val * 1000, true);
         HANDLE_VALUE("Win_Above", UBX_alarm_window_above, val * 1000, true);
         HANDLE_VALUE("Win_Below", UBX_alarm_window_below, val * 1000, true);
+        HANDLE_VALUE("Lat",       UBX_lat,          val, val >= -900000000 && val <= 900000000);
+        HANDLE_VALUE("Lon",       UBX_lon,          val, val >= -1800000000 && val <= 1800000000);
+        HANDLE_VALUE("Bearing",   UBX_bearing,      val, val >= 0 && val <= 360);
+        HANDLE_VALUE("End_Nav",   UBX_end_nav,      val * 1000, true);
+        HANDLE_VALUE("Max_Dist",  UBX_max_dist,     val, val >= 0 && val <= 10000);
+        HANDLE_VALUE("Min_Angle", UBX_min_angle,    val, val >= 0 && val <= 360);
         HANDLE_VALUE("DZ_Elev",   UBX_dz_elev,      val * 1000, true);
         HANDLE_VALUE("Init_Mode", UBX_init_mode,    val, val >= 0 && val <= 2);
         HANDLE_VALUE("Alt_Units", UBX_alt_units,    val, val >= 0 && val <= 1);

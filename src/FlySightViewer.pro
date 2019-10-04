@@ -19,6 +19,7 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     dataplot.cpp \
     dataview.cpp \
+    nav.cpp \
     simulationview.cpp \
     tone.cpp \
     ubx.cpp \
@@ -97,6 +98,7 @@ HEADERS  += mainwindow.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
+    nav.h \
     simulationview.h \
     tone.h \
     ubx.h \

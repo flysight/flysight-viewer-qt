@@ -1,7 +1,10 @@
 #include "ubx.h"
 
+#include <math.h>
+
 #include "config.h"
 #include "datapoint.h"
+#include "nav.h"
 #include "tone.h"
 
 #define ABS(a)   ((a) < 0     ? -(a) : (a))
@@ -202,6 +205,7 @@ void UBX::getValues(
         }
     }
 
+    int32_t tVal;
     switch (mode)
     {
     case 0: // Horizontal speed
@@ -228,6 +232,102 @@ void UBX::getValues(
         break;
     case 4: // Total speed
         *val = (current->speed * 1024) / speed_mul;
+        break;
+    case 5: // Direction to destination
+        //check if too far from destination for Nav, would indicate user error with Lat & Lon
+        if ((Nav::calcDistance(current->lat, current->lon, mConfig.UBX_lat, mConfig.UBX_lon) < mConfig.UBX_max_dist) || (mConfig.UBX_max_dist == 0))
+        {
+            //check if above height tone should be silenced
+            if ((current->hMSL > (mConfig.UBX_end_nav + mConfig.UBX_dz_elev)) || (mConfig.UBX_end_nav == 0))
+            {
+                tVal = Nav::calcDirection(mConfig, current->lat, current->lon,current->heading);
+                //check if heading not within UBX_min_angle deg of bearing or tones needed for other measurement
+                if ((ABS(tVal) > mConfig.UBX_min_angle) || (mConfig.UBX_mode_2 != 5) || (mConfig.UBX_min_angle == 0))
+                {
+                    *min = -180;
+                    *max = 180;
+                    //manipulate tone so biggest change is at desired heading
+                    if (tVal < 0)
+                    {
+                        *val = -180 - tVal;
+                    }
+                    else
+                    {
+                        *val = 180 - tVal;
+                    }
+                }
+            }
+        }
+        break;
+    case 6: // Distance to destination
+        *min = 0;
+        if (mConfig.UBX_max_dist != 0 )
+        {
+            *max = mConfig.UBX_max_dist;
+        }
+        else
+        {
+            *max = 10000; //set a default maximum value
+        }
+        *val = Nav::calcDistance(current->lat, current->lon, mConfig.UBX_lat, mConfig.UBX_lon);
+        if (*val < *max)
+        {
+            *val = *max - *val;  //make inverse so higher pitch indicates shorter distance
+        }
+        else
+        {
+            *val = 0;  //set to lowest pitch/Hz
+        }
+        break;
+    case 7: // Direction to bearing
+        //check if above height tone should be silenced
+        if ((current->hMSL > (mConfig.UBX_end_nav + mConfig.UBX_dz_elev)) || (mConfig.UBX_end_nav == 0))
+        {
+            tVal = Nav::calcRelBearing(mConfig.UBX_bearing, current->heading);
+            //check if heading not within UBX_min_angle deg of bearing or tones needed for other measurement
+            if ((ABS(tVal) > mConfig.UBX_min_angle) || (mConfig.UBX_mode_2 != 7) || (mConfig.UBX_min_angle == 0))
+            {
+                *min = -180;
+                *max = 180;
+                //manipulate tone so biggest change is at desired heading
+                if (tVal < 0)
+                {
+                    *val = -180 - tVal;
+                }
+                else
+                {
+                    *val = 180 - tVal;
+                }
+            }
+        }
+        break;
+    case 10: // Left/right
+        //check if too far from destination for Nav, would indicate user error with Lat & Lon
+        if ((Nav::calcDistance(current->lat, current->lon, mConfig.UBX_lat, mConfig.UBX_lon) < mConfig.UBX_max_dist) || (mConfig.UBX_max_dist == 0))
+        {
+            //check if above height tone should be silenced
+            if ((current->hMSL > (mConfig.UBX_end_nav + mConfig.UBX_dz_elev)) || (mConfig.UBX_end_nav == 0))
+            {
+                tVal = Nav::calcDirection(mConfig, current->lat, current->lon, current->heading);
+                *min = 0;
+                *max = 10;
+                if (ABS(tVal) > mConfig.UBX_min_angle)
+                {
+                    if (tVal < 0)   //left turn required  - low pitch tone
+                    {
+                        *val = *min;
+                    }
+                    else            //right turn required - high pitch tone
+                    {
+                        *val = *max;
+                    }
+                }
+                else                //mid tone
+                {
+                    *val = (*max - *min) / 2;
+                }
+            }
+        }
         break;
     case 11: // Dive angle
         *val = atan2(current->velD, current->gSpeed) / M_PI * 180;
@@ -327,6 +427,9 @@ void UBX::speakValue(UBX_saved_t *current)
     case UBX_UNITS_MPH:
         speed_mul = (uint16_t) (((uint32_t) speed_mul * 29297) / 65536);
         break;
+    case UBX_UNITS_KN:
+        speed_mul = (uint16_t) (((uint32_t) speed_mul * 33713) / 65536);
+        break;
     }
 
     // Step 0: Initialize speech pointers, leaving room at the end for one unit character
@@ -335,6 +438,9 @@ void UBX::speakValue(UBX_saved_t *current)
     end_ptr = mSpeechPtr;
 
     // Step 1: Get speech value with 2 decimal places
+
+    int32_t tVal;
+    int32_t decimals = mConfig.UBX_speech[mCurSpeech].decimals;
 
     switch (mConfig.UBX_speech[mCurSpeech].mode)
     {
@@ -348,6 +454,10 @@ void UBX::speakValue(UBX_saved_t *current)
         if (current->velD != 0)
         {
             mSpeechPtr = writeInt32ToBuf(mSpeechPtr, 100 * (int32_t) current->gSpeed / current->velD, 2, 1, 0);
+        }
+        else
+        {
+            *(--mSpeechPtr) = 0;
         }
         break;
     case 3: // Inverse glide ratio
@@ -363,21 +473,61 @@ void UBX::speakValue(UBX_saved_t *current)
     case 4: // Total speed
         mSpeechPtr = writeInt32ToBuf(mSpeechPtr, (current->speed * 1024) / speed_mul, 2, 1, 0);
         break;
+    case 5: // Direction to destination
+        //check if too far from destination for Nav, would indicate user error with Lat & Lon
+        if ((Nav::calcDistance(current->lat, current->lon, mConfig.UBX_lat, mConfig.UBX_lon) < mConfig.UBX_max_dist) || (mConfig.UBX_max_dist == 0))
+        {
+            //check if above height tone should be silenced
+            if ((current->hMSL > (mConfig.UBX_end_nav + mConfig.UBX_dz_elev)) || (mConfig.UBX_end_nav == 0))
+            {
+                decimals = 0;
+                tVal = Nav::calcDirection(mConfig, current->lat, current->lon, current->heading);
+                mSpeechPtr = writeInt32ToBuf(mSpeechPtr, ABS(tVal) * 100, 2, 1, 0);
+            }
+        }
+        break;
+    case 6: // Distance to destination
+        decimals = 1;
+        tVal = Nav::calcDistance(current->lat, current->lon, mConfig.UBX_lat, mConfig.UBX_lon);  // returns metres
+        switch (mConfig.UBX_speech[mCurSpeech].units)
+        {
+        case UBX_UNITS_KMH:
+            tVal = tVal / 10;
+            break;
+        case UBX_UNITS_MPH:
+            tVal = (tVal * 100) / 1609;
+            break;
+        case UBX_UNITS_KN:
+            tVal = (tVal * 100) / 1852;
+            break;
+        }
+        tVal = tVal + 5; //for correct rounding when reducing to one decimal place
+        mSpeechPtr = writeInt32ToBuf(mSpeechPtr, tVal, 2, 1, 0);
+        break;
+    case 7: // Direction to bearing
+        //check if above height tone should be silenced
+        if ((current->hMSL > (mConfig.UBX_end_nav + mConfig.UBX_dz_elev)) || (mConfig.UBX_end_nav == 0))
+        {
+            decimals = 0;
+            tVal = Nav::calcRelBearing(mConfig.UBX_bearing, current->heading);
+            mSpeechPtr = writeInt32ToBuf(mSpeechPtr, ABS(tVal) * 100, 2, 1, 0);
+        }
+        break;
     case 11: // Dive angle
         mSpeechPtr = writeInt32ToBuf(mSpeechPtr, 100 * atan2(current->velD, current->gSpeed) / M_PI * 180, 2, 1, 0);
         break;
     case 12: // Altitude
         if (mConfig.UBX_speech[mCurSpeech].units == UBX_UNITS_KMH)
         {
-            step_size = 10000 * mConfig.UBX_speech[mCurSpeech].decimals;
+            step_size = 10000 * decimals;
         }
         else
         {
-            step_size = 3048 * mConfig.UBX_speech[mCurSpeech].decimals;
+            step_size = 3048 * decimals;
         }
         step = ((current->hMSL - mConfig.UBX_dz_elev) * 10 + step_size / 2) / step_size;
         mSpeechPtr = mSpeechBuf + 2;
-        mSpeechPtr = numberToSpeech(step * mConfig.UBX_speech[mCurSpeech].decimals, mSpeechPtr);
+        mSpeechPtr = numberToSpeech(step * decimals, mSpeechPtr);
         end_ptr = mSpeechPtr;
         mSpeechPtr = mSpeechBuf + 2;
         break;
@@ -392,11 +542,8 @@ void UBX::speakValue(UBX_saved_t *current)
 
     // Step 2: Truncate to the desired number of decimal places
 
-    if (mConfig.UBX_speech[mCurSpeech].mode != 5)
-    {
-        if (mConfig.UBX_speech[mCurSpeech].decimals == 0) end_ptr -= 4;
-        else end_ptr -= 3 - mConfig.UBX_speech[mCurSpeech].decimals;
-    }
+    if (decimals == 0) end_ptr -= 4;
+    else end_ptr -= 3 - decimals;
 
     // Step 3: Add units if needed, e.g., *(end_ptr++) = 'k';
 
@@ -408,6 +555,25 @@ void UBX::speakValue(UBX_saved_t *current)
     case 3: // Inverse glide ratio
     case 4: // Total speed
     case 11: // Dive angle
+        break;
+    case 5: // Direction to destination
+    case 7: // Direction to bearing
+        if (tVal < 0)			*(end_ptr++) = 'l';
+        else if (tVal > 0)		*(end_ptr++) = 'r';
+        break;
+    case 6: // Distance to destination
+        switch (mConfig.UBX_speech[mCurSpeech].units)
+        {
+        case UBX_UNITS_MPH:
+            *(end_ptr++) = 'i';
+            break;
+        case UBX_UNITS_KMH:
+            *(end_ptr++) = 'K';
+            break;
+        case UBX_UNITS_KN:
+            *(end_ptr++) = 'n';
+            break;
+        }
         break;
     case 12: // Altitude
         *(end_ptr++) = (mConfig.UBX_speech[mCurSpeech].units == UBX_UNITS_KMH) ? 'm' : 'f';
@@ -543,16 +709,43 @@ void UBX::updateTones(UBX_saved_t *current)
 
     getValues(current, mConfig.UBX_mode, &val_1, &min_1, &max_1);
 
-    if (mConfig.UBX_mode_2 == 8)
+    switch (mConfig.UBX_mode_2)
     {
+    case 5: // Direction to destination
+        if (mConfig.UBX_mode == 5)  //no need to re-calculate direction
+        {
+            val_2 = ABS(val_1);
+        }
+        else
+        {
+            val_2 = ABS(Nav::calcDirection(mConfig, current->lat, current->lon, current->heading));
+            val_2 = 180 - val_2;  //make inverse so faster rate indicates closer to bearing
+        }
+        val_2 = pow(val_2, 3);
+        min_2 = 0;
+        max_2 = pow(180, 3);
+        break;
+    case 7: // Direction to bearing
+        if (mConfig.UBX_mode == 7)  //no need to re-calculate direction
+        {
+            val_2 = ABS(val_1);
+        }
+        else
+        {
+            val_2 = ABS(Nav::calcRelBearing(mConfig.UBX_bearing, current->heading));
+            val_2 = 180 - val_2;  //make inverse so faster rate indicates closer to bearing
+        }
+        min_2 = 0;
+        max_2 = 180;
+        break;
+    case 8: // Magnitude of value 1
         getValues(current, mConfig.UBX_mode, &val_2, &min_2, &max_2);
         if (val_2 != UBX_INVALID_VALUE)
         {
             val_2 = ABS(val_2);
         }
-    }
-    else if (mConfig.UBX_mode_2 == 9)
-    {
+        break;
+    case 9: // Change in value 1
         mVal[2] = mVal[1];
         mVal[1] = mVal[0];
         mVal[0] = val_1;
@@ -564,9 +757,8 @@ void UBX::updateTones(UBX_saved_t *current)
             val_2 = (int32_t) 1000 * (mVal[2] - mVal[0]) / (int32_t) (2 * mConfig.UBX_rate);
             val_2 = (int32_t) 10000 * ABS(val_2) / ABS(max_1 - min_1);
         }
-    }
-    else
-    {
+        break;
+    default:
         getValues(current, mConfig.UBX_mode_2, &val_2, &min_2, &max_2);
     }
 
@@ -742,6 +934,42 @@ void UBX::task()
                         mTone.play("alt.wav");
                         break;
                 }
+            }
+            else if (*mSpeechPtr == 'l')
+            {
+                mTone.play("left.wav");
+            }
+            else if (*mSpeechPtr == 'r')
+            {
+                mTone.play("right.wav");
+            }
+            else if (*mSpeechPtr == 'i')
+            {
+                mTone.play("miles.wav");
+            }
+            else if (*mSpeechPtr == 'K')
+            {
+                mTone.play("km.wav");
+            }
+            else if (*mSpeechPtr == 'n')
+            {
+                mTone.play("knots.wav");
+            }
+            else if (*mSpeechPtr == 'o')
+            {
+                mTone.play("oclock.wav");
+            }
+            else if (*mSpeechPtr == 'a')
+            {
+                mTone.play("10.wav");
+            }
+            else if (*mSpeechPtr == 'b')
+            {
+                mTone.play("11.wav");
+            }
+            else if (*mSpeechPtr == 'c')
+            {
+                mTone.play("12.wav");
             }
             else
             {
