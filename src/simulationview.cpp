@@ -19,8 +19,7 @@ SimulationView::SimulationView(QWidget *parent) :
     ui(new Ui::SimulationView),
     mMainWindow(0),
     mMedia(0),
-    mBusy(false),
-    mAudioFile(QDir::temp().absoluteFilePath("FlySightViewer-XXXXXX.wav"))
+    mBusy(false)
 {
     ui->setupUi(this);
 
@@ -69,9 +68,10 @@ SimulationView::SimulationView(QWidget *parent) :
     connect(mPlayer, SIGNAL(timeChanged(int)), this, SLOT(timeChanged(int)));
     connect(mPlayer, SIGNAL(lengthChanged(int)), this, SLOT(lengthChanged(int)));
 
-    mAudioFile.open();
-    mAudioFile.close();
-    ui->outputFileName->setText(mAudioFile.fileName());
+    mAudioFile = new QTemporaryFile(QDir::temp().absoluteFilePath("FlySightViewer-XXXXXX.wav"));
+    mAudioFile->open();
+    mAudioFile->close();
+    ui->outputFileName->setText(mAudioFile->fileName());
 }
 
 SimulationView::~SimulationView()
@@ -79,6 +79,7 @@ SimulationView::~SimulationView()
     delete mPlayer;
     delete mMedia;
     delete mInstance;
+    delete mAudioFile;
     delete ui;
 }
 
@@ -223,8 +224,8 @@ void SimulationView::on_processButton_clicked()
     qint64 msNextSample = dpStart.dateTime.msecsTo(dpNext.dateTime);
     qint64 msNextTick = 0;
 
-    mAudioFile.open();
-    mAudioFile.resize(0);
+    mAudioFile->open();
+    mAudioFile->resize(0);
 
     const unsigned char header[] =
     {
@@ -242,17 +243,17 @@ void SimulationView::on_processButton_clicked()
         0x64, 0x61, 0x74, 0x61  // Subchunk2ID = "data"
     };
 
-    mAudioFile.write((const char *) header, 40);
+    mAudioFile->write((const char *) header, 40);
 
     uint32_t numSamples32 = (uint32_t) numSamples;
-    mAudioFile.write((char *) &numSamples32, 4);
+    mAudioFile->write((char *) &numSamples32, 4);
 
     for (qint64 s = 0; s < numSamples; ++s)
     {
         qint64 ms = s * 256 / 8000;
 
         uint8_t sample = tone.sample();
-        mAudioFile.write((char *) &sample, 1);
+        mAudioFile->write((char *) &sample, 1);
 
         if (ms >= msNextSample)
         {
@@ -276,14 +277,15 @@ void SimulationView::on_processButton_clicked()
         ui->progressBar->setValue(static_cast<int>(100 * (s + 1) / numSamples));
     }
 
-    mAudioFile.close();
+    mAudioFile->close();
 
-    setMedia(mAudioFile.fileName());
+    setMedia(mAudioFile->fileName());
 }
 
 void SimulationView::setMedia(const QString &fileName)
 {
     // Set media
+    delete mMedia;
     mMedia = new VlcMedia(fileName, true, mInstance);
     mPlayer->open(mMedia);
 

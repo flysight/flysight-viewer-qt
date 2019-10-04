@@ -90,6 +90,7 @@ QSize VideoView::sizeHint() const
 void VideoView::setMedia(const QString &fileName)
 {
     // Set media
+    delete mMedia;
     mMedia = new VlcMedia(fileName, true, mInstance);
     mPlayer->open(mMedia);
 

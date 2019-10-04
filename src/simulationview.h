@@ -44,7 +44,7 @@ private:
 
     bool               mBusy;
 
-    QTemporaryFile     mAudioFile;
+    QTemporaryFile     *mAudioFile;
 
     void setMedia(const QString &fileName);
 
