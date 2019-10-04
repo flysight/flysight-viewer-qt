@@ -687,14 +687,14 @@ void DataPlot::updateCursor()
             QCPGraph *graph = addGraph(xAxis, axis);
 
             graph->setData(xMark, yMark);
-            graph->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
+            graph->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
             graph->setLineStyle(QCPGraph::lsNone);
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
         }
 
         // Draw vertical line
         QCPItemLine *line = new QCPItemLine(this);
-        line->setPen(QPen(Qt::lightGray));
+        line->setPen(QPen(Qt::darkGray));
         line->start->setCoords(xMark.first(), yAxis->range().lower);
         line->end->setCoords(xMark.first(), yAxis->range().upper);
     }

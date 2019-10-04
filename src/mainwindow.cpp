@@ -238,8 +238,8 @@ void MainWindow::readSettings()
         mWindE = settings.value("windE", mWindE).toDouble();
         mWindN = settings.value("windN", mWindN).toDouble();
         mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
-    	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
-	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
+        mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
         mDatabasePath = settings.value("databasePath",
                                        QStandardPaths::writableLocation(
                                            QStandardPaths::DocumentsLocation)).toString();
@@ -348,6 +348,8 @@ void MainWindow::initSingleView(
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             dataView, SLOT(updateCursor()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
 }
@@ -375,6 +377,8 @@ void MainWindow::initMapView()
             mapView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             mapView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            mapView, SLOT(updateView()));
 }
 
 void MainWindow::initWindView()
@@ -398,6 +402,8 @@ void MainWindow::initWindView()
     connect(this, SIGNAL(rangeChanged()),
             windPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
+            windPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(mediaCursorChanged()),
             windPlot, SLOT(updatePlot()));
 }
 
@@ -447,6 +453,8 @@ void MainWindow::initLiftDragView()
             liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(aeroChanged()),
             liftDragPlot, SLOT(updatePlot()));
 }
@@ -473,6 +481,8 @@ void MainWindow::initOrthoView()
             orthoView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             orthoView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            orthoView, SLOT(updateView()));
 }
 
 void MainWindow::initPlaybackView()
@@ -494,8 +504,6 @@ void MainWindow::initPlaybackView()
     connect(this, SIGNAL(dataChanged()),
             playbackView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged()),
-            playbackView, SLOT(updateView()));
-    connect(this, SIGNAL(cursorChanged()),
             playbackView, SLOT(updateView()));
 }
 
@@ -541,8 +549,12 @@ void MainWindow::initSimulationView()
 
     connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
             dockWidget, SLOT(setVisible(bool)));
+    connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
+            this, SIGNAL(mediaCursorChanged()));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             m_ui->actionShowSimulationView, SLOT(setChecked(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            this, SIGNAL(mediaCursorChanged()));
 }
 
 void MainWindow::closeEvent(

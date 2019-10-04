@@ -148,9 +148,37 @@ void WindPlot::updatePlot()
 
     QCPCurve *curve = new QCPCurve(xAxis, yAxis);
     curve->setData(t, x, y);
-    curve->setPen(QPen(Qt::lightGray, mMainWindow->lineThickness()));
+    curve->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
 
     setViewRange(xMin, xMax, yMin, yMax);
+
+    if (mMainWindow->mediaCursorRef() > 0)
+    {
+        const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+        t.clear();
+        x.clear();
+        y.clear();
+
+        QVector< double > xMark, yMark;
+
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            xMark.append(dp.velE * MPS_TO_KMH);
+            yMark.append(dp.velN * MPS_TO_KMH);
+        }
+        else
+        {
+            xMark.append(dp.velE * MPS_TO_MPH);
+            yMark.append(dp.velN * MPS_TO_MPH);
+        }
+
+        QCPGraph *graph = addGraph();
+        graph->setData(xMark, yMark);
+        graph->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
 
     if (mMainWindow->markActive())
     {
