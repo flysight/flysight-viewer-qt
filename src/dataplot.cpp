@@ -679,6 +679,7 @@ void DataPlot::updateCursor()
         for (int j = 0; j < yaLast; ++j)
         {
             if (!yValue(j)->visible()) continue;
+            if (!yValue(j)->axis()) continue;
 
             yMark.clear();
             yMark.append(yValue(j)->value(dp, mMainWindow->units()));
@@ -710,6 +711,7 @@ void DataPlot::updateCursor()
         for (int j = 0; j < yaLast; ++j)
         {
             if (!yValue(j)->visible()) continue;
+            if (!yValue(j)->axis()) continue;
 
             yMark.clear();
             yMark.append(yValue(j)->value(dpEnd, mMainWindow->units()));
