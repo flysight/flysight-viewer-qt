@@ -106,6 +106,7 @@ void SimulationView::hideEvent(
 {
     mBusy = true;
 
+    pauseMedia();
     mMainWindow->mediaCursorRemoveRef();
 
     mBusy = false;
