@@ -352,6 +352,9 @@ void MainWindow::initSingleView(
             dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initMapView()
@@ -379,6 +382,9 @@ void MainWindow::initMapView()
             mapView, SLOT(updateView()));
     connect(this, SIGNAL(mediaCursorChanged()),
             mapView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initWindView()
@@ -405,6 +411,9 @@ void MainWindow::initWindView()
             windPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(mediaCursorChanged()),
             windPlot, SLOT(updatePlot()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initScoringView()
@@ -429,6 +438,9 @@ void MainWindow::initScoringView()
             mScoringView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged()),
             mScoringView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initLiftDragView()
@@ -457,6 +469,9 @@ void MainWindow::initLiftDragView()
             liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(aeroChanged()),
             liftDragPlot, SLOT(updatePlot()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initOrthoView()
@@ -483,6 +498,9 @@ void MainWindow::initOrthoView()
             orthoView, SLOT(updateView()));
     connect(this, SIGNAL(mediaCursorChanged()),
             orthoView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initPlaybackView()
@@ -505,6 +523,9 @@ void MainWindow::initPlaybackView()
             playbackView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged()),
             playbackView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initLogbookView()
@@ -526,6 +547,9 @@ void MainWindow::initLogbookView()
 
     connect(this, SIGNAL(databaseChanged()),
             logbookView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initSimulationView()
@@ -555,6 +579,22 @@ void MainWindow::initSimulationView()
             m_ui->actionShowSimulationView, SLOT(setChecked(bool)));
     connect(dockWidget, SIGNAL(visibilityChanged(bool)),
             this, SIGNAL(mediaCursorChanged()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
+}
+
+void MainWindow::onDockWidgetTopLevelChanged(bool floating)
+{
+    if (floating)
+    {
+        QObject *obj = sender();
+        if (QDockWidget *dockWidget = qobject_cast< QDockWidget* >(obj))
+        {
+            dockWidget->setWindowFlags(dockWidget->windowFlags() | Qt::WindowMaximizeButtonHint);
+            dockWidget->show();
+        }
+    }
 }
 
 void MainWindow::closeEvent(

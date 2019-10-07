@@ -372,6 +372,7 @@ public slots:
 private slots:
     void setScoringVisible(bool visible);
     void saveZoom();
+    void onDockWidgetTopLevelChanged(bool floating);
 };
 
 #endif // MAINWINDOW_H
