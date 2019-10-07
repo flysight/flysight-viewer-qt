@@ -104,7 +104,11 @@ void SimulationView::showEvent(
 void SimulationView::hideEvent(
         QHideEvent *event)
 {
+    mBusy = true;
+
     mMainWindow->mediaCursorRemoveRef();
+
+    mBusy = false;
 }
 
 void SimulationView::on_rootBrowseButton_clicked()

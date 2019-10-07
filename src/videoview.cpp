@@ -110,7 +110,11 @@ void VideoView::showEvent(
 void VideoView::hideEvent(
         QHideEvent *event)
 {
+    mBusy = true;
+
     mMainWindow->mediaCursorRemoveRef();
+
+    mBusy = false;
 }
 
 void VideoView::play()
