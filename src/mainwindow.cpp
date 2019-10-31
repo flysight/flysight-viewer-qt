@@ -559,7 +559,9 @@ void MainWindow::initSimulationView()
     dockWidget->setWidget(simulationView);
     dockWidget->setObjectName("simulationView");
     dockWidget->setVisible(false);
+
     addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+    dockWidget->setFloating(true);
 
     simulationView->setMainWindow(this);
 
