@@ -14,6 +14,8 @@
 
 #include "mainwindow.h"
 
+#define POSITION_DIV 10
+
 SimulationView::SimulationView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SimulationView),
@@ -51,8 +53,8 @@ SimulationView::SimulationView(QWidget *parent) :
 
     ui->positionSlider->setEnabled(false);
     ui->positionSlider->setRange(0, 0);
-    ui->positionSlider->setSingleStep(200);
-    ui->positionSlider->setPageStep(2000);
+    ui->positionSlider->setSingleStep(200 / POSITION_DIV);
+    ui->positionSlider->setPageStep(2000 / POSITION_DIV);
     connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
 
     ui->scrubDial->setEnabled(false);
@@ -332,7 +334,7 @@ void SimulationView::timeChanged(int position)
     mBusy = true;
 
     // Update controls
-    ui->positionSlider->setValue(position);
+    ui->positionSlider->setValue(position / POSITION_DIV);
     ui->scrubDial->setValue(position % 1000);
 
     // Update text label
@@ -354,7 +356,7 @@ void SimulationView::timeChanged(int position)
 
 void SimulationView::lengthChanged(int duration)
 {
-    ui->positionSlider->setRange(0, duration);
+    ui->positionSlider->setRange(0, duration / POSITION_DIV);
 }
 
 void SimulationView::setPosition(int position)
@@ -362,8 +364,8 @@ void SimulationView::setPosition(int position)
     if (!mBusy)
     {
         // Update video position
-        mPlayer->setTime(position);
-        timeChanged(position);
+        mPlayer->setTime(position * POSITION_DIV);
+        timeChanged(position * POSITION_DIV);
     }
 }
 
