@@ -13,6 +13,7 @@
         <script type="text/javascript">
             var poly;
             var marker;
+            var mediaCursor;
             var map;
 
             function initialize() {
@@ -79,6 +80,20 @@
 
                 marker = new google.maps.Marker(markerOptions);
                 marker.setMap(map);
+
+                var mediaCursorOptions = {
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#808080',
+                        fillOpacity: 1.0,
+                        strokeColor: '#FF0000',
+                        strokeWeight: 1.5,
+                        scale: 3.5
+                    }
+                };
+
+                mediaCursor = new google.maps.Marker(mediaCursorOptions);
+                mediaCursor.setMap(map);
             }
         </script>
     </head>

@@ -283,6 +283,33 @@ void OrthoView::updateView()
     setViewRange(xMid - rMax / m_scale, xMid + rMax / m_scale,
                  yMid - rMax / m_scale, yMid + rMax / m_scale);
 
+    if (mMainWindow->mediaCursorRef() > 0)
+    {
+        const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+        QVector< double > xMark, yMark, zMark;
+
+        QVector3D cur;
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            cur = QVector3D(dp.x, dp.y, dp.z);
+        }
+        else
+        {
+            cur = QVector3D(dp.x, dp.y, dp.z) * METERS_TO_FEET;
+        }
+
+        xMark.append(QVector3D::dotProduct(cur, rt));
+        yMark.append(QVector3D::dotProduct(cur, up));
+        zMark.append(QVector3D::dotProduct(cur, bk));
+
+        QCPGraph *graph = addGraph();
+        graph->setData(xMark, yMark);
+        graph->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
+
     if (mMainWindow->markActive())
     {
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());

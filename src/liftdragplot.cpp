@@ -228,6 +228,34 @@ void LiftDragPlot::updatePlot()
     yMin = yAxis->range().lower;
     yMax = yAxis->range().upper;
 
+    if (mMainWindow->mediaCursorRef() > 0)
+    {
+        int i1 = mMainWindow->findIndexBelowT(mMainWindow->mediaCursor()) + 1;
+        int i2 = mMainWindow->findIndexAboveT(mMainWindow->mediaCursor()) - 1;
+
+        const DataPoint &dp1 = mMainWindow->dataPoint(i1);
+        const DataPoint &dp2 = mMainWindow->dataPoint(i2);
+
+        QVector< double > xMark, yMark;
+
+        if (mMainWindow->markEnd() - dp1.t < dp2.t - mMainWindow->markEnd())
+        {
+            xMark.append(dp1.drag);
+            yMark.append(dp1.lift);
+        }
+        else
+        {
+            xMark.append(dp2.drag);
+            yMark.append(dp2.lift);
+        }
+
+        QCPGraph *graph = addGraph();
+        graph->setData(xMark, yMark);
+        graph->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
+
     if (mMainWindow->markActive())
     {
         int i1 = mMainWindow->findIndexBelowT(mMainWindow->markEnd()) + 1;

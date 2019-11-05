@@ -49,7 +49,8 @@ public:
 
     PlotValue(bool visible, QColor color): mVisible(visible),
         mColor(color), mDefaultColor(color),
-        mMinimum(0), mMaximum(1), mUseMinimum(false), mUseMaximum(false) {}
+        mMinimum(0), mMaximum(1), mUseMinimum(false), mUseMaximum(false),
+        mAxis(0) {}
 
     virtual const QString titleText() const = 0;
     virtual const QString unitText(Units units) const = 0;

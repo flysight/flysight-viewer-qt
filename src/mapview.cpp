@@ -275,6 +275,24 @@ void MapView::updateView()
         page()->currentFrame()->documentElement().evaluateJavaScript(js);
     }
 
+    if (mMainWindow->mediaCursorRef() > 0)
+    {
+        // Add media cursor to map
+        const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+        js = QString("mediaCursor.setPosition(new google.maps.LatLng(%1, %2));").arg(dp.lat, 0, 'f').arg(dp.lon, 0, 'f') +
+             QString("mediaCursor.setVisible(true);");
+
+        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    }
+    else
+    {
+        // Clear media cursor
+        js = QString("mediaCursor.setVisible(false);");
+
+        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    }
+
     // Remove reference line from map
     js  = QString("var path2 = wo.getPath();") +
           QString("while (path2.length > 0) { path2.pop(); }");

@@ -58,6 +58,7 @@
 #include "playbackview.h"
 #include "ppcscoring.h"
 #include "scoringview.h"
+#include "simulationview.h"
 #include "speedscoring.h"
 #include "videoview.h"
 #include "wideopendistancescoring.h"
@@ -72,6 +73,7 @@ MainWindow::MainWindow(
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     mMarkActive(false),
+    mMediaCursorRef(0),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
     mWindowMode(Actual),
@@ -148,6 +150,9 @@ MainWindow::MainWindow(
 
     // Initialize logbook view
     initLogbookView();
+
+    // Initialize simulation view
+    initSimulationView();
 
     // Restore window state
     QSettings settings("FlySight", "Viewer");
@@ -233,8 +238,8 @@ void MainWindow::readSettings()
         mWindE = settings.value("windE", mWindE).toDouble();
         mWindN = settings.value("windN", mWindN).toDouble();
         mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
-    	mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
-	    mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
+        mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
         mDatabasePath = settings.value("databasePath",
                                        QStandardPaths::writableLocation(
                                            QStandardPaths::DocumentsLocation)).toString();
@@ -306,6 +311,8 @@ void MainWindow::initPlot()
             m_ui->plotArea, SLOT(updateRange()));
     connect(this, SIGNAL(cursorChanged()),
             m_ui->plotArea, SLOT(updateCursor()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            m_ui->plotArea, SLOT(updateCursor()));
 }
 
 void MainWindow::initViews()
@@ -341,8 +348,13 @@ void MainWindow::initSingleView(
             dataView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             dataView, SLOT(updateCursor()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            dataView, SLOT(updateCursor()));
     connect(this, SIGNAL(rotationChanged(double)),
             dataView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initMapView()
@@ -368,6 +380,11 @@ void MainWindow::initMapView()
             mapView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             mapView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            mapView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initWindView()
@@ -392,6 +409,11 @@ void MainWindow::initWindView()
             windPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             windPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            windPlot, SLOT(updatePlot()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initScoringView()
@@ -416,6 +438,9 @@ void MainWindow::initScoringView()
             mScoringView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged()),
             mScoringView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initLiftDragView()
@@ -440,8 +465,13 @@ void MainWindow::initLiftDragView()
             liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(cursorChanged()),
             liftDragPlot, SLOT(updatePlot()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            liftDragPlot, SLOT(updatePlot()));
     connect(this, SIGNAL(aeroChanged()),
             liftDragPlot, SLOT(updatePlot()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initOrthoView()
@@ -466,6 +496,11 @@ void MainWindow::initOrthoView()
             orthoView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
             orthoView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            orthoView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initPlaybackView()
@@ -488,8 +523,9 @@ void MainWindow::initPlaybackView()
             playbackView, SLOT(updateView()));
     connect(this, SIGNAL(rangeChanged()),
             playbackView, SLOT(updateView()));
-    connect(this, SIGNAL(cursorChanged()),
-            playbackView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
 }
 
 void MainWindow::initLogbookView()
@@ -511,6 +547,56 @@ void MainWindow::initLogbookView()
 
     connect(this, SIGNAL(databaseChanged()),
             logbookView, SLOT(updateView()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
+}
+
+void MainWindow::initSimulationView()
+{
+    SimulationView *simulationView = new SimulationView;
+    QDockWidget *dockWidget = new QDockWidget(tr("Simulation View"));
+    dockWidget->setWidget(simulationView);
+    dockWidget->setObjectName("simulationView");
+    dockWidget->setVisible(false);
+
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+    dockWidget->setFloating(true);
+
+    simulationView->setMainWindow(this);
+
+    // Set up notifications for simulation view
+    connect(this, SIGNAL(dataChanged()),
+            simulationView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaCursorChanged()),
+            simulationView, SLOT(updateView()));
+    connect(this, SIGNAL(mediaPaused()),
+            simulationView, SLOT(pauseMedia()));
+
+    connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
+            dockWidget, SLOT(setVisible(bool)));
+    connect(m_ui->actionShowSimulationView, SIGNAL(toggled(bool)),
+            this, SIGNAL(mediaCursorChanged()));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            m_ui->actionShowSimulationView, SLOT(setChecked(bool)));
+    connect(dockWidget, SIGNAL(visibilityChanged(bool)),
+            this, SIGNAL(mediaCursorChanged()));
+
+    connect(dockWidget, SIGNAL(topLevelChanged(bool)),
+            this, SLOT(onDockWidgetTopLevelChanged(bool)));
+}
+
+void MainWindow::onDockWidgetTopLevelChanged(bool floating)
+{
+    if (floating)
+    {
+        QObject *obj = sender();
+        if (QDockWidget *dockWidget = qobject_cast< QDockWidget* >(obj))
+        {
+            dockWidget->setWindowFlags(dockWidget->windowFlags() | Qt::WindowMaximizeButtonHint);
+            dockWidget->show();
+        }
+    }
 }
 
 void MainWindow::closeEvent(
@@ -1510,6 +1596,34 @@ void MainWindow::clearMark()
     emit cursorChanged();
 }
 
+void MainWindow::setMediaCursor(
+        double mediaCursor)
+{
+    mMediaCursor = mediaCursor;
+
+    emit mediaCursorChanged();
+}
+
+void MainWindow::mediaCursorAddRef()
+{
+    ++mMediaCursorRef;
+
+    emit mediaCursorChanged();
+}
+
+void MainWindow::mediaCursorRemoveRef()
+{
+    --mMediaCursorRef;
+
+    emit mediaCursorChanged();
+}
+
+
+void MainWindow::pauseMedia()
+{
+    emit mediaPaused();
+}
+
 void MainWindow::initRange(
         QString trackName)
 {
@@ -2014,8 +2128,10 @@ void MainWindow::on_actionImportVideo_triggered()
         // Set up notifications for video view
         connect(this, SIGNAL(dataChanged()),
                 videoView, SLOT(updateView()));
-        connect(this, SIGNAL(cursorChanged()),
+        connect(this, SIGNAL(mediaCursorChanged()),
                 videoView, SLOT(updateView()));
+        connect(this, SIGNAL(mediaPaused()),
+                videoView, SLOT(pauseMedia()));
 
         // Associate view with this file
         videoView->setMedia(fileName);

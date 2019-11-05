@@ -35,6 +35,8 @@
 #include "common.h"
 #include "mainwindow.h"
 
+#define POSITION_DIV 10
+
 VideoView::VideoView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::VideoView),
@@ -54,8 +56,8 @@ VideoView::VideoView(QWidget *parent) :
 
     ui->positionSlider->setEnabled(false);
     ui->positionSlider->setRange(0, 0);
-    ui->positionSlider->setSingleStep(200);
-    ui->positionSlider->setPageStep(2000);
+    ui->positionSlider->setSingleStep(200 / POSITION_DIV);
+    ui->positionSlider->setPageStep(2000 / POSITION_DIV);
     connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(setPosition(int)));
 
     ui->scrubDial->setEnabled(false);
@@ -90,6 +92,7 @@ QSize VideoView::sizeHint() const
 void VideoView::setMedia(const QString &fileName)
 {
     // Set media
+    delete mMedia;
     mMedia = new VlcMedia(fileName, true, mInstance);
     mPlayer->open(mMedia);
 
@@ -100,6 +103,22 @@ void VideoView::setMedia(const QString &fileName)
     ui->scrubDial->setEnabled(true);
 }
 
+void VideoView::showEvent(
+        QShowEvent *event)
+{
+    mMainWindow->mediaCursorAddRef();
+}
+
+void VideoView::hideEvent(
+        QHideEvent *event)
+{
+    mBusy = true;
+
+    mMainWindow->mediaCursorRemoveRef();
+
+    mBusy = false;
+}
+
 void VideoView::play()
 {
     switch(mPlayer->state())
@@ -108,6 +127,7 @@ void VideoView::play()
         mPlayer->pause();
         break;
     default:
+        mMainWindow->pauseMedia();
         mPlayer->play();
         break;
     }
@@ -131,7 +151,7 @@ void VideoView::timeChanged(int position)
     mBusy = true;
 
     // Update controls
-    ui->positionSlider->setValue(position);
+    ui->positionSlider->setValue(position / POSITION_DIV);
     ui->scrubDial->setValue(position % 1000);
 
     // Update text label
@@ -139,14 +159,14 @@ void VideoView::timeChanged(int position)
     ui->timeLabel->setText(QString("%1 s").arg(time, 0, 'f', 3));
 
     // Update other views
-    mMainWindow->setMark(time);
+    mMainWindow->setMediaCursor(time);
 
     mBusy = false;
 }
 
 void VideoView::lengthChanged(int duration)
 {
-    ui->positionSlider->setRange(0, duration);
+    ui->positionSlider->setRange(0, duration / POSITION_DIV);
 }
 
 void VideoView::setPosition(int position)
@@ -154,8 +174,8 @@ void VideoView::setPosition(int position)
     if (!mBusy)
     {
         // Update video position
-        mPlayer->setTime(position);
-        timeChanged(position);
+        mPlayer->setTime(position * POSITION_DIV);
+        timeChanged(position * POSITION_DIV);
     }
 }
 
@@ -186,20 +206,24 @@ void VideoView::zero()
 
 void VideoView::updateView()
 {
-    if (!mBusy && mMainWindow->markActive())
+    if (mBusy) return;
+
+    // Get media cursor
+    const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+    // Get playback position
+    int position = dp.t * 1000 + mZeroPosition;
+
+    // If playback position is within video bounds
+    if (0 <= position && position <= mPlayer->length())
     {
-        // Get marked point
-        const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
-
-        // Get playback position
-        int position = dpEnd.t * 1000 + mZeroPosition;
-
-        // If playback position is within video bounds
-        if (0 <= position && position <= mPlayer->length())
-        {
-            // Update video position
-            mPlayer->setTime(position);
-            timeChanged(position);
-        }
+        // Update video position
+        mPlayer->setTime(position);
+        timeChanged(position);
     }
+}
+
+void VideoView::pauseMedia()
+{
+    mPlayer->pause();
 }

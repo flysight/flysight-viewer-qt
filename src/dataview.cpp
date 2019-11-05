@@ -338,6 +338,45 @@ void DataView::updateCursor()
 
     m_cursors.clear();
 
+    if (mMainWindow->mediaCursorRef() > 0)
+    {
+        const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
+
+        QVector< double > xMark, yMark, zMark;
+
+        if (mMainWindow->units() == PlotValue::Metric)
+        {
+            xMark.append(dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation()));
+            yMark.append(dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation()));
+            zMark.append(dp.z);
+        }
+        else
+        {
+            xMark.append((dp.x *  cos(mMainWindow->rotation()) + dp.y * sin(mMainWindow->rotation())) * METERS_TO_FEET);
+            yMark.append((dp.x * -sin(mMainWindow->rotation()) + dp.y * cos(mMainWindow->rotation())) * METERS_TO_FEET);
+            zMark.append((dp.z) * METERS_TO_FEET);
+        }
+
+        QCPGraph *graph = addGraph();
+        switch (mDirection)
+        {
+        case Top:
+            graph->setData(xMark, yMark);
+            break;
+        case Left:
+            graph->setData(xMark, zMark);
+            break;
+        case Front:
+            graph->setData(yMark, zMark);
+            break;
+        }
+        graph->setPen(QPen(Qt::darkGray, mMainWindow->lineThickness()));
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPScatterStyle::ssDisc);
+
+        m_cursors.push_back(graph);
+    }
+
     if (mMainWindow->markActive())
     {
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());

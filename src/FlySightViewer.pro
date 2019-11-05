@@ -15,9 +15,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     colorcombobox.cpp \
+    config.cpp \
     mainwindow.cpp \
     dataplot.cpp \
     dataview.cpp \
+    nav.cpp \
+    simulationview.cpp \
+    tone.cpp \
+    ubx.cpp \
     waypoint.cpp \
     datapoint.cpp \
     configdialog.cpp \
@@ -89,9 +94,14 @@ SOURCES += main.cpp \
 
 HEADERS  += mainwindow.h \
     colorcombobox.h \
+    config.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
+    nav.h \
+    simulationview.h \
+    tone.h \
+    ubx.h \
     waypoint.h \
     plotvalue.h \
     configdialog.h \
@@ -126,6 +136,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
+    simulationview.ui \
     videoview.ui \
     scoringview.ui \
     playbackview.ui \

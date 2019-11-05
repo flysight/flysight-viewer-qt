@@ -113,6 +113,15 @@ public:
     void setMark(double mark);
     void clearMark();
 
+    void setMediaCursor(double mediaCursor);
+    double mediaCursor() const { return mMediaCursor; }
+
+    void mediaCursorAddRef();
+    void mediaCursorRemoveRef();
+    int mediaCursorRef() const { return mMediaCursorRef; }
+
+    void pauseMedia();
+
     DataPoint interpolateDataT(double t);
 
     int findIndexBelowT(double t);
@@ -251,6 +260,9 @@ private:
     double                mMarkEnd;
     bool                  mMarkActive;
 
+    double                mMediaCursor;
+    int                   mMediaCursorRef;
+
     double                m_viewDataRotation;
 
     PlotValue::Units      m_units;
@@ -319,6 +331,7 @@ private:
     void initOrthoView();
     void initPlaybackView();
     void initLogbookView();
+    void initSimulationView();
 
     void initSingleView(const QString &title, const QString &objectName,
                         QAction *actionShow, DataView::Direction direction);
@@ -346,6 +359,8 @@ signals:
     void dataChanged();
     void rangeChanged();
     void cursorChanged();
+    void mediaCursorChanged();
+    void mediaPaused();
     void aeroChanged();
     void rotationChanged(double rotation);
     void databaseChanged();
@@ -357,6 +372,7 @@ public slots:
 private slots:
     void setScoringVisible(bool visible);
     void saveZoom();
+    void onDockWidgetTopLevelChanged(bool floating);
 };
 
 #endif // MAINWINDOW_H
