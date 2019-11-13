@@ -857,16 +857,17 @@ void MainWindow::importFile(
             QDateTime importTime = QDateTime::currentDateTime();
 
             if (!query.exec(QString("update files set "
-                                    "description='', "
-                                    "start_time='%1', "
-                                    "duration=%2, "
-                                    "sample_period=%3, "
-                                    "min_lat=%4, "
-                                    "max_lat=%5, "
-                                    "min_lon=%6, "
-                                    "max_lon=%7, "
-                                    "import_time='%8' "
-                                    "where file_name='%9'")
+                                    "description='%1', "
+                                    "start_time='%2', "
+                                    "duration=%3, "
+                                    "sample_period=%4, "
+                                    "min_lat=%5, "
+                                    "max_lat=%6, "
+                                    "min_lon=%7, "
+                                    "max_lon=%8, "
+                                    "import_time='%9' "
+                                    "where file_name='%10'")
+                            .arg(QFileInfo(fileName).fileName())
                             .arg(dateTimeToUTC(startTime))
                             .arg(duration)
                             .arg(samplePeriod)
