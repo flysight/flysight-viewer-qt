@@ -30,8 +30,8 @@ PPCScoring::PPCScoring(
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
     mMode(Time),
-    mWindowTop(3000),
-    mWindowBottom(2000)
+    mWindowTop(2500),
+    mWindowBottom(1500)
 {
 
 }

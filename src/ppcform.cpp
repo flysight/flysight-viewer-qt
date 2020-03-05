@@ -160,7 +160,7 @@ void PPCForm::updateView()
 void PPCForm::onFAIButtonClicked()
 {
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
-    method->setWindow(2000, 3000);
+    method->setWindow(1500, 2500);
 }
 
 void PPCForm::onApplyButtonClicked()
