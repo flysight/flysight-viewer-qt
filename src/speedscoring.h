@@ -33,8 +33,11 @@ class SpeedScoring : public ScoringMethod
 public:
     SpeedScoring(MainWindow *mainWindow);
 
+    double fromExit(void) const { return mFromExit; }
+    void setFromExit(double fromExit);
+
     double windowBottom(void) const { return mWindowBottom; }
-    void setWindow(double windowBottom);
+    void setWindowBottom(double windowBottom);
 
     double score(const MainWindow::DataPoints &result);
     QString scoreAsText(double score);
@@ -42,13 +45,15 @@ public:
     void prepareDataPlot(DataPlot *plot);
 
     bool getWindowBounds(const MainWindow::DataPoints &result,
-                         DataPoint &dpBottom, DataPoint &dpTop);
+                         DataPoint &dpBottom, DataPoint &dpTop,
+                         const DataPoint &dpExit);
 
     void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
 
 private:
     MainWindow *mMainWindow;
 
+    double      mFromExit;
     double      mWindowBottom;
 
 signals:

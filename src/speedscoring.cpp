@@ -31,12 +31,20 @@ SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
-    mWindowBottom(1700)
+    mFromExit(2256),
+    mWindowBottom(1707)
 {
 
 }
 
-void SpeedScoring::setWindow(
+void SpeedScoring::setFromExit(
+        double fromExit)
+{
+    mFromExit = fromExit;
+    emit scoringChanged();
+}
+
+void SpeedScoring::setWindowBottom(
         double windowBottom)
 {
     mWindowBottom = windowBottom;
@@ -46,8 +54,11 @@ void SpeedScoring::setWindow(
 double SpeedScoring::score(
         const MainWindow::DataPoints &result)
 {
+    // Get exit
+    DataPoint dpExit = mMainWindow->interpolateDataT(0);
+
     DataPoint dpBottom, dpTop;
-    if (getWindowBounds(result, dpBottom, dpTop))
+    if (getWindowBounds(result, dpBottom, dpTop, dpExit))
     {
         return (dpTop.z - dpBottom.z) / (dpBottom.t - dpTop.t);
     }
@@ -69,16 +80,19 @@ void SpeedScoring::prepareDataPlot(
     // Return now if plot empty
     if (mMainWindow->dataSize() == 0) return;
 
+    // Get exit
+    DataPoint dpExit = mMainWindow->interpolateDataT(0);
+
     DataPoint dpBottom, dpTop;
     bool success;
 
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
-        success = getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+        success = getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
         break;
     case MainWindow::Optimal:
-        success = getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop);
+        success = getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
         break;
     }
 
@@ -148,7 +162,8 @@ void SpeedScoring::prepareDataPlot(
 bool SpeedScoring::getWindowBounds(
         const MainWindow::DataPoints &result,
         DataPoint &dpBottom,
-        DataPoint &dpTop)
+        DataPoint &dpTop,
+        const DataPoint &dpExit)
 {
     bool found = false;
     int iStart = result.size() - 1;
@@ -173,6 +188,7 @@ bool SpeedScoring::getWindowBounds(
         // Check window conditions
         const DataPoint &dpStart = result[iStart];
         if (dpStart.t < 0) break;
+        if (dpEnd.z < dpExit.z - mFromExit) continue;
         if (dpEnd.z < mWindowBottom) continue;
         if (dpStart.t < tStart - TIME_DELTA) continue;
 
