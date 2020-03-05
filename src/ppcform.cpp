@@ -46,6 +46,13 @@ PPCForm::PPCForm(QWidget *parent) :
     connect(ui->topEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
 
+    connect(ui->drawLaneCheck, SIGNAL(clicked()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->endLatitudeEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->endLongitudeEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+
+    // Connect reference point button
+    connect(ui->endGlobeButton, SIGNAL(clicked()), this, SLOT(onEndButtonClicked()));
+
     connect(ui->timeButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
     connect(ui->distanceButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
     connect(ui->hSpeedButton, SIGNAL(clicked()), this, SLOT(onModeChanged()));
@@ -155,12 +162,31 @@ void PPCForm::updateView()
         ui->optimizeButton->setEnabled(false);
         ui->ppcButton->setEnabled(false);
     }
+
+    const bool drawLane = method->drawLane();
+    const double endLatitude = method->endLatitude();
+    const double endLongitude = method->endLongitude();
+
+    // Update display
+    ui->drawLaneCheck->setChecked(drawLane);
+    ui->endLatitudeEdit->setText(QString("%1").arg(endLatitude, 0, 'f', 7));
+    ui->endLongitudeEdit->setText(QString("%1").arg(endLongitude, 0, 'f', 7));
+
+    ui->label_3->setEnabled(drawLane);
+    ui->endLatitudeEdit->setEnabled(drawLane);
+    ui->latUnits->setEnabled(drawLane);
+
+    ui->label_4->setEnabled(drawLane);
+    ui->endLongitudeEdit->setEnabled(drawLane);
+    ui->lonUnits->setEnabled(drawLane);
+
+    ui->endGlobeButton->setEnabled(drawLane);
 }
 
 void PPCForm::onFAIButtonClicked()
 {
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
-    method->setWindow(2000, 3000);
+    method->setWindow(1500, 2500);
 }
 
 void PPCForm::onApplyButtonClicked()
@@ -168,8 +194,14 @@ void PPCForm::onApplyButtonClicked()
     double bottom = ui->bottomEdit->text().toDouble();
     double top = ui->topEdit->text().toDouble();
 
+    const bool drawLane = ui->drawLaneCheck->isChecked();
+    const double endLatitude = ui->endLatitudeEdit->text().toDouble();
+    const double endLongitude = ui->endLongitudeEdit->text().toDouble();
+
     PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
     method->setWindow(bottom, top);
+    method->setDrawLane(drawLane);
+    method->setEnd(endLatitude, endLongitude);
 
     mMainWindow->setFocus();
 }
@@ -186,10 +218,21 @@ void PPCForm::onDownButtonClicked()
     method->setWindow(method->windowBottom() - 10, method->windowTop() - 10);
 }
 
+void PPCForm::onEndButtonClicked()
+{
+    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+    method->setMapMode(PPCScoring::End);
+    setFocus();
+}
+
 void PPCForm::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
+        // Cancel map selection
+        PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
+        method->setMapMode(PPCScoring::None);
+
         // Reset window bounds
         updateView();
 

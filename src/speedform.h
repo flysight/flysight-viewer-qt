@@ -58,8 +58,6 @@ public slots:
 
 private slots:
     void onFAIButtonClicked();
-    void onUpButtonClicked();
-    void onDownButtonClicked();
     void onApplyButtonClicked();
 
     void onActualButtonClicked();

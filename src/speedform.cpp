@@ -39,9 +39,8 @@ SpeedForm::SpeedForm(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->faiButton, SIGNAL(clicked()), this, SLOT(onFAIButtonClicked()));
-    connect(ui->upButton, SIGNAL(clicked()), this, SLOT(onUpButtonClicked()));
-    connect(ui->downButton, SIGNAL(clicked()), this, SLOT(onDownButtonClicked()));
 
+    connect(ui->fromExitEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
 
     // Connect optimization buttons
@@ -78,10 +77,15 @@ void SpeedForm::updateView()
 
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
 
+    const double fromExit = method->fromExit();
     const double bottom = method->windowBottom();
 
     // Update window bounds
+    ui->fromExitEdit->setText(QString("%1").arg(fromExit));
     ui->bottomEdit->setText(QString("%1").arg(bottom));
+
+    // Get exit
+    DataPoint dpExit = mMainWindow->interpolateDataT(0);
 
     DataPoint dpBottom, dpTop;
     bool success;
@@ -89,10 +93,10 @@ void SpeedForm::updateView()
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
-        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop);
+        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
         break;
     case MainWindow::Optimal:
-        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop);
+        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
         break;
     }
 
@@ -141,29 +145,20 @@ void SpeedForm::updateView()
 void SpeedForm::onFAIButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(1700);
+    method->setFromExit(2256);
+    method->setWindowBottom(1707);
 }
 
 void SpeedForm::onApplyButtonClicked()
 {
+    double fromExit = ui->fromExitEdit->text().toDouble();
     double bottom = ui->bottomEdit->text().toDouble();
 
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(bottom);
+    method->setFromExit(fromExit);
+    method->setWindowBottom(bottom);
 
     mMainWindow->setFocus();
-}
-
-void SpeedForm::onUpButtonClicked()
-{
-    SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(method->windowBottom() + 10);
-}
-
-void SpeedForm::onDownButtonClicked()
-{
-    SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setWindow(method->windowBottom() - 10);
 }
 
 void SpeedForm::keyPressEvent(QKeyEvent *event)
@@ -215,7 +210,10 @@ void SpeedForm::onPpcButtonClicked() {
     ui->faiButton->click();
     ui->actualButton->click();
 
-    if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop)) {
+    // Get exit
+    DataPoint dpExit = mMainWindow->interpolateDataT(0);
+
+    if (method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit)) {
 
         const double time = dpBottom.t - dpTop.t;
         const double distance = mMainWindow->getDistance(dpTop, dpBottom);

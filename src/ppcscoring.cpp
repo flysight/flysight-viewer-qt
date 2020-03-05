@@ -23,17 +23,82 @@
 
 #include "ppcscoring.h"
 
+#include <QSettings>
+#include <QVector>
+#include <QWebFrame>
+#include <QWebElement>
+
+#include "GeographicLib/Geodesic.hpp"
+#include "GeographicLib/GeodesicLine.hpp"
+
+#include "geographicutil.h"
 #include "mainwindow.h"
+#include "mapview.h"
+
+#define MAX_SPLIT_DEPTH 8
+
+using namespace GeographicLib;
+using namespace GeographicUtil;
 
 PPCScoring::PPCScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
     mMode(Time),
-    mWindowTop(3000),
-    mWindowBottom(2000)
+    mWindowTop(2500),
+    mWindowBottom(1500),
+    mDrawLane(false),
+    mEndLatitude(51.0500),
+    mEndLongitude(-114.0667),
+    mLaneWidth(600),
+    mMapMode(None)
 {
 
+}
+
+void PPCScoring::readSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("ppcScoring");
+        mDrawLane     = settings.value("drawLane", mDrawLane).toBool();
+        mEndLatitude  = settings.value("endLatitude", mEndLatitude).toDouble();
+        mEndLongitude = settings.value("endLongitude", mEndLongitude).toDouble();
+    settings.endGroup();
+}
+
+void PPCScoring::writeSettings()
+{
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("ppcScoring");
+        settings.setValue("drawLane", mDrawLane);
+        settings.setValue("endLatitude", mEndLatitude);
+        settings.setValue("endLongitude", mEndLongitude);
+    settings.endGroup();
+}
+
+void PPCScoring::setDrawLane(
+        bool drawLane)
+{
+    mDrawLane = drawLane;
+    emit scoringChanged();
+}
+
+void PPCScoring::setEnd(
+        double endLatitude,
+        double endLongitude)
+{
+    mEndLatitude = endLatitude;
+    mEndLongitude = endLongitude;
+    emit scoringChanged();
+}
+
+void PPCScoring::setMapMode(
+        MapMode mode)
+{
+    mMapMode = mode;
+    emit scoringChanged();
 }
 
 void PPCScoring::setMode(
@@ -172,6 +237,111 @@ void PPCScoring::prepareDataPlot(
     }
 }
 
+void PPCScoring::prepareMapView(
+        MapView *view)
+{
+    if (!mDrawLane) return;
+
+    // Distance threshold
+    const double earthCircumference = 40075000; // m
+    const double zoom = view->page()->currentFrame()->documentElement().evaluateJavaScript("map.getZoom();").toDouble();
+    const double threshold = earthCircumference / pow(2, zoom) / view->width();
+
+    // Get start point
+    DataPoint dpStart = mMainWindow->interpolateDataT(10);
+
+    // Draw lane center
+    QVector< double > lat, lon;
+
+    lat.push_back(mEndLatitude);
+    lon.push_back(mEndLongitude);
+
+    splitLine(lat, lon, mEndLatitude, mEndLongitude, dpStart.lat, dpStart.lon, threshold, 0);
+
+    lat.push_back(dpStart.lat);
+    lon.push_back(dpStart.lon);
+
+    QString js;
+    for (int i = 0; i < lat.size(); ++i)
+    {
+        js += QString("path2.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
+    }
+
+    // Draw shading around lane
+    QVector< double > ltLat, ltLon, rtLat, rtLon;
+    for (int i = 0; i < lat.size(); ++i)
+    {
+        double ltBearing, rtBearing;
+
+        if (i + 1 < lat.size())
+        {
+            double azi1, azi2;
+            Geodesic::WGS84().Inverse(lat[i], lon[i], lat[i + 1], lon[i + 1], azi1, azi2);
+
+            ltBearing = azi1 + 90;
+            rtBearing = azi1 - 90;
+        }
+        else if (i - 1 >= 0)
+        {
+            double azi1, azi2;
+            Geodesic::WGS84().Inverse(lat[i - 1], lon[i - 1], lat[i], lon[i], azi1, azi2);
+
+            ltBearing = azi2 + 90;
+            rtBearing = azi2 - 90;
+        }
+
+        double tempLat, tempLon;
+        Geodesic::WGS84().Direct(lat[i], lon[i], ltBearing, mLaneWidth / 2, tempLat, tempLon);
+        ltLat.push_back(tempLat);
+        ltLon.push_back(tempLon);
+
+        Geodesic::WGS84().Direct(lat[i], lon[i], rtBearing, mLaneWidth / 2, tempLat, tempLon);
+        rtLat.push_front(tempLat);
+        rtLon.push_front(tempLon);
+    }
+
+    // Now take ltLat + rtLat (and same with lon) to form loop
+    for (int i = 0; i < ltLat.size(); ++i)
+    {
+        js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(ltLat[i], 0, 'f').arg(ltLon[i], 0, 'f');
+    }
+
+    for (int i = 0; i < rtLat.size(); ++i)
+    {
+        js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(rtLat[i], 0, 'f').arg(rtLon[i], 0, 'f');
+    }
+
+    view->page()->currentFrame()->documentElement().evaluateJavaScript(js);
+}
+
+void PPCScoring::splitLine(
+        QVector< double > &lat,
+        QVector< double > &lon,
+        double startLat,
+        double startLon,
+        double endLat,
+        double endLon,
+        double threshold,
+        int depth)
+{
+    GeodesicLine l = Geodesic::WGS84().InverseLine(startLat, startLon, endLat, endLon);
+    double midLat, midLon;
+    l.Position(l.Distance() / 2, midLat, midLon);
+
+    double dist;
+    Geodesic::WGS84().Inverse((startLat + endLat) / 2, (startLon + endLon) / 2, midLat, midLon, dist);
+
+    if (dist > threshold && depth < MAX_SPLIT_DEPTH)
+    {
+        splitLine(lat, lon, startLat, startLon, midLat, midLon, threshold, depth + 1);
+
+        lat.push_back(midLat);
+        lon.push_back(midLon);
+
+        splitLine(lat, lon, midLat, midLon, endLat, endLon, threshold, depth + 1);
+    }
+}
+
 bool PPCScoring::getWindowBounds(
         const MainWindow::DataPoints &result,
         DataPoint &dpBottom,
@@ -223,4 +393,25 @@ bool PPCScoring::getWindowBounds(
     {
         return false;
     }
+}
+
+bool PPCScoring::updateReference(
+        double lat,
+        double lon)
+{
+    if (mMapMode == End)
+    {
+        setEnd(lat, lon);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void PPCScoring::closeReference()
+{
+    setMapMode(None);
+    mMainWindow->setFocus();
 }

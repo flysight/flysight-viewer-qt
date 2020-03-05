@@ -35,6 +35,10 @@ public:
         Time, Distance, Speed
     } Mode;
 
+    typedef enum {
+        None, End
+    } MapMode;
+
     PPCScoring(MainWindow *mainWindow);
 
     Mode mode() const { return mMode; }
@@ -44,13 +48,29 @@ public:
     double windowBottom(void) const { return mWindowBottom; }
     void setWindow(double windowBottom, double windowTop);
 
+    bool drawLane(void) const { return mDrawLane; }
+    void setDrawLane(bool drawLane);
+
+    double endLatitude(void) const { return mEndLatitude; }
+    double endLongitude(void) const { return mEndLongitude; }
+    void setEnd(double endLatitude, double endLongitude);
+
+    void setMapMode(MapMode mode);
+
     double score(const MainWindow::DataPoints &result);
     QString scoreAsText(double score);
 
     void prepareDataPlot(DataPlot *plot);
+    void prepareMapView(MapView *view);
+
+    bool updateReference(double lat, double lon);
+    void closeReference();
 
     bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
+
+    void readSettings();
+    void writeSettings();
 
     void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
 
@@ -60,6 +80,18 @@ private:
     Mode        mMode;
     double      mWindowTop;
     double      mWindowBottom;
+
+    bool        mDrawLane;
+    double      mEndLatitude;
+    double      mEndLongitude;
+    double      mLaneWidth;
+
+    MapMode     mMapMode;
+
+    void splitLine(QVector< double > &lat, QVector< double > &lon,
+                   double startLat, double startLon,
+                   double endLat, double endLon,
+                   double threshold, int depth);
 
 signals:
 
