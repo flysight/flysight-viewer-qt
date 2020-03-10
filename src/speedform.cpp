@@ -31,6 +31,8 @@
 #include "speedscoring.h"
 #include "ppcupload.h"
 
+#define METERS_TO_FEET 3.280839895
+
 SpeedForm::SpeedForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SpeedForm),
@@ -81,8 +83,8 @@ void SpeedForm::updateView()
     const double bottom = method->windowBottom();
 
     // Update window bounds
-    ui->fromExitEdit->setText(QString("%1").arg(fromExit));
-    ui->bottomEdit->setText(QString("%1").arg(bottom));
+    ui->fromExitEdit->setText(QString("%1").arg(fromExit * METERS_TO_FEET));
+    ui->bottomEdit->setText(QString("%1").arg(bottom * METERS_TO_FEET));
 
     // Get exit
     DataPoint dpExit = mMainWindow->interpolateDataT(0);
@@ -145,14 +147,14 @@ void SpeedForm::updateView()
 void SpeedForm::onFAIButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
-    method->setFromExit(2256);
-    method->setWindowBottom(1707);
+    method->setFromExit(2255.52);
+    method->setWindowBottom(1706.88);
 }
 
 void SpeedForm::onApplyButtonClicked()
 {
-    double fromExit = ui->fromExitEdit->text().toDouble();
-    double bottom = ui->bottomEdit->text().toDouble();
+    double fromExit = ui->fromExitEdit->text().toDouble() / METERS_TO_FEET;
+    double bottom = ui->bottomEdit->text().toDouble() / METERS_TO_FEET;
 
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
     method->setFromExit(fromExit);
