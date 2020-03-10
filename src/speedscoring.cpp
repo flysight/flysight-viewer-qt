@@ -31,8 +31,8 @@ SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
-    mFromExit(2256),
-    mWindowBottom(1707)
+    mFromExit(2255.52),
+    mWindowBottom(1706.88)
 {
 
 }
