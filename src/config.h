@@ -24,6 +24,7 @@ public:
     Config();
 
     void readSingle(QString fileName);
+    void reset();
 
     typedef struct
     {
@@ -74,6 +75,7 @@ public:
     int32_t  UBX_alarm_window_below;
 
     QList< UBX_speech_t > UBX_speech;
+    uint8_t   UBX_cur_speech;
     uint16_t  UBX_sp_rate;
 
     uint8_t   UBX_alt_units;
@@ -94,6 +96,8 @@ public:
     int32_t   UBX_dz_elev;
 
     QString   mAudioFolder;
+    QString   mRootConfig;
+    QString   mConfigFolder;
 };
 
 #endif // CONFIGURATION_H

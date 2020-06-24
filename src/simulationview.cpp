@@ -1,9 +1,9 @@
 #include "simulationview.h"
 #include "ui_simulationview.h"
 
-#include <QDir>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QSettings>
 #include <QTextStream>
 
@@ -213,6 +213,15 @@ void SimulationView::on_processButton_clicked()
     if (ui->audioCheckBox->isChecked())
     {
         config.mAudioFolder = ui->audioFolderName->text();
+    }
+
+    // Copy root configuration name
+    config.mRootConfig = ui->rootFileName->text();
+
+    // Copy selected configuration name
+    if (ui->selectedCheckBox->isChecked())
+    {
+        config.mConfigFolder = QFileInfo(ui->selectedFileName->text()).absolutePath();
     }
 
     // Return now if there's no data

@@ -10,7 +10,7 @@ class Tone;
 class UBX
 {
 public:
-    UBX(const Config &config, Tone &tone);
+    UBX(Config &config, Tone &tone);
 
     void receiveMessage(const DataPoint &dp);
     void task();
@@ -46,7 +46,7 @@ private:
     }
     UBX_saved_t ;
 
-    const Config &mConfig;
+    Config &mConfig;
     Tone &mTone;
 
     uint8_t  mCurSpeech;

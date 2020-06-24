@@ -28,7 +28,7 @@ const uint16_t UBX::mSasTable[12] =
 };
 
 UBX::UBX(
-        const Config &config,
+        Config &config,
         Tone &tone):
     mConfig(config),
     mTone(tone)
@@ -671,6 +671,29 @@ void UBX::updateAlarms(UBX_saved_t *current)
                     break ;
                 case 4:	// play file
                     mTone.play(mConfig.UBX_alarms[i].filename + QString(".wav"));
+                    break;
+                case 9: // load config
+                    mConfig.UBX_init_filename.clear();
+
+                    QString fileName;
+                    if (!mConfig.mConfigFolder.isEmpty() && !mConfig.UBX_alarms[i].filename.isEmpty())
+                    {
+                        fileName = mConfig.mConfigFolder + QString("/") + mConfig.UBX_alarms[i].filename + QString(".txt");
+                    }
+
+                    mConfig.reset();
+                    mConfig.readSingle(mConfig.mRootConfig);
+
+                    if (!fileName.isEmpty())
+                    {
+                        mConfig.readSingle(fileName);
+                    }
+
+                    if (!mConfig.UBX_init_filename.isEmpty())
+                    {
+                        mTone.play(mConfig.UBX_init_filename + QString(".wav"));
+                    }
+
                     break;
                 }
 
