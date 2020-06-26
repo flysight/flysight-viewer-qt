@@ -40,20 +40,22 @@ public:
     */
     static QString errmsg();
 
-	/*!
+    /*!
         \brief A human-readable error message displayed into standard output for the last libvlc error in the calling thread.
 
 		The resulting string is valid until another error occurs.
 		\warning There may be no output, if there is no error.
 	*/
-	static void showErrmsg();
+    static void showErrmsg();
 
-	/*!
+    /*!
 		\brief Clears the libvlc error status for the current thread.
 
-		This is optional. By default, the error status is automatically overriden when a new error occurs, and destroyed when the thread exits.
+        This does nothing.
+
+        \deprecated Deprecated since VLC-Qt 1.1, will be removed in 2.0
 	*/
-	static void clearerr();
+    Q_DECL_DEPRECATED static void clearerr();
 };
 
 #endif // VLCQT_ERROR_H_

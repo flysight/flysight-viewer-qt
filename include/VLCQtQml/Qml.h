@@ -1,6 +1,6 @@
 /****************************************************************************
 * VLC-Qt - Qt and libvlc connector library
-* Copyright (C) 2012 Tadej Novak <tadej@tano.si>
+* Copyright (C) 2016 Tadej Novak <tadej@tano.si>
 *
 * This library is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Lesser General Public License as published
@@ -16,15 +16,31 @@
 * along with this library. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef VLCQT_SHARED_EXPORT_QML_H
-#define VLCQT_SHARED_EXPORT_QML_H
+#ifndef VLCQT_QML_H_
+#define VLCQT_QML_H_
 
-#include <QtCore/qglobal.h>
+#include "SharedExportQml.h"
 
-#if defined(VLCQT_QML_LIBRARY)
-#define VLCQT_QML_EXPORT Q_DECL_EXPORT
-#else
-#define VLCQT_QML_EXPORT Q_DECL_IMPORT
-#endif
+/*!
+    \defgroup VLCQtQml VLC-Qt Qml (VLCQtQml)
+    \brief QML classes for controlling video and media playback
+ */
 
-#endif // SHARED_EXPORT_QML_H
+namespace VlcQml
+{
+    /*!
+        \brief Register QML types as VLCQt
+
+        Intended for use without plugin.
+
+        Include into QML file as
+        import VLCQt VERSION_MAJOR.VERSION_MINOR
+
+        Object names: VlcPlayer, VlcVideoObject
+
+        \since VLC-Qt 1.1
+     */
+    VLCQT_QML_EXPORT void registerTypes();
+}
+
+#endif // VLCQT_QML_H_

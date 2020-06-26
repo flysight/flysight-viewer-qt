@@ -43,7 +43,7 @@ struct libvlc_media_t;
 */
 class VLCQT_CORE_EXPORT VlcMedia : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     /*!
         \brief VlcMedia constructor.
@@ -91,6 +91,27 @@ public:
     libvlc_media_t *core();
 
     /*!
+        \brief Get parsed status
+
+        Know when it is OK to read metadata and track information
+
+        \return parsed status (const bool)
+        \since VLC-Qt 1.1
+    */
+    bool parsed() const;
+
+    /*!
+        \brief Parse media information
+
+        Parse media information: metadata and track information.
+        This call is async.
+
+        \see parsedChanged
+        \since VLC-Qt 1.1
+    */
+    void parse();
+
+    /*!
         \brief Current media location
 
         \return QString media location
@@ -103,6 +124,20 @@ public:
         \return VlcStats media stats object
     */
     VlcStats *getStats();
+
+    /*!
+        \brief Get media state
+        \return current media state
+        \since VLC-Qt 1.1
+    */
+    Vlc::State state() const;
+
+    /*!
+        \brief Get media duration
+        \return duration
+        \since VLC-Qt 1.1
+    */
+    qint64 duration() const;
 
     /*!
         \brief Duplicate (provided for convenience)
@@ -163,7 +198,6 @@ public:
                       int bitrate,
                       int fps,
                       int scale);
-
 
     /*!
         \brief Merge
@@ -260,7 +294,6 @@ public:
     */
     void setOptions(const QStringList &options);
 
-
 signals:
     /*!
         \brief Signal sent on meta change
@@ -283,8 +316,15 @@ signals:
     /*!
         \brief Signal sent on parsed change
         \param status new parsed status
+        \deprecated Deprecated since VLC-Qt 1.1, will be removed in 2.0
     */
-    void parsedChanged(int status);
+    Q_DECL_DEPRECATED void parsedChanged(int status);
+
+    /*!
+        \brief Signal sent on parsed change
+        \param status new parsed status
+    */
+    void parsedChanged(bool status);
 
     /*!
         \brief Signal sent on freed
@@ -298,7 +338,6 @@ signals:
     */
     void stateChanged(const Vlc::State &state);
 
-
 private:
     void initMedia(const QString &location,
                    bool localFile,
@@ -310,7 +349,7 @@ private:
     void createCoreConnections();
     void removeCoreConnections();
 
-    libvlc_media_t * _vlcMedia;
+    libvlc_media_t *_vlcMedia;
     libvlc_event_manager_t *_vlcEvents;
 
     QString _currentLocation;

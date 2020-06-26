@@ -51,7 +51,7 @@ struct libvlc_media_player_t;
 */
 class VLCQT_CORE_EXPORT VlcMediaPlayer : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     /*!
         \brief VlcMediaPlayer constructor.
@@ -154,6 +154,13 @@ public:
     bool hasVout() const;
 
     /*!
+        \brief Get seekable status
+        \return seekable status (const bool)
+        \since VLC-Qt 1.1
+    */
+    bool seekable() const;
+
+    /*!
         \brief Get current player state.
         \return current player state (const Vlc::State)
     */
@@ -222,7 +229,6 @@ public slots:
         \brief Stops playing current media
     */
     void stop();
-
 
 signals:
     /*!
