@@ -725,6 +725,12 @@ void DataPlot::updateCursor()
             graph->setScatterStyle(QCPScatterStyle::ssDisc);
         }
 
+        // Draw vertical line
+        QCPItemLine *line = new QCPItemLine(this);
+        line->setPen(QPen(Qt::black));
+        line->start->setCoords(xMark.first(), yAxis->range().lower);
+        line->end->setCoords(xMark.first(), yAxis->range().upper);
+
         // Update hover text
         double xCursor = xAxis->coordToPixel(m_tCursor);
         if (axisRect()->rect().contains(xCursor, m_yCursor))
@@ -770,24 +776,14 @@ void DataPlot::updateCursor()
         line->setPen(QPen(Qt::black));
         line->start->setCoords(m_tBegin, yAxis->range().lower);
         line->end->setCoords(m_tBegin, yAxis->range().upper);
-
-        line = new QCPItemLine(this);
-        line->setPen(QPen(Qt::black));
-        line->start->setCoords(m_tCursor, yAxis->range().lower);
-        line->end->setCoords(m_tCursor, yAxis->range().upper);
     }
     else
     {
-        // Draw crosshairs
+        // Draw horizontal line
         QCPItemLine *line = new QCPItemLine(this);
         line->setPen(QPen(Qt::black));
         line->start->setCoords(xAxis->range().lower, yAxis->pixelToCoord(m_yCursor));
         line->end->setCoords(xAxis->range().upper, yAxis->pixelToCoord(m_yCursor));
-
-        line = new QCPItemLine(this);
-        line->setPen(QPen(Qt::black));
-        line->start->setCoords(m_tCursor, yAxis->range().lower);
-        line->end->setCoords(m_tCursor, yAxis->range().upper);
     }
 
     setCurrentLayer("main");
