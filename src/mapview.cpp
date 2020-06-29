@@ -264,6 +264,8 @@ void MapView::updateView()
 
 void MapView::updateCursor()
 {
+    if (mMainWindow->dataSize() == 0) return;
+
     if (mMainWindow->markActive())
     {
         // Add marker to map

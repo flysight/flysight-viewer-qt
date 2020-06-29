@@ -665,6 +665,8 @@ void DataPlot::updateCursor()
         }
     }
 
+    if (mMainWindow->dataSize() == 0) return;
+
     if (mMainWindow->mediaCursorRef() > 0)
     {
         // Draw marks

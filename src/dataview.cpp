@@ -338,6 +338,8 @@ void DataView::updateCursor()
 
     m_cursors.clear();
 
+    if (mMainWindow->dataSize() == 0) return;
+
     if (mMainWindow->mediaCursorRef() > 0)
     {
         const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
