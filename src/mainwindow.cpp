@@ -379,9 +379,9 @@ void MainWindow::initMapView()
     connect(this, SIGNAL(rangeChanged()),
             mapView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
-            mapView, SLOT(updateView()));
+            mapView, SLOT(updateCursor()));
     connect(this, SIGNAL(mediaCursorChanged()),
-            mapView, SLOT(updateView()));
+            mapView, SLOT(updateCursor()));
 
     connect(dockWidget, SIGNAL(topLevelChanged(bool)),
             this, SLOT(onDockWidgetTopLevelChanged(bool)));

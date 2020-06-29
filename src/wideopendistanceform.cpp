@@ -72,6 +72,9 @@ void WideOpenDistanceForm::setMainWindow(
 
 void WideOpenDistanceForm::updateView()
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     WideOpenDistanceScoring *method = (WideOpenDistanceScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenDistance);
 
     const double endLatitude = method->endLatitude();

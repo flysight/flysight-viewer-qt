@@ -387,6 +387,7 @@ void SimulationView::setScrubPosition(int position)
 
 void SimulationView::updateView()
 {
+    if (mMainWindow->dataSize() == 0) return;
     if (mBusy) return;
 
     // Get media cursor

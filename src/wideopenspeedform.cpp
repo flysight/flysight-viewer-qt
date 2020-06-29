@@ -73,6 +73,9 @@ void WideOpenSpeedForm::setMainWindow(
 
 void WideOpenSpeedForm::updateView()
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
 
     const double endLatitude = method->endLatitude();

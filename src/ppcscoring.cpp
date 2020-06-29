@@ -25,8 +25,6 @@
 
 #include <QSettings>
 #include <QVector>
-#include <QWebFrame>
-#include <QWebElement>
 
 #include "GeographicLib/Geodesic.hpp"
 #include "GeographicLib/GeodesicLine.hpp"
@@ -34,6 +32,7 @@
 #include "geographicutil.h"
 #include "mainwindow.h"
 #include "mapview.h"
+#include "mapcore.h"
 
 #define MAX_SPLIT_DEPTH 8
 
@@ -240,83 +239,86 @@ void PPCScoring::prepareDataPlot(
 void PPCScoring::prepareMapView(
         MapView *view)
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     if (!mDrawLane) return;
 
     // Distance threshold
-    const double earthCircumference = 40075000; // m
-    const double zoom = view->page()->currentFrame()->documentElement().evaluateJavaScript("map.getZoom();").toDouble();
-    const double threshold = earthCircumference / pow(2, zoom) / view->width();
+    const double threshold = view->metersPerPixel();
 
     // Get start point
     DataPoint dpStart = mMainWindow->interpolateDataT(10);
 
     // Draw lane center
-    QVector< double > lat, lon;
+    QList<QVariant> data;
 
-    lat.push_back(mEndLatitude);
-    lon.push_back(mEndLongitude);
+    QMap<QString, QVariant> val;
+    val["lat"] = mEndLatitude;
+    val["lng"] = mEndLongitude;
+    data.push_back(val);
 
-    splitLine(lat, lon, mEndLatitude, mEndLongitude, dpStart.lat, dpStart.lon, threshold, 0);
+    splitLine(data, mEndLatitude, mEndLongitude, dpStart.lat, dpStart.lon, threshold, 0);
 
-    lat.push_back(dpStart.lat);
-    lon.push_back(dpStart.lon);
+    val["lat"] = dpStart.lat;
+    val["lng"] = dpStart.lon;
+    data.push_back(val);
 
-    QString js;
-    for (int i = 0; i < lat.size(); ++i)
-    {
-        js += QString("path2.push(new google.maps.LatLng(%1, %2));").arg(lat[i], 0, 'f').arg(lon[i], 0, 'f');
-    }
+    view->mapCore()->addPolyline(data);
 
     // Draw shading around lane
-    QVector< double > ltLat, ltLon, rtLat, rtLon;
-    for (int i = 0; i < lat.size(); ++i)
+    QList<QVariant> lt, rt;
+    for (int i = 0; i < data.size(); ++i)
     {
+        double lat1 = data[i].toMap()["lat"].toDouble();
+        double lon1 = data[i].toMap()["lng"].toDouble();
+
         double ltBearing, rtBearing;
 
-        if (i + 1 < lat.size())
+        if (i + 1 < data.size())
         {
+            double lat2 = data[i+1].toMap()["lat"].toDouble();
+            double lon2 = data[i+1].toMap()["lng"].toDouble();
+
             double azi1, azi2;
-            Geodesic::WGS84().Inverse(lat[i], lon[i], lat[i + 1], lon[i + 1], azi1, azi2);
+            Geodesic::WGS84().Inverse(lat1, lon1, lat2, lon2, azi1, azi2);
 
             ltBearing = azi1 + 90;
             rtBearing = azi1 - 90;
         }
         else if (i - 1 >= 0)
         {
+            double lat2 = data[i-1].toMap()["lat"].toDouble();
+            double lon2 = data[i-1].toMap()["lng"].toDouble();
+
             double azi1, azi2;
-            Geodesic::WGS84().Inverse(lat[i - 1], lon[i - 1], lat[i], lon[i], azi1, azi2);
+            Geodesic::WGS84().Inverse(lat2, lon2, lat1, lon1, azi1, azi2);
 
             ltBearing = azi2 + 90;
             rtBearing = azi2 - 90;
         }
 
         double tempLat, tempLon;
-        Geodesic::WGS84().Direct(lat[i], lon[i], ltBearing, mLaneWidth / 2, tempLat, tempLon);
-        ltLat.push_back(tempLat);
-        ltLon.push_back(tempLon);
+        Geodesic::WGS84().Direct(lat1, lon1, ltBearing, mLaneWidth / 2, tempLat, tempLon);
 
-        Geodesic::WGS84().Direct(lat[i], lon[i], rtBearing, mLaneWidth / 2, tempLat, tempLon);
-        rtLat.push_front(tempLat);
-        rtLon.push_front(tempLon);
+        QMap<QString, QVariant> val;
+        val["lat"] = tempLat;
+        val["lng"] = tempLon;
+        lt.push_back(val);
+
+        Geodesic::WGS84().Direct(lat1, lon1, rtBearing, mLaneWidth / 2, tempLat, tempLon);
+
+        val["lat"] = tempLat;
+        val["lng"] = tempLon;
+        rt.push_front(val);
     }
 
-    // Now take ltLat + rtLat (and same with lon) to form loop
-    for (int i = 0; i < ltLat.size(); ++i)
-    {
-        js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(ltLat[i], 0, 'f').arg(ltLon[i], 0, 'f');
-    }
-
-    for (int i = 0; i < rtLat.size(); ++i)
-    {
-        js += QString("path3.push(new google.maps.LatLng(%1, %2));").arg(rtLat[i], 0, 'f').arg(rtLon[i], 0, 'f');
-    }
-
-    view->page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    // Now take lt + rt to form loop
+    view->mapCore()->addPolygon(lt + rt);
 }
 
 void PPCScoring::splitLine(
-        QVector< double > &lat,
-        QVector< double > &lon,
+        QList<QVariant> &data,
         double startLat,
         double startLon,
         double endLat,
@@ -333,12 +335,14 @@ void PPCScoring::splitLine(
 
     if (dist > threshold && depth < MAX_SPLIT_DEPTH)
     {
-        splitLine(lat, lon, startLat, startLon, midLat, midLon, threshold, depth + 1);
+        splitLine(data, startLat, startLon, midLat, midLon, threshold, depth + 1);
 
-        lat.push_back(midLat);
-        lon.push_back(midLon);
+        QMap<QString, QVariant> val;
+        val["lat"] = midLat;
+        val["lng"] = midLon;
+        data.push_back(val);
 
-        splitLine(lat, lon, midLat, midLon, endLat, endLon, threshold, depth + 1);
+        splitLine(data, midLat, midLon, endLat, endLon, threshold, depth + 1);
     }
 }
 

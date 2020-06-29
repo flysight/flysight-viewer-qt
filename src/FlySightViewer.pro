@@ -4,11 +4,12 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport webkitwidgets sql
+QT       += core gui printsupport webenginewidgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
+DEFINES += _USE_MATH_DEFINES
 
 TARGET = FlySightViewer
 TEMPLATE = app
@@ -98,6 +99,7 @@ HEADERS  += mainwindow.h \
     datapoint.h \
     dataplot.h \
     dataview.h \
+    mapcore.h \
     nav.h \
     simulationview.h \
     tone.h \
@@ -131,8 +133,7 @@ HEADERS  += mainwindow.h \
     flareform.h \
     flarescoring.h \
     ppcupload.h \
-    QCustomPlot/qcustomplot.h \
-    secrets.h
+    QCustomPlot/qcustomplot.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui \
@@ -151,8 +152,7 @@ FORMS    += mainwindow.ui \
 
 win32 {
     RC_ICONS = FlySightViewer.ico
-}
-else {
+} else {
     ICON = FlySightViewer.icns
 }
 
@@ -164,15 +164,17 @@ INCLUDEPATH += ../include/GeographicLib
 
 win32 {
     LIBS += -L../lib
-    LIBS += -lVLCQtCore -l VLCQtQml -lVLCQtWidgets
-}
-else:macx {
+    CONFIG(debug, debug|release) {
+        LIBS += -lVLCQtCored -lVLCQtQmld -lVLCQtWidgetsd
+    } else {
+        LIBS += -lVLCQtCore -lVLCQtQml -lVLCQtWidgets
+    }
+} else:macx {
     QMAKE_LFLAGS += -F../frameworks
     LIBS         += -framework VLCQtCore
     LIBS         += -framework VLCQtQml
     LIBS         += -framework VLCQtWidgets
-}
-else {
+} else:unix {
     LIBS += -L/usr/local/lib
     LIBS += -lvlc-qt -lvlc-qt-widgets
 }

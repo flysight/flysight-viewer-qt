@@ -87,7 +87,7 @@ private:
     bool        mFinishValid;
     DataPoint   mFinishPoint;
 
-    void splitLine(QVector< double > &lat, QVector< double > &lon,
+    void splitLine(QList<QVariant> &data,
                    double startLat, double startLon,
                    double endLat, double endLon,
                    double threshold, int depth);
