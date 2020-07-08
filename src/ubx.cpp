@@ -585,6 +585,30 @@ void UBX::speakValue(UBX_saved_t *current)
     *(end_ptr++) = 0;
 }
 
+void UBX::loadConfig(QString filename)
+{
+    mConfig.UBX_init_filename.clear();
+
+    QString tempFilename;
+    if (!mConfig.mConfigFolder.isEmpty() && !filename.isEmpty())
+    {
+        tempFilename = mConfig.mConfigFolder + QString("/") + filename + QString(".txt");
+    }
+
+    mConfig.reset();
+    mConfig.readSingle(mConfig.mRootConfig);
+
+    if (!tempFilename.isEmpty())
+    {
+        mConfig.readSingle(tempFilename);
+    }
+
+    if (!mConfig.UBX_init_filename.isEmpty())
+    {
+        mTone.play(mConfig.UBX_init_filename + QString(".wav"));
+    }
+}
+
 void UBX::updateAlarms(UBX_saved_t *current)
 {
     uint8_t i, suppress_tone, suppress_alt;
@@ -672,28 +696,17 @@ void UBX::updateAlarms(UBX_saved_t *current)
                 case 4:	// play file
                     mTone.play(mConfig.UBX_alarms[i].filename + QString(".wav"));
                     break;
-                case 9: // load config
-                    mConfig.UBX_init_filename.clear();
-
-                    QString fileName;
-                    if (!mConfig.mConfigFolder.isEmpty() && !mConfig.UBX_alarms[i].filename.isEmpty())
+                case 8: // load config (ascending)
+                    if (current->hMSL >= mPrevHMSL)
                     {
-                        fileName = mConfig.mConfigFolder + QString("/") + mConfig.UBX_alarms[i].filename + QString(".txt");
+                        loadConfig(mConfig.UBX_alarms[i].filename);
                     }
-
-                    mConfig.reset();
-                    mConfig.readSingle(mConfig.mRootConfig);
-
-                    if (!fileName.isEmpty())
+                    break;
+                case 9: // load config (descending)
+                    if (current->hMSL < mPrevHMSL)
                     {
-                        mConfig.readSingle(fileName);
+                        loadConfig(mConfig.UBX_alarms[i].filename);
                     }
-
-                    if (!mConfig.UBX_init_filename.isEmpty())
-                    {
-                        mTone.play(mConfig.UBX_init_filename + QString(".wav"));
-                    }
-
                     break;
                 }
 

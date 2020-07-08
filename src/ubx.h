@@ -2,6 +2,7 @@
 #define UBX_H
 
 #include <stdint.h>
+#include <QString>
 
 class Config;
 class DataPoint;
@@ -72,6 +73,7 @@ private:
     void getValues(UBX_saved_t *current, uint8_t mode, int32_t *val, int32_t *min, int32_t *max);
     char *numberToSpeech(int32_t number, char *ptr);
     void speakValue(UBX_saved_t *current);
+    void loadConfig(QString filename);
     void updateAlarms(UBX_saved_t *current);
     void updateTones(UBX_saved_t *current);
     void receiveMessage(UBX_saved_t *current);
