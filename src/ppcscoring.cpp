@@ -49,8 +49,7 @@ PPCScoring::PPCScoring(
     mDrawLane(false),
     mEndLatitude(51.0500),
     mEndLongitude(-114.0667),
-    mLaneWidth(600),
-    mMapMode(None)
+    mLaneWidth(600)
 {
 
 }
@@ -90,13 +89,6 @@ void PPCScoring::setEnd(
 {
     mEndLatitude = endLatitude;
     mEndLongitude = endLongitude;
-    emit scoringChanged();
-}
-
-void PPCScoring::setMapMode(
-        MapMode mode)
-{
-    mMapMode = mode;
     emit scoringChanged();
 }
 
@@ -403,7 +395,7 @@ bool PPCScoring::updateReference(
         double lat,
         double lon)
 {
-    if (mMapMode == End)
+    if (mMainWindow->mapMode() == MainWindow::SetEnd)
     {
         setEnd(lat, lon);
         return true;
@@ -412,10 +404,4 @@ bool PPCScoring::updateReference(
     {
         return false;
     }
-}
-
-void PPCScoring::closeReference()
-{
-    setMapMode(None);
-    mMainWindow->setFocus();
 }

@@ -126,7 +126,7 @@
                     map: map
                 });
 
-                new QWebChannel(qt.webChannelTransport, function(channel) {
+                new QWebChannel(qt.webChannelTransport, function (channel) {
                     // make map widget object accessible globally
                     window.core = channel.objects.core;
 
@@ -142,6 +142,17 @@
                     core.addPolyline.connect(addPolyline);
                     core.addPolygon.connect(addPolygon);
                     core.clearAnnotations.connect(clearAnnotations);
+
+                    core.enableDrag.connect(function () {
+                        map.setOptions({
+                            draggable: true
+                        });
+                    });
+                    core.disableDrag.connect(function () {
+                        map.setOptions({
+                            draggable: false
+                        });
+                    });
 
                     window.addEventListener('mousedown', function (e) {
                         core.mouseDown(savedLatLng.toJSON());

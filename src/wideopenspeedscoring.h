@@ -31,10 +31,6 @@ class MainWindow;
 class WideOpenSpeedScoring : public ScoringMethod
 {
 public:
-    typedef enum {
-        None, Start, End
-    } MapMode;
-
     WideOpenSpeedScoring(MainWindow *mainWindow);
 
     double endLatitude(void) const { return mEndLatitude; }
@@ -53,13 +49,10 @@ public:
     double laneLength(void) const { return mLaneLength; }
     void setLaneLength(double laneLength);
 
-    void setMapMode(MapMode mode);
-
     void prepareDataPlot(DataPlot *plot);
     void prepareMapView(MapView *view);
 
     bool updateReference(double lat, double lon);
-    void closeReference();
 
     bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom);
@@ -81,8 +74,6 @@ private:
     double      mBottom;
     double      mLaneWidth;
     double      mLaneLength;
-
-    MapMode     mMapMode;
 
     bool        mFinishValid;
     DataPoint   mFinishPoint;

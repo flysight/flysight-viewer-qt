@@ -70,6 +70,10 @@ public:
         Automatic, Fixed
     } GroundReference;
 
+    typedef enum {
+        Default, SetStart, SetEnd
+    } MapMode;
+
     typedef QVector< DataPoint > DataPoints;
 
     explicit MainWindow(QWidget *parent = 0);
@@ -171,7 +175,6 @@ public:
     void prepareMapView(MapView *plot);
 
     bool updateReference(double lat, double lon);
-    void closeReference();
 
     void importFromDatabase(const QString &uniqueName);
     void importFromCheckedTrack(const QString &uniqueName);
@@ -186,6 +189,9 @@ public:
     bool trackChecked(const QString &trackName) const;
 
     QString databasePath() const { return mDatabasePath; }
+
+    void setMapMode(MapMode newMapMode);
+    MapMode mapMode() const { return mMapMode; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -314,6 +320,8 @@ private:
 
     QTimer               *zoomTimer;
 
+    MapMode               mMapMode;
+
     void writeSettings();
     void readSettings();
 
@@ -364,6 +372,7 @@ signals:
     void aeroChanged();
     void rotationChanged(double rotation);
     void databaseChanged();
+    void mapModeChanged();
 
 public slots:
     void importFolder(QString folderName);

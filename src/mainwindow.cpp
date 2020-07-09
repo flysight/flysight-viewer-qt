@@ -91,7 +91,8 @@ MainWindow::MainWindow(
     mWindAdjustment(false),
     mScoringMode(PPC),
     mGroundReference(Automatic),
-    mFixedReference(0)
+    mFixedReference(0),
+    mMapMode(Default)
 {
     m_ui->setupUi(this);
 
@@ -382,6 +383,8 @@ void MainWindow::initMapView()
             mapView, SLOT(updateCursor()));
     connect(this, SIGNAL(mediaCursorChanged()),
             mapView, SLOT(updateCursor()));
+    connect(this, SIGNAL(mapModeChanged()),
+            mapView, SLOT(updateMapMode()));
 
     connect(dockWidget, SIGNAL(topLevelChanged(bool)),
             this, SLOT(onDockWidgetTopLevelChanged(bool)));
@@ -2927,17 +2930,23 @@ bool MainWindow::updateReference(
     }
 }
 
-void MainWindow::closeReference()
-{
-    if (mScoringView->isVisible())
-    {
-        mScoringMethods[mScoringMode]->closeReference();
-    }
-}
-
 void MainWindow::setOptimal(
         const DataPoints &result)
 {
     m_optimal = result;
     emit dataChanged();
+}
+
+void MainWindow::setMapMode(
+        MapMode newMapMode)
+{
+    if (mMapMode != newMapMode)
+    {
+        mMapMode = newMapMode;
+        if (mMapMode == Default)
+        {
+            setFocus();
+        }
+        emit mapModeChanged();
+    }
 }

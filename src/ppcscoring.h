@@ -35,10 +35,6 @@ public:
         Time, Distance, Speed
     } Mode;
 
-    typedef enum {
-        None, End
-    } MapMode;
-
     PPCScoring(MainWindow *mainWindow);
 
     Mode mode() const { return mMode; }
@@ -55,8 +51,6 @@ public:
     double endLongitude(void) const { return mEndLongitude; }
     void setEnd(double endLatitude, double endLongitude);
 
-    void setMapMode(MapMode mode);
-
     double score(const MainWindow::DataPoints &result);
     QString scoreAsText(double score);
 
@@ -64,7 +58,6 @@ public:
     void prepareMapView(MapView *view);
 
     bool updateReference(double lat, double lon);
-    void closeReference();
 
     bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
@@ -85,8 +78,6 @@ private:
     double      mEndLatitude;
     double      mEndLongitude;
     double      mLaneWidth;
-
-    MapMode     mMapMode;
 
     void splitLine(QList<QVariant> &data,
                    double startLat, double startLon,

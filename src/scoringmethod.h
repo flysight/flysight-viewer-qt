@@ -56,7 +56,6 @@ public:
     virtual void prepareMapView(MapView *view) {}
 
     virtual bool updateReference(double lat, double lon) { return false; }
-    virtual void closeReference() {}
 
     virtual void optimize() {}
 

@@ -61,6 +61,9 @@ signals:
     void addPolyline(QList<QVariant> data);
     void addPolygon(QList<QVariant> data);
 
+    void enableDrag();
+    void disableDrag();
+
 public slots:
     void message(const QString &text)
     {

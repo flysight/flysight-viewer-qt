@@ -61,6 +61,7 @@ public slots:
     void initView();
     void updateView();
     void updateCursor();
+    void updateMapMode();
 
     void mouseDown(QMap<QString, QVariant> latLng);
     void mouseUp(QMap<QString, QVariant> latLng);

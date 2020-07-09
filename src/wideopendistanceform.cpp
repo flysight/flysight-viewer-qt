@@ -183,15 +183,13 @@ void WideOpenDistanceForm::onApplyButtonClicked()
 
 void WideOpenDistanceForm::onStartButtonClicked()
 {
-    WideOpenDistanceScoring *method = (WideOpenDistanceScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenDistance);
-    method->setMapMode(WideOpenDistanceScoring::Start);
+    mMainWindow->setMapMode(MainWindow::SetStart);
     setFocus();
 }
 
 void WideOpenDistanceForm::onEndButtonClicked()
 {
-    WideOpenDistanceScoring *method = (WideOpenDistanceScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenDistance);
-    method->setMapMode(WideOpenDistanceScoring::End);
+    mMainWindow->setMapMode(MainWindow::SetEnd);
     setFocus();
 }
 
@@ -201,14 +199,10 @@ void WideOpenDistanceForm::keyPressEvent(
     if (event->key() == Qt::Key_Escape)
     {
         // Cancel map selection
-        WideOpenDistanceScoring *method = (WideOpenDistanceScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenDistance);
-        method->setMapMode(WideOpenDistanceScoring::None);
+        mMainWindow->setMapMode(MainWindow::Default);
 
         // Reset display
         updateView();
-
-        // Release focus
-        mMainWindow->setFocus();
     }
 
     QWidget::keyPressEvent(event);

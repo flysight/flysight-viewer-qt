@@ -79,7 +79,7 @@ void MapView::mouseUp(
     if (mDragging)
     {
         updateMarker(latLng);
-        mMainWindow->closeReference();
+        mMainWindow->setMapMode(MainWindow::Default);
         mDragging = false;
     }
 }
@@ -298,6 +298,18 @@ void MapView::updateCursor()
     {
         // Clear media cursor
         mMapCore->clearMediaCursor();
+    }
+}
+
+void MapView::updateMapMode()
+{
+    if (mMainWindow->mapMode() == MainWindow::Default)
+    {
+        mMapCore->enableDrag();
+    }
+    else
+    {
+        mMapCore->disableDrag();
     }
 }
 

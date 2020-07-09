@@ -48,8 +48,7 @@ WideOpenDistanceScoring::WideOpenDistanceScoring(
     mBearing(0),
     mBottom(6000 / METERS_TO_FEET),
     mLaneWidth(500),
-    mLaneLength(10000),
-    mMapMode(None)
+    mLaneLength(10000)
 {
 
 }
@@ -116,13 +115,6 @@ void WideOpenDistanceScoring::setLaneLength(
         double laneLength)
 {
     mLaneLength = laneLength;
-    emit scoringChanged();
-}
-
-void WideOpenDistanceScoring::setMapMode(
-        MapMode mode)
-{
-    mMapMode = mode;
     emit scoringChanged();
 }
 
@@ -517,14 +509,14 @@ bool WideOpenDistanceScoring::updateReference(
         double lat,
         double lon)
 {
-    if (mMapMode == Start)
+    if (mMainWindow->mapMode() == MainWindow::SetStart)
     {
         double azi1, azi2;
         Geodesic::WGS84().Inverse(mEndLatitude, mEndLongitude, lat, lon, azi1, azi2);
         setBearing(azi1);
         return true;
     }
-    else if (mMapMode == End)
+    else if (mMainWindow->mapMode() == MainWindow::SetEnd)
     {
         setEnd(lat, lon);
         return true;
@@ -533,10 +525,4 @@ bool WideOpenDistanceScoring::updateReference(
     {
         return false;
     }
-}
-
-void WideOpenDistanceScoring::closeReference()
-{
-    setMapMode(None);
-    mMainWindow->setFocus();
 }
