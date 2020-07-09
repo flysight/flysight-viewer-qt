@@ -8,54 +8,10 @@
 #define CONFIG_FIRST_WINDOW 0x02
 #define CONFIG_FIRST_SPEECH 0x04
 
-Config::Config()
+Config::Config():
+    mAudioFolder(":/audio")
 {
-    Tone_volume       = 2;
-    Tone_sp_volume    = 0;
-
-    UBX_model         = 7;
-    UBX_rate          = 200;
-    UBX_mode          = 2;
-    UBX_min           = 0;
-    UBX_max           = 300;
-
-    UBX_mode_2        = 9;
-    UBX_min_2         = 300;
-    UBX_max_2         = 1500;
-    UBX_min_rate      = 100;
-    UBX_max_rate      = 500;
-    UBX_flatline      = 0;
-    UBX_limits        = 1;
-    UBX_use_sas       = 1;
-
-    UBX_threshold     = 1000;
-    UBX_hThreshold    = 0;
-
-    UBX_alarms.clear();
-    UBX_alarm_window_above = 0;
-    UBX_alarm_window_below = 0;
-
-    UBX_speech.clear();
-    UBX_sp_rate       = 0;
-
-    UBX_alt_units     = UBX_UNITS_FEET;
-    UBX_alt_step      = 0;
-
-    UBX_init_mode     = 0;
-    UBX_init_filename.clear();
-
-    UBX_lat           = 0;
-    UBX_lon           = 0;
-    UBX_bearing       = 0;
-    UBX_end_nav       = 0;
-    UBX_max_dist      = 10000;
-    UBX_min_angle     = 5;
-
-    UBX_windows.clear();
-
-    UBX_dz_elev       = 0;
-
-    mAudioFolder      = QString(":/audio");
+    reset();
 }
 
 void Config::readSingle(
@@ -187,4 +143,53 @@ void Config::readSingle(
             UBX_speech.last().decimals = val;
         }
     }
+}
+
+void Config::reset()
+{
+    UBX_model         = 7;
+    UBX_rate          = 200;
+    UBX_mode          = 2;
+    UBX_min           = 0;
+    UBX_max           = 300;
+
+    UBX_mode_2        = 9;
+    UBX_min_2         = 300;
+    UBX_max_2         = 1500;
+    UBX_min_rate      = 100;
+    UBX_max_rate      = 500;
+    UBX_flatline      = 0;
+    UBX_limits        = 1;
+    UBX_use_sas       = 1;
+
+    UBX_speech.clear();
+    UBX_cur_speech    = 0;
+    UBX_sp_rate       = 0;
+
+    UBX_alt_units     = UBX_UNITS_FEET;
+    UBX_alt_step      = 0;
+
+    UBX_init_mode     = 0;
+    UBX_init_filename.clear();
+
+    UBX_threshold     = 1000;
+    UBX_hThreshold    = 0;
+
+    UBX_alarms.clear();
+    UBX_alarm_window_above = 0;
+    UBX_alarm_window_below = 0;
+
+    UBX_lat           = 0;
+    UBX_lon           = 0;
+    UBX_bearing       = 0;
+    UBX_end_nav       = 0;
+    UBX_max_dist      = 10000;
+    UBX_min_angle     = 5;
+
+    UBX_windows.clear();
+
+    UBX_dz_elev       = 0;
+
+    Tone_volume       = 2;
+    Tone_sp_volume    = 0;
 }

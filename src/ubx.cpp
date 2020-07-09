@@ -28,7 +28,7 @@ const uint16_t UBX::mSasTable[12] =
 };
 
 UBX::UBX(
-        const Config &config,
+        Config &config,
         Tone &tone):
     mConfig(config),
     mTone(tone)
@@ -585,6 +585,30 @@ void UBX::speakValue(UBX_saved_t *current)
     *(end_ptr++) = 0;
 }
 
+void UBX::loadConfig(QString filename)
+{
+    mConfig.UBX_init_filename.clear();
+
+    QString tempFilename;
+    if (!mConfig.mConfigFolder.isEmpty() && !filename.isEmpty())
+    {
+        tempFilename = mConfig.mConfigFolder + QString("/") + filename + QString(".txt");
+    }
+
+    mConfig.reset();
+    mConfig.readSingle(mConfig.mRootConfig);
+
+    if (!tempFilename.isEmpty())
+    {
+        mConfig.readSingle(tempFilename);
+    }
+
+    if (!mConfig.UBX_init_filename.isEmpty())
+    {
+        mTone.play(mConfig.UBX_init_filename + QString(".wav"));
+    }
+}
+
 void UBX::updateAlarms(UBX_saved_t *current)
 {
     uint8_t i, suppress_tone, suppress_alt;
@@ -671,6 +695,18 @@ void UBX::updateAlarms(UBX_saved_t *current)
                     break ;
                 case 4:	// play file
                     mTone.play(mConfig.UBX_alarms[i].filename + QString(".wav"));
+                    break;
+                case 8: // load config (ascending)
+                    if (current->hMSL >= mPrevHMSL)
+                    {
+                        loadConfig(mConfig.UBX_alarms[i].filename);
+                    }
+                    break;
+                case 9: // load config (descending)
+                    if (current->hMSL < mPrevHMSL)
+                    {
+                        loadConfig(mConfig.UBX_alarms[i].filename);
+                    }
                     break;
                 }
 
