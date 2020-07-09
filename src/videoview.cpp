@@ -207,6 +207,7 @@ void VideoView::zero()
 void VideoView::updateView()
 {
     if (mBusy) return;
+    if (mMainWindow->dataSize() == 0) return;
 
     // Get media cursor
     const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());

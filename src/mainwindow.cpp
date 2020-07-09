@@ -1277,6 +1277,8 @@ void MainWindow::updateVelocity(
         QString trackName,
         bool initDatabase)
 {
+    if (dataSize() == 0) return;
+
     double windE, windN;
     getWind(trackName, &windE, &windN);
 
