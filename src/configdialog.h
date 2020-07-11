@@ -94,6 +94,9 @@ public:
     void setWindDirection(double dir);
     double windDirection() const;
 
+    void setUseDatabase(bool use);
+    bool useDatabase() const;
+
     void setDatabasePath(QString databasePath);
     QString databasePath() const;
 

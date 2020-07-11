@@ -312,6 +312,8 @@ private:
     GroundReference       mGroundReference;
     double                mFixedReference;
 
+    bool                  mUseDatabase;
+
     QString               mDatabasePath;
     QSqlDatabase          mDatabase;
 
