@@ -91,7 +91,8 @@ MainWindow::MainWindow(
     mScoringMode(PPC),
     mGroundReference(Automatic),
     mFixedReference(0),
-    mMapMode(Default)
+    mMapMode(Default),
+    mUseDatabase(true)
 {
     m_ui->setupUi(this);
 
@@ -217,6 +218,7 @@ void MainWindow::writeSettings()
         settings.setValue("scoringMode", mScoringMode);
         settings.setValue("groundReference", mGroundReference);
         settings.setValue("fixedReference", mFixedReference);
+        settings.setValue("useDatabase", mUseDatabase);
         settings.setValue("databasePath", mDatabasePath);
     settings.endGroup();
 }
@@ -240,6 +242,7 @@ void MainWindow::readSettings()
         mScoringMode = (ScoringMode) settings.value("scoringMode", mScoringMode).toInt();
         mGroundReference = (GroundReference) settings.value("groundReference", mGroundReference).toInt();
         mFixedReference = settings.value("fixedReference", mFixedReference).toDouble();
+        mUseDatabase = settings.value("useDatabase", mUseDatabase).toBool();
         mDatabasePath = settings.value("databasePath",
                                        QStandardPaths::writableLocation(
                                            QStandardPaths::DocumentsLocation)).toString();
@@ -800,6 +803,25 @@ void MainWindow::importFile(
     }
 
     bool isPresent = query.next();
+
+    if (isPresent && !mUseDatabase)
+    {
+        // Delete the track
+        if (!QFile::remove(newPath))
+        {
+            QMessageBox::critical(0, tr("Operation failed"), tr("Couldn't delete track"));
+        }
+
+        // Remove track from database
+        QSqlQuery query(mDatabase);
+        if (!query.exec(QString("delete from files where file_name='%1'").arg(uniqueName)))
+        {
+            QSqlError err = query.lastError();
+            QMessageBox::critical(0, tr("Query failed"), err.text());
+        }
+
+        isPresent = false;
+    }
 
     // Add an empty record if the file is not in the database
     if (!isPresent)
@@ -1982,6 +2004,8 @@ void MainWindow::on_actionPreferences_triggered()
     dlg.setGroundReference(mGroundReference);
     dlg.setFixedReference(mFixedReference);
 
+    dlg.setUseDatabase(mUseDatabase);
+
     dlg.setDatabasePath(mDatabasePath);
 
     if (dlg.exec() == QDialog::Accepted)
@@ -2087,6 +2111,11 @@ void MainWindow::on_actionPreferences_triggered()
         {
             mGroundReference = dlg.groundReference();
             mFixedReference = dlg.fixedReference();
+        }
+
+        if (mUseDatabase != dlg.useDatabase())
+        {
+            mUseDatabase = dlg.useDatabase();
         }
 
         if (mDatabasePath != dlg.databasePath())

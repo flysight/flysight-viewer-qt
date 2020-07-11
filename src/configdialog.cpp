@@ -386,6 +386,18 @@ double ConfigDialog::windDirection() const
     return ui->windDirectionEdit->text().toDouble();
 }
 
+void ConfigDialog::setUseDatabase(
+        bool use)
+{
+    ui->useLogbookButton->setChecked(use);
+    ui->dontUseLogbookButton->setChecked(!use);
+}
+
+bool ConfigDialog::useDatabase() const
+{
+    return (ui->useLogbookButton->isChecked());
+}
+
 void ConfigDialog::setDatabasePath(
         QString databasePath)
 {

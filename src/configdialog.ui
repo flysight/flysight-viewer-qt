@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>315</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -187,7 +187,30 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer_4">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Logbook</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QRadioButton" name="useLogbookButton">
+                <property name="text">
+                 <string>Import tracks from logbook if available</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="dontUseLogbookButton">
+                <property name="text">
+                 <string>Import tracks from selected file every time</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
