@@ -35,6 +35,8 @@ void ScoringMethod::optimize(
         MainWindow *mainWindow,
         double windowBottom)
 {
+    if (mainWindow->dataSize() == 0) return;
+
     const DataPoint &dp0 = mainWindow->interpolateDataT(0);
 
     // y = ax^2 + c

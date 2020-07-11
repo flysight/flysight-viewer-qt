@@ -54,6 +54,8 @@ void SpeedScoring::setWindowBottom(
 double SpeedScoring::score(
         const MainWindow::DataPoints &result)
 {
+    if (mMainWindow->dataSize() == 0) return 0;
+
     // Get exit
     DataPoint dpExit = mMainWindow->interpolateDataT(0);
 

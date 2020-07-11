@@ -45,7 +45,7 @@ struct libvlc_media_list_player_t;
 */
 class VLCQT_CORE_EXPORT VlcMediaListPlayer : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     /*!
         \brief VlcMediaListPlayer constructor.
@@ -108,7 +108,6 @@ public:
     */
     void setPlaybackMode(const Vlc::PlaybackMode &mode);
 
-
 public slots:
     /*!
         \brief Starts playing item at specific position.
@@ -136,12 +135,18 @@ public slots:
     */
     void stop();
 
-
 signals:
     /*!
         \brief Signal sent when played
     */
     void played();
+
+    /*!
+        \brief Signal sent on next item set
+        \param media next media item
+        \since VLC-Qt 1.1
+    */
+    void nextItemSet(VlcMedia *media);
 
     /*!
         \brief Signal sent on next item set
@@ -153,7 +158,6 @@ signals:
         \brief Signal sent when stopped
     */
     void stopped();
-
 
 private:
     static void libvlc_callback(const libvlc_event_t *event,

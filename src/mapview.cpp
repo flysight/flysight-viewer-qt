@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  FlySight Viewer                                                       **
-**  Copyright 2018 Michael Cooper                                         **
+**  Copyright 2020 Michael Cooper                                         **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -23,17 +23,18 @@
 
 #include "mapview.h"
 
-#include <QFile>
-#include <QVector>
-#include <QWebFrame>
-#include <QWebElement>
+#include <QList>
+#include <QMap>
+#include <QVariant>
+#include <QWebChannel>
 
 #include "common.h"
 #include "mainwindow.h"
+#include "mapcore.h"
 #include "secrets.h"
 
 MapView::MapView(QWidget *parent) :
-    QWebView(parent),
+    QWebEngineView(parent),
     mMainWindow(0),
     mDragging(false)
 {
@@ -44,6 +45,16 @@ MapView::MapView(QWidget *parent) :
         html.replace("GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY);
         setHtml(html);
     }
+
+    // Set up the channel
+    mWebChannel = new QWebChannel(this);
+
+    // Set up the core and publish it to the QWebChannel
+    mMapCore = new MapCore(this);
+    mWebChannel->registerObject("core", mMapCore);
+
+    // Associate the QWebChannel with the page
+    page()->setWebChannel(mWebChannel);
 }
 
 QSize MapView::sizeHint() const
@@ -52,126 +63,129 @@ QSize MapView::sizeHint() const
     return QSize(175, 175);
 }
 
-void MapView::mousePressEvent(
-        QMouseEvent *event)
+void MapView::mouseDown(
+        QMap<QString, QVariant> latLng)
 {
-    if (updateReference(event))
+    if (updateReference(latLng))
     {
         mMainWindow->clearMark();
         mDragging = true;
     }
-    else
-    {
-        QWebView::mousePressEvent(event);
-    }
 }
 
-void MapView::mouseReleaseEvent(
-        QMouseEvent *event)
+void MapView::mouseUp(
+        QMap<QString, QVariant> latLng)
 {
     if (mDragging)
     {
-        mMainWindow->closeReference();
+        updateMarker(latLng);
+        mMainWindow->setMapMode(MainWindow::Default);
         mDragging = false;
     }
-    else
-    {
-        QWebView::mouseReleaseEvent(event);
-    }
 }
 
-void MapView::mouseMoveEvent(
-        QMouseEvent *event)
+void MapView::mouseOver(
+        QMap<QString, QVariant> latLng)
+{
+    mouseMove(latLng);
+}
+
+void MapView::mouseOut()
+{
+    mMainWindow->clearMark();
+}
+
+void MapView::mouseMove(
+        QMap<QString, QVariant> latLng)
 {
     if (mDragging)
     {
-        updateReference(event);
+        updateReference(latLng);
     }
     else
     {
-        // Get map view bounds
-        QString js = QString("var bounds = map.getBounds();") +
-                     QString("var ne = bounds.getNorthEast();") +
-                     QString("var sw = bounds.getSouthWest();");
-
-        page()->currentFrame()->documentElement().evaluateJavaScript(js);
-
-        const double latMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lat();").toDouble();
-        const double latMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lat();").toDouble();
-        const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lng();").toDouble();
-        const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lng();").toDouble();
-
-        double lower = mMainWindow->rangeLower();
-        double upper = mMainWindow->rangeUpper();
-
-        double resultTime;
-        double resultDistance = std::numeric_limits<double>::max();
-
-        for (int i = 0; i + 1 < mMainWindow->dataSize(); ++i)
-        {
-            const DataPoint &dp1 = mMainWindow->dataPoint(i);
-            const DataPoint &dp2 = mMainWindow->dataPoint(i + 1);
-
-            if (lower <= dp1.t && dp1.t <= upper &&
-                lower <= dp2.t && dp2.t <= upper)
-            {
-                QPointF pt1 = QPointF(width() * (dp1.lon - lonMin) / (lonMax - lonMin),
-                                      height() * (latMax - dp1.lat) / (latMax - latMin));
-                QPointF pt2 = QPointF(width() * (dp2.lon - lonMin) / (lonMax - lonMin),
-                                      height() * (latMax - dp2.lat) / (latMax - latMin));
-
-                double mu;
-                double dist = sqrt(distSqrToLine(pt1, pt2, event->pos(), mu));
-
-                if (dist < resultDistance)
-                {
-                    double t1 = dp1.t;
-                    double t2 = dp2.t;
-
-                    resultTime = t1 + mu * (t2 - t1);
-                    resultDistance = dist;
-                }
-            }
-        }
-
-        const int selectionTolerance = 8;
-        if (resultDistance < selectionTolerance)
-        {
-            mMainWindow->setMark(resultTime);
-        }
-        else
-        {
-            mMainWindow->clearMark();
-        }
-
-        // Call base class
-        QWebView::mouseMoveEvent(event);
+        updateMarker(latLng);
     }
 }
 
 bool MapView::updateReference(
-        QMouseEvent *event)
+        QMap<QString, QVariant> latLng)
 {
-    // Get map view bounds
-    QString js = QString("var bounds = map.getBounds();") +
-                 QString("var ne = bounds.getNorthEast();") +
-                 QString("var sw = bounds.getSouthWest();");
-
-    page()->currentFrame()->documentElement().evaluateJavaScript(js);
-
-    const double latMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lat();").toDouble();
-    const double latMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lat();").toDouble();
-    const double lonMin = page()->currentFrame()->documentElement().evaluateJavaScript("sw.lng();").toDouble();
-    const double lonMax = page()->currentFrame()->documentElement().evaluateJavaScript("ne.lng();").toDouble();
-
-    // Get click position
-    QPoint endPos = event->pos();
-
-    const double lat = latMax - (double) endPos.y() / height() * (latMax - latMin);
-    const double lon = lonMin + (double) endPos.x() / width() * (lonMax - lonMin);
+    double lat = latLng["lat"].toDouble();
+    double lng = latLng["lng"].toDouble();
 
     // Pass to main window
-    return mMainWindow->updateReference(lat, lon);
+    return mMainWindow->updateReference(lat, lng);
+}
+
+void MapView::updateMarker(
+        QMap<QString, QVariant> latLng)
+{
+    double lat = latLng["lat"].toDouble();
+    double lng = latLng["lng"].toDouble();
+
+    QPointF pos = QPointF(width() * (lng - mLonMin) / (mLonMax - mLonMin),
+                          height() * (mLatMax - lat) / (mLatMax - mLatMin));
+
+    double lower = mMainWindow->rangeLower();
+    double upper = mMainWindow->rangeUpper();
+
+    double resultTime;
+    double resultDistance = std::numeric_limits<double>::max();
+
+    for (int i = 0; i + 1 < mMainWindow->dataSize(); ++i)
+    {
+        const DataPoint &dp1 = mMainWindow->dataPoint(i);
+        const DataPoint &dp2 = mMainWindow->dataPoint(i + 1);
+
+        if (lower <= dp1.t && dp1.t <= upper &&
+            lower <= dp2.t && dp2.t <= upper)
+        {
+            QPointF pt1 = QPointF(width() * (dp1.lon - mLonMin) / (mLonMax - mLonMin),
+                                  height() * (mLatMax - dp1.lat) / (mLatMax - mLatMin));
+            QPointF pt2 = QPointF(width() * (dp2.lon - mLonMin) / (mLonMax - mLonMin),
+                                  height() * (mLatMax - dp2.lat) / (mLatMax - mLatMin));
+
+            double mu;
+            double dist = sqrt(distSqrToLine(pt1, pt2, pos, mu));
+
+            if (dist < resultDistance)
+            {
+                double t1 = dp1.t;
+                double t2 = dp2.t;
+
+                resultTime = t1 + mu * (t2 - t1);
+                resultDistance = dist;
+            }
+        }
+    }
+
+    const int selectionTolerance = 8;
+    if (resultDistance < selectionTolerance)
+    {
+        mMainWindow->setMark(resultTime);
+    }
+    else
+    {
+        mMainWindow->clearMark();
+    }
+}
+
+void MapView::boundsChanged(
+        QMap<QString, QVariant> sw,
+        QMap<QString, QVariant> ne)
+{
+    double oldScale = metersPerPixel();
+
+    mLatMin = sw["lat"].toDouble();
+    mLonMin = sw["lng"].toDouble();
+    mLatMax = ne["lat"].toDouble();
+    mLonMax = ne["lng"].toDouble();
+
+    if (oldScale != metersPerPixel())
+    {
+        updateView();
+    }
 }
 
 void MapView::initView()
@@ -198,13 +212,15 @@ void MapView::initView()
         }
     }
 
-    // Resize map
-    QString js = QString("var bounds = new google.maps.LatLngBounds();") +
-                 QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMin).arg(xMin) +
-                 QString("bounds.extend(new google.maps.LatLng(%1, %2));").arg(yMax).arg(xMax) +
-                 QString("map.fitBounds(bounds);");
+    QMap<QString, QVariant> sw;
+    sw["lat"] = yMin;
+    sw["lng"] = xMin;
 
-    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    QMap<QString, QVariant> ne;
+    ne["lat"] = yMax;
+    ne["lng"] = xMax;
+
+    mMapCore->setBounds(sw, ne);
 }
 
 void MapView::updateView()
@@ -212,19 +228,10 @@ void MapView::updateView()
     double lower = mMainWindow->rangeLower();
     double upper = mMainWindow->rangeUpper();
 
-    double xMin, xMax;
-    double yMin, yMax;
-
-    bool first = true;
-
     // Distance threshold
-    const double earthCircumference = 40075000; // m
-    const double zoom = page()->currentFrame()->documentElement().evaluateJavaScript("map.getZoom();").toDouble();
-    const double threshold = earthCircumference / pow(2, zoom) / width();
+    const double threshold = metersPerPixel();
 
-    // Add track to map
-    QString js = QString("var path = poly.getPath();") +
-                 QString("while (path.length > 0) { path.pop(); }");
+    QList<QVariant> data;
 
     double distPrev;
     for (int i = 0; i < mMainWindow->dataSize(); ++i)
@@ -236,43 +243,44 @@ void MapView::updateView()
 
         if (lower <= dp.t && dp.t <= upper)
         {
-            if (first)
-            {
-                xMin = xMax = dp.lon;
-                yMin = yMax = dp.lat;
-                first = false;
-            }
-            else
-            {
-                if (dp.lon < xMin) xMin = dp.lon;
-                if (dp.lon > xMax) xMax = dp.lon;
+            QMap<QString, QVariant> val;
+            val["lat"] = dp.lat;
+            val["lng"] = dp.lon;
 
-                if (dp.lat < yMin) yMin = dp.lat;
-                if (dp.lat > yMax) yMax = dp.lat;
-            }
-
-            js += QString("path.push(new google.maps.LatLng(%1, %2));").arg(dp.lat, 0, 'f').arg(dp.lon, 0, 'f');
+            data.push_back(val);
         }
     }
 
-    page()->currentFrame()->documentElement().evaluateJavaScript(js);
+    mMapCore->setData(data);
+
+    updateCursor();
+
+    // Clear all annotations
+    mMapCore->clearAnnotations();
+
+    // Draw annotations on map
+    mMainWindow->prepareMapView(this);
+}
+
+void MapView::updateCursor()
+{
+    if (mMainWindow->dataSize() == 0) return;
 
     if (mMainWindow->markActive())
     {
         // Add marker to map
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
 
-        js = QString("marker.setPosition(new google.maps.LatLng(%1, %2));").arg(dpEnd.lat, 0, 'f').arg(dpEnd.lon, 0, 'f') +
-             QString("marker.setVisible(true);");
+        QMap<QString, QVariant> latLng;
+        latLng["lat"] = dpEnd.lat;
+        latLng["lng"] = dpEnd.lon;
 
-        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+        mMapCore->setMark(latLng);
     }
     else
     {
         // Clear marker
-        js = QString("marker.setVisible(false);");
-
-        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+        mMapCore->clearMark();
     }
 
     if (mMainWindow->mediaCursorRef() > 0)
@@ -280,34 +288,33 @@ void MapView::updateView()
         // Add media cursor to map
         const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
 
-        js = QString("mediaCursor.setPosition(new google.maps.LatLng(%1, %2));").arg(dp.lat, 0, 'f').arg(dp.lon, 0, 'f') +
-             QString("mediaCursor.setVisible(true);");
+        QMap<QString, QVariant> latLng;
+        latLng["lat"] = dp.lat;
+        latLng["lng"] = dp.lon;
 
-        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+        mMapCore->setMediaCursor(latLng);
     }
     else
     {
         // Clear media cursor
-        js = QString("mediaCursor.setVisible(false);");
-
-        page()->currentFrame()->documentElement().evaluateJavaScript(js);
+        mMapCore->clearMediaCursor();
     }
+}
 
-    // Remove reference line from map
-    js  = QString("var path2 = wo.getPath();") +
-          QString("while (path2.length > 0) { path2.pop(); }");
+void MapView::updateMapMode()
+{
+    if (mMainWindow->mapMode() == MainWindow::Default)
+    {
+        mMapCore->enableDrag();
+    }
+    else
+    {
+        mMapCore->disableDrag();
+    }
+}
 
-    js += QString("var path3 = woBounds.getPath();") +
-          QString("while (path3.length > 0) { path3.pop(); }");
-
-    js += QString("var path4 = woFinish.getPath();") +
-          QString("while (path4.length > 0) { path4.pop(); }");
-
-    js += QString("var path5 = woFinish2.getPath();") +
-          QString("while (path5.length > 0) { path5.pop(); }");
-
-    page()->currentFrame()->documentElement().evaluateJavaScript(js);
-
-    // Draw annotations on map
-    mMainWindow->prepareMapView(this);
+double MapView::metersPerPixel() const
+{
+    const double earthCircumference = 40075000; // m
+    return earthCircumference * (mLatMax - mLatMin) / 360. / height();
 }

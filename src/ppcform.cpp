@@ -220,8 +220,7 @@ void PPCForm::onDownButtonClicked()
 
 void PPCForm::onEndButtonClicked()
 {
-    PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
-    method->setMapMode(PPCScoring::End);
+    mMainWindow->setMapMode(MainWindow::SetEnd);
     setFocus();
 }
 
@@ -230,14 +229,10 @@ void PPCForm::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Escape)
     {
         // Cancel map selection
-        PPCScoring *method = (PPCScoring *) mMainWindow->scoringMethod(MainWindow::PPC);
-        method->setMapMode(PPCScoring::None);
+        mMainWindow->setMapMode(MainWindow::Default);
 
         // Reset window bounds
         updateView();
-
-        // Release focus
-        mMainWindow->setFocus();
     }
 
     QWidget::keyPressEvent(event);

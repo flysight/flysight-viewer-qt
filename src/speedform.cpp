@@ -73,6 +73,8 @@ void SpeedForm::setMainWindow(
 
 void SpeedForm::updateView()
 {
+    if (mMainWindow->dataSize() == 0) return;
+
     // Update mode selection
     ui->actualButton->setChecked(mMainWindow->windowMode() == MainWindow::Actual);
     ui->optimalButton->setChecked(mMainWindow->windowMode() == MainWindow::Optimal);

@@ -27,6 +27,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
@@ -69,6 +70,10 @@ public:
     typedef enum {
         Automatic, Fixed
     } GroundReference;
+
+    typedef enum {
+        Default, SetStart, SetEnd
+    } MapMode;
 
     typedef QVector< DataPoint > DataPoints;
 
@@ -116,9 +121,9 @@ public:
     void setMediaCursor(double mediaCursor);
     double mediaCursor() const { return mMediaCursor; }
 
-    void mediaCursorAddRef();
-    void mediaCursorRemoveRef();
-    int mediaCursorRef() const { return mMediaCursorRef; }
+    void mediaCursorAddRef(QObject *parent);
+    void mediaCursorRemoveRef(QObject *parent);
+    int mediaCursorRef() const { return mMediaCursorRef.size(); }
 
     void pauseMedia();
 
@@ -171,7 +176,6 @@ public:
     void prepareMapView(MapView *plot);
 
     bool updateReference(double lat, double lon);
-    void closeReference();
 
     void importFromDatabase(const QString &uniqueName);
     void importFromCheckedTrack(const QString &uniqueName);
@@ -186,6 +190,9 @@ public:
     bool trackChecked(const QString &trackName) const;
 
     QString databasePath() const { return mDatabasePath; }
+
+    void setMapMode(MapMode newMapMode);
+    MapMode mapMode() const { return mMapMode; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -261,7 +268,7 @@ private:
     bool                  mMarkActive;
 
     double                mMediaCursor;
-    int                   mMediaCursorRef;
+    QSet<QObject*>        mMediaCursorRef;
 
     double                m_viewDataRotation;
 
@@ -314,6 +321,8 @@ private:
 
     QTimer               *zoomTimer;
 
+    MapMode               mMapMode;
+
     void writeSettings();
     void readSettings();
 
@@ -364,6 +373,7 @@ signals:
     void aeroChanged();
     void rotationChanged(double rotation);
     void databaseChanged();
+    void mapModeChanged();
 
 public slots:
     void importFolder(QString folderName);

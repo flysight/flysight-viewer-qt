@@ -73,7 +73,6 @@ MainWindow::MainWindow(
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     mMarkActive(false),
-    mMediaCursorRef(0),
     m_viewDataRotation(0),
     m_units(PlotValue::Imperial),
     mWindowMode(Actual),
@@ -91,7 +90,8 @@ MainWindow::MainWindow(
     mWindAdjustment(false),
     mScoringMode(PPC),
     mGroundReference(Automatic),
-    mFixedReference(0)
+    mFixedReference(0),
+    mMapMode(Default)
 {
     m_ui->setupUi(this);
 
@@ -379,9 +379,11 @@ void MainWindow::initMapView()
     connect(this, SIGNAL(rangeChanged()),
             mapView, SLOT(updateView()));
     connect(this, SIGNAL(cursorChanged()),
-            mapView, SLOT(updateView()));
+            mapView, SLOT(updateCursor()));
     connect(this, SIGNAL(mediaCursorChanged()),
-            mapView, SLOT(updateView()));
+            mapView, SLOT(updateCursor()));
+    connect(this, SIGNAL(mapModeChanged()),
+            mapView, SLOT(updateMapMode()));
 
     connect(dockWidget, SIGNAL(topLevelChanged(bool)),
             this, SLOT(onDockWidgetTopLevelChanged(bool)));
@@ -1274,6 +1276,8 @@ void MainWindow::updateVelocity(
         QString trackName,
         bool initDatabase)
 {
+    if (dataSize() == 0) return;
+
     double windE, windN;
     getWind(trackName, &windE, &windN);
 
@@ -1605,16 +1609,18 @@ void MainWindow::setMediaCursor(
     emit mediaCursorChanged();
 }
 
-void MainWindow::mediaCursorAddRef()
+void MainWindow::mediaCursorAddRef(
+        QObject *parent)
 {
-    ++mMediaCursorRef;
+    mMediaCursorRef.insert(parent);
 
     emit mediaCursorChanged();
 }
 
-void MainWindow::mediaCursorRemoveRef()
+void MainWindow::mediaCursorRemoveRef(
+        QObject *parent)
 {
-    --mMediaCursorRef;
+    mMediaCursorRef.remove(parent);
 
     emit mediaCursorChanged();
 }
@@ -2927,17 +2933,23 @@ bool MainWindow::updateReference(
     }
 }
 
-void MainWindow::closeReference()
-{
-    if (mScoringView->isVisible())
-    {
-        mScoringMethods[mScoringMode]->closeReference();
-    }
-}
-
 void MainWindow::setOptimal(
         const DataPoints &result)
 {
     m_optimal = result;
     emit dataChanged();
+}
+
+void MainWindow::setMapMode(
+        MapMode newMapMode)
+{
+    if (mMapMode != newMapMode)
+    {
+        mMapMode = newMapMode;
+        if (mMapMode == Default)
+        {
+            setFocus();
+        }
+        emit mapModeChanged();
+    }
 }

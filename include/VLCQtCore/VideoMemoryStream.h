@@ -34,7 +34,8 @@
 #if defined (_WIN32)
 #   define LIBVLC_USE_PTHREAD_CANCEL 1
 #endif
-#include <vlc/plugins/vlc_fourcc.h>
+#include <vlc_common.h>
+#include <vlc_fourcc.h>
 #else
 struct vlc_chroma_description_t;
 #endif
@@ -44,11 +45,14 @@ class VlcMediaPlayer;
 /*!
     \class VlcVideoMemoryStream VideoMemoryStream.h VLCQtCore/VideoMemoryStream.h
     \ingroup VLCQtCore
-    \brief Video memory stream
+    \brief Video memory stream (deprecated)
 
     VlcVideoMemoryStream is a template class for creating own video rendering engines.
+
+    \see VlcAbstractVideoStream
+    \deprecated Deprecated since VLC-Qt 1.1, will be removed in 2.0
  */
-class VLCQT_CORE_EXPORT VlcVideoMemoryStream
+class Q_DECL_DEPRECATED VLCQT_CORE_EXPORT VlcVideoMemoryStream
 {
 public:
     explicit VlcVideoMemoryStream();

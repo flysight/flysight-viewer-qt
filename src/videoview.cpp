@@ -106,7 +106,7 @@ void VideoView::setMedia(const QString &fileName)
 void VideoView::showEvent(
         QShowEvent *event)
 {
-    mMainWindow->mediaCursorAddRef();
+    mMainWindow->mediaCursorAddRef(this);
 }
 
 void VideoView::hideEvent(
@@ -114,7 +114,7 @@ void VideoView::hideEvent(
 {
     mBusy = true;
 
-    mMainWindow->mediaCursorRemoveRef();
+    mMainWindow->mediaCursorRemoveRef(this);
 
     mBusy = false;
 }
@@ -207,6 +207,7 @@ void VideoView::zero()
 void VideoView::updateView()
 {
     if (mBusy) return;
+    if (mMainWindow->dataSize() == 0) return;
 
     // Get media cursor
     const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());

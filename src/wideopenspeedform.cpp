@@ -73,6 +73,9 @@ void WideOpenSpeedForm::setMainWindow(
 
 void WideOpenSpeedForm::updateView()
 {
+    // Return now if plot empty
+    if (mMainWindow->dataSize() == 0) return;
+
     WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
 
     const double endLatitude = method->endLatitude();
@@ -229,15 +232,13 @@ void WideOpenSpeedForm::onApplyButtonClicked()
 
 void WideOpenSpeedForm::onStartButtonClicked()
 {
-    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
-    method->setMapMode(WideOpenSpeedScoring::Start);
+    mMainWindow->setMapMode(MainWindow::SetStart);
     setFocus();
 }
 
 void WideOpenSpeedForm::onEndButtonClicked()
 {
-    WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
-    method->setMapMode(WideOpenSpeedScoring::End);
+    mMainWindow->setMapMode(MainWindow::SetEnd);
     setFocus();
 }
 
@@ -247,14 +248,10 @@ void WideOpenSpeedForm::keyPressEvent(
     if (event->key() == Qt::Key_Escape)
     {
         // Cancel map selection
-        WideOpenSpeedScoring *method = (WideOpenSpeedScoring *) mMainWindow->scoringMethod(MainWindow::WideOpenSpeed);
-        method->setMapMode(WideOpenSpeedScoring::None);
+        mMainWindow->setMapMode(MainWindow::Default);
 
         // Reset display
         updateView();
-
-        // Release focus
-        mMainWindow->setFocus();
     }
 
     QWidget::keyPressEvent(event);

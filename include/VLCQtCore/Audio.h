@@ -21,6 +21,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
+#include <QtCore/QMap>
 
 #include "Enums.h"
 
@@ -39,8 +40,9 @@ struct libvlc_media_player_t;
 */
 class VLCQT_CORE_EXPORT VlcAudio : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
     friend class VlcAudioCallbackHelper;
+
 public:
     /*!
         \brief VlcAudio constructor.
@@ -61,7 +63,6 @@ public:
         \return current mute state (const bool)
     */
     bool getMute() const;
-
 
 public slots:
     /*!
@@ -94,7 +95,6 @@ public slots:
     */
     void setMute(bool mute) const;
 
-
 public:
     /*!
         \brief Get current audio track.
@@ -121,6 +121,13 @@ public:
     QList<int> trackIds() const;
 
     /*!
+        \brief Get available audio tracks.
+        \return dictionary with available audio tracks (const QMap<int, QString>)
+        \since VLC-Qt 1.1
+    */
+    QMap<int, QString> tracks() const;
+
+    /*!
         \brief Get current audio level.
         \return current audio level, -1 if media is not playing (const int)
     */
@@ -131,7 +138,6 @@ public:
         \return current audio channel, -1 if error
     */
     Vlc::AudioChannel channel() const;
-
 
 signals:
     /*!
@@ -151,7 +157,6 @@ signals:
         \param mute new mute state (bool)
     */
     void muteChanged(bool mute);
-
 
 private:
     libvlc_media_player_t *_vlcMediaPlayer;

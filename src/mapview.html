@@ -1,73 +1,97 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-        <style type="text/css">
-            html { height: 100% }
-            body { height: 100%; margin: 0; padding: 0 }
-            #map-canvas { height: 100% }
+        <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+            #map {
+                height: 100%;
+            }
+            /* Optional: Makes the sample page fill the window. */
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
         </style>
-        <script type="text/javascript"
-            src="http://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY&sensor=false">
-        </script>
-        <script type="text/javascript">
-            var poly;
-            var marker;
-            var mediaCursor;
+    </head>
+    <body>
+        <div id="map"></div>
+        <script>
             var map;
+            var savedLatLng;
+            var marker, mediaCursor;
+            var poly;
+            var annotations = [];
 
-            function initialize() {
-                var mapOptions = {
-                    center: new google.maps.LatLng(51.0500, -114.0667),
-                    zoom: 8,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    panControl: true,
-                    zoomControl: true,
-                    mapTypeControl: true,
-                    scaleControl: true,
-                    streetViewControl: false,
-                    rotateControl: false,
-                    fullscreenControl: false
-                };
+            function setData(data) {
+                poly.setPath(data);
+            }
 
-                map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+            function setBounds(sw, ne) {
+                var bounds = new google.maps.LatLngBounds();
+                bounds.extend(sw);
+                bounds.extend(ne);
+                map.fitBounds(bounds);
+            }
 
-                var woOptions = {
-                    strokeColor: '#0000FF',
-                    strokeOpacity: 1.0,
-                    strokeWeight: 2
-                };
+            function setMark(latLng) {
+                marker.setPosition(latLng);
+                marker.setVisible(true);
+            }
 
-                wo = new google.maps.Polyline(woOptions);
-                wo.setMap(map);
+            function clearMark() {
+                marker.setVisible(false);
+            }
 
-                woFinish = new google.maps.Polyline(woOptions);
-                woFinish.setMap(map);
+            function setMediaCursor(latLng) {
+                mediaCursor.setPosition(latLng);
+                mediaCursor.setVisible(true);
+            }
 
-                woFinish2 = new google.maps.Polyline(woOptions);
-                woFinish2.setMap(map);
+            function clearMediaCursor() {
+                mediaCursor.setVisible(false);
+            }
 
-                var woBoundsOptions = {
-                    strokeColor: '#0000FF',
-                    strokeOpacity: 0.0,
-                    strokeWeight: 2,
-                    fillColor: '#0000FF',
-                    fillOpacity: 0.2
-                };
+            function addPolyline(data) {
+                annotations.push(
+                    new google.maps.Polyline({
+                        strokeColor: '#0000FF',
+                        strokeOpacity: 1.0,
+                        strokeWeight: 2,
+                        clickable: false,
+                        path: data,
+                        map: map
+                }));
+            }
 
-                woBounds = new google.maps.Polygon(woBoundsOptions);
-                woBounds.setMap(map);
+            function addPolygon(data) {
+                annotations.push(
+                    new google.maps.Polygon({
+                        strokeOpacity: 0.0,
+                        fillColor: '#0000FF',
+                        fillOpacity: 0.2,
+                        clickable: false,
+                        path: data,
+                        map: map
+                }));
+            }
 
-                var polyOptions = {
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 1.0,
-                    strokeWeight: 2
-                };
+            function clearAnnotations() {
+                for (var i = 0; i < annotations.length; i++) {
+                    annotations[i].setMap(null);
+                }
+                annotations = [];
+            }
 
-                poly = new google.maps.Polyline(polyOptions);
-                poly.setMap(map);
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 0, lng: -180},
+                    zoom: 3
+                });
 
-                var markerOptions = {
+                marker = new google.maps.Marker({
                     icon: {
                         path: google.maps.SymbolPath.CIRCLE,
                         fillColor: '#000000',
@@ -75,13 +99,12 @@
                         strokeColor: '#FF0000',
                         strokeWeight: 1.5,
                         scale: 3.5
-                    }
-                };
+                    },
+                    clickable: false,
+                    map: map
+                });
 
-                marker = new google.maps.Marker(markerOptions);
-                marker.setMap(map);
-
-                var mediaCursorOptions = {
+                mediaCursor = new google.maps.Marker({
                     icon: {
                         path: google.maps.SymbolPath.CIRCLE,
                         fillColor: '#808080',
@@ -89,15 +112,80 @@
                         strokeColor: '#FF0000',
                         strokeWeight: 1.5,
                         scale: 3.5
-                    }
-                };
+                    },
+                    clickable: false,
+                    map: map
+                });
 
-                mediaCursor = new google.maps.Marker(mediaCursorOptions);
-                mediaCursor.setMap(map);
+                poly = new google.maps.Polyline({
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 1.5,
+                    clickable: false,
+                    map: map
+                });
+
+                new QWebChannel(qt.webChannelTransport, function (channel) {
+                    // make map widget object accessible globally
+                    window.core = channel.objects.core;
+
+                    core.setData.connect(setData);
+                    core.setBounds.connect(setBounds);
+
+                    core.setMark.connect(setMark);
+                    core.clearMark.connect(clearMark);
+
+                    core.setMediaCursor.connect(setMediaCursor);
+                    core.clearMediaCursor.connect(clearMediaCursor);
+
+                    core.addPolyline.connect(addPolyline);
+                    core.addPolygon.connect(addPolygon);
+                    core.clearAnnotations.connect(clearAnnotations);
+
+                    core.enableDrag.connect(function () {
+                        map.setOptions({
+                            draggable: true
+                        });
+                    });
+                    core.disableDrag.connect(function () {
+                        map.setOptions({
+                            draggable: false
+                        });
+                    });
+
+                    window.addEventListener('mousedown', function (e) {
+                        core.mouseDown(savedLatLng.toJSON());
+                    });
+
+                    window.addEventListener('mouseup', function (e) {
+                        core.mouseUp(savedLatLng.toJSON());
+                    });
+
+                    map.addListener('bounds_changed', function (e) {
+                        var sw = map.getBounds().getSouthWest();
+                        var ne = map.getBounds().getNorthEast();
+                        core.boundsChanged(sw.toJSON(), ne.toJSON());
+                    });
+
+                    map.addListener('mouseover', function (e) {
+                        savedLatLng = e.latLng;
+                        core.mouseOver(e.latLng.toJSON());
+                    });
+
+                    map.addListener('mouseout', function (e) {
+                        core.mouseOut();
+                    });
+
+                    map.addListener('mousemove', function (e) {
+                        savedLatLng = e.latLng;
+                        core.mouseMove(e.latLng.toJSON());
+                    });
+                });
             }
         </script>
-    </head>
-    <body onload="initialize()">
-        <div id="map-canvas" style="width:100%; height:100%"></div>
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY&callback=initMap">
+        </script>
     </body>
 </html>

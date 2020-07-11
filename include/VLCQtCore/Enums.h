@@ -30,23 +30,25 @@
     \ingroup VLCQtCore
     \brief Common enumerations
 */
-class VLCQT_CORE_EXPORT Vlc : public QObject
+class VLCQT_CORE_EXPORT Vlc : public QObject // LCOV_EXCL_LINE
 {
-Q_OBJECT
+    Q_OBJECT
 
-Q_ENUMS(ActionsType)
-Q_ENUMS(AudioChannel)
-Q_ENUMS(AudioCodec)
-Q_ENUMS(AudioOutput)
-Q_ENUMS(Deinterlacing)
-Q_ENUMS(Meta)
-Q_ENUMS(Mux)
-Q_ENUMS(PlaybackMode)
-Q_ENUMS(Ratio)
-Q_ENUMS(Scale)
-Q_ENUMS(State)
-Q_ENUMS(VideoCodec)
-Q_ENUMS(VideoOutput)
+    Q_ENUMS(LogLevel)
+    Q_ENUMS(ActionsType)
+    Q_ENUMS(AudioChannel)
+    Q_ENUMS(AudioCodec)
+    Q_ENUMS(AudioOutput)
+    Q_ENUMS(Deinterlacing)
+    Q_ENUMS(FillMode)
+    Q_ENUMS(Meta)
+    Q_ENUMS(Mux)
+    Q_ENUMS(PlaybackMode)
+    Q_ENUMS(Ratio)
+    Q_ENUMS(Scale)
+    Q_ENUMS(State)
+    Q_ENUMS(VideoCodec)
+    Q_ENUMS(VideoOutput)
 
 public:
     /*!
@@ -59,6 +61,28 @@ public:
     explicit Vlc(QObject *parent = 0);
 
     // Enums
+    /*!
+        \enum LogLevel
+        \brief libVLC log levels
+        \since VLC-Qt 1.1
+    */
+    enum LogLevel {
+        DebugLevel = 0,
+        NoticeLevel = 2,
+        WarningLevel = 3,
+        ErrorLevel = 4,
+        DisabledLevel = 5
+    };
+
+    /*!
+        \enum RenderFormat
+        \brief Frame format used for custom rendering
+        \since VLC-Qt 1.1
+    */
+    enum RenderFormat {
+        YUVFormat
+    };
+
     /*!
         \enum ActionsType
         \brief Actions types identifiers
@@ -120,6 +144,16 @@ public:
         Yadif2x,
         Phospor,
         IVTC
+    };
+
+    /*!
+        \enum FillMode
+        \brief Supported fill modes (QML only)
+    */
+    enum FillMode {
+        PreserveAspectFit = Qt::KeepAspectRatio,
+        PreserveAspectCrop = Qt::KeepAspectRatioByExpanding,
+        Stretch = Qt::IgnoreAspectRatio
     };
 
     /*!
@@ -251,6 +285,12 @@ public:
     };
 
     // Functions
+    /*!
+        \brief Log level strings
+        \return log level strings (QStringList)
+    */
+    static QStringList logLevel();
+
     /*!
         \brief Audio codecs strings
         \return audio codecs strings (QStringList)

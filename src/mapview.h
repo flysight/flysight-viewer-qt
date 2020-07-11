@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  FlySight Viewer                                                       **
-**  Copyright 2018 Michael Cooper                                         **
+**  Copyright 2020 Michael Cooper                                         **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -24,11 +24,14 @@
 #ifndef MAPVIEW_H
 #define MAPVIEW_H
 
-#include <QWebView>
+#include <QWebEngineView>
 
 class MainWindow;
 
-class MapView : public QWebView
+class QWebChannel;
+class MapCore;
+
+class MapView : public QWebEngineView
 {
     Q_OBJECT
 public:
@@ -38,20 +41,34 @@ public:
 
     void setMainWindow(MainWindow *mainWindow) { mMainWindow = mainWindow; }
 
-protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
+    double metersPerPixel() const;
+    MapCore *mapCore() { return mMapCore; }
 
 private:
-    MainWindow *mMainWindow;
+    MainWindow  *mMainWindow;
     bool        mDragging;
 
-    bool updateReference(QMouseEvent *event);
+    QWebChannel *mWebChannel;
+    MapCore     *mMapCore;
+
+    double       mLatMin, mLonMin;
+    double       mLatMax, mLonMax;
+
+    bool updateReference(QMap<QString, QVariant> latLng);
+    void updateMarker(QMap<QString, QVariant> latLng);
 
 public slots:
     void initView();
     void updateView();
+    void updateCursor();
+    void updateMapMode();
+
+    void mouseDown(QMap<QString, QVariant> latLng);
+    void mouseUp(QMap<QString, QVariant> latLng);
+    void mouseOver(QMap<QString, QVariant> latLng);
+    void mouseOut();
+    void mouseMove(QMap<QString, QVariant> latLng);
+    void boundsChanged(QMap<QString, QVariant> sw, QMap<QString, QVariant> ne);
 };
 
 #endif // MAPVIEW_H
