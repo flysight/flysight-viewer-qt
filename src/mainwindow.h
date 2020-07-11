@@ -27,6 +27,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QStack>
 #include <QVector>
@@ -120,9 +121,9 @@ public:
     void setMediaCursor(double mediaCursor);
     double mediaCursor() const { return mMediaCursor; }
 
-    void mediaCursorAddRef();
-    void mediaCursorRemoveRef();
-    int mediaCursorRef() const { return mMediaCursorRef; }
+    void mediaCursorAddRef(QObject *parent);
+    void mediaCursorRemoveRef(QObject *parent);
+    int mediaCursorRef() const { return mMediaCursorRef.size(); }
 
     void pauseMedia();
 
@@ -267,7 +268,7 @@ private:
     bool                  mMarkActive;
 
     double                mMediaCursor;
-    int                   mMediaCursorRef;
+    QSet<QObject*>        mMediaCursorRef;
 
     double                m_viewDataRotation;
 

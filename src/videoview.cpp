@@ -106,7 +106,7 @@ void VideoView::setMedia(const QString &fileName)
 void VideoView::showEvent(
         QShowEvent *event)
 {
-    mMainWindow->mediaCursorAddRef();
+    mMainWindow->mediaCursorAddRef(this);
 }
 
 void VideoView::hideEvent(
@@ -114,7 +114,7 @@ void VideoView::hideEvent(
 {
     mBusy = true;
 
-    mMainWindow->mediaCursorRemoveRef();
+    mMainWindow->mediaCursorRemoveRef(this);
 
     mBusy = false;
 }

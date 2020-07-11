@@ -100,7 +100,7 @@ void SimulationView::setMainWindow(
 void SimulationView::showEvent(
         QShowEvent *event)
 {
-    mMainWindow->mediaCursorAddRef();
+    mMainWindow->mediaCursorAddRef(this);
 }
 
 void SimulationView::hideEvent(
@@ -109,7 +109,7 @@ void SimulationView::hideEvent(
     mBusy = true;
 
     pauseMedia();
-    mMainWindow->mediaCursorRemoveRef();
+    mMainWindow->mediaCursorRemoveRef(this);
 
     mBusy = false;
 }

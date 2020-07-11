@@ -537,6 +537,8 @@ void DataPlot::updateYRanges()
 
 void DataPlot::updatePlot()
 {
+    setCurrentLayer("main");
+
     clearPlottables();
     clearItems();
 
@@ -787,8 +789,6 @@ void DataPlot::updateCursor()
         line->start->setCoords(xAxis->range().lower, yAxis->pixelToCoord(m_yCursor));
         line->end->setCoords(xAxis->range().upper, yAxis->pixelToCoord(m_yCursor));
     }
-
-    setCurrentLayer("main");
 
     replot();
 }
