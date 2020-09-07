@@ -788,7 +788,8 @@ void UBX::updateTones(UBX_saved_t *current)
 
         if (mVal[0] != UBX_INVALID_VALUE &&
             mVal[1] != UBX_INVALID_VALUE &&
-            mVal[2] != UBX_INVALID_VALUE)
+            mVal[2] != UBX_INVALID_VALUE &&
+            max_1 != min_1)
         {
             val_2 = (int32_t) 1000 * (mVal[2] - mVal[0]) / (int32_t) (2 * mConfig.UBX_rate);
             val_2 = (int32_t) 10000 * ABS(val_2) / ABS(max_1 - min_1);
