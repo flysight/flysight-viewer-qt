@@ -669,7 +669,7 @@ void DataPlot::updateCursor()
 
     if (mMainWindow->dataSize() == 0) return;
 
-    if (mMainWindow->mediaCursorRef() > 0)
+    if (yAxis && mMainWindow->mediaCursorRef() > 0)
     {
         // Draw marks
         const DataPoint &dp = mMainWindow->interpolateDataT(mMainWindow->mediaCursor());
@@ -704,7 +704,7 @@ void DataPlot::updateCursor()
         line->end->setCoords(xMark.first(), yAxis->range().upper);
     }
 
-    if (mMainWindow->markActive())
+    if (yAxis && mMainWindow->markActive())
     {
         // Draw marks
         const DataPoint &dpEnd = mMainWindow->interpolateDataT(mMainWindow->markEnd());
@@ -756,7 +756,7 @@ void DataPlot::updateCursor()
     }
 
     MainWindow::Tool tool = mMainWindow->tool();
-    if (!m_cursorValid)
+    if (!yAxis || !m_cursorValid)
     {
         // Draw nothing
     }
