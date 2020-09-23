@@ -25,6 +25,7 @@
 #include "ui_mainwindow.h"
 
 #include <QCryptographicHash>
+#include <QDesktopServices>
 #include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
@@ -991,6 +992,40 @@ void MainWindow::setTrackDescription(
     }
 
     emit databaseChanged();
+}
+
+QString MainWindow::trackDescription(
+        const QString &trackName)
+{
+    QSqlQuery query(mDatabase);
+
+    // Get the description
+    if (!query.exec(QString("select description from files where file_name='%1'").arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return QString();
+    }
+
+    if (!query.next()) return QString();
+    else               return query.value(0).toString();
+}
+
+QDateTime MainWindow::trackStartTime(
+        const QString &trackName)
+{
+    QSqlQuery query(mDatabase);
+
+    // Get the start time
+    if (!query.exec(QString("select start_time from files where file_name='%1'").arg(trackName)))
+    {
+        QSqlError err = query.lastError();
+        QMessageBox::critical(0, tr("Query failed"), err.text());
+        return QDateTime();
+    }
+
+    if (!query.next()) return QDateTime();
+    else               return QDateTime::fromString(query.value(0).toString(), "yyyy-MM-dd HH:mm:ss.zzz");
 }
 
 void MainWindow::setTrackChecked(
@@ -2196,57 +2231,106 @@ void MainWindow::on_actionExportKML_triggered()
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly))
         {
-            // TODO: Error message
+            QMessageBox::critical(0, tr("FlySight Viewer"), tr("Couldn't open KML file."));
             return;
         }
 
-        QTextStream stream(&file);
-
-        // Write headers
-        stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-        stream << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << endl;
-        stream << "  <Placemark>" << endl;
-        stream << "    <name>" << QFileInfo(fileName).baseName() << "</name>" << endl;
-        stream << "    <LineString>" << endl;
-        stream << "      <altitudeMode>absolute</altitudeMode>" << endl;
-        stream << "      <coordinates>" << endl;
-
-        double lower = rangeLower();
-        double upper = rangeUpper();
-
-        bool first = true;
-        for (int i = 0; i < dataSize(); ++i)
+        // Get description for track
+        QString description = trackDescription(trackName());
+        if (description.isEmpty())
         {
-            const DataPoint &dp = dataPoint(i);
-
-            if (lower <= dp.t && dp.t <= upper)
-            {
-                if (first)
-                {
-                    stream << "        ";
-                    first = false;
-                }
-                else
-                {
-                    stream << " ";
-                }
-
-                stream << QString("%1,%2,%3").arg(dp.lon, 0, 'f', 7).arg(dp.lat, 0, 'f', 7).arg(dp.hMSL, 0, 'f', 3);
-            }
+            QDateTime startTime = trackStartTime(trackName());
+            description  = startTime.toUTC().date().toString(Qt::ISODate) + "T";
+            description += startTime.toUTC().time().toString(Qt::ISODate) + ".";
+            description += QString("%1").arg(startTime.toUTC().time().msec(), 3, 10, QChar('0')) + "Z";
         }
 
-        if (!first)
-        {
-            stream << endl;
-        }
-
-
-        // Write footers
-        stream << "      </coordinates>" << endl;
-        stream << "    </LineString>" << endl;
-        stream << "  </Placemark>" << endl;
-        stream << "</kml>" << endl;
+        // Export to KML file
+        exportToKML(&file, description);
     }
+}
+
+void MainWindow::on_actionExportToGoogleEarth_triggered()
+{
+    // Create temporary file
+    QTemporaryFile temporaryFile(QDir::tempPath() + "/XXXXXX.kml");
+    temporaryFile.setAutoRemove(false);
+    if (!temporaryFile.open())
+    {
+        QMessageBox::critical(0, tr("FlySight Viewer"), tr("Couldn't open temporary KML file."));
+        return;
+    }
+
+    // Get description for track
+    QString description = trackDescription(trackName());
+    if (description.isEmpty())
+    {
+        QDateTime startTime = trackStartTime(trackName());
+        description  = startTime.toUTC().date().toString(Qt::ISODate) + "T";
+        description += startTime.toUTC().time().toString(Qt::ISODate) + ".";
+        description += QString("%1").arg(startTime.toUTC().time().msec(), 3, 10, QChar('0')) + "Z,";
+    }
+
+    // Export to KML file
+    exportToKML(&temporaryFile, description);
+
+    // Open in Google Earth
+    temporaryFile.close();
+    QDesktopServices::openUrl(QUrl("file:" + temporaryFile.fileName()));
+}
+
+bool MainWindow::exportToKML(
+        QIODevice *device,
+        QString name)
+{
+    QTextStream stream(device);
+
+    // Write headers
+    stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+    stream << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << endl;
+    stream << "  <Placemark>" << endl;
+    stream << "    <name>" << name << "</name>" << endl;
+    stream << "    <LineString>" << endl;
+    stream << "      <altitudeMode>absolute</altitudeMode>" << endl;
+    stream << "      <coordinates>" << endl;
+
+    double lower = rangeLower();
+    double upper = rangeUpper();
+
+    bool first = true;
+    for (int i = 0; i < dataSize(); ++i)
+    {
+        const DataPoint &dp = dataPoint(i);
+
+        if (lower <= dp.t && dp.t <= upper)
+        {
+            if (first)
+            {
+                stream << "        ";
+                first = false;
+            }
+            else
+            {
+                stream << " ";
+            }
+
+            stream << QString("%1,%2,%3").arg(dp.lon, 0, 'f', 7).arg(dp.lat, 0, 'f', 7).arg(dp.hMSL, 0, 'f', 3);
+        }
+    }
+
+    if (!first)
+    {
+        stream << endl;
+    }
+
+
+    // Write footers
+    stream << "      </coordinates>" << endl;
+    stream << "    </LineString>" << endl;
+    stream << "  </Placemark>" << endl;
+    stream << "</kml>" << endl;
+
+    return true;
 }
 
 void MainWindow::on_actionExportPlot_triggered()
