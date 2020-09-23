@@ -2362,7 +2362,8 @@ void MainWindow::on_actionExportPlot_triggered()
         QTextStream stream(&file);
 
         // Write header
-        stream << m_ui->plotArea->xValue()->title(m_units);
+        stream << "Time (UTC)";
+        stream << "," << m_ui->plotArea->xValue()->title(m_units);
         for (int j = 0; j < DataPlot::yaLast; ++j)
         {
             if (!m_ui->plotArea->yValue(j)->visible()) continue;
@@ -2379,7 +2380,8 @@ void MainWindow::on_actionExportPlot_triggered()
 
             if (lower <= dp.t && dp.t <= upper)
             {
-                stream << m_ui->plotArea->xValue()->value(dp, m_units);
+                stream << dateTimeToUTC(dp.dateTime);
+                stream << "," << m_ui->plotArea->xValue()->value(dp, m_units);
                 for (int j = 0; j < DataPlot::yaLast; ++j)
                 {
                     if (!m_ui->plotArea->yValue(j)->visible()) continue;
