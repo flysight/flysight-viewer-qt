@@ -186,6 +186,9 @@ public:
     void setSelectedTracks(QVector< QString > tracks);
     void setTrackDescription(const QString &trackName, const QString &description);
 
+    QString trackDescription(const QString &trackName);
+    QDateTime trackStartTime(const QString &trackName);
+
     void setTrackChecked(const QString &trackName, bool checked);
     bool trackChecked(const QString &trackName) const;
 
@@ -244,6 +247,7 @@ private slots:
     void on_actionExportKML_triggered();
     void on_actionExportPlot_triggered();
     void on_actionExportTrack_triggered();
+    void on_actionExportToGoogleEarth_triggered();
 
     void on_actionUndoZoom_triggered();
     void on_actionRedoZoom_triggered();
@@ -364,6 +368,8 @@ private:
 
     void updateGround(DataPoints &data, double ground);
     QString dateTimeToUTC(const QDateTime &dt);
+
+    bool exportToKML(QIODevice *device, QString name);
 
 signals:
     void dataLoaded();

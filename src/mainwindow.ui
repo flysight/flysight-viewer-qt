@@ -53,7 +53,9 @@
     <addaction name="separator"/>
     <addaction name="actionExportTrack"/>
     <addaction name="actionExportPlot"/>
+    <addaction name="separator"/>
     <addaction name="actionExportKML"/>
+    <addaction name="actionExportToGoogleEarth"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
     <addaction name="separator"/>
@@ -766,6 +768,14 @@
    </property>
    <property name="toolTip">
     <string>Simulation</string>
+   </property>
+  </action>
+  <action name="actionExportToGoogleEarth">
+   <property name="text">
+    <string>Export to Google Earth</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>
