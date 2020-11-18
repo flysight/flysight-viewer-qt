@@ -814,7 +814,7 @@ void UBX::updateTones(UBX_saved_t *current)
             {
                 for (i = 0; i < mConfig.UBX_speech.length(); ++i)
                 {
-                    if ((mConfig.UBX_speech[mCurSpeech].mode != 5) ||
+                    if ((mConfig.UBX_speech[mCurSpeech].mode != 12) ||
                         (current->hMSL - mConfig.UBX_dz_elev >= UBX_ALT_MIN * 1000))
                     {
                         speakValue(current);
