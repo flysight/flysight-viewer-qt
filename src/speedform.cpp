@@ -44,6 +44,7 @@ SpeedForm::SpeedForm(QWidget *parent) :
 
     connect(ui->fromExitEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
     connect(ui->bottomEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
+    connect(ui->validationEdit, SIGNAL(editingFinished()), this, SLOT(onApplyButtonClicked()));
 
     // Connect optimization buttons
     connect(ui->actualButton, SIGNAL(clicked()), this, SLOT(onActualButtonClicked()));
@@ -83,10 +84,12 @@ void SpeedForm::updateView()
 
     const double fromExit = method->fromExit();
     const double bottom = method->windowBottom();
+    const double validationWindow = method->validationWindow();
 
     // Update window bounds
     ui->fromExitEdit->setText(QString("%1").arg(fromExit * METERS_TO_FEET));
     ui->bottomEdit->setText(QString("%1").arg(bottom * METERS_TO_FEET));
+    ui->validationEdit->setText(QString("%1").arg(validationWindow * METERS_TO_FEET));
 
     // Get exit
     DataPoint dpExit = mMainWindow->interpolateDataT(0);
@@ -94,10 +97,14 @@ void SpeedForm::updateView()
     DataPoint dpBottom, dpTop;
     bool success;
 
+    double speedAccuracy;
+    bool accuracyOkay = false;
+
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
         success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
+        accuracyOkay = method->getAccuracy(mMainWindow->data(), speedAccuracy, dpExit);
         break;
     case MainWindow::Optimal:
         success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
@@ -144,23 +151,37 @@ void SpeedForm::updateView()
         ui->optimizeButton->setEnabled(false);
         ui->ppcButton->setEnabled(false);
     }
+
+    if (accuracyOkay)
+    {
+        ui->accuracyEdit->setText(QString("%1").arg(speedAccuracy));
+    }
+    else
+    {
+        ui->accuracyEdit->setText(tr("n/a"));
+    }
 }
 
 void SpeedForm::onFAIButtonClicked()
 {
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
+
     method->setFromExit(2255.52);
     method->setWindowBottom(1706.88);
+    method->setValidationWindow(1005.84);
 }
 
 void SpeedForm::onApplyButtonClicked()
 {
     double fromExit = ui->fromExitEdit->text().toDouble() / METERS_TO_FEET;
     double bottom = ui->bottomEdit->text().toDouble() / METERS_TO_FEET;
+    double validationWindow = ui->validationEdit->text().toDouble() / METERS_TO_FEET;
 
     SpeedScoring *method = (SpeedScoring *) mMainWindow->scoringMethod(MainWindow::Speed);
+
     method->setFromExit(fromExit);
     method->setWindowBottom(bottom);
+    method->setValidationWindow(validationWindow);
 
     mMainWindow->setFocus();
 }

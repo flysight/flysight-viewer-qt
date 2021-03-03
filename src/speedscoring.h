@@ -39,6 +39,9 @@ public:
     double windowBottom(void) const { return mWindowBottom; }
     void setWindowBottom(double windowBottom);
 
+    double validationWindow(void) const { return mValidationWindow; }
+    void setValidationWindow(double validationWindow);
+
     double score(const MainWindow::DataPoints &result);
     QString scoreAsText(double score);
 
@@ -47,6 +50,9 @@ public:
     bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom, DataPoint &dpTop,
                          const DataPoint &dpExit);
+    bool getAccuracy(const MainWindow::DataPoints &result,
+                     double &accuracy,
+                     const DataPoint &dpExit);
 
     void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }
 
@@ -55,6 +61,7 @@ private:
 
     double      mFromExit;
     double      mWindowBottom;
+    double      mValidationWindow;
 
 signals:
 
