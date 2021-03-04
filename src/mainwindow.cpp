@@ -46,6 +46,7 @@
 
 #include "GeographicLib/Geodesic.hpp"
 
+#include "acroscoring.h"
 #include "common.h"
 #include "configdialog.h"
 #include "dataview.h"
@@ -104,6 +105,7 @@ MainWindow::MainWindow(
     mScoringMethods.append(new WideOpenSpeedScoring(this));
     mScoringMethods.append(new WideOpenDistanceScoring(this));
     mScoringMethods.append(new FlareScoring(this));
+    mScoringMethods.append(new AcroScoring(this));
 
     // Read scoring method settings
     for (int i = PPC; i < smLast; ++i)
