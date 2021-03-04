@@ -21,52 +21,43 @@
 **  Website: http://flysight.ca/                                          **
 ****************************************************************************/
 
-#ifndef SCORINGVIEW_H
-#define SCORINGVIEW_H
+#ifndef ACROFORM_H
+#define ACROFORM_H
 
 #include <QWidget>
 
 namespace Ui {
-    class ScoringView;
+    class AcroForm;
 }
 
-class DataPlot;
-class DataPoint;
 class MainWindow;
-class PerformanceForm;
-class PPCForm;
-class SpeedForm;
-class WideOpenDistanceForm;
-class WideOpenSpeedForm;
-class FlareForm;
-class AcroForm;
 
-class ScoringView : public QWidget
+class AcroForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ScoringView(QWidget *parent = 0);
-    ~ScoringView();
+    explicit AcroForm(QWidget *parent = 0);
+    ~AcroForm();
+
+    virtual QSize sizeHint() const;
 
     void setMainWindow(MainWindow *mainWindow);
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *);
+
 private:
-    Ui::ScoringView      *ui;
-    MainWindow           *mMainWindow;
-    PPCForm              *mPPCForm;
-    SpeedForm            *mSpeedForm;
-    PerformanceForm      *mPerformanceForm;
-    WideOpenSpeedForm    *mWideOpenSpeedForm;
-    WideOpenDistanceForm *mWideOpenDistanceForm;
-    FlareForm            *mFlareForm;
-    AcroForm             *mAcroForm;
+    Ui::AcroForm *ui;
+    MainWindow  *mMainWindow;
 
 public slots:
     void updateView();
 
 private slots:
-    void changePage(int page);
+    void onFAIButtonClicked();
+    void onApplyButtonClicked();
 };
 
-#endif // SCORINGVIEW_H
+
+#endif // ACROFORM_H

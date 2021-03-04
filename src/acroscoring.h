@@ -21,52 +21,41 @@
 **  Website: http://flysight.ca/                                          **
 ****************************************************************************/
 
-#ifndef SCORINGVIEW_H
-#define SCORINGVIEW_H
+#ifndef ACROSCORING_H
+#define ACROSCORING_H
 
-#include <QWidget>
+#include "scoringmethod.h"
 
-namespace Ui {
-    class ScoringView;
-}
-
-class DataPlot;
-class DataPoint;
 class MainWindow;
-class PerformanceForm;
-class PPCForm;
-class SpeedForm;
-class WideOpenDistanceForm;
-class WideOpenSpeedForm;
-class FlareForm;
-class AcroForm;
 
-class ScoringView : public QWidget
+class AcroScoring : public ScoringMethod
 {
-    Q_OBJECT
-
 public:
-    explicit ScoringView(QWidget *parent = 0);
-    ~ScoringView();
+    AcroScoring(MainWindow *mainWindow);
 
-    void setMainWindow(MainWindow *mainWindow);
+    double speed(void) const { return mSpeed; }
+    void setSpeed(double speed);
+
+    double altitude(void) const { return mAltitude; }
+    void setAltitude(double altitude);
+
+    void prepareDataPlot(DataPlot *plot);
+
+    bool getWindowBounds(const MainWindow::DataPoints &result,
+                         DataPoint &dpBottom, DataPoint &dpTop);
 
 private:
-    Ui::ScoringView      *ui;
-    MainWindow           *mMainWindow;
-    PPCForm              *mPPCForm;
-    SpeedForm            *mSpeedForm;
-    PerformanceForm      *mPerformanceForm;
-    WideOpenSpeedForm    *mWideOpenSpeedForm;
-    WideOpenDistanceForm *mWideOpenDistanceForm;
-    FlareForm            *mFlareForm;
-    AcroForm             *mAcroForm;
+    MainWindow *mMainWindow;
+
+    double      mSpeed;
+    double      mAltitude;
+
+    int findIndexBelowT(const MainWindow::DataPoints &result,
+                        double t);
+
+signals:
 
 public slots:
-    void updateView();
-
-private slots:
-    void changePage(int page);
 };
 
-#endif // SCORINGVIEW_H
+#endif // ACROSCORING_H

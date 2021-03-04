@@ -15,6 +15,8 @@ TARGET = FlySightViewer
 TEMPLATE = app
 
 SOURCES += main.cpp \
+    acroform.cpp \
+    acroscoring.cpp \
     colorcombobox.cpp \
     config.cpp \
     mainwindow.cpp \
@@ -94,6 +96,8 @@ SOURCES += main.cpp \
     QCustomPlot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
+    acroform.h \
+    acroscoring.h \
     colorcombobox.h \
     config.h \
     datapoint.h \
@@ -136,6 +140,7 @@ HEADERS  += mainwindow.h \
     QCustomPlot/qcustomplot.h
 
 FORMS    += mainwindow.ui \
+    acroform.ui \
     configdialog.ui \
     simulationview.ui \
     videoview.ui \
