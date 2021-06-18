@@ -97,14 +97,14 @@ void SpeedForm::updateView()
     DataPoint dpBottom, dpTop;
     bool success;
 
-    double speedAccuracy;
+    double vAcc, sAcc, numSV;
     bool accuracyOkay = false;
 
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
         success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
-        accuracyOkay = method->getAccuracy(mMainWindow->data(), speedAccuracy, dpExit);
+        accuracyOkay = method->getAccuracy(mMainWindow->data(), vAcc, sAcc, numSV, dpExit);
         break;
     case MainWindow::Optimal:
         success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
@@ -154,11 +154,15 @@ void SpeedForm::updateView()
 
     if (accuracyOkay)
     {
-        ui->accuracyEdit->setText(QString("%1").arg(speedAccuracy));
+        ui->vAccEdit->setText(QString("%1").arg(vAcc, 0, 'f', 3));
+        ui->sAccEdit->setText(QString("%1").arg(sAcc, 0, 'f', 2));
+        ui->numSVEdit->setText(QString("%1").arg(numSV, 0, 'f', 0));
     }
     else
     {
-        ui->accuracyEdit->setText(tr("n/a"));
+        ui->vAccEdit->setText(tr("n/a"));
+        ui->sAccEdit->setText(tr("n/a"));
+        ui->numSVEdit->setText(tr("n/a"));
     }
 }
 

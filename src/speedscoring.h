@@ -51,7 +51,7 @@ public:
                          DataPoint &dpBottom, DataPoint &dpTop,
                          const DataPoint &dpExit);
     bool getAccuracy(const MainWindow::DataPoints &result,
-                     double &accuracy,
+                     double &vAcc, double &sAcc, double &numSV,
                      const DataPoint &dpExit);
 
     void optimize() { ScoringMethod::optimize(mMainWindow, mWindowBottom); }

@@ -256,7 +256,7 @@
         <item row="2" column="0">
          <widget class="QRadioButton" name="hSpeedButton">
           <property name="text">
-           <string>H. Speed:</string>
+           <string>Horizontal speed:</string>
           </property>
          </widget>
         </item>

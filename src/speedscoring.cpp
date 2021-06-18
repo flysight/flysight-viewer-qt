@@ -218,7 +218,9 @@ bool SpeedScoring::getWindowBounds(
 
 bool SpeedScoring::getAccuracy(
         const MainWindow::DataPoints &result,
-        double &accuracy,
+        double &vAcc,
+        double &sAcc,
+        double &numSV,
         const DataPoint &dpExit)
 {
     bool found = false;
@@ -238,11 +240,20 @@ bool SpeedScoring::getAccuracy(
         if (dp.z > zTop) continue;
 
         // Calculate accuracy
-        if ((!found) || (dp.sAcc > accuracy))
+        if ((!found) || (dp.vAcc > vAcc))
         {
-            accuracy = dp.sAcc;
-            found = true;
+            vAcc = dp.vAcc;
         }
+        if ((!found) || (dp.sAcc > sAcc))
+        {
+            sAcc = dp.sAcc;
+        }
+        if ((!found) || (dp.numSV < numSV))
+        {
+            numSV = dp.numSV;
+        }
+
+        found = true;
     }
 
     return found;
