@@ -84,11 +84,11 @@ public:
     void setMaximum(double maximum) { mMaximum = maximum; }
     double maximum() const { return mMaximum; }
 
-    void setUseMinimum(double useMinimum) { mUseMinimum = useMinimum; }
-    double useMinimum() const { return mUseMinimum; }
+    void setUseMinimum(bool useMinimum) { mUseMinimum = useMinimum; }
+    bool useMinimum() const { return mUseMinimum; }
 
-    void setUseMaximum(double useMaximum) { mUseMaximum = useMaximum; }
-    double useMaximum() const { return mUseMaximum; }
+    void setUseMaximum(bool useMaximum) { mUseMaximum = useMaximum; }
+    bool useMaximum() const { return mUseMaximum; }
 
     QCPAxis *addAxis(QCustomPlot *plot, Units units)
     {
