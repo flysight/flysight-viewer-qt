@@ -26,13 +26,15 @@
 #include "mainwindow.h"
 
 #define TIME_DELTA 0.005
+#define SQRT_2 1.41421356237
 
 SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
     mFromExit(2255.52),
-    mWindowBottom(1706.88)
+    mWindowBottom(1706.88),
+    mValidationWindow(1005.84)
 {
 
 }
@@ -48,6 +50,13 @@ void SpeedScoring::setWindowBottom(
         double windowBottom)
 {
     mWindowBottom = windowBottom;
+    emit scoringChanged();
+}
+
+void SpeedScoring::setValidationWindow(
+        double validationWindow)
+{
+    mValidationWindow = validationWindow;
     emit scoringChanged();
 }
 
@@ -203,6 +212,40 @@ bool SpeedScoring::getWindowBounds(
             maxScore = thisScore;
             found = true;
         }
+    }
+
+    return found;
+}
+
+bool SpeedScoring::getAccuracy(
+        const MainWindow::DataPoints &result,
+        double &scoreAccuracy,
+        const DataPoint &dpExit)
+{
+    bool found = false;
+
+    for (int i = result.size() - 1; i >= 0; --i)
+    {
+        // Get end point
+        const DataPoint &dp = result[i];
+
+        // Get validation window
+        const double zBottom = qMax(dpExit.z - mFromExit, mWindowBottom);
+        const double zTop = zBottom + mValidationWindow;
+
+        // Check window conditions
+        if (dp.t < 0) break;
+        if (dp.z < zBottom) continue;
+        if (dp.z > zTop) continue;
+
+        // Calculate accuracy
+        double sa = 1.960 * SQRT_2 * dp.vAcc / 3.0;
+        if ((!found) || (sa > scoreAccuracy))
+        {
+            scoreAccuracy = sa;
+        }
+
+        found = true;
     }
 
     return found;

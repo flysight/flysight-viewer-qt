@@ -35,14 +35,14 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Speed Threshold:</string>
+           <string>Speed threshold:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>Altitude Window:</string>
+           <string>Altitude window:</string>
           </property>
          </widget>
         </item>
@@ -109,7 +109,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Working Time:</string>
+           <string>Working time:</string>
           </property>
          </widget>
         </item>
