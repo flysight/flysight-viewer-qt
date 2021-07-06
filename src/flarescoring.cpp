@@ -29,7 +29,7 @@ FlareScoring::FlareScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
-    mWindowBottom(2000)
+    mWindowBottom(1000)
 {
 
 }
