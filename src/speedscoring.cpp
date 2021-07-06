@@ -26,6 +26,7 @@
 #include "mainwindow.h"
 
 #define TIME_DELTA 0.005
+#define SQRT_2 1.41421356237
 
 SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
@@ -218,9 +219,7 @@ bool SpeedScoring::getWindowBounds(
 
 bool SpeedScoring::getAccuracy(
         const MainWindow::DataPoints &result,
-        double &vAcc,
-        double &sAcc,
-        double &numSV,
+        double &scoreAccuracy,
         const DataPoint &dpExit)
 {
     bool found = false;
@@ -240,17 +239,10 @@ bool SpeedScoring::getAccuracy(
         if (dp.z > zTop) continue;
 
         // Calculate accuracy
-        if ((!found) || (dp.vAcc > vAcc))
+        double sa = 1.960 * SQRT_2 * dp.vAcc / 3.0;
+        if ((!found) || (sa > scoreAccuracy))
         {
-            vAcc = dp.vAcc;
-        }
-        if ((!found) || (dp.sAcc > sAcc))
-        {
-            sAcc = dp.sAcc;
-        }
-        if ((!found) || (dp.numSV < numSV))
-        {
-            numSV = dp.numSV;
+            scoreAccuracy = sa;
         }
 
         found = true;

@@ -157,49 +157,22 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="2">
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="scoreAccuracyEdit"/>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Speed accuracy:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
          <widget class="QLabel" name="label_8">
           <property name="text">
            <string>m/s</string>
           </property>
          </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Worst vertical accuracy:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Worst speed accuracy:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="sAccEdit"/>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="vAccEdit"/>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>m</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>Lowest number of satellites:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="numSVEdit"/>
         </item>
        </layout>
       </item>

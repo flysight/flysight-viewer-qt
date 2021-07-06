@@ -97,14 +97,14 @@ void SpeedForm::updateView()
     DataPoint dpBottom, dpTop;
     bool success;
 
-    double vAcc, sAcc, numSV;
+    double scoreAccuracy;
     bool accuracyOkay = false;
 
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
         success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
-        accuracyOkay = method->getAccuracy(mMainWindow->data(), vAcc, sAcc, numSV, dpExit);
+        accuracyOkay = method->getAccuracy(mMainWindow->data(), scoreAccuracy, dpExit);
         break;
     case MainWindow::Optimal:
         success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
@@ -120,12 +120,12 @@ void SpeedForm::updateView()
         // Update display
         if (mMainWindow->units() == PlotValue::Metric)
         {
-            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_KMH));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_KMH, 0, 'f', 2));
             ui->verticalSpeedUnits->setText(tr("km/h"));
         }
         else
         {
-            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH));
+            ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH, 0, 'f', 2));
             ui->verticalSpeedUnits->setText(tr("mph"));
         }
         ui->actualButton->setEnabled(true);
@@ -154,15 +154,11 @@ void SpeedForm::updateView()
 
     if (accuracyOkay)
     {
-        ui->vAccEdit->setText(QString("%1").arg(vAcc, 0, 'f', 3));
-        ui->sAccEdit->setText(QString("%1").arg(sAcc, 0, 'f', 2));
-        ui->numSVEdit->setText(QString("%1").arg(numSV, 0, 'f', 0));
+        ui->scoreAccuracyEdit->setText(QString("%1").arg(scoreAccuracy, 0, 'f', 2));
     }
     else
     {
-        ui->vAccEdit->setText(tr("n/a"));
-        ui->sAccEdit->setText(tr("n/a"));
-        ui->numSVEdit->setText(tr("n/a"));
+        ui->scoreAccuracyEdit->setText(tr("n/a"));
     }
 }
 
