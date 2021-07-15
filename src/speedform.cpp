@@ -128,6 +128,16 @@ void SpeedForm::updateView()
             ui->verticalSpeedEdit->setText(QString("%1").arg(verticalSpeed * MPS_TO_MPH, 0, 'f', 2));
             ui->verticalSpeedUnits->setText(tr("mph"));
         }
+
+        const double performanceBottom = qMax(dpExit.z - fromExit, bottom);
+        const double validationTop = performanceBottom + validationWindow;
+
+        ui->exitAltitudeEdit->setText(QString("%1").arg(dpExit.z, 0, 'f', 3));
+        ui->validationTopEdit->setText(QString("%1").arg(validationTop, 0, 'f', 3));
+        ui->performanceBottomEdit->setText(QString("%1").arg(performanceBottom, 0, 'f', 3));
+        ui->scoringTopEdit->setText(QString("%1").arg(dpTop.z, 0, 'f', 3));
+        ui->scoringBottomEdit->setText(QString("%1").arg(dpBottom.z, 0, 'f', 3));
+
         ui->actualButton->setEnabled(true);
         ui->optimizeButton->setEnabled(true);
         ui->ppcButton->setEnabled(true);
@@ -146,6 +156,12 @@ void SpeedForm::updateView()
 
         ui->verticalSpeedEdit->setText(tr("n/a"));
 
+        ui->exitAltitudeEdit->setText(tr("n/a"));
+        ui->validationTopEdit->setText(tr("n/a"));
+        ui->performanceBottomEdit->setText(tr("n/a"));
+        ui->scoringTopEdit->setText(tr("n/a"));
+        ui->scoringBottomEdit->setText(tr("n/a"));
+
         ui->actualButton->setEnabled(false);
         ui->optimalButton->setEnabled(false);
         ui->optimizeButton->setEnabled(false);
@@ -154,7 +170,7 @@ void SpeedForm::updateView()
 
     if (accuracyOkay)
     {
-        ui->scoreAccuracyEdit->setText(QString("%1").arg(scoreAccuracy, 0, 'f', 2));
+        ui->scoreAccuracyEdit->setText(QString("%1").arg(scoreAccuracy, 0, 'f', 3));
     }
     else
     {
