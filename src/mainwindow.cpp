@@ -607,6 +607,30 @@ void MainWindow::onDockWidgetTopLevelChanged(bool floating)
     }
 }
 
+void MainWindow::hideEvent(
+        QHideEvent *event)
+{
+    QMainWindow::hideEvent(event);
+
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("mainWindow");
+        settings.setValue("state", saveState());
+    settings.endGroup();
+}
+
+void MainWindow::showEvent(
+        QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+
+    QSettings settings("FlySight", "Viewer");
+
+    settings.beginGroup("mainWindow");
+        restoreState(settings.value("state").toByteArray());
+    settings.endGroup();
+}
+
 void MainWindow::closeEvent(
         QCloseEvent *event)
 {
