@@ -29,8 +29,6 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 
 #include "mainwindow.h"
 
