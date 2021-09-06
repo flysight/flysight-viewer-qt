@@ -86,12 +86,12 @@ namespace GeographicLib {
   //   a:zeromatrix(n,n),
   //   b:copylist(part(a,1)),
   //   c:[a,b],
-  //   for i:1 thru length(xarr) do
+  //   for i:1 through length(xarr) do
   //   c:c+addterm(xarr[i],yarr[i],if i=k then 1 else 0,warr[i],pows),
   //   a:c[1],b:c[2],
   //   part(transpose( a^^-1 . transpose(b)),1))$
   // c3:[]$
-  // for k:1 thru length(warr) do c3:endcons(c3row(k),c3)$
+  // for k:1 through length(warr) do c3:endcons(c3row(k),c3)$
   // c3:apply(matrix,c3)$
   // c0:part(ratsimp(
   // genmatrix(yc,1,length(warr)).abs(c3).genmatrix(yd,length(pows),1)),2)$
@@ -121,27 +121,27 @@ namespace GeographicLib {
   //
   // /* figure which terms to exclude so that fit is indep of x at y=0 */
   // mask:part(zeromatrix(1,length(pows)),1)+1$
-  // for i:1 thru length(pows) do
+  // for i:1 through length(pows) do
   // if pows[i][1]>0 and pows[i][2]=0 then mask[i]:0$
   //
   // /* Same as c3row but with masked pows. */
   // c3nrow(k):=block([a,b,c,powsa:[],n,d,e],
-  //   for i:1 thru length(mask) do if mask[i]>0 then
+  //   for i:1 through length(mask) do if mask[i]>0 then
   //   powsa:endcons(pows[i],powsa),
   //   n:length(powsa),
   //   a:zeromatrix(n,n),
   //   b:copylist(part(a,1)),
   //   c:[a,b],
-  //   for i:1 thru length(xarr) do
+  //   for i:1 through length(xarr) do
   //   c:c+addterm(xarr[i],yarr[i],if i=k then 1 else 0,warr[i],powsa),
   //   a:c[1],b:c[2],
   //   d:part(transpose( a^^-1 . transpose(b)),1),
   //   e:[],
-  //   for i:1 thru length(mask) do
+  //   for i:1 through length(mask) do
   //   if mask[i]>0 then (e:endcons(first(d),e),d:rest(d)) else e:endcons(0,e),
   //   e)$
   // c3n:[]$
-  // for k:1 thru length(warr) do c3n:endcons(c3nrow(k),c3n)$
+  // for k:1 through length(warr) do c3n:endcons(c3nrow(k),c3n)$
   // c3n:apply(matrix,c3n)$
   // c0n:part(ratsimp(
   //     genmatrix(yc,1,length(warr)).abs(c3n).genmatrix(yd,length(pows),1)),2)$
@@ -277,7 +277,7 @@ namespace GeographicLib {
       // Coarsest grid spacing is 180deg.
       throw GeographicErr("Raster size too small " + _filename);
     if (_width & 1)
-      // This is so that longitude grids can be extended thru the poles.
+      // This is so that longitude grids can be extended through the poles.
       throw GeographicErr("Raster width is odd " + _filename);
     if (!(_height & 1))
       // This is so that latitude grid includes the equator.

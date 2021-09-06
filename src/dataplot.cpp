@@ -37,7 +37,7 @@ DataPlot::DataPlot(QWidget *parent) :
     setMouseTracking(true);
     setCursor(QCursor(Qt::ArrowCursor));
 
-    // Intitialize plot area
+    // Initialize plot area
     initPlot();
 
     // Read plot settings

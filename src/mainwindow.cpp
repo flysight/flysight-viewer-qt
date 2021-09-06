@@ -130,7 +130,7 @@ MainWindow::MainWindow(
     // Initialize database
     initDatabase();
 
-    // Intitialize plot area
+    // Initialize plot area
     initPlot();
 
     // Initialize 3D views
@@ -1008,7 +1008,7 @@ void MainWindow::setTrackDescription(
     // Return now if description is not changed
     if (query.next()) return;
 
-    // Change the decription
+    // Change the description
     if (!query.exec(QString("update files set description='%1' where file_name='%2'")
                     .arg(description).arg(trackName)))
     {

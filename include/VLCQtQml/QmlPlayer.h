@@ -191,21 +191,21 @@ public:
     /*!
         \brief Pause current playback
 
-        Invokable from QML.
+        Invocable from QML.
      */
     Q_INVOKABLE void pause();
 
     /*!
         \brief Play current playback
 
-        Invokable from QML.
+        Invocable from QML.
      */
     Q_INVOKABLE void play();
 
     /*!
         \brief Stop current playback
 
-        Invokable from QML.
+        Invocable from QML.
      */
     Q_INVOKABLE void stop();
 
@@ -347,7 +347,7 @@ public:
 
     /*!
         \brief Get audio track model
-        \return audio track model poiner
+        \return audio track model pointer
 
         Used as property in QML.
      */
@@ -387,7 +387,7 @@ public:
 
     /*!
         \brief Get subtitle track model
-        \return subtitle track model poiner
+        \return subtitle track model pointer
 
         Used as property in QML.
      */
@@ -427,7 +427,7 @@ public:
 
     /*!
         \brief Get video track model
-        \return video track model poiner
+        \return video track model pointer
 
         Used as property in QML.
      */

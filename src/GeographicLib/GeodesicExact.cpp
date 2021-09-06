@@ -231,7 +231,7 @@ namespace GeographicLib {
     // |bet1| - |bet2|.  Alternatively (cbet1 >= -sbet1), abs(sbet2) + sbet1 is
     // a better measure.  This logic is used in assigning calp2 in Lambda12.
     // Sometimes these quantities vanish and in that case we force bet2 = +/-
-    // bet1 exactly.  An example where is is necessary is the inverse problem
+    // bet1 exactly.  An example where is necessary is the inverse problem
     // 48.522876735459 0 -48.52287673545898293 179.599720456223079643
     // which failed with Visual Studio 10 (Release and Debug)
 
@@ -400,7 +400,7 @@ namespace GeographicLib {
               continue;
             }
           }
-          // Either dv was not postive or updated value was outside legal
+          // Either dv was not positive or updated value was outside legal
           // range.  Use the midpoint of the bracket as the next estimate.
           // This mechanism is not needed for the WGS84 ellipsoid, but it does
           // catch problems with more eccentric ellipsoids.  Its efficacy is
@@ -910,7 +910,7 @@ namespace GeographicLib {
 
   void GeodesicExact::C4f(real eps, real c[]) const {
     // Evaluate C4 coeffs
-    // Elements c[0] thru c[nC4_ - 1] are set
+    // Elements c[0] through c[nC4_ - 1] are set
     real mult = 1;
     int o = 0;
     for (int l = 0; l < nC4_; ++l) { // l is index of C4[l]

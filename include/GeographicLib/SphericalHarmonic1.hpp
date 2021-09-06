@@ -107,9 +107,9 @@ namespace GeographicLib {
      * @param[in] S the coefficients <i>S</i><sub><i>nm</i></sub>.
      * @param[in] N the degree used to determine the layout of \e C and \e S.
      * @param[in] nmx the maximum degree used in the sum.  The sum over \e n is
-     *   from 0 thru \e nmx.
+     *   from 0 through \e nmx.
      * @param[in] mmx the maximum order used in the sum.  The sum over \e m is
-     *   from 0 thru min(\e n, \e mmx).
+     *   from 0 through min(\e n, \e mmx).
      * @param[in] C1 the coefficients <i>C'</i><sub><i>nm</i></sub>.
      * @param[in] S1 the coefficients <i>S'</i><sub><i>nm</i></sub>.
      * @param[in] N1 the degree used to determine the layout of \e C' and \e

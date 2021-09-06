@@ -214,7 +214,7 @@ public:
 
     /*!
         \brief Save the meta previously set.
-        \return true if the write operation was successfull (const bool)
+        \return true if the write operation was successful (const bool)
     */
     bool saveMeta() const;
 
