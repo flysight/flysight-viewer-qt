@@ -111,7 +111,7 @@ namespace GeographicLib {
     //   ((1 + 3/e'^2) * atan(e') - 3/e')/2
     //
     // See H+M, Eq 2-57, with E/u = e'.  This suffers from two levels of
-    // cancelation.  The e'^-1 and e'^1 terms drop out, so that the leading
+    // cancellation.  The e'^-1 and e'^1 terms drop out, so that the leading
     // term is O(e'^3).  Substitute atan(e') = e' - e'^3/3 + e'^5*atan5(e'^2)
     return sqrt(ep2) * ep2 * (3 * (3 + ep2) * atan5(ep2) - 1) / 6;
   }
@@ -129,7 +129,7 @@ namespace GeographicLib {
     //   3*(1 + 1/e'^2) * (1 - atan(e')/e') - 1
     //
     // See H+M, Eq 2-67, with E/u = e'.  This suffers from two levels of
-    // cancelation.  The e'^-2 and e'^0 terms drop out, so that the leading
+    // cancellation.  The e'^-2 and e'^0 terms drop out, so that the leading
     // term is O(e'^2).
     return ep2 * (1 - 3 * (1 + ep2) * atan5(ep2));
   }

@@ -50,7 +50,7 @@ public:
         \brief VlcWidgetSeek constructor
         \param player media player
         \param slider widget to be used as slider
-        \param connectSlider connect the slider to relevant sigals, set to false if you want to handle everything yourself
+        \param connectSlider connect the slider to relevant signals, set to false if you want to handle everything yourself
         \param parent seek widget's parent GUI widget
     */
     explicit VlcWidgetSeek(VlcMediaPlayer *player,
@@ -61,7 +61,7 @@ public:
     /*!
         \brief VlcWidgetSeek constructor
         \param slider widget to be used as slider
-        \param connectSlider connect the slider to relevant sigals, set to false if you want to handle everything yourself
+        \param connectSlider connect the slider to relevant signals, set to false if you want to handle everything yourself
         \param parent seek widget's parent GUI widget
     */
     explicit VlcWidgetSeek(QWidget *slider,
@@ -103,7 +103,7 @@ public:
     /*!
         \brief Set slider widget
         \param slider widget to be used as slider
-        \param updateSlider connect the slider to relevant sigals, set to false if you want to handle everything yourself
+        \param updateSlider connect the slider to relevant signals, set to false if you want to handle everything yourself
     */
     virtual void setSliderWidget(QWidget *slider,
                                  bool updateSlider = true);

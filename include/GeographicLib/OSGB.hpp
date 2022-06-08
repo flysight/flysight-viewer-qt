@@ -132,7 +132,7 @@ namespace GeographicLib {
      * @exception GeographicErr if \e prec, \e x, or \e y is outside its
      *   allowed range.
      * @exception std::bad_alloc if the memory for \e gridref can't be
-     *   allocatied.
+     *   allocated.
      *
      * \e prec specifies the precision of the grid reference string as follows:
      * - prec = 0 (min), 100km

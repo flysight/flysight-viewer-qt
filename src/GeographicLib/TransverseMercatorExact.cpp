@@ -333,7 +333,7 @@ namespace GeographicLib {
     //
     //    (1 - snu^2 * dnv^2) to (_mv * snv^2 + cnu^2 * dnv^2)
     //
-    // to maintain accuracy near phi = 90 and change the denomintor from
+    // to maintain accuracy near phi = 90 and change the denominator from
     //
     //    (dnu^2 + dnv^2 - 1) to (_mu * cnu^2 + _mv * cnv^2)
     //

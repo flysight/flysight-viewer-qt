@@ -372,7 +372,7 @@ namespace GeographicLib {
               continue;
             }
           }
-          // Either dv was not postive or updated value was outside legal
+          // Either dv was not positive or updated value was outside legal
           // range.  Use the midpoint of the bracket as the next estimate.
           // This mechanism is not needed for the WGS84 ellipsoid, but it does
           // catch problems with more eccentric ellipsoids.  Its efficacy is
@@ -895,7 +895,7 @@ namespace GeographicLib {
 
   void Geodesic::C3f(real eps, real c[]) const {
     // Evaluate C3 coeffs
-    // Elements c[1] thru c[nC3_ - 1] are set
+    // Elements c[1] through c[nC3_ - 1] are set
     real mult = 1;
     int o = 0;
     for (int l = 1; l < nC3_; ++l) { // l is index of C3[l]
@@ -909,7 +909,7 @@ namespace GeographicLib {
 
   void Geodesic::C4f(real eps, real c[]) const {
     // Evaluate C4 coeffs
-    // Elements c[0] thru c[nC4_ - 1] are set
+    // Elements c[0] through c[nC4_ - 1] are set
     real mult = 1;
     int o = 0;
     for (int l = 0; l < nC4_; ++l) { // l is index of C4[l]

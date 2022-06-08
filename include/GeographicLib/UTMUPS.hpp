@@ -100,7 +100,7 @@ namespace GeographicLib {
     /**
      * In this class we bring together the UTM and UPS coordinates systems.
      * The UTM divides the earth between latitudes &minus;80&deg; and 84&deg;
-     * into 60 zones numbered 1 thru 60.  Zone assign zone number 0 to the UPS
+     * into 60 zones numbered 1 through 60.  Zone assign zone number 0 to the UPS
      * regions, covering the two poles.  Within UTMUPS, non-negative zone
      * numbers refer to one of the "physical" zones, 0 for UPS and [1, 60] for
      * UTM.  Negative "pseudo-zone" numbers are used to select one of the
@@ -121,7 +121,7 @@ namespace GeographicLib {
        **********************************************************************/
       MATCH = -3,
       /**
-       * Apply the standard rules for UTM zone assigment extending the UTM zone
+       * Apply the standard rules for UTM zone assignment extending the UTM zone
        * to each pole to give a zone number in [1, 60].  For example, use UTM
        * zone 38 for longitude in [42&deg;, 48&deg;).  The rules include the
        * Norway and Svalbard exceptions.
@@ -366,7 +366,7 @@ namespace GeographicLib {
      * @param[out] northp hemisphere (true means north, false means south).
      *
      * EPSG (European Petroleum Survery Group) codes are a way to refer to many
-     * different projections.  DecodeEPSG decodes those refering to UTM or UPS
+     * different projections.  DecodeEPSG decodes those referring to UTM or UPS
      * projections for the WGS84 ellipsoid.  If the code does not refer to one
      * of these projections, \e zone is set to UTMUPS::INVALID.  See
      * http://spatialreference.org/ref/epsg/

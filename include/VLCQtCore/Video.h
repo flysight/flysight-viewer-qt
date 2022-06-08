@@ -205,7 +205,7 @@ public:
     /*!
         \brief Take a snapshot of current video (currently primary only)
         \param path output path (QString)
-        \return true if successfull (bool)
+        \return true if successful (bool)
     */
     bool takeSnapshot(const QString &path) const;
 

@@ -3178,7 +3178,7 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 /*! \fn QRect QCPLayoutElement::rect() const
   
   Returns the inner rect of this layout element. The inner rect is the outer rect (\ref outerRect, \ref
-  setOuterRect) shrinked by the margins (\ref setMargins, \ref setAutoMargins).
+  setOuterRect) shrunk by the margins (\ref setMargins, \ref setAutoMargins).
   
   In some cases, the area between outer and inner rect is left blank. In other cases the margin
   area is used to display peripheral graphics while the main content is in the inner rect. This is
@@ -3822,7 +3822,7 @@ void QCPLayout::updateLayout()
   \ref QCPLayerable::parentLayerable and the QObject parent to this layout.
   
   Further, if \a el didn't previously have a parent plot, calls \ref
-  QCPLayerable::initializeParentPlot on \a el to set the paret plot.
+  QCPLayerable::initializeParentPlot on \a el to set the parent plot.
   
   This method is used by subclass specific methods that add elements to the layout. Note that this
   method only changes properties in \a el. The removal from the old layout and the insertion into
@@ -3925,11 +3925,11 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
   double freeSize = totalSize;
   
   int outerIterations = 0;
-  while (!unfinishedSections.isEmpty() && outerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
+  while (!unfinishedSections.isEmpty() && outerIterations < sectionCount*2) // the iteration check is just a failsafe in case something really strange happens
   {
     ++outerIterations;
     int innerIterations = 0;
-    while (!unfinishedSections.isEmpty() && innerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
+    while (!unfinishedSections.isEmpty() && innerIterations < sectionCount*2) // the iteration check is just a failsafe in case something really strange happens
     {
       ++innerIterations;
       // find section that hits its maximum next:
@@ -6184,7 +6184,7 @@ void QCPAxisTicker::generate(const QCPRange &range, const QLocale &locale, QChar
   // generate (major) ticks:
   double tickStep = getTickStep(range);
   ticks = createTickVector(tickStep, range);
-  trimTicks(range, ticks, true); // trim ticks to visible range plus one outer tick on each side (incase a subclass createTickVector creates more)
+  trimTicks(range, ticks, true); // trim ticks to visible range plus one outer tick on each side (in case a subclass createTickVector creates more)
   
   // generate sub ticks between major ticks:
   if (subTicks)
@@ -6285,7 +6285,7 @@ int QCPAxisTicker::getSubTickCount(double tickStep)
   If a textual number is returned, it should respect the provided \a locale, \a formatChar and \a
   precision.
   
-  If the returned value contains exponentials of the form "2e5" and beautifully typeset powers is
+  If the returned value contains exponential of the form "2e5" and beautifully typeset powers is
   enabled in the QCPAxis number format (\ref QCPAxis::setNumberFormat), the exponential part will
   be formatted accordingly using multiplication symbol and superscript during rendering of the
   label automatically.
@@ -6938,7 +6938,7 @@ void QCPAxisTickerTime::setTimeFormat(const QString &format)
 }
 
 /*!
-  Sets the field widh of the specified \a unit to be \a width digits, when displayed in the tick
+  Sets the field width of the specified \a unit to be \a width digits, when displayed in the tick
   label. If the number for the specific unit is shorter than \a width, it will be padded with an
   according number of zeros to the left in order to reach the field width.
   
@@ -7199,7 +7199,7 @@ double QCPAxisTickerFixed::getTickStep(const QCPRange &range)
   
   This is useful for cases where the axis represents categories rather than numerical values.
   
-  If you are updating the ticks of this ticker regularly and in a dynamic fasion (e.g. dependent on
+  If you are updating the ticks of this ticker regularly and in a dynamic fashion (e.g. dependent on
   the axis range), it is a sign that you should probably create an own ticker by subclassing
   QCPAxisTicker, instead of using this one.
   
@@ -9240,7 +9240,7 @@ void QCPAxis::rescale(bool onlyVisiblePlottables)
   {
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (mScaleType == stLinear)
       {
         newRange.lower = center-mRange.size()/2.0;
@@ -9505,7 +9505,7 @@ void QCPAxis::deselectEvent(bool *selectionStateChanged)
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
 
   For the axis to accept this event and perform the single axis drag, the parent \ref QCPAxisRect
   must be configured accordingly, i.e. it must allow range dragging in the orientation of this axis
@@ -9546,7 +9546,7 @@ void QCPAxis::mousePressEvent(QMouseEvent *event, const QVariant &details)
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
   
   \seebaseclassmethod
   
@@ -9580,7 +9580,7 @@ void QCPAxis::mouseMoveEvent(QMouseEvent *event, const QPointF &startPos)
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
   
   \seebaseclassmethod
   
@@ -11618,7 +11618,7 @@ void QCPAbstractPlottable::setSelectable(QCP::SelectionType selectable)
   taking the orientations of the axes associated with this plottable into account (e.g. whether key
   represents x or y).
 
-  \a key and \a value are transformed to the coodinates in pixels and are written to \a x and \a y.
+  \a key and \a value are transformed to the coordinates in pixels and are written to \a x and \a y.
 
   \see pixelsToCoords, QCPAxis::coordToPixel
 */
@@ -11660,7 +11660,7 @@ const QPointF QCPAbstractPlottable::coordsToPixels(double key, double value) con
   taking the orientations of the axes associated with this plottable into account (e.g. whether key
   represents x or y).
 
-  \a x and \a y are transformed to the plot coodinates and are written to \a key and \a value.
+  \a x and \a y are transformed to the plot coordinates and are written to \a key and \a value.
 
   \see coordsToPixels, QCPAxis::coordToPixel
 */
@@ -11731,7 +11731,7 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
       newRange.expand(keyAxis->range());
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (keyAxis->scaleType() == QCPAxis::stLinear)
       {
         newRange.lower = center-keyAxis->range().size()/2.0;
@@ -11774,7 +11774,7 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge, bool inKeyRange) c
       newRange.expand(valueAxis->range());
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (valueAxis->scaleType() == QCPAxis::stLinear)
       {
         newRange.lower = center-valueAxis->range().size()/2.0;
@@ -11840,7 +11840,7 @@ bool QCPAbstractPlottable::addToLegend()
 
 /*! \overload
 
-  Removes the plottable from the specifed \a legend. This means the \ref QCPPlottableLegendItem
+  Removes the plottable from the specified \a legend. This means the \ref QCPPlottableLegendItem
   that is associated with this plottable is removed.
 
   Returns true on success, i.e. if the legend exists and a legend item associated with this
@@ -12162,7 +12162,7 @@ void QCPItemAnchor::removeChildY(QCPItemPosition *pos)
   A QCPItemPosition may have a parent QCPItemAnchor, see \ref setParentAnchor. This way you can tie
   multiple items together. If the QCPItemPosition has a parent, its coordinates (\ref setCoords)
   are considered to be absolute pixels in the reference frame of the parent anchor, where (0, 0)
-  means directly ontop of the parent anchor. For example, You could attach the \a start position of
+  means directly on top of the parent anchor. For example, You could attach the \a start position of
   a QCPItemLine to the \a bottom anchor of a QCPItemText to make the starting point of the line
   always be centered under the text label, no matter where the text is moved to. For more advanced
   plots, it is possible to assign different parent anchors per X/Y coordinate of the position, see
@@ -13024,7 +13024,7 @@ void QCPAbstractItem::setSelected(bool selected)
   that name, returns \c nullptr.
   
   This function provides an alternative way to access item positions. Normally, you access
-  positions direcly by their member pointers (which typically have the same variable name as \a
+  positions directly by their member pointers (which typically have the same variable name as \a
   name).
   
   \see positions, anchor
@@ -13045,7 +13045,7 @@ QCPItemPosition *QCPAbstractItem::position(const QString &name) const
   that name, returns \c nullptr.
   
   This function provides an alternative way to access item anchors. Normally, you access
-  anchors direcly by their member pointers (which typically have the same variable name as \a
+  anchors directly by their member pointers (which typically have the same variable name as \a
   name).
   
   \see anchors, position
@@ -15124,7 +15124,7 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
     return;
   }
   
-  if (mReplotting) // incase signals loop back to replot slot
+  if (mReplotting) // in case signals loop back to replot slot
     return;
   mReplotting = true;
   mReplotQueued = false;
@@ -15497,7 +15497,7 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
   
  Event handler for when a double click occurs. Emits the \ref mouseDoubleClick signal, then
  determines the layerable under the cursor and forwards the event to it. Finally, emits the
- specialized signals when certain objecs are clicked (e.g. \ref plottableDoubleClick, \ref
+ specialized signals when certain objects are clicked (e.g. \ref plottableDoubleClick, \ref
  axisDoubleClick, etc.).
  
  \see mousePressEvent, mouseReleaseEvent
@@ -15768,7 +15768,7 @@ void QCustomPlot::updateLayout()
   the viewport with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependent on the \ref setBackgroundScaledMode), or when a differend axis background pixmap was
+  dependent on the \ref setBackgroundScaledMode), or when a different axis background pixmap was
   set.
   
   Note that this function does not draw a fill with the background brush
@@ -17273,7 +17273,7 @@ void QCPSelectionDecoratorBracket::drawBracket(QCPPainter *painter, int directio
     }
     default:
     {
-      qDebug() << Q_FUNC_INFO << "unknown/custom bracket style can't be handeld by default implementation:" << static_cast<int>(mBracketStyle);
+      qDebug() << Q_FUNC_INFO << "unknown/custom bracket style can't be handled by default implementation:" << static_cast<int>(mBracketStyle);
       break;
     }
   }
@@ -17281,7 +17281,7 @@ void QCPSelectionDecoratorBracket::drawBracket(QCPPainter *painter, int directio
 
 /*!
   Draws the bracket decoration on the data points at the begin and end of each selected data
-  segment given in \a seletion.
+  segment given in \a selection.
   
   It uses the method \ref drawBracket to actually draw the shapes.
   
@@ -18410,7 +18410,7 @@ void QCPAxisRect::setRangeZoomFactor(double factor)
   the axis rect with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependent on the \ref setBackgroundScaledMode), or when a differend axis background pixmap was
+  dependent on the \ref setBackgroundScaledMode), or when a different axis background pixmap was
   set.
   
   \see setBackground, setBackgroundScaled, setBackgroundScaledMode
@@ -19404,7 +19404,7 @@ bool QCPLegend::hasItemWithPlottable(const QCPAbstractPlottable *plottable) cons
   Adds \a item to the legend, if it's not present already. The element is arranged according to the
   current fill order (\ref setFillOrder) and wrapping (\ref setWrap).
 
-  Returns true on sucess, i.e. if the item wasn't in the list already and has been successfuly added.
+  Returns true on success, i.e. if the item wasn't in the list already and has been successfully added.
 
   The legend takes ownership of the item.
 
@@ -20428,7 +20428,7 @@ void QCPColorScale::rescaleDataRange(bool onlyVisibleMaps)
   {
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this dimension), shift current range to at least center the data
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (mDataScaleType == QCPAxis::stLinear)
       {
         newRange.lower = center-mDataRange.size()/2.0;
@@ -23279,7 +23279,7 @@ QPointF QCPCurve::getOptimizedPoint(int otherRegion, double otherKey, double oth
 {
   // The intersection point interpolation here is done in pixel coordinates, so we don't need to
   // differentiate between different axis scale types. Note that the nomenclature
-  // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, wich may be
+  // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, which may be
   // different in pixel coordinates (horz/vert key axes, reversed ranges)
   
   const double keyMinPx = mKeyAxis->coordToPixel(keyMin);
@@ -23662,7 +23662,7 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
 {
   // The intersection point interpolation here is done in pixel coordinates, so we don't need to
   // differentiate between different axis scale types. Note that the nomenclature
-  // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, wich may be
+  // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, which may be
   // different in pixel coordinates (horz/vert key axes, reversed ranges)
   
   QList<QPointF> intersections;
@@ -23936,7 +23936,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint, QCPCurveDataContainer:
   \section qcpbarsgroup-usage Usage
   
   To add a QCPBars plottable to the group, create a new group and then add the respective bars
-  intances:
+  instances:
   \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbarsgroup-creation
   Alternatively to appending to the group like shown above, you can also set the group on the
   QCPBars plottable via \ref QCPBars::setBarsGroup.
@@ -26508,7 +26508,7 @@ void QCPColorMap::setGradient(const QCPColorGradient &gradient)
 
 /*!
   Sets whether the color map image shall use bicubic interpolation when displaying the color map
-  shrinked or expanded, and not at a 1:1 pixel-to-data scale.
+  shrunk or expanded, and not at a 1:1 pixel-to-data scale.
   
   \image html QCPColorMap-interpolate.png "A 10*10 color map, with interpolation and without interpolation enabled"
 */
@@ -28664,7 +28664,7 @@ void QCPErrorBars::getVisibleDataBounds(QCPErrorBarsDataContainer::const_iterato
   {
     // if the sort key isn't the main key, it's not possible to find a contiguous range of visible
     // data points, so this method then only applies the range restriction and otherwise returns
-    // the full data range. Visibility checks must be done on a per-datapoin-basis during drawing
+    // the full data range. Visibility checks must be done on a per-datapoint-basis during drawing
     QCPDataRange dataRange(0, mDataContainer->size());
     dataRange = dataRange.bounded(rangeRestriction);
     begin = mDataContainer->constBegin()+dataRange.begin();
@@ -30377,7 +30377,7 @@ QPen QCPItemPixmap::mainPen() const
   the coordinate axes of the graph and update its \a position to be on the graph's data. This means
   the key stays controllable via \ref setGraphKey, but the value will follow the graph data. If a
   QCPGraph is connected, note that setting the coordinates of the tracer item directly via \a
-  position will have no effect because they will be overriden in the next redraw (this is when the
+  position will have no effect because they will be overridden in the next redraw (this is when the
   coordinate update happens).
   
   If the specified key in \ref setGraphKey is outside the key bounds of the graph, the tracer will
@@ -31987,7 +31987,7 @@ void QCPPolarAxisRadial::rescale(bool onlyVisiblePlottables)
   {
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (mScaleType == stLinear)
       {
         newRange.lower = center-mRange.size()/2.0;
@@ -32131,7 +32131,7 @@ void QCPPolarAxisRadial::deselectEvent(bool *selectionStateChanged)
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
 
   For the axis to accept this event and perform the single axis drag, the parent \ref QCPAxisRect
   must be configured accordingly, i.e. it must allow range dragging in the orientation of this axis
@@ -32170,7 +32170,7 @@ void QCPPolarAxisRadial::mousePressEvent(QMouseEvent *event, const QVariant &det
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
   
   \seebaseclassmethod
   
@@ -32208,7 +32208,7 @@ void QCPPolarAxisRadial::mouseMoveEvent(QMouseEvent *event, const QPointF &start
 /*! \internal
   
   This mouse event reimplementation provides the functionality to let the user drag individual axes
-  exclusively, by startig the drag on top of the axis.
+  exclusively, by starting the drag on top of the axis.
   
   \seebaseclassmethod
   
@@ -32850,7 +32850,7 @@ void QCPPolarAxisAngular::rescale(bool onlyVisiblePlottables)
   {
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       newRange.lower = center-mRange.size()/2.0;
       newRange.upper = center+mRange.size()/2.0;
     }
@@ -33803,7 +33803,7 @@ void QCPPolarAxisAngular::setSelectedSubTickPen(const QPen &pen)
   the axis rect with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependent on the \ref setBackgroundScaledMode), or when a differend axis background pixmap was
+  dependent on the \ref setBackgroundScaledMode), or when a different axis background pixmap was
   set.
   
   \see setBackground, setBackgroundScaled, setBackgroundScaledMode
@@ -34417,7 +34417,7 @@ QFont QCPPolarLegendItem::getFont() const
   \a keyAxis. This QCustomPlot instance takes ownership of the QCPPolarGraph, so do not delete it
   manually but use QCPPolarAxisAngular::removeGraph() instead.
 
-  To directly create a QCPPolarGraph inside a plot, you shoud use the QCPPolarAxisAngular::addGraph
+  To directly create a QCPPolarGraph inside a plot, you should use the QCPPolarAxisAngular::addGraph
   method.
 */
 QCPPolarGraph::QCPPolarGraph(QCPPolarAxisAngular *keyAxis, QCPPolarAxisRadial *valueAxis) :
@@ -34784,7 +34784,7 @@ void QCPPolarGraph::rescaleKeyAxis(bool onlyEnlarge) const
       newRange.expand(keyAxis->range());
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       newRange.lower = center-keyAxis->range().size()/2.0;
       newRange.upper = center+keyAxis->range().size()/2.0;
     }
@@ -34810,7 +34810,7 @@ void QCPPolarGraph::rescaleValueAxis(bool onlyEnlarge, bool inKeyRange) const
       newRange.expand(valueAxis->range());
     if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
     {
-      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, in case validRange returned false for other reason
       if (valueAxis->scaleType() == QCPPolarAxisRadial::stLinear)
       {
         newRange.lower = center-valueAxis->range().size()/2.0;

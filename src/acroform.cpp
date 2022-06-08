@@ -52,7 +52,7 @@ AcroForm::~AcroForm()
 
 QSize AcroForm::sizeHint() const
 {
-    // Keeps windows from being intialized as very short
+    // Keeps windows from being initialized as very short
     return QSize(175, 175);
 }
 

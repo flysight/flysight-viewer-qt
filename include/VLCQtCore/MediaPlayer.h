@@ -276,7 +276,7 @@ signals:
     void mediaChanged(libvlc_media_t *media);
 
     /*!
-        \brief Signal sent nothing speciall happened
+        \brief Signal sent nothing special happened
     */
     void nothingSpecial();
 

@@ -21,8 +21,8 @@ namespace GeographicLib {
    * Convert between geodetic coordinates latitude = \e lat, longitude = \e
    * lon, height = \e h (measured vertically from the surface of the ellipsoid)
    * to geocentric coordinates (\e X, \e Y, \e Z).  The origin of geocentric
-   * coordinates is at the center of the earth.  The \e Z axis goes thru the
-   * north pole, \e lat = 90&deg;.  The \e X axis goes thru \e lat = 0,
+   * coordinates is at the center of the earth.  The \e Z axis goes through the
+   * north pole, \e lat = 90&deg;.  The \e X axis goes through \e lat = 0,
    * \e lon = 0.  %Geocentric coordinates are also known as earth centered,
    * earth fixed (ECEF) coordinates.
    *

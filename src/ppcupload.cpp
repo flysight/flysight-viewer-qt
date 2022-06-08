@@ -33,7 +33,7 @@ PPCUpload::PPCUpload(MainWindow *mainWindow, QObject *parent) :
 }
 
 // HTTPS requires the OpenSSL binaries.
-// On windows thess are libeay32.dll, libssl32.dll and ssleay32.dll available from https://slproweb.com/products/Win32OpenSSL.html
+// On Windows these are libeay32.dll, libssl32.dll and ssleay32.dll available from https://slproweb.com/products/Win32OpenSSL.html
 
 void PPCUpload::upload(const QString type, const double windowTop, const double windowBottom, const double time, const double distance) {
 

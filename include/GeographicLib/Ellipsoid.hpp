@@ -167,7 +167,7 @@ namespace GeographicLib {
      * @param[in] phi the geographic latitude (degrees).
      * @return &beta; the parametric latitude (degrees).
      *
-     * The geographic latitude, &phi;, is the angle beween the equatorial
+     * The geographic latitude, &phi;, is the angle between the equatorial
      * plane and a vector normal to the surface of the ellipsoid.
      *
      * The parametric latitude (also called the reduced latitude), &beta;,
@@ -199,7 +199,7 @@ namespace GeographicLib {
      * @param[in] phi the geographic latitude (degrees).
      * @return &theta; the geocentric latitude (degrees).
      *
-     * The geocentric latitude, &theta;, is the angle beween the equatorial
+     * The geocentric latitude, &theta;, is the angle between the equatorial
      * plane and a line between the center of the ellipsoid and a point on the
      * ellipsoid.  For a sphere &theta; = &phi;.
      *
@@ -276,7 +276,7 @@ namespace GeographicLib {
      * @return &chi; the conformal latitude (degrees).
      *
      * The conformal latitude, &chi;, gives the mapping of the ellipsoid to a
-     * sphere which which is conformal (angles are preserved) and in which the
+     * sphere which is conformal (angles are preserved) and in which the
      * equator of the ellipsoid maps to the equator of the sphere.  For a
      * sphere &chi; = &phi;.
      *
@@ -301,7 +301,7 @@ namespace GeographicLib {
      * @return &psi; the isometric latitude (degrees).
      *
      * The isometric latitude gives the mapping of the ellipsoid to a plane
-     * which which is conformal (angles are preserved) and in which the equator
+     * which is conformal (angles are preserved) and in which the equator
      * of the ellipsoid maps to a straight line of constant scale; this mapping
      * defines the Mercator projection.  For a sphere &psi; =
      * sinh<sup>&minus;1</sup> tan &phi;.

@@ -88,7 +88,7 @@ void GeographicUtil::intercept(
         // la is homogeneous representation of line A1,A2
         vector3 la = va1.cross(va2);
 
-        // lb is homogeneous representation of line thru B1 perpendicular to la
+        // lb is homogeneous representation of line through B1 perpendicular to la
         vector3 lb(la._y, -la._x, la._x * yb1 - la._y * xb1);
 
         // p0 is homogeneous representation of intersection of la and lb

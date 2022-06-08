@@ -2621,7 +2621,7 @@ protected:
   // property members:
   bool mAutoSqueeze;
   
-  // non-property memebers:
+  // non-property members:
   QVector<DataType> mData;
   int mPreallocSize;
   int mPreallocIteration;
@@ -2674,7 +2674,7 @@ protected:
   \section qcpdatacontainer-datatype Requirements for the DataType template parameter
 
   The template parameter <tt>DataType</tt> is the type of the stored data points. It must be
-  trivially copyable and have the following public methods, preferably inline:
+  trivially copiable and have the following public methods, preferably inline:
 
   \li <tt>double sortKey() const</tt>\n Returns the member variable of this data point that is the
   sort key, defining the ordering in the container. Often this variable is simply called \a key.
@@ -2974,7 +2974,7 @@ void QCPDataContainer<DataType>::remove(double sortKeyFrom, double sortKeyTo)
   
   Removes a single data point at \a sortKey. If the position is not known with absolute (binary)
   precision, consider using \ref remove(double sortKeyFrom, double sortKeyTo) with a small
-  fuzziness interval around the suspected position, depeding on the precision with which the
+  fuzziness interval around the suspected position, depending on the precision with which the
   (sort-)key is known.
   
   \see removeBefore, removeAfter, clear
@@ -3767,7 +3767,7 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   /// \endcond
 public:
   /*!
-    Defines how a layer should be inserted relative to an other layer.
+    Defines how a layer should be inserted relative to another layer.
 
     \see addLayer, moveLayer
   */
@@ -4744,9 +4744,9 @@ public:
     there for an image of the presets.
   */
   enum GradientPreset { gpGrayscale  ///< Continuous lightness from black to white (suited for non-biased data representation)
-                        ,gpHot       ///< Continuous lightness from black over firey colors to white (suited for non-biased data representation)
+                        ,gpHot       ///< Continuous lightness from black over fiery colors to white (suited for non-biased data representation)
                         ,gpCold      ///< Continuous lightness from black over icey colors to white (suited for non-biased data representation)
-                        ,gpNight     ///< Continuous lightness from black over weak blueish colors to white (suited for non-biased data representation)
+                        ,gpNight     ///< Continuous lightness from black over weak bluish colors to white (suited for non-biased data representation)
                         ,gpCandy     ///< Blue over pink to white
                         ,gpGeography ///< Colors suitable to represent different elevations on geographical maps
                         ,gpIon       ///< Half hue spectrum from black over purple to blue and finally green (creates banding illusion but allows more precise magnitude estimates)
