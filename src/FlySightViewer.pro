@@ -181,7 +181,11 @@ win32 {
     LIBS         += -framework VLCQtWidgets
 } else:unix {
     LIBS += -L/usr/local/lib
-    LIBS += -lvlc-qt -lvlc-qt-widgets
+    LIBS += -lVLCQtCore -lVLCQtQml -lVLCQtWidgets
+}
+
+unix {
+    CONFIG+=use_lld_linker
 }
 
 macx {
