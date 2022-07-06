@@ -1117,14 +1117,57 @@ void MainWindow::importFromCheckedTrack(
     setTrackName(uniqueName);
 }
 
-void MainWindow::import(
-        QIODevice *device,
-        DataPoints &data,
-        QString trackName,
-        bool initDatabase)
+void MainWindow::importSingleRow(
+        QString line,
+        DataPoints &data)
 {
-    QTextStream in(device);
+    QStringList cols = line.split(",");
 
+    if (cols[0] == "$GNSS")
+    {
+        DataPoint pt;
+
+        pt.dateTime = QDateTime::fromString(cols[1], Qt::ISODate);
+
+        pt.hasGeodetic = true;
+
+        pt.lat   = cols[2].toDouble();
+        pt.lon   = cols[3].toDouble();
+        pt.hMSL  = cols[4].toDouble();
+
+        pt.velN  = cols[5].toDouble();
+        pt.velE  = cols[6].toDouble();
+        pt.velD  = cols[7].toDouble();
+
+        pt.hAcc  = cols[8].toDouble();
+        pt.vAcc  = cols[9].toDouble();
+        pt.sAcc  = cols[10].toDouble();
+
+        pt.gpsFix = cols[11].toInt();
+        pt.numSV = cols[12].toInt();
+
+        data.append(pt);
+    }
+}
+
+void MainWindow::importNew(
+        QTextStream &in,
+        DataPoints &data,
+        QString firstLine)
+{
+    importSingleRow(firstLine, data);
+
+    while (!in.atEnd())
+    {
+        importSingleRow(in.readLine(), data);
+    }
+}
+
+void MainWindow::importOld(
+        QTextStream &in,
+        DataPoints &data,
+        QString firstLine)
+{
     // Column enumeration
     typedef enum {
         Time = 0,
@@ -1139,32 +1182,31 @@ void MainWindow::import(
         SAcc,
         Heading,
         CAcc,
+        GPSFix,
         NumSV
     } Columns;
 
     // Read column labels
     QMap< int, int > colMap;
-    if (!in.atEnd())
+
+    QStringList cols = firstLine.split(",");
+
+    for (int i = 0; i < cols.size(); ++i)
     {
-        QString line = in.readLine();
-        QStringList cols = line.split(",");
+        const QString &s = cols[i];
 
-        for (int i = 0; i < cols.size(); ++i)
-        {
-            const QString &s = cols[i];
-
-            if (s == "time")    colMap[Time]    = i;
-            if (s == "lat")     colMap[Lat]     = i;
-            if (s == "lon")     colMap[Lon]     = i;
-            if (s == "hMSL")    colMap[HMSL]    = i;
-            if (s == "velN")    colMap[VelN]    = i;
-            if (s == "velE")    colMap[VelE]    = i;
-            if (s == "velD")    colMap[VelD]    = i;
-            if (s == "hAcc")    colMap[HAcc]    = i;
-            if (s == "vAcc")    colMap[VAcc]    = i;
-            if (s == "sAcc")    colMap[SAcc]    = i;
-            if (s == "numSV")   colMap[NumSV]   = i;
-        }
+        if (s == "time")    colMap[Time]    = i;
+        if (s == "lat")     colMap[Lat]     = i;
+        if (s == "lon")     colMap[Lon]     = i;
+        if (s == "hMSL")    colMap[HMSL]    = i;
+        if (s == "velN")    colMap[VelN]    = i;
+        if (s == "velE")    colMap[VelE]    = i;
+        if (s == "velD")    colMap[VelD]    = i;
+        if (s == "hAcc")    colMap[HAcc]    = i;
+        if (s == "vAcc")    colMap[VAcc]    = i;
+        if (s == "sAcc")    colMap[SAcc]    = i;
+        if (s == "gpsFix")  colMap[GPSFix]  = i;
+        if (s == "numSV")   colMap[NumSV]   = i;
     }
 
     // Skip next row
@@ -1195,9 +1237,35 @@ void MainWindow::import(
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
 
-        pt.numSV = cols[colMap[NumSV]].toDouble();
+        pt.gpsFix = cols[colMap[GPSFix]].toInt();
+        pt.numSV = cols[colMap[NumSV]].toInt();
 
         data.append(pt);
+    }
+}
+
+void MainWindow::import(
+        QIODevice *device,
+        DataPoints &data,
+        QString trackName,
+        bool initDatabase)
+{
+    QTextStream in(device);
+
+    if (!in.atEnd())
+    {
+        QString firstLine = in.readLine();
+
+        if (firstLine[0] == '$')
+        {
+            // Import from new format
+            importNew(in, data, firstLine);
+        }
+        else
+        {
+            // Import from old format
+            importOld(in, data, firstLine);
+        }
     }
 
     // Initialize time
@@ -1733,19 +1801,25 @@ void MainWindow::initRange(
     }
     else if (!m_data.isEmpty())
     {
-        double lower, upper;
+        double lower = 0, upper = 0;
+        bool init = true;
+
         for (int i = 0; i < m_data.size(); ++i)
         {
             const DataPoint &dp = m_data[i];
 
-            if (i == 0)
+            if (dp.gpsFix == 3)
             {
-                lower = upper = dp.t;
-            }
-            else
-            {
-                if (dp.t < lower) lower = dp.t;
-                if (dp.t > upper) upper = dp.t;
+                if (init)
+                {
+                    lower = upper = dp.t;
+                    init = false;
+                }
+                else
+                {
+                    if (dp.t < lower) lower = dp.t;
+                    if (dp.t > upper) upper = dp.t;
+                }
             }
         }
 
