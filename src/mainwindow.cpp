@@ -727,7 +727,7 @@ void MainWindow::on_actionImport_triggered()
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
                                                           tr("Import Tracks"),
                                                           settings.value("folder").toString(),
-                                                          tr("CSV Files (*.csv)"));
+                                                          tr("CSV Files (*.csv *.CSV)"));
 
     // Sort files from oldest to newest
     qSort(fileNames);
@@ -2060,7 +2060,10 @@ void MainWindow::on_actionWind_triggered()
 
 void MainWindow::on_actionImportGates_triggered()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Import Gates"), "", tr("CSV Files (*.csv)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+                                                          tr("Import Gates"),
+                                                          "",
+                                                          tr("CSV Files (*.csv *.CSV)"));
 
     for (int i = 0; i < fileNames.size(); ++i)
     {
@@ -2320,7 +2323,7 @@ void MainWindow::on_actionExportKML_triggered()
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     tr("Export KML"),
                                                     rootFolder,
-                                                    tr("KML Files (*.kml)"));
+                                                    tr("KML Files (*.kml *.KML)"));
 
     if (!fileName.isEmpty())
     {
@@ -2444,7 +2447,7 @@ void MainWindow::on_actionExportPlot_triggered()
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     tr("Export Plot"),
                                                     rootFolder,
-                                                    tr("CSV Files (*.csv)"));
+                                                    tr("CSV Files (*.csv *.CSV)"));
 
     if (!fileName.isEmpty())
     {
@@ -2504,7 +2507,7 @@ void MainWindow::on_actionExportTrack_triggered()
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     tr("Export Track"),
                                                     rootFolder,
-                                                    tr("CSV Files (*.csv)"));
+                                                    tr("CSV Files (*.csv *.CSV)"));
 
     if (!fileName.isEmpty())
     {
