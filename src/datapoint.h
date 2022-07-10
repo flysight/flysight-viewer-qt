@@ -52,7 +52,6 @@ public:
     double      heading;
     double      cAcc;
 
-    int         gpsFix;
     int         numSV;
 
     double      t;

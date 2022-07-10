@@ -1143,8 +1143,7 @@ void MainWindow::importSingleRow(
         pt.vAcc  = cols[9].toDouble();
         pt.sAcc  = cols[10].toDouble();
 
-        pt.gpsFix = cols[11].toInt();
-        pt.numSV = cols[12].toInt();
+        pt.numSV = cols[11].toInt();
 
         data.append(pt);
     }
@@ -1182,7 +1181,6 @@ void MainWindow::importOld(
         SAcc,
         Heading,
         CAcc,
-        GPSFix,
         NumSV
     } Columns;
 
@@ -1205,7 +1203,6 @@ void MainWindow::importOld(
         if (s == "hAcc")    colMap[HAcc]    = i;
         if (s == "vAcc")    colMap[VAcc]    = i;
         if (s == "sAcc")    colMap[SAcc]    = i;
-        if (s == "gpsFix")  colMap[GPSFix]  = i;
         if (s == "numSV")   colMap[NumSV]   = i;
     }
 
@@ -1237,7 +1234,6 @@ void MainWindow::importOld(
         pt.vAcc  = cols[colMap[VAcc]].toDouble();
         pt.sAcc  = cols[colMap[SAcc]].toDouble();
 
-        pt.gpsFix = cols[colMap[GPSFix]].toInt();
         pt.numSV = cols[colMap[NumSV]].toInt();
 
         data.append(pt);
@@ -1802,24 +1798,19 @@ void MainWindow::initRange(
     else if (!m_data.isEmpty())
     {
         double lower = 0, upper = 0;
-        bool init = true;
 
         for (int i = 0; i < m_data.size(); ++i)
         {
             const DataPoint &dp = m_data[i];
 
-            if (dp.gpsFix == 3)
+            if (i == 0)
             {
-                if (init)
-                {
-                    lower = upper = dp.t;
-                    init = false;
-                }
-                else
-                {
-                    if (dp.t < lower) lower = dp.t;
-                    if (dp.t > upper) upper = dp.t;
-                }
+                lower = upper = dp.t;
+            }
+            else
+            {
+                if (dp.t < lower) lower = dp.t;
+                if (dp.t > upper) upper = dp.t;
             }
         }
 
