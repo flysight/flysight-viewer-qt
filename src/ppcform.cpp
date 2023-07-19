@@ -111,6 +111,9 @@ void PPCForm::updateView()
         break;
     }
 
+    double sep;
+    success |= method->getSEP(mMainWindow->data(), sep);
+
     if (success)
     {
         // Calculate results
@@ -135,6 +138,9 @@ void PPCForm::updateView()
             ui->horizontalSpeedEdit->setText(QString("%1").arg(horizontalSpeed * MPS_TO_MPH));
             ui->horizontalSpeedUnits->setText(tr("mph"));
         }
+
+        ui->sepEdit->setText(QString("%1").arg(sep));
+
         ui->actualButton->setEnabled(true);
         ui->optimizeButton->setEnabled(true);
         ui->ppcButton->setEnabled(true);

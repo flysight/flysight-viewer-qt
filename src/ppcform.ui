@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>279</width>
-    <height>466</height>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -195,20 +195,23 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="distanceEdit">
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="timeButton">
+          <property name="text">
+           <string>Time:</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="timeEdit">
           <property name="enabled">
            <bool>true</bool>
           </property>
           <property name="readOnly">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="distanceUnits">
-          <property name="text">
-           <string>km</string>
           </property>
          </widget>
         </item>
@@ -226,13 +229,27 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="timeEdit">
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="distanceEdit">
           <property name="enabled">
            <bool>true</bool>
           </property>
           <property name="readOnly">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="distanceUnits">
+          <property name="text">
+           <string>km</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="hSpeedButton">
+          <property name="text">
+           <string>Horizontal speed:</string>
           </property>
          </widget>
         </item>
@@ -253,20 +270,20 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QRadioButton" name="hSpeedButton">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>Horizontal speed:</string>
+           <string>SEP:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QRadioButton" name="timeButton">
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="sepEdit"/>
+        </item>
+        <item row="3" column="2">
+         <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Time:</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
+           <string>m</string>
           </property>
          </widget>
         </item>
