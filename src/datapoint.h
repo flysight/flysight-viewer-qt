@@ -155,6 +155,11 @@ public:
         return dp.sAcc;
     }
 
+    static double sep(const DataPoint &dp)
+    {
+        return 0.5127 * (2 * dp.hAcc + dp.vAcc);
+    }
+
     static double numberOfSatellites(const DataPoint &dp)
     {
         return dp.numSV;

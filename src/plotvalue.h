@@ -407,6 +407,32 @@ public:
     }
 };
 
+class PlotSEP: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotSEP(): PlotValue(false, Qt::lightGray) {}
+    const QString titleText() const
+    {
+        return tr("Spherical Error Probable");
+    }
+    const QString unitText(Units units) const
+    {
+        if (units == Metric) return tr("m");
+        else                 return tr("ft");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::sep(dp);
+    }
+    double factor(Units units) const
+    {
+        return (units == Metric) ? 1
+                                 : METERS_TO_FEET;
+    }
+};
+
 class PlotNumberOfSatellites: public PlotValue
 {
     Q_OBJECT
