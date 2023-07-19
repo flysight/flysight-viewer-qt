@@ -91,6 +91,7 @@
     <addaction name="actionHorizontalAccuracy"/>
     <addaction name="actionVerticalAccuracy"/>
     <addaction name="actionSpeedAccuracy"/>
+    <addaction name="actionSEP"/>
     <addaction name="separator"/>
     <addaction name="actionNumberOfSatellites"/>
     <addaction name="separator"/>
@@ -776,6 +777,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionSEP">
+   <property name="text">
+    <string>SEP</string>
    </property>
   </action>
  </widget>

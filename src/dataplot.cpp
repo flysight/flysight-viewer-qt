@@ -88,6 +88,7 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotHorizontalAccuracy);
     m_yValues.append(new PlotVerticalAccuracy);
     m_yValues.append(new PlotSpeedAccuracy);
+    m_yValues.append(new PlotSEP);
     m_yValues.append(new PlotNumberOfSatellites);
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);

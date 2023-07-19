@@ -53,6 +53,7 @@ public:
         HorizontalAccuracy,
         VerticalAccuracy,
         SpeedAccuracy,
+        SEP,
         NumberOfSatellites,
         Acceleration,
         TotalEnergy,

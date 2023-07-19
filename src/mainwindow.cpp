@@ -1884,6 +1884,7 @@ void MainWindow::updateLeftActions()
     m_ui->actionHorizontalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::HorizontalAccuracy));
     m_ui->actionVerticalAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::VerticalAccuracy));
     m_ui->actionSpeedAccuracy->setChecked(m_ui->plotArea->plotVisible(DataPlot::SpeedAccuracy));
+    m_ui->actionSEP->setChecked(m_ui->plotArea->plotVisible(DataPlot::SEP));
     m_ui->actionNumberOfSatellites->setChecked(m_ui->plotArea->plotVisible(DataPlot::NumberOfSatellites));
     m_ui->actionAcceleration->setChecked(m_ui->plotArea->plotVisible(DataPlot::Acceleration));
     m_ui->actionAccForward->setChecked(m_ui->plotArea->plotVisible(DataPlot::AccForward));
@@ -1932,6 +1933,11 @@ void MainWindow::on_actionVerticalAccuracy_triggered()
 void MainWindow::on_actionSpeedAccuracy_triggered()
 {
     m_ui->plotArea->togglePlot(DataPlot::SpeedAccuracy);
+}
+
+void MainWindow::on_actionSEP_triggered()
+{
+    m_ui->plotArea->togglePlot(DataPlot::SEP);
 }
 
 void MainWindow::on_actionNumberOfSatellites_triggered()
