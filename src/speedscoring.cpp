@@ -239,7 +239,7 @@ bool SpeedScoring::getAccuracy(
         if (dp.z > zTop) continue;
 
         // Calculate accuracy
-        double sa = 1.960 * SQRT_2 * dp.vAcc / 3.0;
+        double sa = SQRT_2 * dp.vAcc / 3.0;
         if ((!found) || (sa > scoreAccuracy))
         {
             scoreAccuracy = sa;
