@@ -405,3 +405,36 @@ bool PPCScoring::updateReference(
         return false;
     }
 }
+
+bool PPCScoring::getSEP(
+    const MainWindow::DataPoints &result,
+    double &sep)
+{
+    bool found = false;
+
+    for (int i = result.size() - 1; i >= 0; --i)
+    {
+        // Get end point
+        const DataPoint &dp = result[i];
+
+        // Get validation window
+        const double zBottom = mWindowBottom - 20;
+        const double zTop = mWindowTop + 20;
+
+        // Check window conditions
+        if (dp.t < 0) break;
+        if (dp.z < zBottom) continue;
+        if (dp.z > zTop) continue;
+
+        // Calculate accuracy
+        double val = 0.5127 * (2 * dp.hAcc + dp.vAcc);
+        if ((!found) || (val > sep))
+        {
+            sep = val;
+        }
+
+        found = true;
+    }
+
+    return found;
+}

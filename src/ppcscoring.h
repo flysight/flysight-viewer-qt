@@ -61,6 +61,8 @@ public:
 
     bool getWindowBounds(const MainWindow::DataPoints &result,
                          DataPoint &dpBottom, DataPoint &dpTop);
+    bool getSEP(const MainWindow::DataPoints &result,
+                double &sep);
 
     void readSettings();
     void writeSettings();
