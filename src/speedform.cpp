@@ -31,8 +31,6 @@
 #include "speedscoring.h"
 #include "ppcupload.h"
 
-#define METERS_TO_FEET 3.280839895
-
 SpeedForm::SpeedForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SpeedForm),

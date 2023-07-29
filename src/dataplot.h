@@ -53,7 +53,6 @@ public:
         HorizontalAccuracy,
         VerticalAccuracy,
         SpeedAccuracy,
-        SEP,
         NumberOfSatellites,
         Acceleration,
         TotalEnergy,
@@ -67,6 +66,8 @@ public:
         AccRight,
         AccDown,
         AccMagnitude,
+        SEP,
+        SpeedScoreAccuracy,
         yaLast
     } YAxisType;
 

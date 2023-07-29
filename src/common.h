@@ -27,6 +27,7 @@
 #include <QPointF>
 
 #define PI          3.14159265359
+#define SQRT_2      1.41421356237
 
 #define A_GRAVITY   9.80665     // Standard acceleration due to gravity (m/s^2)
 #define SL_PRESSURE 101325      // Sea level pessure (Pa)
@@ -34,6 +35,10 @@
 #define SL_TEMP     288.15      // Sea level temperature (K)
 #define MM_AIR      0.0289644   // Molar mass of dry air (kg/mol)
 #define GAS_CONST   8.31447     // Universal gas constant (J/mol/K)
+
+#define METERS_TO_FEET 3.280839895
+#define MPS_TO_MPH     2.23694
+#define MPS_TO_KMH     3.6
 
 double distSqrToLine(
         const QPointF &start,
