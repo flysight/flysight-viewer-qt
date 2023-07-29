@@ -1154,6 +1154,8 @@ void MainWindow::importNew(
         DataPoints &data,
         QString firstLine)
 {
+    data.clear();
+
     importSingleRow(firstLine, data);
 
     while (!in.atEnd())
