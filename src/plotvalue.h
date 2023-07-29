@@ -30,11 +30,8 @@
 
 #include "QCustomPlot/qcustomplot.h"
 
+#include "common.h"
 #include "datapoint.h"
-
-#define METERS_TO_FEET 3.28084
-#define MPS_TO_MPH     2.23694
-#define MPS_TO_KMH     3.6
 
 class PlotValue: public QObject
 {
@@ -404,32 +401,6 @@ public:
     {
         return (units == Metric) ? MPS_TO_KMH
                                  : MPS_TO_MPH;
-    }
-};
-
-class PlotSEP: public PlotValue
-{
-    Q_OBJECT
-
-public:
-    PlotSEP(): PlotValue(false, Qt::lightGray) {}
-    const QString titleText() const
-    {
-        return tr("Spherical Error Probable");
-    }
-    const QString unitText(Units units) const
-    {
-        if (units == Metric) return tr("m");
-        else                 return tr("ft");
-    }
-    double rawValue(const DataPoint &dp) const
-    {
-        return DataPoint::sep(dp);
-    }
-    double factor(Units units) const
-    {
-        return (units == Metric) ? 1
-                                 : METERS_TO_FEET;
     }
 };
 
@@ -807,6 +778,54 @@ public:
     }
 
     bool hasOptimal() const { return false; }
+};
+
+class PlotSEP: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotSEP(): PlotValue(false, Qt::lightGray) {}
+    const QString titleText() const
+    {
+        return tr("Spherical Error Probable");
+    }
+    const QString unitText(Units units) const
+    {
+        return tr("m");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::sep(dp);
+    }
+    double factor(Units units) const
+    {
+        return 1;
+    }
+};
+
+class PlotSpeedScoreAccuracy: public PlotValue
+{
+    Q_OBJECT
+
+public:
+    PlotSpeedScoreAccuracy(): PlotValue(false, Qt::lightGray) {}
+    const QString titleText() const
+    {
+        return tr("Speed Score Accuracy");
+    }
+    const QString unitText(Units units) const
+    {
+        return tr("m/s");
+    }
+    double rawValue(const DataPoint &dp) const
+    {
+        return DataPoint::speedScoreAccuracy(dp);
+    }
+    double factor(Units units) const
+    {
+        return 1;
+    }
 };
 
 #endif // PLOTVALUE_H

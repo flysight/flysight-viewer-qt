@@ -155,11 +155,6 @@ public:
         return dp.sAcc;
     }
 
-    static double sep(const DataPoint &dp)
-    {
-        return 0.5127 * (2 * dp.hAcc + dp.vAcc);
-    }
-
     static double numberOfSatellites(const DataPoint &dp)
     {
         return dp.numSV;
@@ -239,6 +234,16 @@ public:
     static double courseAccuracy(const DataPoint &dp)
     {
         return dp.cAcc;
+    }
+
+    static double sep(const DataPoint &dp)
+    {
+        return 0.5127 * (2 * dp.hAcc + dp.vAcc);
+    }
+
+    static double speedScoreAccuracy(const DataPoint &dp)
+    {
+        return SQRT_2 * dp.vAcc / 3.0;
     }
 };
 

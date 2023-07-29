@@ -427,7 +427,7 @@ bool PPCScoring::getSEP(
         if (dp.z > zTop) continue;
 
         // Calculate accuracy
-        double val = 0.5127 * (2 * dp.hAcc + dp.vAcc);
+        double val = DataPoint::sep(dp);
         if ((!found) || (val > sep))
         {
             sep = val;

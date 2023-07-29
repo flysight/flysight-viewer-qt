@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -74,6 +74,18 @@
      <addaction name="actionAccDown"/>
      <addaction name="actionAccMagnitude"/>
     </widget>
+    <widget class="QMenu" name="menuWingsuit">
+     <property name="title">
+      <string>Wingsuit</string>
+     </property>
+     <addaction name="actionSEP"/>
+    </widget>
+    <widget class="QMenu" name="menuSpeed">
+     <property name="title">
+      <string>Speed</string>
+     </property>
+     <addaction name="actionSpeedScoreAccuracy"/>
+    </widget>
     <addaction name="actionElevation"/>
     <addaction name="separator"/>
     <addaction name="actionHorizontalSpeed"/>
@@ -91,7 +103,6 @@
     <addaction name="actionHorizontalAccuracy"/>
     <addaction name="actionVerticalAccuracy"/>
     <addaction name="actionSpeedAccuracy"/>
-    <addaction name="actionSEP"/>
     <addaction name="separator"/>
     <addaction name="actionNumberOfSatellites"/>
     <addaction name="separator"/>
@@ -102,6 +113,9 @@
     <addaction name="separator"/>
     <addaction name="actionLift"/>
     <addaction name="actionDrag"/>
+    <addaction name="separator"/>
+    <addaction name="menuWingsuit"/>
+    <addaction name="menuSpeed"/>
    </widget>
    <widget class="QMenu" name="menuDomain">
     <property name="title">
@@ -780,8 +794,39 @@
    </property>
   </action>
   <action name="actionSEP">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>SEP</string>
+    <string>Spherical Error Probable</string>
+   </property>
+  </action>
+  <action name="actionWingsuit">
+   <property name="text">
+    <string>Wingsuit</string>
+   </property>
+  </action>
+  <action name="actionSpeed">
+   <property name="text">
+    <string>Speed</string>
+   </property>
+  </action>
+  <action name="actionwingsuit">
+   <property name="text">
+    <string>wingsuit</string>
+   </property>
+  </action>
+  <action name="actionwingsuit_2">
+   <property name="text">
+    <string>wingsuit</string>
+   </property>
+  </action>
+  <action name="actionSpeedScoreAccuracy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Speed Score Accuracy</string>
    </property>
   </action>
  </widget>

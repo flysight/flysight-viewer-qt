@@ -88,7 +88,6 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotHorizontalAccuracy);
     m_yValues.append(new PlotVerticalAccuracy);
     m_yValues.append(new PlotSpeedAccuracy);
-    m_yValues.append(new PlotSEP);
     m_yValues.append(new PlotNumberOfSatellites);
     m_yValues.append(new PlotAcceleration);
     m_yValues.append(new PlotTotalEnergy);
@@ -102,6 +101,8 @@ void DataPlot::initPlot()
     m_yValues.append(new PlotAccRight);
     m_yValues.append(new PlotAccDown);
     m_yValues.append(new PlotAccMagnitude);
+    m_yValues.append(new PlotSEP);
+    m_yValues.append(new PlotSpeedScoreAccuracy);
 
     foreach (PlotValue *v, m_yValues)
     {

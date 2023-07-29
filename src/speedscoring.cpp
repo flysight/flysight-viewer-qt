@@ -26,7 +26,6 @@
 #include "mainwindow.h"
 
 #define TIME_DELTA 0.005
-#define SQRT_2 1.41421356237
 
 SpeedScoring::SpeedScoring(
         MainWindow *mainWindow):
@@ -239,10 +238,10 @@ bool SpeedScoring::getAccuracy(
         if (dp.z > zTop) continue;
 
         // Calculate accuracy
-        double sa = SQRT_2 * dp.vAcc / 3.0;
-        if ((!found) || (sa > scoreAccuracy))
+        double val = DataPoint::speedScoreAccuracy(dp);
+        if ((!found) || (val > scoreAccuracy))
         {
-            scoreAccuracy = sa;
+            scoreAccuracy = val;
         }
 
         found = true;

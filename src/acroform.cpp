@@ -30,8 +30,6 @@
 #include "plotvalue.h"
 #include "acroscoring.h"
 
-#define METERS_TO_FEET 3.280839895
-
 AcroForm::AcroForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AcroForm),

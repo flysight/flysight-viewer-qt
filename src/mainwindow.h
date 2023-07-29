@@ -216,7 +216,6 @@ private slots:
     void on_actionHorizontalAccuracy_triggered();
     void on_actionVerticalAccuracy_triggered();
     void on_actionSpeedAccuracy_triggered();
-    void on_actionSEP_triggered();
     void on_actionNumberOfSatellites_triggered();
     void on_actionAcceleration_triggered();
     void on_actionAccForward_triggered();
@@ -230,6 +229,8 @@ private slots:
     void on_actionCourse_triggered();
     void on_actionCourseRate_triggered();
     void on_actionCourseAccuracy_triggered();
+    void on_actionSEP_triggered();
+    void on_actionSpeedScoreAccuracy_triggered();
 
     void on_actionPan_triggered();
     void on_actionZoom_triggered();
