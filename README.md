@@ -34,26 +34,37 @@
 ## Ubuntu Linux
 
 ```bash
-sudo apt install libqt5webkit5-dev
-sudo add-apt-repository ppa:ntadej/tano
-sudo apt update
-sudo apt install libvlc-qt-dev
-sudo cp /usr/lib/libVLCQtCore.so /usr/lib/libvlc-qt.so
-sudo cp /usr/lib/libVLCQtWidgets.so /usr/lib/libvlc-qt-widgets.so
+sudo apt install lld qtwebengine5-dev libqt5webengine5
 
 export QT_SELECT=qt5
 
+mkdir third-party && cd third-party
+
 # Download wwWidgets source from: http://www.wysota.eu.org/wwwidgets/#download
+wget http://www.wysota.eu.org/wwwidgets/wwWidgets-1.0-qt5.tar.gz
+tar xvf wwWidgets-1.0-qt5.tar.gz
 cd wwWidgets
 qmake
 make sub-widgets
 sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so
 sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so.1
 
+cd .. # Back to third-party subdirecgtory
+sudo apt install libvlc-dev libvlccore-dev
+git clone git@github.com:vlc-qt/vlc-qt.git
+git checkout 1.1.1
+cmake .
+make
+sudo make install
+sudo ln -s /usr/local/lib/libVLCQtCore.so /usr/lib/libvlc-qt.so
+sudo ln -s /usr/local/lib/libVLCQtWidgets.so /usr/lib/libvlc-qt-widgets.so
+
 # Build FlySightViewer
 cd flysight-viewer-qt/src
+cp secrets_template.h secrets.h # Modify this file with your Google Maps API key or just leave it as empty string...
 qmake
 make
+LD_LIBRARY_PATH=/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib ./FlySightViewer # LD_LIBRARY_PATH is needed so that we pick up the VLC libs we didn't copy...
 ```
 
 If you have trouble building FlySight Viewer on Linux, check your Qt version number using the following command:
