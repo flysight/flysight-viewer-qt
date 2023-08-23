@@ -34,26 +34,56 @@
 ## Ubuntu Linux
 
 ```bash
-sudo apt install libqt5webkit5-dev
-sudo add-apt-repository ppa:ntadej/tano
-sudo apt update
-sudo apt install libvlc-qt-dev
-sudo cp /usr/lib/libVLCQtCore.so /usr/lib/libvlc-qt.so
-sudo cp /usr/lib/libVLCQtWidgets.so /usr/lib/libvlc-qt-widgets.so
+# Clone the repo
+git clone https://github.com/flysight/flysight-viewer-qt.git && cd flysight-viewer-qt
 
+# WSL2 Install Ubuntu Desktop, OpenGL, and setup the DISPLAY
+sudo apt install mesa-utils
+
+# Install C++ and Qt5
+sudo apt install build-essential qt5-qmake libqt5core5a libqt5printsupport5 libqt5sql5 qtwebengine5-dev libqt5webengine5
+
+# The QT_SELECT may need to go into your ~/.bashrc if you want it to persist, but for this build we can do it like this
 export QT_SELECT=qt5
 
+mkdir third-party && cd third-party
+
+# Setup the VLC libs we need
+sudo apt install cmake libvlc-dev libvlccore-dev
+git clone https://github.com/vlc-qt/vlc-qt.git
+cd vlc-qt
+git checkout 1.1.1
+cmake .
+make
+sudo make install
+sudo ln -s /usr/local/lib/libVLCQtCore.so /usr/lib/libvlc-qt.so
+sudo ln -s /usr/local/lib/libVLCQtWidgets.so /usr/lib/libvlc-qt-widgets.so
+
+cd .. # Back to third-party subdirecgtory
+
 # Download wwWidgets source from: http://www.wysota.eu.org/wwwidgets/#download
+wget http://www.wysota.eu.org/wwwidgets/wwWidgets-1.0-qt5.tar.gz
+tar xvf wwWidgets-1.0-qt5.tar.gz
 cd wwWidgets
 qmake
 make sub-widgets
-sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so
-sudo cp widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so.1
+sudo ln -sr widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so
+sudo ln -sr widgets/libwwwidgets4.so /usr/lib/libwwwidgets4.so.1
 
 # Build FlySightViewer
 cd flysight-viewer-qt/src
-qmake
+cp secrets_template.h secrets.h # Modify this file with your Google Maps API key or just leave it as empty string...
+mkdir ../build && cd ../build # Create a build folder out of the source tree
+qmake ../src
 make
+
+# LD_LIBRARY_PATH is needed so that we pick up the VLC libs we didn't copy...
+export LD_LIBRARY_PATH=/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib
+# WSL2 Workaround: OpenGL crash https://github.com/microsoft/wslg/issues/1214
+export GALLIUM_DRIVER=llvmpipe
+
+# Run the viewer
+./FlySightViewer
 ```
 
 If you have trouble building FlySight Viewer on Linux, check your Qt version number using the following command:
