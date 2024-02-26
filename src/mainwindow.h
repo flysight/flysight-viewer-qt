@@ -358,6 +358,7 @@ private:
     void importSingleRow(QString line, DataPoints &data);
     void importNew(QTextStream &in, DataPoints &data, QString firstLne);
     void importOld(QTextStream &in, DataPoints &data, QString firstLne);
+    QString getDescription(const QString &fileName);
     int import(QIODevice *device, DataPoints &data);
     void init(DataPoints &data, QString trackName, bool initDatabase);
     void initTime(DataPoints &data);

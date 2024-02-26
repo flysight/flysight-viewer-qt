@@ -26,12 +26,14 @@
 
 #include <QCryptographicHash>
 #include <QDesktopServices>
+#include <QDir>
 #include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QShortcut>
 #include <QSqlDatabase>
@@ -775,6 +777,35 @@ void MainWindow::importFolder(
     }
 }
 
+QString MainWindow::getDescription(
+        const QString& fileName)
+{
+    QString description;
+
+    QFileInfo fileInfo(fileName);
+    QDir parentDir = fileInfo.dir();
+
+    QString baseName = fileInfo.fileName();
+    QString parentName = parentDir.dirName();
+
+    // Updated regular expressions with case-insensitivity for file name matching
+    QRegularExpression timePattern("^\\d{2}-\\d{2}-\\d{2}$", QRegularExpression::CaseInsensitiveOption);
+
+    // Constructs relative path from parent
+    description = baseName;
+
+    while (timePattern.match(parentName).hasMatch())
+    {
+        // Add folder name to description
+        description = parentName + QString("/") + description;
+
+        parentDir.cdUp();
+        parentName = parentDir.dirName();
+    }
+
+    return description;
+}
+
 void MainWindow::importFile(
         QString fileName)
 {
@@ -924,7 +955,7 @@ void MainWindow::importFile(
                                     "max_lon=%8, "
                                     "import_time='%9' "
                                     "where file_name='%10'")
-                            .arg(QFileInfo(fileName).fileName())
+                            .arg(getDescription(fileName))
                             .arg(dateTimeToUTC(startTime))
                             .arg(duration)
                             .arg(samplePeriod)
