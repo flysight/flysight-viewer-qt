@@ -803,6 +803,13 @@ void MainWindow::importFile(
     temporaryFile.write(file.readAll());
     file.close();
 
+    // Read file data
+    temporaryFile.seek(0);
+    if (!import(&temporaryFile, m_data))
+    {
+        return;
+    }
+
     // Get hash
     QCryptographicHash hash(QCryptographicHash::Md5);
 
@@ -861,9 +868,8 @@ void MainWindow::importFile(
         }
     }
 
-    // Read file data
-    temporaryFile.seek(0);
-    import(&temporaryFile, m_data, uniqueName, true);
+    // Initialize file data
+    init(m_data, uniqueName, true);
 
     // Clear optimum
     m_optimal.clear();
@@ -962,7 +968,10 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    import(&file, m_data, uniqueName, false);
+    if (import(&file, m_data))
+    {
+        init(m_data, uniqueName, false);
+    }
 
     // Clear optimum
     m_optimal.clear();
@@ -1080,7 +1089,10 @@ void MainWindow::setTrackChecked(
             }
 
             // Read file data
-            import(&file, data, trackName, false);
+            if (import(&file, data))
+            {
+                init(m_data, trackName, false);
+            }
         }
 
         mCheckedTracks.insert(trackName, data);
@@ -1242,11 +1254,9 @@ void MainWindow::importOld(
     }
 }
 
-void MainWindow::import(
+int MainWindow::import(
         QIODevice *device,
-        DataPoints &data,
-        QString trackName,
-        bool initDatabase)
+        DataPoints &data)
 {
     QTextStream in(device);
 
@@ -1266,6 +1276,14 @@ void MainWindow::import(
         }
     }
 
+    return data.length();
+}
+
+void MainWindow::init(
+    DataPoints &data,
+    QString trackName,
+    bool initDatabase)
+{
     // Initialize time
     initTime(data);
 
