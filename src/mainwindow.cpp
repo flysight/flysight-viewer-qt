@@ -836,7 +836,7 @@ void MainWindow::importFile(
 
     // Read file data
     temporaryFile.seek(0);
-    if (!import(&temporaryFile, m_data))
+    if (import(&temporaryFile, m_data) < 2)
     {
         return;
     }
@@ -999,7 +999,7 @@ void MainWindow::importFromDatabase(
     }
 
     // Read file data
-    if (import(&file, m_data))
+    if (import(&file, m_data) >= 2)
     {
         init(m_data, uniqueName, false);
     }
@@ -1120,7 +1120,7 @@ void MainWindow::setTrackChecked(
             }
 
             // Read file data
-            if (import(&file, data))
+            if (import(&file, data) >= 2)
             {
                 init(m_data, trackName, false);
             }
