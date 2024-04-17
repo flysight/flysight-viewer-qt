@@ -42,6 +42,8 @@ void Config::readSingle(
         #define HANDLE_VALUE(s,w,r,t) \
             if ((t) && !name.compare(s)) { (w) = (r); }
 
+        HANDLE_VALUE("Model",     UBX_model,        val, val >= 0 && val <= 8);
+        HANDLE_VALUE("Rate",      UBX_rate,         val, val >= 40 && val <= 1000);
         HANDLE_VALUE("Mode",      UBX_mode,         val, (val >= 0 && val <= 7) || (val == 11));
         HANDLE_VALUE("Min",       UBX_min,          val, true);
         HANDLE_VALUE("Max",       UBX_max,          val, true);
