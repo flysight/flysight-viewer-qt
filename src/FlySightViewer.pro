@@ -164,11 +164,11 @@ win32 {
 RESOURCES += \
     resource.qrc
 
-INCLUDEPATH += ../include
-INCLUDEPATH += ../include/GeographicLib
+INCLUDEPATH += ../../../include
+INCLUDEPATH += ../../../include/GeographicLib
 
 win32 {
-    LIBS += -L../lib
+    LIBS += -L../../../lib
     CONFIG(debug, debug|release) {
         LIBS += -lVLCQtCored -lVLCQtQmld -lVLCQtWidgetsd
     } else {
