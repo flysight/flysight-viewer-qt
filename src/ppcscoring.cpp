@@ -240,7 +240,8 @@ void PPCScoring::prepareMapView(
     const double threshold = view->metersPerPixel();
 
     // Get start point
-    DataPoint dpStart = mMainWindow->interpolateDataT(10);
+    DataPoint dpTenMS = mMainWindow->performanceStart();
+    DataPoint dpStart = mMainWindow->interpolateDataT(dpTenMS.t + 9.0);
 
     // Draw lane center
     QList<QVariant> data;
