@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>265</width>
-    <height>491</height>
+    <width>279</width>
+    <height>553</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -145,21 +145,17 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_10">
+         <widget class="QLabel" name="label_18">
           <property name="text">
-           <string>Validation window top:</string>
+           <string>Performance window top:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="validationTopEdit">
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
+         <widget class="QLineEdit" name="performanceTopEdit"/>
         </item>
         <item row="1" column="2">
-         <widget class="QLabel" name="label_11">
+         <widget class="QLabel" name="label_19">
           <property name="text">
            <string>m</string>
           </property>
@@ -187,41 +183,62 @@
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QLabel" name="label_14">
+         <widget class="QLabel" name="label_10">
           <property name="text">
-           <string>Scoring window top:</string>
+           <string>Validation window top:</string>
           </property>
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QLineEdit" name="scoringTopEdit">
+         <widget class="QLineEdit" name="validationTopEdit">
           <property name="readOnly">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item row="3" column="2">
-         <widget class="QLabel" name="label_16">
+         <widget class="QLabel" name="label_11">
           <property name="text">
            <string>m</string>
           </property>
          </widget>
         </item>
         <item row="4" column="0">
-         <widget class="QLabel" name="label_15">
+         <widget class="QLabel" name="label_14">
           <property name="text">
-           <string>Scoring window bottom:</string>
+           <string>Scoring window top:</string>
           </property>
          </widget>
         </item>
         <item row="4" column="1">
-         <widget class="QLineEdit" name="scoringBottomEdit">
+         <widget class="QLineEdit" name="scoringTopEdit">
           <property name="readOnly">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item row="4" column="2">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>m</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_15">
+          <property name="text">
+           <string>Scoring window bottom:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="scoringBottomEdit">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
          <widget class="QLabel" name="label_17">
           <property name="text">
            <string>m</string>

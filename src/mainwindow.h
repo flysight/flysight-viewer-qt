@@ -127,10 +127,11 @@ public:
 
     void pauseMedia();
 
-    DataPoint interpolateDataT(double t);
+    DataPoint interpolateDataT(double t) const;
+    DataPoint performanceStart(double threshold = 10.0) const;
 
-    int findIndexBelowT(double t);
-    int findIndexAboveT(double t);
+    int findIndexBelowT(double t) const;
+    int findIndexAboveT(double t) const;
     int findIndexForLanding();
 
     void setWindowMode(WindowMode mode);

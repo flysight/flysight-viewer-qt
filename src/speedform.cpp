@@ -91,6 +91,7 @@ void SpeedForm::updateView()
 
     // Get exit
     DataPoint dpExit = mMainWindow->interpolateDataT(0);
+    DataPoint dpPerformanceTop = mMainWindow->performanceStart();
 
     DataPoint dpBottom, dpTop;
     bool success;
@@ -101,11 +102,11 @@ void SpeedForm::updateView()
     switch (mMainWindow->windowMode())
     {
     case MainWindow::Actual:
-        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpExit);
-        accuracyOkay = method->getAccuracy(mMainWindow->data(), scoreAccuracy, dpExit);
+        success = method->getWindowBounds(mMainWindow->data(), dpBottom, dpTop, dpPerformanceTop);
+        accuracyOkay = method->getAccuracy(mMainWindow->data(), scoreAccuracy, dpPerformanceTop);
         break;
     case MainWindow::Optimal:
-        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpExit);
+        success = method->getWindowBounds(mMainWindow->optimal(), dpBottom, dpTop, dpPerformanceTop);
         break;
     }
 
@@ -127,10 +128,11 @@ void SpeedForm::updateView()
             ui->verticalSpeedUnits->setText(tr("mph"));
         }
 
-        const double performanceBottom = qMax(dpExit.z - fromExit, bottom);
+        const double performanceBottom = qMax(dpPerformanceTop.z - fromExit, bottom);
         const double validationTop = performanceBottom + validationWindow;
 
         ui->exitAltitudeEdit->setText(QString("%1").arg(dpExit.z, 0, 'f', 3));
+        ui->performanceTopEdit->setText(QString("%1").arg(dpPerformanceTop.z, 0, 'f', 3));
         ui->validationTopEdit->setText(QString("%1").arg(validationTop, 0, 'f', 3));
         ui->performanceBottomEdit->setText(QString("%1").arg(performanceBottom, 0, 'f', 3));
         ui->scoringTopEdit->setText(QString("%1").arg(dpTop.z, 0, 'f', 3));
