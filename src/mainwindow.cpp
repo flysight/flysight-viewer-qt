@@ -650,7 +650,7 @@ void MainWindow::closeEvent(
 }
 
 DataPoint MainWindow::interpolateDataT(
-        double t)
+        double t) const
 {
     const int i1 = findIndexBelowT(t);
     const int i2 = findIndexAboveT(t);
@@ -671,8 +671,38 @@ DataPoint MainWindow::interpolateDataT(
     }
 }
 
+DataPoint MainWindow::performanceStart(double threshold) const
+{
+    // ------------------------------------------------------------------
+    //  Find the first data-point *after exit* ( t > 0 ).
+    // ------------------------------------------------------------------
+    const int firstAfterExit = findIndexAboveT(0.0);     // -1 if none
+
+    if (firstAfterExit < 0 || firstAfterExit + 1 >= m_data.size())
+        return interpolateDataT(0);                      // fall back to exit
+
+    // ------------------------------------------------------------------
+    //  Scan forward through *pairs of points* that are both after exit
+    //  until vertical speed (velD) first reaches or crosses `threshold`.
+    // ------------------------------------------------------------------
+    for (int i = firstAfterExit + 1; i < m_data.size(); ++i)
+    {
+        const DataPoint &p1 = m_data[i - 1];   // p1.t  > 0  by construction
+        const DataPoint &p2 = m_data[i];
+
+        if (p1.velD < threshold && p2.velD >= threshold)
+        {
+            double a = (threshold - p1.velD) / (p2.velD - p1.velD);
+            return DataPoint::interpolate(p1, p2, a);
+        }
+    }
+
+    // Never reached the threshold – return the first post-exit sample.
+    return m_data[firstAfterExit];
+}
+
 int MainWindow::findIndexBelowT(
-        double t)
+        double t) const
 {
     int below = -1;
     int above = m_data.size();
@@ -690,7 +720,7 @@ int MainWindow::findIndexBelowT(
 }
 
 int MainWindow::findIndexAboveT(
-        double t)
+        double t) const
 {
     int below = -1;
     int above = m_data.size();

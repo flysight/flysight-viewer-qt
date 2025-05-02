@@ -65,7 +65,7 @@ double SpeedScoring::score(
     if (mMainWindow->dataSize() == 0) return 0;
 
     // Get exit
-    DataPoint dpExit = mMainWindow->interpolateDataT(0);
+    DataPoint dpExit = mMainWindow->performanceStart();
 
     DataPoint dpBottom, dpTop;
     if (getWindowBounds(result, dpBottom, dpTop, dpExit))
@@ -91,7 +91,7 @@ void SpeedScoring::prepareDataPlot(
     if (mMainWindow->dataSize() == 0) return;
 
     // Get exit
-    DataPoint dpExit = mMainWindow->interpolateDataT(0);
+    DataPoint dpExit = mMainWindow->performanceStart();
 
     DataPoint dpBottom, dpTop;
     bool success;
