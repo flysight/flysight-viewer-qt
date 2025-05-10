@@ -164,10 +164,10 @@ win32 {
 RESOURCES += \
     resource.qrc
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../include/GeographicLib
-
 win32 {
+    INCLUDEPATH += ../../../include
+    INCLUDEPATH += ../../../include/GeographicLib
+
     LIBS += -L../../../lib
     CONFIG(debug, debug|release) {
         LIBS += -lVLCQtCored -lVLCQtQmld -lVLCQtWidgetsd
@@ -175,11 +175,17 @@ win32 {
         LIBS += -lVLCQtCore -lVLCQtQml -lVLCQtWidgets
     }
 } else:macx {
+    INCLUDEPATH += ../include
+    INCLUDEPATH += ../include/GeographicLib
+
     QMAKE_LFLAGS += -F../macx
     LIBS         += -framework VLCQtCore
     LIBS         += -framework VLCQtQml
     LIBS         += -framework VLCQtWidgets
 } else:unix {
+    INCLUDEPATH += ../../../include
+    INCLUDEPATH += ../../../include/GeographicLib
+
     LIBS += -L/usr/local/lib
     LIBS += -lVLCQtCore -lVLCQtQml -lVLCQtWidgets
 }
