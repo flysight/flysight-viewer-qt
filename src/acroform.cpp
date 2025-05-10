@@ -98,7 +98,7 @@ void AcroForm::updateView()
 void AcroForm::onFAIButtonClicked()
 {
     AcroScoring *method = (AcroScoring *) mMainWindow->scoringMethod(MainWindow::Acro);
-    method->setSpeed(8);
+    method->setSpeed(10);
     method->setAltitude(2286);
 }
 

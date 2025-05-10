@@ -29,7 +29,7 @@ AcroScoring::AcroScoring(
         MainWindow *mainWindow):
     ScoringMethod(mainWindow),
     mMainWindow(mainWindow),
-    mSpeed(8),
+    mSpeed(10),
     mAltitude(2286)
 {
 
